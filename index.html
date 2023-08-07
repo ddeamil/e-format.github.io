@@ -4,7 +4,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Landing Page</title>
+  
+  <title>CV-desmond de amil - 2023</title>
   <style>
     /* Reset some default styles */
     body, h1, h2, h3, p, ul, li {
@@ -36,36 +37,14 @@
       color: black;
     }
 
-    /* Create two equal columns that floats next to each other */
-    .column {
-  float: left;
-  width: 33%;
-  padding: 10px;
-  height: 300px; /* Should be removed. Only for demonstration */
-}
-
-/* Clear floats after the columns */
-.row:after {
-  content: "";
-  display: table;
-  clear: both;
-}
-
-/* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 600px) {
-  .column {
-    width: 100%;
-  }
-}
-    
     /* Hero banner styles */
     .hero-banner {
-      background-image: url("https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/img/00063-45533089.png");
+      background-image: url('https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/img/00063-45533089.png');
+      background-color: #333;
       background-size: cover;
       background-position: center;
       height: 400px;
-      color: rgb(3, 3, 3);
-      background-color: #50b2d3;
+      color: rgb(0, 0, 0);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -80,7 +59,7 @@
 
     /* Footer styles */
     .footer {
-      background-color: #333333;
+      background-color: #333;
       color: white;
       text-align: center;
       padding: 20px;
@@ -98,55 +77,36 @@
   <!-- Navbar -->
   <div class="navbar">
     <a href="#home">Home</a>
-    <a href="#section1">Section 1</a>
-    <a href="#section2">Section 2</a>
-    <a href="#section3">Section 3</a>
+    <a href="#section1">Expériences</a>
+    <a href="#section2">Formations</a>
+    <a href="#section3">Soft Skills</a>
     <a href="#contact">Contact</a>
   </div>
 
   <!-- Hero Banner -->
   <div class="hero-banner">
-    <h1>Formateur professionnel d'adultes</h1>
+    <h1>Welcome to Our Landing Page</h1>
     <p>This is a brief description of our awesome landing page.</p>
   </div>
-
-<!--3 colonnes-->
-<h2>Responsive Two Column Layout</h2>
-<p>Resize the browser window to see the responsive effect (the columns will stack on top of each other instead of floating next to each other, when the screen is less than 600px wide).</p>
-
-<div class="row">
-  <div class="column" style="background-color:#aaa;">
-    <h2>Column 1</h2>
-    <p>Some text..</p>
-  </div>
-  <div class="column" style="background-color:#bbb;">
-    <h2>Column 2</h2>
-    <p>Some text..</p>
-  </div>
-  <div class="column" style="background-color:#aaa;">
-    <h2>Column 3</h2>
-    <p>Some text..</p>
-  </div>
-</div>
 
   <!-- Section 1 -->
   <div class="section" id="section1">
     <img src="path/to/your/image1.jpg" alt="Section 1 Image">
-    <h2>Section 1 Title</h2>
+    <h2><i class='fas fa-desktop' style='font-size:24px'></i> Expériences</h2>
     <p>This is the description for Section 1.</p>
   </div>
-<hr>
+
   <!-- Section 2 -->
   <div class="section" id="section2">
     <img src="path/to/your/image2.jpg" alt="Section 2 Image">
-    <h2>Section 2 Title</h2>
+    <h2>Formations</h2>
     <p>This is the description for Section 2.</p>
   </div>
-  <hr>
+
   <!-- Section 3 -->
   <div class="section" id="section3">
     <img src="path/to/your/image3.jpg" alt="Section 3 Image">
-    <h2>Section 3 Title</h2>
+    <h2>Soft Skills</h2>
     <p>This is the description for Section 3.</p>
   </div>
 
