@@ -36,6 +36,28 @@
       color: black;
     }
 
+    /* Create two equal columns that floats next to each other */
+    .column {
+  float: left;
+  width: 33%;
+  padding: 10px;
+  height: 300px; /* Should be removed. Only for demonstration */
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Responsive layout - makes the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 600px) {
+  .column {
+    width: 100%;
+  }
+}
+    
     /* Hero banner styles */
     .hero-banner {
       background-image: url("https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/img/00063-45533089.png");
@@ -84,9 +106,28 @@
 
   <!-- Hero Banner -->
   <div class="hero-banner">
-    <h1>Welcome to Our Landing Page</h1>
+    <h1>Formateur professionnel d'adultes</h1>
     <p>This is a brief description of our awesome landing page.</p>
   </div>
+
+<!--3 colonnes-->
+<h2>Responsive Two Column Layout</h2>
+<p>Resize the browser window to see the responsive effect (the columns will stack on top of each other instead of floating next to each other, when the screen is less than 600px wide).</p>
+
+<div class="row">
+  <div class="column" style="background-color:#aaa;">
+    <h2>Column 1</h2>
+    <p>Some text..</p>
+  </div>
+  <div class="column" style="background-color:#bbb;">
+    <h2>Column 2</h2>
+    <p>Some text..</p>
+  </div>
+  <div class="column" style="background-color:#aaa;">
+    <h2>Column 3</h2>
+    <p>Some text..</p>
+  </div>
+</div>
 
   <!-- Section 1 -->
   <div class="section" id="section1">
