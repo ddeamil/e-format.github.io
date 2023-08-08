@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>CV-desmond de amil - 2023</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
   <style>
     /* Reset some default styles */
     body, h1, h2, h3, p, ul, li {
@@ -70,6 +71,22 @@
       margin: 0 10px;
       text-decoration: none;
     }
+
+ /* Bouton PDF */
+ .btn {
+    background-color: DodgerBlue;
+    border: none;
+    color: white;
+    padding: 12px 30px;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  
+  /* Bouton PDF Darker background on mouse-over */
+  .btn:hover {
+    background-color: RoyalBlue;
+  }
+
   </style>
 </head>
 
@@ -109,6 +126,23 @@
     <h2>Soft Skills</h2>
     <p>This is the description for Section 3.</p>
   </div>
+
+  <!--PDF-->
+  <div class="container">
+    <small>Télécharger le CV:</small>
+<button style="font-size:16px">Button <i class="fa fa-file-pdf-o"></i></button>
+  </div>
+
+ <br>
+
+ <div class="container">
+  <button class="btn"><i class="fa fa-download"></i> CV.pdf</button>
+</div>
+
+<div class="container">
+<a href="img/CV_Ingénierie pédagogique - 2023.pdf" download class="download btn"><i class="fa fa-download"></i>Download</a>
+</div>
+<br>
 
   <!-- Footer -->
   <div class="footer">
