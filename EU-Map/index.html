@@ -1,0 +1,118 @@
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les États membres face à la construction européenne</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script type="importmap">
+        {
+            "imports": {
+                "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Les États membres face à la construction européenne</h1>
+            <p class="subtitle">Une carte interactive pour comprendre l'évolution de l'Union européenne</p>
+        </header>
+        
+        <div class="content">
+            <div class="map-container">
+                <svg id="europe-map" width="100%" height="500"></svg>
+                <div class="timeline">
+                    <input type="range" min="1957" max="2023" value="2023" class="timeline-slider" id="year-slider">
+                    <div class="timeline-labels">
+                        <span>1957</span>
+                        <span>1973</span>
+                        <span>1986</span>
+                        <span>1995</span>
+                        <span>2004</span>
+                        <span>2013</span>
+                        <span>2023</span>
+                    </div>
+                    <div class="current-year">Année: <span id="current-year">2023</span></div>
+                </div>
+            </div>
+            
+            <div class="legend">
+                <h2>Légende</h2>
+                <div class="filters">
+                    <div class="filter-section">
+                        <h3>Statut des pays</h3>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-eu" checked>
+                            <span class="filter-color" style="background-color: #99CCFF;"></span>
+                            <span class="filter-text">Membres de l'UE</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-candidates">
+                            <span class="filter-color" style="background-color: #90EE90;"></span>
+                            <span class="filter-text">Pays candidats</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-non-eu">
+                            <span class="filter-color" style="background-color: #CCCCCC;"></span>
+                            <span class="filter-text">Pays ne souhaitant pas adhérer</span>
+                        </label>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h3>Zones et institutions</h3>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-schengen">
+                            <span class="filter-color" style="background: repeating-linear-gradient(45deg, transparent, transparent 5px, #FFCC00 5px, #FFCC00 10px);"></span>
+                            <span class="filter-text">Espace Schengen</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-euro">
+                            <span class="filter-color" style="background: repeating-linear-gradient(-45deg, transparent, transparent 5px, #00CC00 5px, #00CC00 10px);"></span>
+                            <span class="filter-text">Zone Euro</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-institutions">
+                            <span class="filter-color" style="background-color: #FF9900;"><i class="fas fa-landmark"></i></span>
+                            <span class="filter-text">Institutions européennes</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-presidency">
+                            <span class="filter-color" style="background-color: #FFCC00;"><i class="fas fa-crown"></i></span>
+                            <span class="filter-text">Présidence tournante actuelle</span>
+                        </label>
+                    </div>
+                    
+                    <div class="filter-section">
+                        <h3>Distinction historique</h3>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-cee">
+                            <span class="filter-color" style="background-color: #FF9900;"></span>
+                            <span class="filter-text">CEE (1957-1992)</span>
+                        </label>
+                        <label class="filter-item">
+                            <input type="checkbox" id="filter-eu-post-1992" checked>
+                            <span class="filter-color" style="background-color: #99CCFF;"></span>
+                            <span class="filter-text">UE (depuis 1992)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="info-panel">
+                    <h3>Information</h3>
+                    <div id="country-info">
+                        <p>Sélectionnez un pays pour voir ses informations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Application éducative pour l'enseignement de l'histoire de la construction européenne | d.de Amil-IRP 2025</p>
+        </footer>
+    </div>
+    <script src="data.js" type="module"></script>
+    <script src="app.js" type="module"></script>
+</body>
+</html>
