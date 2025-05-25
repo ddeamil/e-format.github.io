@@ -1,0 +1,789 @@
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bilan de compétences en français</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+    }
+    </script>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <header>
+                <div class="logo">
+                    <svg width="50" height="50" viewBox="0 0 50 50">
+                        <circle cx="25" cy="25" r="20" fill="#4a86e8"/>
+                        <text x="25" y="32" text-anchor="middle" fill="white" font-size="20">F</text>
+                    </svg>
+                    <h1>Bilan de compétences en français</h1>
+                </div>
+                <div class="progress-bar" v-if="currentSection !== 'welcome' && currentSection !== 'results'">
+                    <div class="progress" :style="{width: progress + '%'}"></div>
+                </div>
+            </header>
+            
+            <main>
+                <!-- Section d'accueil -->
+                <section v-if="currentSection === 'welcome'" class="welcome">
+                    <div class="welcome-header">
+                        <h2>Bienvenue !</h2>
+                    </div>
+                    
+                    <div class="welcome-intro">
+                        <p>Ce questionnaire a pour but de vous aider à trouver la formation en français la plus adaptée à vos besoins. Vos réponses sont confidentielles et nous permettront de mieux vous orienter.</p>
+                        <p><strong>Il ne s'agit pas d'un test</strong>, il n'y a pas de bonnes ou de mauvaises réponses. L'objectif est de vous accompagner au mieux.</p>
+                    </div>
+                    
+                    <div class="call-to-action">
+                        <h3>Découvrez votre profil linguistique</h3>
+                        <p>En seulement quelques minutes, identifiez vos besoins en formation linguistique et recevez des recommandations personnalisées.</p>
+                        
+                        <div class="cta-nav-buttons">
+                            <button class="cta-round-button" @click="scrollToSection('.profiles')">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span>Les profils</span>
+                            </button>
+                            
+                            <button class="cta-round-button" @click="scrollToSection('.statistics-container')">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                    <line x1="9" y1="8" x2="9" y2="21"></line>
+                                    <line x1="15" y1="12" x2="15" y2="21"></line>
+                                    <line x1="21" y1="8" x2="3" y2="8"></line>
+                                    <line x1="21" y1="16" x2="3" y2="16"></line>
+                                </svg>
+                                <span>Statistiques</span>
+                            </button>
+                            
+                            <button class="cta-round-button" @click="scrollToSection('.flowchart-container')">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M5 8h14M5 12h14M5 16h14M9 8v8M15 8v8"></path>
+                                </svg>
+                                <span>Processus</span>
+                            </button>
+                            
+                            <button class="cta-round-button" @click="startQuestionnaire">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <path d="M10 8l6 4-6 4V8z"></path>
+                                </svg>
+                                <span>Commencer</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="profiles">
+                        <div class="profile" v-for="profile in profiles" :key="profile.id" :class="profile.id">
+                            <div class="profile-icon" :style="{backgroundColor: profile.color}">
+                                <svg width="30" height="30" viewBox="0 0 30 30">
+                                    <text x="15" y="20" text-anchor="middle" fill="white" font-size="12" font-weight="bold">{{ profile.icon }}</text>
+                                </svg>
+                            </div>
+                            <div class="profile-info">
+                                <h3>{{ profile.name }}</h3>
+                                <p>{{ profile.description }}</p>
+                                <button class="secondary-button" @click="showExplanation(profile.id)">En savoir plus</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="statistics-container">
+                        <h3>Répartition des personnes en situation d'illettrisme par situation</h3>
+                        <p class="stats-source">Source : ANLCI, 2024</p>
+                        <div id="illiteracy-chart"></div>
+                        
+                        <button class="stats-sources-toggle" 
+                                @click="toggleStatsSources"
+                                :class="{'expanded': showStatsSources}">
+                            {{ showStatsSources ? 'Masquer les sources' : 'Voir les sources' }}
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                            </svg>
+                        </button>
+                        
+                        <div class="stats-sources" :class="{'expanded': showStatsSources}">
+                            <p>L'illettrisme en France représente un défi majeur, notamment dans le domaine de l'emploi. Voici les principaux chiffres et données clés concernant cette problématique :</p>
+                            
+                            <h4>Chiffres généraux sur l'illettrisme</h4>
+                            <ul>
+                                <li>Environ <strong>2,5 millions de personnes</strong> en France (soit 7 % de la population âgée de 18 à 65 ans) sont en situation d'illettrisme.</li>
+                                <li>Parmi elles, <strong>51 % occupent un emploi</strong>, soit environ 1,3 million de travailleurs.</li>
+                                <li>L'illettrisme touche particulièrement certains secteurs, comme l'agroalimentaire, l'industrie, le bâtiment et les services à la personne.</li>
+                            </ul>
+                            
+                            <h4>Illettrisme et demandeurs d'emploi</h4>
+                            <ul>
+                                <li><strong>10 % des demandeurs d'emploi</strong> sont en situation d'illettrisme.</li>
+                                <li>Ce chiffre grimpe à <strong>18 % pour les demandeurs d'emploi de longue durée</strong> et à <strong>25 % pour ceux au chômage depuis plus de deux ans</strong>.</li>
+                                <li>Les allocataires des minima sociaux sont également fortement touchés : <strong>20 %</strong> d'entre eux sont en situation d'illettrisme.</li>
+                            </ul>
+                            
+                            <h4>Impact sur l'emploi et la formation</h4>
+                            <ul>
+                                <li>Les personnes illettrées rencontrent des obstacles majeurs pour accéder à des emplois, même peu qualifiés (lecture de consignes, rédaction de documents, etc.).</li>
+                                <li>L'accès à la formation est limité : <strong>76 % des salariés non diplômés</strong> n'ont jamais reçu de proposition de formation de leur employeur, contre 67 % des diplômés.</li>
+                                <li>Les pertes liées à l'illettrisme dans les entreprises peuvent représenter entre <strong>2 % et 6 % de la masse salariale</strong>.</li>
+                            </ul>
+                            
+                            <h4>Répartition socio-économique</h4>
+                            <ul>
+                                <li>Les ouvriers et employés représentent <strong>70 % des personnes en emploi avec des difficultés importantes</strong>.</li>
+                                <li>Parmi les personnes en forte difficulté avec les compétences de base :
+                                    <ul>
+                                        <li><strong>41 % ont un CAP ou BEP</strong>, et</li>
+                                        <li><strong>30 % n'ont aucun diplôme</strong>.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            
+                            <p>Ces données soulignent l'importance de renforcer les actions de sensibilisation, la formation professionnelle et les dispositifs d'accompagnement pour lutter contre l'illettrisme, qui reste un frein majeur à l'insertion sociale et professionnelle.</p>
+                            
+                            <p class="stats-source">Sources: ANLCI, France Travail, INSEE (2024)</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flowchart-container">
+                        <h3>Comprendre le processus d'évaluation</h3>
+                        <p class="text-center">Explorez le parcours de l'évaluation en cliquant sur les différentes étapes</p>
+                        <div class="flowchart-tooltip" id="flowchart-tooltip"></div>
+                        <div id="process-flowchart"></div>
+                        <div class="flowchart-description-panel" id="flowchart-description"></div>
+                    </div>
+                    
+                    <button class="primary-button start-button" @click="startQuestionnaire">Commencer le questionnaire</button>
+                </section>
+                
+                <!-- Section d'explication des profils -->
+                <section v-if="showProfileExplanation" class="profile-explanation" id="profile-explanation">
+                    <div v-if="currentProfileExplanation === 'refresher'">
+                        <h2>Remise à Niveau en Langue Française</h2>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Introduction</h3>
+                            <p>La remise à niveau en langue française est un processus destiné aux individus ayant déjà acquis les bases de la langue, mais qui souhaitent approfondir leurs connaissances, élargir leurs compétences ou revoir certains points spécifiques. Ce programme est particulièrement adapté aux personnes maîtrisant bien la langue dans la vie quotidienne, bien qu'elles puissent encore commettre des erreurs d'orthographe ou ne pas écrire fréquemment.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Objectifs</h3>
+                            <p>Les objectifs principaux de cette remise à niveau sont :</p>
+                            <ul>
+                                <li><strong>Amélioration de la maîtrise de l'écrit :</strong> Réduire les fautes d'orthographe et renforcer les compétences en rédaction.</li>
+                                <li><strong>Élargissement du vocabulaire :</strong> Introduire des mots et expressions plus complexes pour enrichir le discours.</li>
+                                <li><strong>Révision des fondamentaux :</strong> Rappeler les règles grammaticales et syntaxiques essentielles.</li>
+                                <li><strong>Renforcement des compétences en compréhension :</strong> Améliorer la compréhension des textes écrits et oraux.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Méthodologie</h3>
+                            <h4>Approche Personnalisée</h4>
+                            <p>Chaque apprenant a des besoins uniques. Ainsi, la remise à niveau sera personnalisée selon les objectifs personnels et professionnels de l'individu. Cela inclut :</p>
+                            <ul>
+                                <li>Évaluations diagnostiques pour identifier les points forts et les domaines à améliorer.</li>
+                                <li>Plans d'apprentissage individualisés basés sur les résultats des évaluations.</li>
+                            </ul>
+                            
+                            <h4>Techniques d'Apprentissage</h4>
+                            <ul>
+                                <li><strong>Exercices Pratiques :</strong> Des exercices réguliers pour pratiquer la grammaire, l'orthographe et la syntaxe.</li>
+                                <li><strong>Lectures Diversifiées :</strong> Analyser des textes variés pour améliorer la compréhension et enrichir le vocabulaire.</li>
+                                <li><strong>Ateliers d'Écriture :</strong> Sessions interactives pour développer des compétences en rédaction.</li>
+                                <li><strong>Discussions et Débats :</strong> Encourager l'expression orale et la pensée critique.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Profil d'Apprentissage</h3>
+                            <p>Les participants à ce programme sont souvent dans une situation de demande ponctuelle d'expertise, avec une motivation liée à des enjeux spécifiques. Par exemple, cela pourrait être une préparation à des examens, une évolution professionnelle, ou simplement un désir personnel de perfectionnement.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Conclusion</h3>
+                            <p>La remise à niveau en langue française est une opportunité précieuse pour toute personne souhaitant raffiner ses compétences linguistiques. Avec une approche personnalisée et un engagement actif, les participants peuvent atteindre une maîtrise plus élevée de la langue, tant à l'écrit qu'à l'oral.</p>
+                        </div>
+                        
+                        <button class="back-button-round" 
+                                @click="goBack" 
+                                :style="{backgroundColor: profiles.find(p => p.id === 'refresher').color}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div v-if="currentProfileExplanation === 'illiteracy'">
+                        <h2>Comprendre l'Illettrisme</h2>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Les Défis et Stratégies des Personnes Concernées</h3>
+                            <p>L'illettrisme est une problématique complexe qui touche de nombreuses personnes francophones ayant été scolarisées en langue française, mais qui ne maîtrisent pas suffisamment les compétences nécessaires pour être autonomes à l'écrit. Ce phénomène va au-delà de la simple incapacité à lire ou à écrire : il s'agit d'une difficulté à comprendre et à utiliser l'écrit dans des situations quotidiennes.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Définition de l'Illettrisme</h3>
+                            <p>Selon l'Agence Nationale de Lutte Contre l'Illettrisme (ANLCI), l'illettrisme concerne les personnes de plus de 16 ans qui, bien que scolarisées, éprouvent des difficultés à lire et à comprendre des textes simples liés à leur quotidien, ou à écrire pour transmettre des informations basiques. Ces difficultés peuvent être associées à une maîtrise insuffisante d'autres compétences de base telles que :</p>
+                            <ul>
+                                <li>Communication orale</li>
+                                <li>Raisonnement logique</li>
+                                <li>Compréhension et utilisation des nombres et des opérations</li>
+                                <li>Orientation dans l'espace et dans le temps</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Impact sur la Vie Sociale et Professionnelle</h3>
+                            <p>Malgré ces lacunes, les personnes en situation d'illettrisme ont souvent développé des compétences et une culture personnelle sans recourir ou peu aux capacités de lecture et d'écriture. Certaines réussissent à s'intégrer dans la vie sociale et professionnelle, mais leur équilibre reste fragile, avec un risque constant de marginalisation. Pour d'autres, l'illettrisme s'accompagne d'autres facteurs d'exclusion, aggravant leur situation.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Profils d'Apprentissage et Stratégies</h3>
+                            <p>Les profils des personnes en situation d'illettrisme sont divers. Elles utilisent souvent des stratégies de contournement plus ou moins efficaces pour gérer leur quotidien, ce qui peut être associé à un sentiment de honte ou un déni de leurs difficultés. Cela rend leur identification complexe.</p>
+                            <p>L'entrée en formation est parfois perçue comme une menace en raison de la peur de l'environnement scolaire. Les progrès dans l'apprentissage sont souvent lents et se font par étapes, nécessitant un grand besoin de sécurisation et avec une autonomie limitée.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Vers une Meilleure Compréhension et Inclusion</h3>
+                            <p>Pour lutter efficacement contre l'illettrisme, il est essentiel de comprendre la diversité des profils et des besoins des personnes concernées. Des approches pédagogiques adaptées et un environnement bienveillant peuvent aider à surmonter ces obstacles. Encourager l'inclusion et offrir un soutien personnalisé sont clés pour permettre à ces individus de gagner en autonomie et de réduire le risque de marginalisation.</p>
+                        </div>
+                        
+                        <button class="back-button-round" 
+                                @click="goBack" 
+                                :style="{backgroundColor: profiles.find(p => p.id === 'illiteracy').color}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div v-if="currentProfileExplanation === 'fle'">
+                        <h2>Apprendre le Français comme Langue Étrangère</h2>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Défis et Approches Pédagogiques pour une Intégration Réussie</h3>
+                            <p>Le Français Langue Étrangère (FLE) est un domaine spécifique de l'apprentissage du français qui s'adresse aux personnes dont le français n'est pas la langue maternelle et qui ont été scolarisées dans une autre langue.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Maîtrise de la langue</h3>
+                            <p>L'évaluation de la maîtrise de la langue française pour une personne qui la considère comme une langue étrangère doit prendre en compte divers facteurs :</p>
+                            <ul>
+                                <li><strong>Degré et conditions de scolarisation :</strong> L'éducation reçue dans la langue maternelle influence la capacité d'apprentissage d'une nouvelle langue. Une scolarisation solide dans la langue d'origine peut faciliter l'apprentissage du français.</li>
+                                <li><strong>Similitudes et différences linguistiques :</strong> Il est important de comparer l'alphabet, les structures grammaticales, et d'autres aspects entre la langue maternelle et le français. Les similarités peuvent accélérer l'apprentissage, tandis que les différences peuvent représenter des défis supplémentaires.</li>
+                                <li><strong>Compétences évaluées :</strong> Les compétences à évaluer comprennent l'écriture, la lecture, la compréhension, la capacité à parler en continu, et l'interaction orale. Chaque individu peut avoir des niveaux de compétence variés dans ces domaines. Le Cadre Européen Commun de Référence pour les Langues (CECRL) propose une grille pour évaluer ces niveaux.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Profil d'apprentissage</h3>
+                            <p>Les apprenants de FLE tendent à être relativement autonomes et appliquent souvent les stratégies d'apprentissage acquises dans leur langue maternelle. La motivation pour apprendre le français peut être liée à l'intérêt pour la culture française ou à la nécessité d'intégration dans un environnement francophone.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Remarque : Différentes approches de la formation en FLE</h3>
+                            <p>Il existe plusieurs méthodes pour enseigner le français comme langue étrangère, adaptées aux besoins spécifiques des apprenants :</p>
+                            <ul>
+                                <li><strong>FLS – Français Langue Seconde :</strong> Cette approche s'adresse aux personnes dont le français n'est pas la langue maternelle mais qui sont en contact régulier avec la langue, par exemple dans des pays multilingues.</li>
+                                <li><strong>FOS – Français sur Objectifs Spécifiques :</strong> Cette méthode pédagogique vise à développer des compétences linguistiques pour des situations de communication professionnelle ou de formation spécifiques, avec un vocabulaire adapté au contexte professionnel.</li>
+                                <li><strong>FLI – Français Langue d'Intégration :</strong> Ce programme vise à enseigner l'utilisation quotidienne de la langue ainsi que les outils nécessaires pour une bonne intégration dans la société française. Cela comprend l'adhésion aux usages et valeurs de la république, en mettant l'accent sur l'oral et la lecture, sans négliger l'écriture.</li>
+                            </ul>
+                            <p>Ces approches permettent de répondre aux divers besoins des apprenants et facilitent leur progression dans l'apprentissage du français.</p>
+                        </div>
+                        
+                        <button class="back-button-round" 
+                                @click="goBack" 
+                                :style="{backgroundColor: profiles.find(p => p.id === 'fle').color}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div v-if="currentProfileExplanation === 'post-alpha'">
+                        <h2>Post-Alphabétisation : Un Nouveau Départ</h2>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Vers l'autonomie linguistique après l'alphabétisation</h3>
+                            <p>Le terme post-alphabétisation se réfère à un stade d'apprentissage où une personne a commencé à développer des compétences de base en lecture et en écriture. Cela peut se faire de manière autonome, par le biais de cours d'alphabétisation ou dans un cadre professionnel. Ces personnes, souvent désignées comme des apprenants "post-alpha", ont acquis les rudiments de la langue écrite, mais ne sont pas encore totalement autonomes dans son utilisation.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Les Différentes Voies d'Apprentissage</h3>
+                            <p>Les apprenants post-alpha peuvent avoir suivi différents parcours pour atteindre ce niveau de compétence :</p>
+                            <ul>
+                                <li><strong>Cours d'alphabétisation :</strong> Participer à des cours où l'accent est mis sur l'apprentissage des bases de la langue écrite.</li>
+                                <li><strong>Ateliers sociolinguistiques :</strong> S'engager dans des ateliers qui combinent apprentissage linguistique et socialisation pour faciliter l'intégration linguistique et culturelle.</li>
+                                <li><strong>Formation professionnelle :</strong> Acquérir des compétences en lecture et écriture dans le cadre de leur travail, souvent pour améliorer leur performance professionnelle ou répondre aux exigences de leur emploi.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Les Défis et Opportunités</h3>
+                            <h4>Défis</h4>
+                            <ul>
+                                <li><strong>Manque d'autonomie :</strong> Bien que ces apprenants aient acquis des compétences de base, ils peuvent encore avoir besoin d'assistance pour utiliser la langue écrite de manière indépendante.</li>
+                                <li><strong>Accès limité aux ressources :</strong> Les personnes post-alpha peuvent rencontrer des obstacles dans l'accès à des ressources éducatives avancées.</li>
+                            </ul>
+                            
+                            <h4>Opportunités</h4>
+                            <ul>
+                                <li><strong>Développement continu :</strong> Les apprenants peuvent continuer à développer leurs compétences par le biais de cours supplémentaires ou de pratiques régulières.</li>
+                                <li><strong>Intégration sociale et professionnelle :</strong> En améliorant leurs compétences en langue écrite, les apprenants post-alpha peuvent mieux s'intégrer dans la société et sur le lieu de travail.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Conclusion</h3>
+                            <p>Le chemin vers l'autonomie dans l'utilisation de la langue écrite est un parcours continu pour les apprenants post-alpha. Grâce à des efforts soutenus et des opportunités d'apprentissage, ces individus peuvent progressivement améliorer leurs compétences, favorisant ainsi leur développement personnel et professionnel.</p>
+                        </div>
+                        
+                        <button class="back-button-round" 
+                                @click="goBack" 
+                                :style="{backgroundColor: profiles.find(p => p.id === 'post-alpha').color}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div v-if="currentProfileExplanation === 'alpha'">
+                        <h2>Comprendre l'Analphabétisme</h2>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Définition et Contexte</h3>
+                            <p>L'analphabétisme désigne la situation d'une personne qui n'a jamais appris à lire et à écrire dans aucune langue. Contrairement à l'illettrisme qui concerne des personnes ayant été scolarisées mais n'ayant pas acquis une maîtrise suffisante de la lecture et de l'écriture, l'analphabétisme est lié à l'absence d'apprentissage formel de l'écrit.</p>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Les Défis de l'Apprentissage</h3>
+                            <p>Les personnes analphabètes font face à plusieurs défis spécifiques lorsqu'elles entreprennent d'apprendre à lire et à écrire :</p>
+                            <ul>
+                                <li><strong>Découverte du code écrit :</strong> Elles doivent s'approprier le principe même de l'écriture comme représentation du langage oral.</li>
+                                <li><strong>Difficultés cognitives :</strong> L'apprentissage tardif de la lecture peut être plus complexe car certaines structures cognitives sont déjà formées.</li>
+                                <li><strong>Manque de familiarité :</strong> L'absence d'exposition antérieure à l'écrit peut créer une distance avec les supports pédagogiques traditionnels.</li>
+                                <li><strong>Dimension affective :</strong> La situation d'analphabétisme peut être associée à un sentiment de honte ou d'exclusion qu'il faut surmonter.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Approches Pédagogiques Adaptées</h3>
+                            <p>L'accompagnement des personnes analphabètes nécessite des méthodes spécifiques :</p>
+                            <ul>
+                                <li><strong>Approche globale :</strong> Partir des besoins et de l'expérience de vie de la personne pour donner du sens à l'apprentissage.</li>
+                                <li><strong>Progression lente et structurée :</strong> Proposer des étapes d'apprentissage très graduelles et répétitives.</li>
+                                <li><strong>Supports contextualisés :</strong> Utiliser des documents et situations de la vie quotidienne comme matériel pédagogique.</li>
+                                <li><strong>Valorisation de l'oral :</strong> S'appuyer sur les compétences orales déjà développées comme point de départ.</li>
+                                <li><strong>Renforcement de la confiance :</strong> Créer un environnement bienveillant qui valorise les progrès et les réussites.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="profile-explanation-section">
+                            <h3>Vers l'Autonomie</h3>
+                            <p>L'alphabétisation est un processus qui vise l'autonomie de la personne dans sa vie sociale, professionnelle et citoyenne. Elle constitue la première étape d'un parcours qui peut ensuite mener vers le niveau "post-alpha", puis vers une maîtrise plus complète de la langue écrite. Ce processus demande du temps, de la persévérance et un accompagnement adapté, mais il ouvre de nouvelles perspectives d'inclusion et d'émancipation.</p>
+                        </div>
+                        
+                        <button class="back-button-round" 
+                                @click="goBack" 
+                                :style="{backgroundColor: profiles.find(p => p.id === 'alpha').color}">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                                <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/>
+                            </svg>
+                        </button>
+                    </div>
+                </section>
+                
+                <!-- Section des informations générales -->
+                <section v-if="currentSection === 'general-info'" class="general-info">
+                    <h2>Informations générales</h2>
+                    
+                    <div class="form-group">
+                        <label for="age">Âge</label>
+                        <input type="number" id="age" v-model="userData.age" min="16" max="100">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sexe (facultatif)</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.gender" value="homme"> Homme</label>
+                            <label><input type="radio" v-model="userData.gender" value="femme"> Femme</label>
+                            <label><input type="radio" v-model="userData.gender" value="non-precise"> Non précisé</label>
+                            <label><input type="radio" v-model="userData.gender" value="prefer-not"> Préfère ne pas répondre</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="country">Pays d'origine</label>
+                        <select id="country" v-model="userData.country">
+                            <option value="">Sélectionnez votre pays</option>
+                            <option v-for="country in countries" :value="country">{{ country }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="language">Langue maternelle</label>
+                        <select id="language" v-model="userData.nativeLanguage">
+                            <option value="">Sélectionnez votre langue maternelle</option>
+                            <option v-for="language in languages" :value="language">{{ language }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="duration">Depuis combien de temps vivez-vous en France ?</label>
+                        <select id="duration" v-model="userData.durationInFrance">
+                            <option value="">Sélectionnez une durée</option>
+                            <option value="less-than-6-months">Moins de 6 mois</option>
+                            <option value="6-months-to-1-year">6 mois à 1 an</option>
+                            <option value="1-to-2-years">1 an à 2 ans</option>
+                            <option value="2-to-5-years">2 ans à 5 ans</option>
+                            <option value="more-than-5-years">Plus de 5 ans</option>
+                        </select>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="secondary-button" @click="goBack">Précédent</button>
+                        <button class="primary-button" @click="nextSection" :disabled="!isGeneralInfoComplete">Suivant</button>
+                    </div>
+                </section>
+                
+                <!-- Section de scolarisation -->
+                <section v-if="currentSection === 'schooling'" class="schooling">
+                    <h2>Scolarisation et Langue Maternelle</h2>
+                    
+                    <div class="form-group">
+                        <label>Avez-vous été scolarisé(e) dans votre pays d'origine ou dans un autre pays ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.hasSchooling" value="yes"> Oui</label>
+                            <label><input type="radio" v-model="userData.hasSchooling" value="no"> Non</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" v-if="userData.hasSchooling === 'yes'">
+                        <label for="schoolingYears">Pendant combien d'années ?</label>
+                        <select id="schoolingYears" v-model="userData.schoolingYears">
+                            <option value="">Sélectionnez une durée</option>
+                            <option value="less-than-2-years">Moins de 2 ans</option>
+                            <option value="2-to-5-years">2 à 5 ans</option>
+                            <option value="5-to-10-years">5 à 10 ans</option>
+                            <option value="more-than-10-years">Plus de 10 ans</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" v-if="userData.hasSchooling === 'yes'">
+                        <label for="schoolingLanguage">Dans quelle langue s'est déroulée votre scolarisation principale ?</label>
+                        <select id="schoolingLanguage" v-model="userData.schoolingLanguage">
+                            <option value="">Sélectionnez une langue</option>
+                            <option value="french">Français</option>
+                            <option v-for="language in languages" :value="language">{{ language }}</option>
+                        </select>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="secondary-button" @click="goBack">Précédent</button>
+                        <button class="primary-button" @click="nextSection" :disabled="!isSchoolingComplete">Suivant</button>
+                    </div>
+                </section>
+                
+                <!-- Sections spécifiques selon le profil -->
+                <section v-if="currentSection === 'fle'" class="fle-section">
+                    <h2>Français Langue Étrangère (FLE)</h2>
+                    
+                    <div class="form-group">
+                        <label>Avez-vous suivi des cours de français ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.hasTakenFrenchCourses" value="yes"> Oui</label>
+                            <label><input type="radio" v-model="userData.hasTakenFrenchCourses" value="no"> Non</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" v-if="userData.hasTakenFrenchCourses === 'yes'">
+                        <label>Si oui, lesquels ? <span class="multiple-choice-info">Plusieurs choix possibles</span></label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="course-fle" v-model="userData.frenchCourseTypes" value="fle">
+                            <label for="course-fle">FLE</label>
+                            <input type="checkbox" id="course-alpha" v-model="userData.frenchCourseTypes" value="alpha">
+                            <label for="course-alpha">Alphabétisation</label>
+                            <input type="checkbox" id="course-remise" v-model="userData.frenchCourseTypes" value="remise">
+                            <label for="course-remise">Remise à niveau</label>
+                            <input type="checkbox" id="course-other" v-model="userData.frenchCourseTypes" value="other">
+                            <label for="course-other">Autre</label>
+                        </div>
+                    </div>
+                    
+                    <h3>Évaluation des compétences en français</h3>
+                    
+                    <div class="form-group">
+                        <label>Comment évaluez-vous votre niveau en français oral ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.oralLevel" value="a1.1"> Je ne comprends presque rien en français.</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="a1"> Je comprends des mots isolés et des expressions très simples si on parle lentement et distinctement.</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="a2"> Je comprends des phrases simples sur des sujets familiers (famille, achats, environnement proche).</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="b1"> Je comprends l'essentiel d'une conversation sur des sujets courants si le langage est clair.</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comment évaluez-vous votre niveau en français écrit (lecture) ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.readingLevel" value="a1.1"> Je ne peux pas lire le français.</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="a1"> Je peux comprendre des mots isolés et des noms familiers (panneaux, affiches, etc.).</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="a2"> Je peux comprendre des textes très courts et simples (messages, cartes postales, etc.).</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="b1"> Je peux comprendre des textes factuels simples sur des sujets courants (articles de journaux, brochures, etc.).</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comment évaluez-vous votre niveau en français écrit (écriture) ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.writingLevel" value="a1.1"> Je ne peux pas écrire en français.</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="a1"> Je peux écrire des mots isolés et des phrases très simples (nom, adresse, nationalité).</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="a2"> Je peux écrire un message court et simple (carte postale, e-mail simple).</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="b1"> Je peux écrire un texte simple et cohérent sur des sujets familiers.</label>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="secondary-button" @click="goBack">Précédent</button>
+                        <button class="primary-button" @click="nextSection" :disabled="!isFleComplete">Suivant</button>
+                    </div>
+                </section>
+                
+                <section v-if="currentSection === 'illiteracy'" class="illiteracy-section">
+                    <h2>Évaluation des compétences en français</h2>
+                    
+                    <div class="form-group">
+                        <label>Avez-vous suivi des cours de français ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.hasTakenFrenchCourses" value="yes"> Oui</label>
+                            <label><input type="radio" v-model="userData.hasTakenFrenchCourses" value="no"> Non</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comment évaluez-vous votre niveau en français oral ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.oralLevel" value="none"> Je ne parle pas du tout français.</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="basic"> Je peux comprendre et parler quelques mots et phrases simples.</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="intermediate"> Je peux avoir une conversation simple sur des sujets courants.</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="advanced"> Je peux m'exprimer assez facilement sur des sujets variés.</label>
+                            <label><input type="radio" v-model="userData.oralLevel" value="fluent"> Je parle français couramment.</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comment évaluez-vous votre niveau en français écrit (lecture) ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.readingLevel" value="none"> Je ne sais pas lire en français.</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="basic"> Je peux lire quelques mots et phrases simples.</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="intermediate"> Je peux lire des textes courts et simples.</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="advanced"> Je peux lire des articles de journaux et des romans avec un peu de difficulté.</label>
+                            <label><input type="radio" v-model="userData.readingLevel" value="fluent"> Je lis en français couramment.</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Comment évaluez-vous votre niveau en français écrit (écriture) ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.writingLevel" value="none"> Je ne sais pas écrire en français.</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="basic"> Je peux écrire quelques mots et phrases simples.</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="intermediate"> Je peux écrire des textes courts et simples.</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="advanced"> Je peux écrire des lettres et des e-mails avec un peu de difficulté.</label>
+                            <label><input type="radio" v-model="userData.writingLevel" value="fluent"> J'écris en français couramment.</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Avez-vous des difficultés à lire et comprendre : <span class="multiple-choice-info">Plusieurs choix possibles</span></label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="reading-signs" v-model="userData.readingDifficulties" value="signs">
+                            <label for="reading-signs">Des panneaux de signalisation</label>
+                            <input type="checkbox" id="reading-instructions" v-model="userData.readingDifficulties" value="instructions">
+                            <label for="reading-instructions">Des notices d'utilisation</label>
+                            <input type="checkbox" id="reading-forms" v-model="userData.readingDifficulties" value="forms">
+                            <label for="reading-forms">Des formulaires administratifs</label>
+                            <input type="checkbox" id="reading-mails" v-model="userData.readingDifficulties" value="mails">
+                            <label for="reading-mails">Des courriers (factures, etc.)</label>
+                            <input type="checkbox" id="reading-news" v-model="userData.readingDifficulties" value="news">
+                            <label for="reading-news">Des articles de journaux</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Avez-vous des difficultés à écrire : <span class="multiple-choice-info">Plusieurs choix possibles</span></label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="writing-messages" v-model="userData.writingDifficulties" value="messages">
+                            <label for="writing-messages">Un message court (SMS, etc.)</label>
+                            <input type="checkbox" id="writing-letters" v-model="userData.writingDifficulties" value="letters">
+                            <label for="writing-letters">Une lettre ou un e-mail</label>
+                            <input type="checkbox" id="writing-forms" v-model="userData.writingDifficulties" value="forms">
+                            <label for="writing-forms">Un formulaire administratif</label>
+                            <input type="checkbox" id="writing-notes" v-model="userData.writingDifficulties" value="notes">
+                            <label for="writing-notes">Prendre des notes</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Avez-vous des difficultés avec les chiffres et le calcul ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.mathDifficulties" value="yes"> Oui</label>
+                            <label><input type="radio" v-model="userData.mathDifficulties" value="no"> Non</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" v-if="userData.mathDifficulties === 'yes'">
+                        <label for="mathSituations">Si oui, dans quelles situations ?</label>
+                        <textarea id="mathSituations" v-model="userData.mathSituationsDesc" placeholder="Par exemple : faire les courses, gérer un budget, etc."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Parmi les propositions suivantes, laquelle vous correspond le mieux ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.selfPosition" value="illiteracy"> J'ai été scolarisé(e) en français, mais j'ai des difficultés à lire, écrire et calculer pour être autonome dans la vie courante.</label>
+                            <label><input type="radio" v-model="userData.selfPosition" value="refresher"> J'ai des bases en français, mais j'aimerais les approfondir ou les réactiver.</label>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="secondary-button" @click="goBack">Précédent</button>
+                        <button class="primary-button" @click="nextSection" :disabled="!isIlliteracyComplete">Suivant</button>
+                    </div>
+                </section>
+                
+                <section v-if="currentSection === 'alpha'" class="alpha-section">
+                    <h2>Profil Analphabète</h2>
+                    
+                    <p>Vous avez indiqué ne jamais avoir été scolarisé(e). Ce profil correspond généralement à des personnes qui n'ont jamais appris à lire et à écrire, quelle que soit la langue.</p>
+                    
+                    <div class="form-group">
+                        <label>Confirmez-vous que vous n'avez jamais été scolarisé(e) ?</label>
+                        <div class="radio-group">
+                            <label><input type="radio" v-model="userData.confirmAlpha" value="yes"> Oui, je confirme</label>
+                            <label><input type="radio" v-model="userData.confirmAlpha" value="no"> Non, j'ai été scolarisé(e)</label>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="secondary-button" @click="goBack">Précédent</button>
+                        <button class="primary-button" @click="nextSection" :disabled="userData.confirmAlpha === null">Suivant</button>
+                    </div>
+                </section>
+                
+                <section v-if="currentSection === 'motivations'" class="motivations">
+                    <h2>Objectifs et motivations</h2>
+                    
+                    <div class="form-group">
+                        <label>Pourquoi souhaitez-vous améliorer votre français ? <span class="multiple-choice-info">Plusieurs choix possibles</span></label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="motivation-job" v-model="userData.motivations" value="job">
+                            <label for="motivation-job">Trouver un emploi</label>
+                            <input type="checkbox" id="motivation-children" v-model="userData.motivations" value="children">
+                            <label for="motivation-children">Mieux comprendre mes enfants et les aider dans leur scolarité</label>
+                            <input type="checkbox" id="motivation-autonomy" v-model="userData.motivations" value="autonomy">
+                            <label for="motivation-autonomy">Être plus autonome dans la vie quotidienne</label>
+                            <input type="checkbox" id="motivation-integration" v-model="userData.motivations" value="integration">
+                            <label for="motivation-integration">Me sentir plus intégré(e) dans la société française</label>
+                            <input type="checkbox" id="motivation-training" v-model="userData.motivations" value="training">
+                            <label for="motivation-training">Suivre une formation professionnelle</label>
+                            <input type="checkbox" id="motivation-other" v-model="userData.motivations" value="other">
+                            <label for="motivation-other">Autres</label>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" v-if="userData.motivations.includes('other')">
+                        <label for="otherMotivations">Précisez vos autres motivations :</label>
+                        <textarea id="otherMotivations" v-model="userData.otherMotivationsDesc"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="learningGoals">Quels sont vos objectifs d'apprentissage du français ?</label>
+                        <textarea id="learningGoals" v-model="userData.learningGoals" placeholder="Par exemple : pouvoir lire des romans, écrire des lettres administratives, etc."></textarea>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button class="secondary-button" @click="goBack">Précédent</button>
+                        <button class="primary-button" @click="nextSection" :disabled="!isMotivationsComplete">Voir les résultats</button>
+                    </div>
+                </section>
+                
+                <!-- Section des résultats -->
+                <section v-if="currentSection === 'results'" class="results">
+                    <h2>Résultats de votre bilan</h2>
+                    
+                    <div class="profile-result" :class="userProfile">
+                        <div class="profile-icon" :style="{backgroundColor: getProfileColor()}">
+                            <svg width="30" height="30" viewBox="0 0 30 30">
+                                <text x="15" y="20" text-anchor="middle" fill="white" font-size="12">{{ getProfileIcon() }}</text>
+                            </svg>
+                        </div>
+                        <div class="profile-info">
+                            <h3>{{ getProfileName() }}</h3>
+                            <p>{{ getProfileDescription() }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="summary">
+                        <h3>Récapitulatif de vos informations</h3>
+                        <ul>
+                            <li v-if="userData.age"><strong>Âge :</strong> {{ userData.age }} ans</li>
+                            <li v-if="userData.gender && userData.gender !== 'prefer-not'"><strong>Sexe :</strong> {{ formatGender(userData.gender) }}</li>
+                            <li v-if="userData.country"><strong>Pays d'origine :</strong> {{ userData.country }}</li>
+                            <li v-if="userData.nativeLanguage"><strong>Langue maternelle :</strong> {{ userData.nativeLanguage }}</li>
+                            <li v-if="userData.durationInFrance"><strong>Durée en France :</strong> {{ formatDuration(userData.durationInFrance) }}</li>
+                            <li v-if="userData.hasSchooling"><strong>Scolarisation :</strong> {{ userData.hasSchooling === 'yes' ? 'Oui' : 'Non' }}</li>
+                            <li v-if="userData.schoolingYears"><strong>Durée de scolarisation :</strong> {{ formatDuration(userData.schoolingYears) }}</li>
+                            <li v-if="userData.schoolingLanguage"><strong>Langue de scolarisation :</strong> {{ userData.schoolingLanguage }}</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="recommendations">
+                        <h3>Recommandations</h3>
+                        <p>{{ getRecommendations() }}</p>
+                        
+                        <div class="next-steps">
+                            <h4>Prochaines étapes</h4>
+                            <p>Nous vous recommandons de prendre rendez-vous pour un entretien individuel avec un conseiller qui pourra vous orienter vers la formation la plus adaptée à votre profil.</p>
+                            <a href="#" class="primary-button">Prendre rendez-vous</a>
+                        </div>
+                    </div>
+                    
+                    <div class="contact">
+                        <h3>Besoin d'aide ?</h3>
+                        <p>Contactez-nous au <strong>01 23 45 67 89</strong> ou par email à <strong><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="fa9995948e9b998eba9c9588979b8e939594d79c889b94999b9389d49c88">[email&#160;protected]</a></strong></p>
+                    </div>
+                    
+                    <button class="secondary-button" @click="restartQuestionnaire">Recommencer le questionnaire</button>
+                </section>
+            </main>
+            
+            <footer>
+                <p>&copy; 2025 Bilan de compétences en français | d.de amil - Tous droits réservés</p>
+            </footer>
+        </div>
+        
+        <!-- Bouton de retour à l'accueil -->
+        <div class="home-button" v-if="currentSection !== 'welcome'" @click="goHome">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+        </div>
+        
+        <!-- Bouton de retour à la section CTA -->
+        <div class="scroll-to-cta-button" v-if="currentSection === 'welcome'" @click="scrollToSection('.call-to-action')">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                <path d="M12 8l-6 6 1.41 1.41L12 10.83l4.59 4.58L18 14z"/>
+            </svg>
+        </div>
+    </div>
+    
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script type="module" src="app.js"></script>
+</body>
+</html>
