@@ -1,0 +1,60 @@
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronologie des régimes politiques français</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "d3": "https://cdn.jsdelivr.net/npm/d3@7/+esm"
+        }
+    }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Chronologie des régimes politiques de la France</h1>
+        <nav>
+            <button id="periode1" class="periode-btn active">1789-1940</button>
+            <button id="periode2" class="periode-btn">1940-1962</button>
+        </nav>
+    </header>
+    
+    <main>
+        <div class="timeline-container">
+            <div id="timeline"></div>
+            <div id="zoom-controls">
+                <button id="zoom-in">+</button>
+                <button id="zoom-out">-</button>
+                <button id="reset-zoom">Réinitialiser</button>
+            </div>
+        </div>
+        
+        <div id="details-panel">
+            <div id="event-details">
+                <h2>Sélectionnez une période sur la frise</h2>
+                <p class="instruction">Cliquez sur une période de la frise chronologique pour afficher ses détails.</p>
+                <div id="details-content" class="hidden">
+                    <h3 id="regime-title"></h3>
+                    <p id="regime-periode"></p>
+                    <div id="evenements">
+                        <h4>Événements clés</h4>
+                        <ul id="evenements-list"></ul>
+                    </div>
+                    <div id="personnages">
+                        <h4>Personnages clés</h4>
+                        <ul id="personnages-list"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>Application éducative pour l'apprentissage de l'Histoire de France - dde AMIL | IRP 2025
+    </footer>
+
+    <script type="module" src="script.js"></script>
+</body>
+</html>
