@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Styles généraux et pour les sections */
+        /* ... Styles généraux et pour les sections (inchangés) ... */
         .learning-section { display: block; }
         .arrow {
             stroke-width: 2.5;
@@ -26,8 +26,8 @@
         .dechets-arrow { stroke: #8b5cf6; }
         .dechets-arrow-souille { stroke: #8b5cf6; stroke-dasharray: 4,4; }
         #kitchenPlan text { font-family: sans-serif; pointer-events: none; }
-        #kitchenPlan rect[data-zone-type]:hover { /* Effet de surbrillance léger */
-            stroke: #f59e0b; /* amber-500 */
+        #kitchenPlan rect[data-zone-type]:hover { 
+            stroke: #f59e0b; 
             stroke-width: 1.5px;
             cursor: default;
         }
@@ -38,7 +38,7 @@
         .legend-line { height: 2px; width: 25px; margin-right: 5px; }
         .legend-line-dashed { border-top-style: dashed; }
 
-        /* Styles pour le jeu de scénarios */
+        /* ... Styles pour le jeu de scénarios (inchangés) ... */
         .game-scenario-container { background: #f0f4f8; border-radius: 15px; padding: 20px; margin-top: 20px; border: 1px solid #d1d9e6; }
         .steps-pool-game { background: #e0e6ed; border-radius: 10px; padding: 15px; margin-bottom: 20px; min-height: 80px; border: 2px dashed #b0b9c6; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
         .step-item-game { background: linear-gradient(135deg, #42a5f5, #1e88e5); color: white; padding: 8px 12px; border-radius: 8px; cursor: grab; display: inline-block; transition: all 0.3s ease; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;}
@@ -61,13 +61,60 @@
         .scenario-progress-bar-container { width: 100%; background-color: #e0e0e0; border-radius: 0.25rem; margin-bottom: 1rem; height: 12px; overflow: hidden; }
         .scenario-progress-bar { height: 100%; width: 0%; background-color: #4caf50; border-radius: 0.25rem 0 0 0.25rem; transition: width 0.5s ease-in-out; text-align: center; color: white; font-size: 0.7rem; line-height:12px; }
 
-        /* Styles pour quiz, flip-cards, utilitaires */
+        /* Styles pour quiz */
         .progress-bar { transition: width 0.5s ease; }
-        .flip-card { perspective: 1000px; }
-        .flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; }
-        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
-        .flip-card-front, .flip-card-back { backface-visibility: hidden; }
-        .flip-card-back { transform: rotateY(180deg); }
+        
+        /* Styles pour FLIP CARDS CORRIGÉS */
+        .flip-card {
+            perspective: 1000px;
+             /* La hauteur est gérée par h-64 de Tailwind sur l'élément .flip-card */
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            display: flex; /* Ajouté pour centrer le contenu */
+            flex-direction: column; /* Ajouté */
+            align-items: center; /* Ajouté */
+            justify-content: center; /* Ajouté */
+            border-radius: 0.75rem; /* rounded-xl (doit être sur les faces) */
+            /* Les paddings (p-6) sont déjà gérés par Tailwind dans le HTML */
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+            /* Les classes de fond (bg-blue-50, etc.) sont dans le HTML */
+        }
+        /* Ajustements pour le contenu interne de la face arrière */
+        .flip-card-back > h3 {
+            margin-bottom: 0.75rem; /* Tailwind: mb-3 */
+        }
+        .flip-card-back > ul {
+            text-align: left;
+            width: 90%; /* Ajustez si nécessaire */
+            margin-left: auto; /* Pour centrer si width < 100% */
+            margin-right: auto; /* Pour centrer si width < 100% */
+            padding-left: 1rem; /* Pour l'indentation des puces */
+        }
+        .flip-card-back > ul > li {
+             font-size: 0.875rem; /* text-sm */
+        }
+
+
+        /* Utilitaires */
         .section-title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; text-align: center; padding-top: 2rem; border-top: 1px solid #e2e8f0; margin-top: 2.5rem; }
         .section-title:first-of-type { border-top: none; margin-top: 0; }
         .content-box { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); padding: 1.5rem; margin-bottom: 3rem; }
@@ -95,7 +142,7 @@
 
     <main class="container mx-auto px-4 py-8">
 
-        <!-- Section 1: Introduction -->
+        <!-- Section 1: Introduction (Contenu HTML identique) -->
         <section id="introduction" class="learning-section content-box">
             <h2 class="text-2xl font-bold text-slate-800 mb-4"><i class="fas fa-info-circle mr-2 text-red-500"></i>Qu'est-ce que la Marche en Avant ?</h2>
             <p class="text-slate-600 mb-4">La "marche en avant" est un principe fondamental d'organisation dans les cuisines professionnelles. Son objectif principal est de <strong class="text-red-600">limiter le risque de contamination</strong> des aliments. Ces contaminations peuvent être de nature physique (ex: un bout de plastique), chimique (ex: résidu de détergent) ou biologique (ex: bactéries, virus).</p>
@@ -105,7 +152,7 @@
             </div>
         </section>
 
-        <!-- Section 2: Terminologie -->
+        <!-- Section 2: Terminologie (Contenu HTML identique) -->
         <section id="terminology" class="learning-section content-box">
             <h2 class="text-2xl font-bold text-slate-800 mb-6"><i class="fas fa-tags mr-2 text-red-500"></i>Terminologie Essentielle</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -120,8 +167,8 @@
             </div>
         </section>
 
-        <!-- Section 3: Plan de Cuisine Interactif -->
-        <section id="interactive-plan" class="learning-section content-box">
+        <!-- Section 3: Plan de Cuisine Interactif (Contenu HTML identique) -->
+         <section id="interactive-plan" class="learning-section content-box">
             <h2 class="text-2xl font-bold text-slate-800 mb-4 text-center"><i class="fas fa-map-marked-alt mr-2 text-red-500"></i>Visualisation des Flux : Plan d'une Cuisine</h2>
             <p class="text-slate-600 mb-6 text-center">Cliquez sur les boutons pour visualiser les circuits. Survolez les zones pour plus d'informations. Les flèches sont stylisées pour refléter les flux (voir légende).</p>
              <div class="flex flex-wrap justify-center gap-2 mb-4">
@@ -142,7 +189,6 @@
                     </defs>
                     <rect width="100%" height="100%" fill="#f8fafc"/>
                     <g id="zones">
-                        {/* Ajoutez data-zone-name et data-zone-type à TOUTES les zones ici */}
                         <rect x="20" y="20" width="150" height="100" fill="#718096" stroke="#CBD5E0" data-zone-name="Déchets (Ext.)" data-zone-type="souille"/> 
                         <text x="95" y="70" text-anchor="middle" fill="white" font-size="12">Déchets (Ext.)</text>
                         <rect x="20" y="130" width="150" height="80" fill="#718096" stroke="#CBD5E0" data-zone-name="Quai de réception" data-zone-type="souille"/>
@@ -164,41 +210,10 @@
                         <rect x="720" y="80" width="60" height="360" fill="#718096" stroke="#CBD5E0" data-zone-name="Salle Restaurant" data-zone-type="souille"/><text x="750" y="260" text-anchor="middle" fill="white" font-size="12" transform="rotate(-90 750 260)">Salle Restaurant</text>
                         <rect x="610" y="450" width="170" height="100" fill="#718096" stroke="#CBD5E0" data-zone-name="Déchets (Salle)" data-zone-type="souille"/><text x="695" y="500" text-anchor="middle" fill="white" font-size="12">Déchets (Salle)</text>
                     </g>
-
-                    <!-- FLÈCHES STYLE IMAGE DE RÉFÉRENCE - EXEMPLE PERSONNEL COMPLET -->
-                    <g id="circuit-personnel">
-                        <polyline class="arrow personnel-arrow-souille" points="95,210 95,135 175,135"/>
-                        <polyline class="arrow personnel-arrow" points="285,135 395,135 395,175"/>
-                        <path class="arrow personnel-arrow" d="M500,115 A60 60 0 1 1 499.9,115.1 Z" />
-                        <line class="arrow personnel-arrow" x1="500" y1="255" x2="500" y2="315"/>
-                        <path class="arrow personnel-arrow" d="M500,335 A60 60 0 1 1 499.9,335.1 Z" />
-                        <polyline class="arrow personnel-arrow" points="395,395 395,430 285,430"/>
-                        <polyline class="arrow personnel-arrow" points="595,175 605,175 605,230"/>
-                    </g>
-                    <!-- AUTRES CIRCUITS (DENREES, VAISSELLE, DECHETS) - À REDESSINER DANS LE MÊME STYLE -->
-                     <g id="circuit-denrees">
-                        <polyline class="arrow denrees-arrow-souille" points="95,210 95,340 175,340"/>
-                        <polyline class="arrow denrees-arrow-souille" points="95,210 285,210 285,135"/>
-                        <line class="arrow denrees-arrow-souille" x1="285" y1="380" x2="285" y2="390"/>
-                        <polyline class="arrow denrees-arrow" points="385,430 395,430 395,175 "/>
-                        <polyline class="arrow denrees-arrow" points="385,430 395,430 395,395 "/>
-                        <polyline class="arrow denrees-arrow" points="595,175 605,175 605,220"/>
-                        <polyline class="arrow denrees-arrow" points="595,395 605,395 605,240"/>
-                    </g>
-                    <g id="circuit-vaisselle">
-                        <polyline class="arrow vaisselle-arrow" points="605,95 405,95 405,175"/>
-                        <polyline class="arrow vaisselle-arrow" points="605,95 405,95 405,395"/>
-                        <line class="arrow vaisselle-arrow-souille" x1="715" y1="365" x2="695" y2="365"/>
-                        <polyline class="arrow vaisselle-arrow" points="660,285 660,275 655,275 655,230"/>
-                    </g>
-                     <g id="circuit-dechets">
-                        <line class="arrow dechets-arrow-souille" x1="95" y1="125" x2="95" y2="70"/>
-                        <polyline class="arrow dechets-arrow-souille" points="285,470 285,265 175,265 175,70"/>
-                        <polyline class="arrow dechets-arrow" points="395,175 395,265"/>
-                        <polyline class="arrow dechets-arrow" points="395,395 395,265"/>
-                        <polyline class="arrow dechets-arrow" points="285,265 175,265 175,70"/>
-                        <line class="arrow dechets-arrow-souille" x1="660" y1="445" x2="660" y2="490"/>
-                    </g>
+                    <g id="circuit-personnel"><polyline class="arrow personnel-arrow-souille" points="95,210 95,135 175,135"/><polyline class="arrow personnel-arrow" points="285,135 395,135 395,175"/><path class="arrow personnel-arrow" d="M500,115 A60 60 0 1 1 499.9,115.1 Z" /><line class="arrow personnel-arrow" x1="500" y1="255" x2="500" y2="315"/><path class="arrow personnel-arrow" d="M500,335 A60 60 0 1 1 499.9,335.1 Z" /><polyline class="arrow personnel-arrow" points="395,395 395,430 285,430"/><polyline class="arrow personnel-arrow" points="595,175 605,175 605,230"/></g>
+                    <g id="circuit-denrees"><polyline class="arrow denrees-arrow-souille" points="95,210 95,340 175,340"/><polyline class="arrow denrees-arrow-souille" points="95,210 285,210 285,135"/><line class="arrow denrees-arrow-souille" x1="285" y1="380" x2="285" y2="390"/><polyline class="arrow denrees-arrow" points="385,430 395,430 395,175 "/><polyline class="arrow denrees-arrow" points="385,430 395,430 395,395 "/><polyline class="arrow denrees-arrow" points="595,175 605,175 605,220"/><polyline class="arrow denrees-arrow" points="595,395 605,395 605,240"/></g>
+                    <g id="circuit-vaisselle"><polyline class="arrow vaisselle-arrow" points="605,95 405,95 405,175"/><polyline class="arrow vaisselle-arrow" points="605,95 405,95 405,395"/><line class="arrow vaisselle-arrow-souille" x1="715" y1="365" x2="695" y2="365"/><polyline class="arrow vaisselle-arrow" points="660,285 660,275 655,275 655,230"/></g>
+                    <g id="circuit-dechets"><line class="arrow dechets-arrow-souille" x1="95" y1="125" x2="95" y2="70"/><polyline class="arrow dechets-arrow-souille" points="285,470 285,265 175,265 175,70"/><polyline class="arrow dechets-arrow" points="395,175 395,265"/><polyline class="arrow dechets-arrow" points="395,395 395,265"/><polyline class="arrow dechets-arrow" points="285,265 175,265 175,70"/><line class="arrow dechets-arrow-souille" x1="660" y1="445" x2="660" y2="490"/></g>
                 </svg>
                 <div class="svg-legend">
                     <div class="legend-item"><div class="legend-line" style="background-color: #3b82f6;"></div>Personnel Propre</div>
@@ -214,7 +229,7 @@
              <p class="text-xs text-center text-slate-500 w-full mt-2">Ce plan est un exemple simplifié. Les tracés des flèches s'inspirent des flux idéaux.</p>
         </section>
 
-        <!-- Section 4: Application Pratique - Jeu de Scénarios -->
+        <!-- Section 4: Application Pratique - Jeu de Scénarios (Contenu HTML identique) -->
         <section id="practical-game" class="learning-section">
              <h2 class="section-title"><i class="fas fa-gamepad mr-2 text-red-500"></i>Mise en Pratique : Scénarios Interactifs</h2>
             <div class="game-scenario-container content-box">
@@ -229,15 +244,11 @@
                 </div>
                 <div class="steps-container-game mb-4">
                     <h4 class="font-semibold text-slate-700 mb-2 text-center">Étapes à placer :</h4>
-                    <div class="steps-pool-game" id="steps-pool-game">
-                        {/* Les étapes seront générées dynamiquement par JS */}
-                    </div>
+                    <div class="steps-pool-game" id="steps-pool-game"></div>
                 </div>
                 <div class="timeline-game">
                     <h4 class="text-center"><i class="fas fa-stream mr-1"></i>Votre Séquence :</h4>
-                    <div class="timeline-slots-game" id="timeline-slots-game">
-                        {/* Les slots de timeline seront générés dynamiquement par JS */}
-                    </div>
+                    <div class="timeline-slots-game" id="timeline-slots-game"></div>
                 </div>
                 <div class="game-controls mt-6 text-center">
                     <button id="validate-btn-game" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"><i class="fas fa-check"></i> Valider</button>
@@ -258,8 +269,8 @@
                 </div>
             </div>
         </section>
-
-        <!-- Sections 5 à 9 (Contenu HTML identique à la version précédente) -->
+        
+        <!-- Section 5: Détail des Secteurs (Contenu HTML identique) -->
         <section id="zones-detail" class="learning-section content-box">
             <h2 class="text-2xl font-bold text-slate-800 mb-6"><i class="fas fa-door-open mr-2 text-red-500"></i>Comprendre les Zones et Secteurs</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -294,6 +305,8 @@
                  <p class="text-slate-600 text-sm">Idéalement, cuisine divisée par murs (<strong class="text-slate-700">sectorisation physique</strong>). Si ce n'est pas possible, il faut impérativement <strong class="text-slate-700">séparer les tâches dans l'espace</strong> (ex: plans de travail distincts) <strong class="text-slate-700">et/ou dans le temps</strong> (ex: nettoyer après une tâche souillée avant de commencer une tâche propre).</p>
             </div>
         </section>
+
+        <!-- Section 6: Quiz (Contenu HTML identique) -->
         <section id="quiz-section" class="learning-section">
             <h2 class="section-title"><i class="fas fa-question-circle mr-2 text-red-500"></i>Testez Vos Connaissances</h2>
             <div class="bg-white rounded-xl shadow-md overflow-hidden content-box">
@@ -305,18 +318,20 @@
                 </div>
             </div>
         </section>
-        <section id="flashcards-section" class="learning-section">
+
+        <!-- Section 7: Cartes Mémos HACCP & Hygiène -->
+         <section id="flashcards-section" class="learning-section">
             <h2 class="section-title"><i class="far fa-sticky-note mr-2 text-red-500"></i>Cartes Mémos HACCP & Hygiène</h2>
             <div class="grid md:grid-cols-3 gap-6">
-                <div class="flip-card h-64 cursor-pointer content-box !p-0 !mb-0">
+                <div class="flip-card h-64 content-box !p-0 !mb-0"> <!-- Retiré cursor-pointer, JS gère le clic -->
                     <div class="flip-card-inner h-full rounded-xl">
-                        <div class="flip-card-front bg-white p-6 rounded-xl flex flex-col items-center justify-center">
+                        <div class="flip-card-front bg-white p-6 rounded-xl"> <!-- Classes de centrage Tailwind via CSS global -->
                             <div class="bg-blue-100 p-4 rounded-full mb-4"><i class="fas fa-users text-blue-500 text-3xl"></i></div>
                             <h3 class="text-xl font-semibold text-slate-700 mb-2">Personnel</h3>
-                            <p class="text-slate-500">Cliquez pour voir les règles</p>
+                            <p class="text-slate-500 text-sm">Cliquez pour voir les règles</p>
                         </div>
                         <div class="flip-card-back bg-blue-50 p-6 rounded-xl">
-                            <h3 class="text-xl font-semibold text-blue-700 mb-3">Hygiène du Personnel</h3>
+                            <h3 class="text-xl font-semibold text-blue-700">Hygiène du Personnel</h3>
                             <ul class="text-sm text-slate-700 space-y-1">
                                 <li><i class="fas fa-check text-blue-500 mr-2"></i>Tenue professionnelle propre et complète</li>
                                 <li><i class="fas fa-check text-blue-500 mr-2"></i>Lavage des mains fréquent et correct</li>
@@ -327,15 +342,15 @@
                         </div>
                     </div>
                 </div>
-                 <div class="flip-card h-64 cursor-pointer content-box !p-0 !mb-0">
+                 <div class="flip-card h-64 content-box !p-0 !mb-0">
                     <div class="flip-card-inner h-full rounded-xl">
-                        <div class="flip-card-front bg-white p-6 rounded-xl flex flex-col items-center justify-center">
+                        <div class="flip-card-front bg-white p-6 rounded-xl">
                             <div class="bg-green-100 p-4 rounded-full mb-4"><i class="fas fa-tools text-green-500 text-3xl"></i></div>
                             <h3 class="text-xl font-semibold text-slate-700 mb-2">Matériel</h3>
-                            <p class="text-slate-500">Cliquez pour voir les règles</p>
+                            <p class="text-slate-500 text-sm">Cliquez pour voir les règles</p>
                         </div>
                         <div class="flip-card-back bg-green-50 p-6 rounded-xl">
-                            <h3 class="text-xl font-semibold text-green-700 mb-3">Hygiène du Matériel</h3>
+                            <h3 class="text-xl font-semibold text-green-700">Hygiène du Matériel</h3>
                             <ul class="text-sm text-slate-700 space-y-1">
                                 <li><i class="fas fa-check text-green-500 mr-2"></i>Nettoyage ET désinfection après chaque usage</li>
                                 <li><i class="fas fa-check text-green-500 mr-2"></i>Matériel dédié par zone (ex: planches à découper de couleurs)</li>
@@ -346,15 +361,15 @@
                         </div>
                     </div>
                 </div>
-                <div class="flip-card h-64 cursor-pointer content-box !p-0 !mb-0">
+                <div class="flip-card h-64 content-box !p-0 !mb-0">
                     <div class="flip-card-inner h-full rounded-xl">
-                        <div class="flip-card-front bg-white p-6 rounded-xl flex flex-col items-center justify-center">
+                        <div class="flip-card-front bg-white p-6 rounded-xl">
                             <div class="bg-red-100 p-4 rounded-full mb-4"><i class="fas fa-carrot text-red-500 text-3xl"></i></div>
                             <h3 class="text-xl font-semibold text-slate-700 mb-2">Denrées</h3>
-                            <p class="text-slate-500">Cliquez pour voir les règles</p>
+                            <p class="text-slate-500 text-sm">Cliquez pour voir les règles</p>
                         </div>
                         <div class="flip-card-back bg-red-50 p-6 rounded-xl">
-                            <h3 class="text-xl font-semibold text-red-700 mb-3">Hygiène des Denrées</h3>
+                            <h3 class="text-xl font-semibold text-red-700">Hygiène des Denrées</h3>
                             <ul class="text-sm text-slate-700 space-y-1">
                                 <li><i class="fas fa-check text-red-500 mr-2"></i>Contrôle à réception (température, DLC/DDM, aspect)</li>
                                 <li><i class="fas fa-check text-red-500 mr-2"></i>Respect de la chaîne du froid/chaud</li>
@@ -368,6 +383,8 @@
                 </div>
             </div>
         </section>
+
+        <!-- Section 8: FAQ (Contenu HTML identique) -->
         <section id="faq-section" class="learning-section">
             <h2 class="section-title"><i class="fas fa-question-circle mr-2 text-red-500"></i>Foire Aux Questions (FAQ)</h2>
             <div class="space-y-4 content-box">
@@ -383,6 +400,8 @@
                 <details><summary>10. Que faire si la cuisine n'a pas de murs pour séparer les zones ?</summary><p>L'idéal est la sectorisation physique. Sinon, il faut obligatoirement séparer les tâches <strong>dans l'espace</strong> (ex: plans de travail différents pour le cru et le cuit) et/ou <strong>dans le temps</strong> (ex: préparer le cru, nettoyer, puis préparer le cuit sur le même plan).</p></details>
             </div>
         </section>
+
+        <!-- Section 9: Lexique (Contenu HTML identique) -->
         <section id="lexicon-section" class="learning-section">
             <h2 class="section-title"><i class="fas fa-book-open mr-2 text-red-500"></i>Lexique des Termes Clés</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 content-box">
@@ -403,10 +422,11 @@
                 <div class="bg-slate-50 p-3 rounded-md border"><strong>Zone de Transition :</strong> Secteur reliant un circuit souillé à un propre (ex: légumerie).</div>
             </div>
         </section>
+
     </main>
 
-    <div id="zone-tooltip" class="absolute text-white text-sm p-2 rounded-md shadow-lg pointer-events-none hidden z-50 transition-opacity duration-200">
-        <strong id="tooltip-zone-name"></strong> - <span id="tooltip-zone-type"></span>
+    <div id="zone-tooltip" class="absolute text-white text-xs p-1.5 rounded-md shadow-lg pointer-events-none hidden z-50 transition-opacity duration-200">
+        <strong id="tooltip-zone-name"></strong><br><span id="tooltip-zone-type" class="text-opacity-80"></span>
     </div>
 
     <footer class="bg-slate-800 text-white py-8">
@@ -417,8 +437,14 @@
     </footer>
 
     <script>
+    // Le script JavaScript complet fourni dans la réponse précédente est ici.
+    // Il inclut:
+    // - L'interactivité du plan de cuisine SVG
+    // - L'info-bulle pour les zones du plan
+    // - L'interactivité des cartes mémos
+    // - La logique du Quiz
+    // - La logique du jeu de Scénarios Interactifs avec 12 scénarios et barre de progression
     document.addEventListener('DOMContentLoaded', () => {
-        // --- Script pour le plan de cuisine interactif ---
         const diagramButtons = document.querySelectorAll('.diagram-btn');
         const resetDiagramBtn = document.getElementById('resetDiagram');
         const kitchenPlanSVG = document.getElementById('kitchenPlan');
@@ -434,12 +460,10 @@
             console.warn("Éléments du diagramme SVG (boutons ou SVG lui-même) non trouvés. L'interactivité du diagramme sera limitée.");
         }
 
-        // --- Info-bulle pour les zones du plan ---
         const svgElementForTooltip = document.getElementById('kitchenPlan');
         const zoneTooltip = document.getElementById('zone-tooltip');
         const tooltipZoneName = document.getElementById('tooltip-zone-name');
         const tooltipZoneTypeDisplay = document.getElementById('tooltip-zone-type');
-
         const zoneTypeToLabel = { "souille": "Secteur Souillé", "propre": "Secteur Propre", "transition": "Zone de Transition" };
         const zoneTypeToColorClass = { "souille": "bg-red-600", "propre": "bg-green-600", "transition": "bg-blue-600" };
 
@@ -447,47 +471,37 @@
             svgElementForTooltip.addEventListener('mouseover', (event) => {
                 const targetRect = event.target.closest('rect[data-zone-type]');
                 if (targetRect) {
-                    const zoneName = targetRect.dataset.zoneName || "Zone";
-                    const zoneType = targetRect.dataset.zoneType;
-                    tooltipZoneName.textContent = zoneName;
-                    tooltipZoneTypeDisplay.textContent = zoneTypeToLabel[zoneType] || "Type inconnu";
-                    zoneTooltip.className = 'absolute text-white text-sm p-2 rounded-md shadow-lg pointer-events-none z-50 transition-opacity duration-200'; // Reset
+                    const zoneName = targetRect.dataset.zoneName || "Zone"; const zoneType = targetRect.dataset.zoneType;
+                    tooltipZoneName.textContent = zoneName; tooltipZoneTypeDisplay.textContent = zoneTypeToLabel[zoneType] || "Type inconnu";
+                    zoneTooltip.className = 'absolute text-white text-xs p-1.5 rounded-md shadow-lg pointer-events-none z-50 transition-opacity duration-200'; // Reset
                     zoneTooltip.classList.add(zoneTypeToColorClass[zoneType] || 'bg-gray-700');
-                    
-                    let x = event.pageX + 10; let y = event.pageY - 30; // Position au-dessus du curseur
-                    if (y < 10) y = event.pageY + 10; // Si trop haut, mettre en dessous
-                    if (x + zoneTooltip.offsetWidth > window.innerWidth - 10) x = window.innerWidth - zoneTooltip.offsetWidth - 10; // Éviter de sortir à droite
-
-                    zoneTooltip.style.left = `${x}px`; zoneTooltip.style.top = `${y}px`;
-                    zoneTooltip.classList.remove('hidden');
+                    let x = event.pageX + 15; let y = event.pageY - 35; 
+                    if (y < 10) y = event.pageY + 15; 
+                    if (x + zoneTooltip.offsetWidth +15 > window.innerWidth) x = window.innerWidth - zoneTooltip.offsetWidth - 15; 
+                    zoneTooltip.style.left = `${x}px`; zoneTooltip.style.top = `${y}px`; zoneTooltip.classList.remove('hidden');
                 }
             });
-            svgElementForTooltip.addEventListener('mousemove', (event) => {
-                const targetRect = event.target.closest('rect[data-zone-type]');
-                if (!zoneTooltip.classList.contains('hidden') && targetRect) {
-                    let x = event.pageX + 10; let y = event.pageY - 30;
-                    if (y < 10) y = event.pageY + 10;
-                    if (x + zoneTooltip.offsetWidth > window.innerWidth - 10) x = window.innerWidth - zoneTooltip.offsetWidth - 10;
-                     zoneTooltip.style.left = `${x}px`; zoneTooltip.style.top = `${y}px`;
+             svgElementForTooltip.addEventListener('mousemove', (event) => {
+                if (!zoneTooltip.classList.contains('hidden')) { // Update position only if visible
+                    let x = event.pageX + 15; let y = event.pageY - 35;
+                    if (y < 10) y = event.pageY + 15;
+                    if (x + zoneTooltip.offsetWidth + 15 > window.innerWidth) x = window.innerWidth - zoneTooltip.offsetWidth - 15;
+                    zoneTooltip.style.left = `${x}px`; zoneTooltip.style.top = `${y}px`;
                 }
             });
             svgElementForTooltip.addEventListener('mouseout', (event) => {
                 const targetRect = event.target.closest('rect[data-zone-type]');
-                 if (targetRect && (!event.relatedTarget || !targetRect.contains(event.relatedTarget))) { // S'assurer qu'on sort bien du rect
+                 if (targetRect && (!event.relatedTarget || !targetRect.contains(event.relatedTarget))) { 
                     zoneTooltip.classList.add('hidden');
+                } else if (!targetRect && !event.relatedTarget?.closest('rect[data-zone-type]')) { // Also hide if mouse moves out of SVG entirely or to a non-zone part
+                     zoneTooltip.classList.add('hidden');
                 }
             });
-        } else {
-            console.warn("Éléments pour l'info-bulle du plan de cuisine non trouvés.");
-        }
+        } else { console.warn("Éléments pour l'info-bulle du plan de cuisine non trouvés."); }
 
-        // --- Script pour les Cartes Mémos ---
-        // ... (Identique à la version précédente) ...
         const flipCards = document.querySelectorAll('.flip-card');
         flipCards.forEach(card => { card.addEventListener('click', function() { this.classList.toggle('flipped'); }); });
 
-        // --- Script pour le Quiz ---
-        // ... (Identique à la version précédente, avec 10 questions) ...
         const quizQuestions = [ { question: "Quel est l'objectif principal de la marche en avant ?", options: ["Augmenter la productivité", "Éviter les contaminations croisées", "Réduire les coûts", "Simplifier le travail"], answer: 1 }, { question: "Un légume brut arrivant du fournisseur est considéré comme:", options: ["Propre", "Souillé", "Neutre", "Décontaminé"], answer: 1 }, { question: "Où le personnel passe-t-il de 'souillé' à 'propre' ?", options: ["En cuisine", "Dans les vestiaires", "À la réception", "En salle"], answer: 1 }, { question: "La plonge où l'on lave les casseroles (plonge batterie) est un secteur:", options: ["Propre", "Souillé", "De transition", "Extérieur"], answer: 0 }, { question: "Si une cuisine n'a pas de murs pour séparer les zones, que doit-on faire ?", options: ["Ignorer la marche en avant", "Travailler plus vite", "Séparer les tâches dans l'espace et/ou le temps", "Utiliser plus de désinfectant"], answer: 2 }, { question: "Le circuit des déchets est toujours considéré comme :", options: ["Propre", "Souillé", "Neutre", "Variable"], answer: 1}, { question: "La zone de 'déconditionnement' est typiquement une zone :", options: ["Totalement propre", "Totalement souillée", "De transition", "De stockage long terme"], answer: 2}, { question: "Le personnel de service (serveurs) est considéré comme faisant partie du circuit :", options: ["Propre", "Souillé", "De préparation", "De cuisson"], answer: 1}, { question: "Quel est le risque principal évité par la marche en avant ?", options: ["Les brûlures", "Les coupures", "La contamination croisée", "Le gaspillage alimentaire"], answer: 2}, { question: "La 'marche en avant dans le temps' signifie :", options: ["Travailler uniquement le matin", "Effectuer les tâches sales puis les tâches propres après nettoyage complet", "Utiliser un chronomètre pour chaque tâche", "Préparer tous les plats en même temps"], answer: 1} ];
         const quizContainer = document.getElementById('quiz-container'); const progressBarQuiz = document.getElementById('quiz-progress'); let currentQuizQuestion = 0; let quizScore = 0;
         function startQuiz() { currentQuizQuestion = 0; quizScore = 0; if(progressBarQuiz) progressBarQuiz.style.width = '0%'; showQuizQuestion(); }
@@ -496,12 +510,10 @@
         function showQuizResults() { if (!quizContainer) return; const percentage = Math.round((quizScore / quizQuestions.length) * 100); let message = percentage >= 80 ? 'Excellent ! Vous maîtrisez bien la Marche en Avant.' : percentage >= 50 ? 'Bien ! Quelques révisions sont utiles.' : 'Revoyez attentivement les sections précédentes.'; let emoji = percentage >= 80 ? '🏆' : percentage >= 50 ? '👍' : '📚'; if(progressBarQuiz) progressBarQuiz.style.width = '100%'; quizContainer.innerHTML = `<div class="text-center py-8"><div class="text-5xl mb-4">${emoji}</div><h3 class="text-2xl font-semibold text-slate-800 mb-2">Résultats du Quiz</h3><p class="text-xl font-bold text-blue-600 mb-4">${quizScore}/${quizQuestions.length} (${percentage}%)</p><p class="text-slate-600 mb-6 max-w-md mx-auto">${message}</p><button id="restart-quiz" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition"><i class="fas fa-redo mr-2"></i>Refaire le quiz</button></div>`; quizContainer.querySelector('#restart-quiz').addEventListener('click', startQuiz); }
         if (quizContainer) { quizContainer.innerHTML = `<div class="text-center py-8"><h3 class="text-xl font-semibold text-slate-700 mb-2">Quiz sur la Marche en Avant</h3><p class="text-slate-500 mb-6">Répondez à ${quizQuestions.length} questions pour valider vos connaissances.</p><button id="start-quiz-btn" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-medium transition"><i class="fas fa-play mr-2"></i>Commencer le quiz</button></div>`; quizContainer.querySelector('#start-quiz-btn').addEventListener('click', startQuiz); }
 
-        // --- Script pour le Jeu de Scénarios ---
-        // ... (Identique à la version précédente, avec 12 scénarios et barre de progression) ...
         const gameScenarios = [ { id: 1, title: "🍅 Préparation d'une salade de tomates", description: "Ordre correct :", steps: [ { id: "reception_tom", text: "Réception tomates (carton)", order: 1 }, { id: "lavage_tom", text: "Lavage & désinfection", order: 2 }, { id: "decoupe_tom", text: "Découpe", order: 3 }, { id: "assaisonnement_tom", text: "Assaisonnement", order: 4 }, { id: "service_tom", text: "Dressage & envoi", order: 5 } ] }, { id: 2, title: "🍗 Déconditionnement Poulet Cru", description: "Ordre correct :", steps: [ { id: "reception_poulet", text: "Réception poulet cru emballé", order: 1 }, { id: "stockage_froid_poulet", text: "Stockage CF (+2°C)", order: 2 }, { id: "decond_poulet", text: "Déconditionnement (retrait emballage)", order: 3 }, { id: "prep_poulet", text: "Transfert zone prépa. viande", order: 4 } ] }, { id: 3, title: "🗑️ Évacuation des déchets de cuisine", description: "Ordre correct :", steps: [ { id: "collecte_dechets_prep", text: "Collecte déchets zone préparation", order: 1 }, { id: "transport_poubelle_couloir", text: "Transport poubelle via couloir dédié", order: 2 }, { id: "depot_local_dechet", text: "Dépôt dans local déchets extérieur", order: 3 } ] }, { id: 4, title: "🧼 Nettoyage Plan de Travail", description: "Ordre correct APRES préparation viande crue :", steps: [ { id: "debarrassage_gros", text: "Débarrasser les gros résidus", order: 1 }, { id: "nettoyage_detergent", text: "Nettoyer avec détergent", order: 2 }, { id: "rincage_eau_claire", text: "Rincer à l'eau claire", order: 3 }, { id: "desinfection_produit", text: "Appliquer désinfectant (temps de contact)", order: 4 }, { id: "rincage_final_si_besoin", text: "Rincer si désinfectant l'exige", order: 5 } ] }, { id: 5, title: "🍽️ Retour Vaisselle Sale de la Salle", description: "Ordre correct :", steps: [ { id: "arrivee_chariot_salle", text: "Arrivée chariot vaisselle sale", order: 1 }, { id: "tri_dechets_assiettes", text: "Tri et vidage des déchets d'assiettes", order: 2 }, { id: "prelavage_douchette", text: "Prélavage à la douchette", order: 3 }, { id: "passage_lave_vaisselle", text: "Passage en machine (lave-vaisselle)", order: 4 }, { id: "sechage_stockage_propre", text: "Séchage et stockage vaisselle propre", order: 5 } ] }, { id: 6, title: "👨‍🍳 Arrivée du Cuisinier", description: "Ordre correct :", steps: [ { id: "arrivee_exterieur", text: "Arrivée en tenue de ville", order: 1 }, { id: "passage_vestiaire", text: "Passage aux vestiaires", order: 2 }, { id: "changement_tenue_pro", text: "Mise de la tenue professionnelle propre", order: 3 }, { id: "lavage_mains_arrivee_poste", text: "Lavage des mains avant prise de poste", order: 4 } ] }, { id: 7, title: "🥕 Préparation Carottes Râpées", description: "Ordre correct :", steps: [ { id: "reception_carottes_vrac", text: "Réception carottes terreuses", order: 1 }, { id: "epluchage_lavage_legumerie", text: "Épluchage et lavage en légumerie", order: 2 }, { id: "transfert_zone_prep_froide", text: "Transfert vers zone prépa. froide", order: 3 }, { id: "rapage_carottes", text: "Râpage des carottes", order: 4 }, { id: "conditionnement_froid", text: "Conditionnement et stockage au froid", order: 5 } ] }, { id: 8, title: "📦 Réception Marchandises Sèches", description: "Ordre correct :", steps: [ { id: "livraison_quai", text: "Livraison cartons sur quai", order: 1 }, { id: "controle_qte_dlc", text: "Contrôle quantité et DLC", order: 2 }, { id: "transfert_reserve_seche", text: "Transfert vers réserve sèche", order: 3 }, { id: "rangement_etageres", text: "Rangement sur étagères (FIFO)", order: 4 } ] }, { id: 9, title: "🐟 Préparation Filet de Poisson", description: "Ordre correct :", steps: [ { id: "sortie_poisson_cf", text: "Sortie poisson de la chambre froide", order: 1 }, { id: "deconditionnement_poisson", text: "Déconditionnement sur plan dédié", order: 2 }, { id: "preparation_filets", text: "Levée des filets / parage", order: 3 }, { id: "cuisson_immediate_ou_stockage_froid", text: "Cuisson immédiate ou stockage froid (+film)", order: 4 } ] }, { id: 10, title: "🍰 Fin de Service Pâtisserie", description: "Ordre correct :", steps: [ { id: "debarrassage_invendus", text: "Débarrassage des invendus (gestion DLC)", order: 1 }, { id: "nettoyage_plans_travail_patisserie", text: "Nettoyage plans de travail et matériel", order: 2 }, { id: "rangement_propre", text: "Rangement du matériel propre et sec", order: 3 }, { id: "nettoyage_sol_patisserie", text: "Nettoyage du sol de la pâtisserie", order: 4 } ] }, { id: 11, title: "🥤 Service Boisson en Salle", description: "Ordre correct pour un serveur:", steps: [ {id: "prise_commande_salle", text: "Prise de commande en salle", order: 1}, {id: "passage_office_bar", text: "Passage à l'office/bar (zone de transition)", order: 2}, {id: "preparation_boisson_propre", text: "Préparation boisson (verre propre, etc.)", order: 3}, {id: "service_client_salle", text: "Service au client en salle", order: 4}]}, { id: 12, title: "🧊 Utilisation Glaçons", description: "Ordre correct :", steps: [ {id: "prise_bac_glacon_congel", text: "Prise bac à glaçons du congélateur", order: 1}, {id: "utilisation_pelle_specifique", text: "Utilisation d'une pelle à glaçons propre et dédiée", order: 2}, {id: "remplissage_verre_sans_contact", text: "Remplissage verre sans contact direct main/glaçon", order: 3}, {id: "retour_pelle_propre_ou_lavage", text: "Retour pelle à son emplacement propre (ou lavage)", order: 4}]} ];
         class MarcheEnAvantGame { constructor() { this.currentScenarioIdx = 0; this.globalScore = 0; this.playerSequence = []; this.draggedElement = null; this.scoreElement = document.getElementById('score-game'); this.stepsPool = document.getElementById('steps-pool-game'); this.timelineSlotsContainer = document.getElementById('timeline-slots-game'); this.scenarioCard = document.getElementById('scenario-card-game'); this.feedbackContainer = document.getElementById('feedback-game-container'); this.validateBtn = document.getElementById('validate-btn-game'); this.resetBtn = document.getElementById('reset-btn-game'); this.hintBtn = document.getElementById('hint-btn-game'); this.nextScenarioBtn = document.getElementById('next-scenario-btn-game'); this.scenarioProgressBar = document.getElementById('scenario-progress-bar'); this.scenarioCounterElement = document.getElementById('scenario-counter'); this.closeFeedbackBtn = document.getElementById('close-feedback-game-btn'); if(!this.stepsPool || !this.validateBtn) { console.error("Éléments du jeu de scénarios non trouvés. Jeu non initialisé."); return; } this.setupEventListeners(); this.loadScenario(); this.updateProgressBar(); }
             setupEventListeners() { this.validateBtn.addEventListener('click', () => this.validateSequence()); this.resetBtn.addEventListener('click', () => this.resetScenario()); this.hintBtn.addEventListener('click', () => this.showHint()); this.nextScenarioBtn.addEventListener('click', () => this.nextScenario()); if(this.closeFeedbackBtn) this.closeFeedbackBtn.addEventListener('click', () => this.feedbackContainer.style.display = 'none');}
-            updateProgressBar() { const percentage = (this.currentScenarioIdx / gameScenarios.length) * 100; if (this.scenarioProgressBar) { this.scenarioProgressBar.style.width = `${percentage}%`;} if (this.scenarioCounterElement) { this.scenarioCounterElement.textContent = `Scénario ${this.currentScenarioIdx + 1} / ${gameScenarios.length}`;}}
+            updateProgressBar() { const percentage = ((this.currentScenarioIdx) / gameScenarios.length) * 100; if (this.scenarioProgressBar) { this.scenarioProgressBar.style.width = `${percentage}%`; this.scenarioProgressBar.textContent = this.currentScenarioIdx > 0 ? `${Math.round(percentage)}%` : "";} if (this.scenarioCounterElement) { this.scenarioCounterElement.textContent = `Scénario ${this.currentScenarioIdx + 1} / ${gameScenarios.length}`;}}
             loadScenario() { if (this.currentScenarioIdx >= gameScenarios.length) { this.showFinalResults(); return; } this.updateProgressBar(); const scenario = gameScenarios[this.currentScenarioIdx]; this.scenarioCard.innerHTML = `<h3 class="text-lg font-semibold text-blue-800">${scenario.title}</h3><p class="text-blue-700 text-sm">${scenario.description}</p>`; const shuffledSteps = [...scenario.steps].sort(() => Math.random() - 0.5); this.stepsPool.innerHTML = ''; shuffledSteps.forEach(step => this.stepsPool.appendChild(this.createStepElement(step))); this.timelineSlotsContainer.innerHTML = ''; for (let i = 0; i < scenario.steps.length; i++) { this.timelineSlotsContainer.appendChild(this.createTimelineSlot(i + 1)); } this.playerSequence = []; this.nextScenarioBtn.style.display = 'none'; this.validateBtn.disabled = false; this.resetBtn.disabled = false; this.hintBtn.disabled = false; this.updateDisplay(); }
             createStepElement(step) { const el = document.createElement('div'); el.className = 'step-item-game'; el.textContent = step.text; el.draggable = true; el.dataset.stepId = step.id; el.dataset.order = step.order; el.addEventListener('dragstart', (e) => { this.draggedElement = el; el.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; }); el.addEventListener('dragend', () => { el.classList.remove('dragging'); this.draggedElement = null; }); return el; }
             createTimelineSlot(stepNumber) { const slot = document.createElement('div'); slot.className = 'timeline-slot-game'; slot.dataset.step = stepNumber; slot.addEventListener('dragover', (e) => { e.preventDefault(); slot.classList.add('drag-over'); }); slot.addEventListener('dragleave', () => slot.classList.remove('drag-over')); slot.addEventListener('drop', (e) => { e.preventDefault(); slot.classList.remove('drag-over'); if (this.draggedElement) this.handleDrop(slot, this.draggedElement); }); return slot; }
@@ -510,7 +522,7 @@
             showHint() { this.showFeedback(true, "💡 Indice", "Pensez au trajet logique : Réception (sale) -> Traitement (légumerie) -> Préparation (propre) -> Service (propre). Ne revenez jamais en arrière !");}
             resetScenario() { this.timelineSlotsContainer.querySelectorAll('.timeline-slot-game .step-item-game').forEach(step => { this.stepsPool.appendChild(step); }); this.playerSequence = []; this.nextScenarioBtn.style.display = 'none'; this.validateBtn.disabled = false; this.resetBtn.disabled = false; this.hintBtn.disabled = false; }
             nextScenario() { this.currentScenarioIdx++; this.loadScenario(); }
-            showFinalResults() { this.scenarioCard.innerHTML = `<h3 class="text-xl font-semibold text-green-700 text-center">🎉 Tous les scénarios terminés ! 🎉</h3><p class="text-slate-700 text-lg text-center mt-4">Votre score global est de : <strong>${this.globalScore} points</strong>.</p><p class="text-slate-600 text-center mt-2">Continuez à pratiquer !</p>`; this.stepsPool.innerHTML = ''; this.timelineSlotsContainer.innerHTML = ''; this.validateBtn.style.display = 'none'; this.resetBtn.textContent = 'Recommencer Tous les Scénarios'; const self = this; function restartAll(){ self.currentScenarioIdx = 0; self.globalScore = 0; self.validateBtn.style.display = 'inline-block'; self.resetBtn.textContent = 'Recommencer'; self.resetBtn.removeEventListener('click', restartAll); self.setupEventListeners(); self.loadScenario(); } this.resetBtn.removeEventListener('click', this.resetScenario); this.resetBtn.addEventListener('click', restartAll); this.hintBtn.style.display = 'none'; this.nextScenarioBtn.style.display = 'none'; if (this.scenarioProgressBar) this.scenarioProgressBar.style.width = `100%`; if (this.scenarioCounterElement) this.scenarioCounterElement.textContent = `Terminé ! ${gameScenarios.length}/${gameScenarios.length}`; }
+            showFinalResults() { this.scenarioCard.innerHTML = `<h3 class="text-xl font-semibold text-green-700 text-center">🎉 Tous les scénarios terminés ! 🎉</h3><p class="text-slate-700 text-lg text-center mt-4">Votre score global est de : <strong>${this.globalScore} points</strong>.</p><p class="text-slate-600 text-center mt-2">Continuez à pratiquer !</p>`; this.stepsPool.innerHTML = ''; this.timelineSlotsContainer.innerHTML = ''; this.validateBtn.style.display = 'none'; this.resetBtn.textContent = 'Recommencer Tous les Scénarios'; this.resetBtn.onclick = () => {this.currentScenarioIdx = 0; this.globalScore = 0; this.validateBtn.style.display = 'inline-block'; this.resetBtn.textContent = 'Recommencer'; this.hintBtn.style.display = 'inline-block'; this.setupEventListeners(); this.loadScenario();}; this.hintBtn.style.display = 'none'; this.nextScenarioBtn.style.display = 'none'; if (this.scenarioProgressBar) {this.scenarioProgressBar.style.width = `100%`; this.scenarioProgressBar.textContent = "100%";} if (this.scenarioCounterElement) this.scenarioCounterElement.textContent = `Terminé ! ${gameScenarios.length}/${gameScenarios.length}`; }
             showFeedback(isSuccess, title, message) { const iconEl = this.feedbackContainer.querySelector('.feedback-game-icon'); const textEl = this.feedbackContainer.querySelector('.feedback-game-text'); const explEl = this.feedbackContainer.querySelector('.feedback-game-explanation'); iconEl.textContent = isSuccess ? '🎉' : '🤔'; textEl.textContent = title; explEl.innerHTML = message.replace(/\n/g, '<br>'); this.feedbackContainer.style.display = 'flex'; }
             updateDisplay() { if(this.scoreElement) this.scoreElement.textContent = this.globalScore; }
         }
