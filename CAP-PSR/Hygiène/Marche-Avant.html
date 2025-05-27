@@ -7,38 +7,22 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* ... Styles généraux et pour les sections (inchangés) ... */
+        /* ... Styles CSS existants (inchangés, sauf si ajustements mineurs nécessaires) ... */
         .learning-section { display: block; }
-        .arrow {
-            stroke-width: 2.5;
-            marker-end: url(#arrowhead);
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out; 
-            fill: none;
-        }
+        .arrow { stroke-width: 2.5; marker-end: url(#arrowhead); opacity: 0; transition: opacity 0.3s ease-in-out; fill: none; }
         .arrow.visible { opacity: 1; }
-        .personnel-arrow { stroke: #3b82f6; }
-        .personnel-arrow-souille { stroke: #3b82f6; stroke-dasharray: 4,4; }
-        .denrees-arrow { stroke: #22c55e; }
-        .denrees-arrow-souille { stroke: #22c55e; stroke-dasharray: 4,4; }
-        .vaisselle-arrow { stroke: #f97316; }
-        .vaisselle-arrow-souille { stroke: #f97316; stroke-dasharray: 4,4; }
-        .dechets-arrow { stroke: #8b5cf6; }
-        .dechets-arrow-souille { stroke: #8b5cf6; stroke-dasharray: 4,4; }
+        .personnel-arrow { stroke: #3b82f6; } .personnel-arrow-souille { stroke: #3b82f6; stroke-dasharray: 4,4; }
+        .denrees-arrow { stroke: #22c55e; } .denrees-arrow-souille { stroke: #22c55e; stroke-dasharray: 4,4; }
+        .vaisselle-arrow { stroke: #f97316; } .vaisselle-arrow-souille { stroke: #f97316; stroke-dasharray: 4,4; }
+        .dechets-arrow { stroke: #8b5cf6; } .dechets-arrow-souille { stroke: #8b5cf6; stroke-dasharray: 4,4; }
         #kitchenPlan text { font-family: sans-serif; pointer-events: none; }
-        #kitchenPlan rect[data-zone-type]:hover { 
-            stroke: #f59e0b; 
-            stroke-width: 1.5px;
-            cursor: default;
-        }
-
+        #kitchenPlan rect[data-zone-type]:hover { stroke: #f59e0b; stroke-width: 1.5px; cursor: default; }
 
         .svg-legend { margin-top: 10px; font-size: 0.8rem; display: flex; flex-wrap: wrap; gap: 10px; gap-y-2; justify-content: center; }
         .legend-item { display: flex; align-items: center; }
         .legend-line { height: 2px; width: 25px; margin-right: 5px; }
         .legend-line-dashed { border-top-style: dashed; }
 
-        /* ... Styles pour le jeu de scénarios (inchangés) ... */
         .game-scenario-container { background: #f0f4f8; border-radius: 15px; padding: 20px; margin-top: 20px; border: 1px solid #d1d9e6; }
         .steps-pool-game { background: #e0e6ed; border-radius: 10px; padding: 15px; margin-bottom: 20px; min-height: 80px; border: 2px dashed #b0b9c6; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; }
         .step-item-game { background: linear-gradient(135deg, #42a5f5, #1e88e5); color: white; padding: 8px 12px; border-radius: 8px; cursor: grab; display: inline-block; transition: all 0.3s ease; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); text-align: center;}
@@ -57,64 +41,19 @@
         .feedback-game-icon { font-size: 2.5rem; margin-bottom: 10px; }
         .feedback-game-text { font-size: 1.2rem; font-weight: bold; margin-bottom: 8px; }
         .feedback-game-explanation { font-size: 0.9rem; color: #555; line-height: 1.4; }
-
         .scenario-progress-bar-container { width: 100%; background-color: #e0e0e0; border-radius: 0.25rem; margin-bottom: 1rem; height: 12px; overflow: hidden; }
         .scenario-progress-bar { height: 100%; width: 0%; background-color: #4caf50; border-radius: 0.25rem 0 0 0.25rem; transition: width 0.5s ease-in-out; text-align: center; color: white; font-size: 0.7rem; line-height:12px; }
 
-        /* Styles pour quiz */
         .progress-bar { transition: width 0.5s ease; }
-        
-        /* Styles pour FLIP CARDS CORRIGÉS */
-        .flip-card {
-            perspective: 1000px;
-             /* La hauteur est gérée par h-64 de Tailwind sur l'élément .flip-card */
-        }
-        .flip-card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
-        }
-        .flip-card.flipped .flip-card-inner {
-            transform: rotateY(180deg);
-        }
-        .flip-card-front, .flip-card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            -webkit-backface-visibility: hidden; /* Safari */
-            backface-visibility: hidden;
-            display: flex; /* Ajouté pour centrer le contenu */
-            flex-direction: column; /* Ajouté */
-            align-items: center; /* Ajouté */
-            justify-content: center; /* Ajouté */
-            border-radius: 0.75rem; /* rounded-xl (doit être sur les faces) */
-            /* Les paddings (p-6) sont déjà gérés par Tailwind dans le HTML */
-        }
-        .flip-card-back {
-            transform: rotateY(180deg);
-            /* Les classes de fond (bg-blue-50, etc.) sont dans le HTML */
-        }
-        /* Ajustements pour le contenu interne de la face arrière */
-        .flip-card-back > h3 {
-            margin-bottom: 0.75rem; /* Tailwind: mb-3 */
-        }
-        .flip-card-back > ul {
-            text-align: left;
-            width: 90%; /* Ajustez si nécessaire */
-            margin-left: auto; /* Pour centrer si width < 100% */
-            margin-right: auto; /* Pour centrer si width < 100% */
-            padding-left: 1rem; /* Pour l'indentation des puces */
-        }
-        .flip-card-back > ul > li {
-             font-size: 0.875rem; /* text-sm */
-        }
+        .flip-card { perspective: 1000px; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; top: 0; left: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 0.75rem; }
+        .flip-card-back { transform: rotateY(180deg); }
+        .flip-card-back > h3 { margin-bottom: 0.75rem; }
+        .flip-card-back > ul { text-align: left; width: 90%; margin-left: auto; margin-right: auto; padding-left: 1rem; }
+        .flip-card-back > ul > li { font-size: 0.875rem; }
 
-
-        /* Utilitaires */
         .section-title { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 1.5rem; text-align: center; padding-top: 2rem; border-top: 1px solid #e2e8f0; margin-top: 2.5rem; }
         .section-title:first-of-type { border-top: none; margin-top: 0; }
         .content-box { background-color: white; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1); padding: 1.5rem; margin-bottom: 3rem; }
@@ -122,10 +61,16 @@
         details summary:hover { background-color: #e2e8f0; }
         details[open] summary { background-color: #cbd5e1; }
         details p, details ul { padding: 0.75rem; border: 1px solid #e2e8f0; border-top: none; border-radius: 0 0 0.375rem 0.375rem; }
+    
+        .video-container { position: relative; padding-bottom: 56.25%; /* 16:9 aspect ratio */ height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: 0.5rem; /* rounded-lg */ }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .audio-player-container audio { width: 100%; margin-top: 0.5rem; /* mt-2 */ }
+
     </style>
 </head>
 <body class="bg-slate-100 font-sans">
     <header class="bg-red-600 text-white shadow-lg">
+        <!-- ... Header HTML ... -->
         <div class="container mx-auto px-4 py-6">
             <div class="flex flex-col sm:flex-row justify-between items-center">
                 <div class="text-center sm:text-left mb-4 sm:mb-0">
@@ -142,6 +87,66 @@
 
     <main class="container mx-auto px-4 py-8">
 
+        <!-- Section 0.0: Illustration Thématique -->
+<section id="intro-image" class="learning-section content-box">
+    <h2 class="text-2xl font-bold text-slate-800 mb-4 text-center">
+        <i class="fas fa-image mr-2 text-red-500"></i>La Marche en Avant en Cuisine
+    </h2>
+    <div class="w-full flex justify-center">
+        <img src="https://bleupourpre.fr/wp-content/uploads/sites/254/2019/09/8-3.jpg" alt="Illustration de la marche en avant en cuisine" class="rounded-lg shadow-md max-w-full h-auto">
+    </div>
+</section>
+
+        <!-- Section 0.1: Objectifs Pédagogiques -->
+        <section id="learning-objectives" class="learning-section content-box">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4"><i class="fas fa-bullseye mr-2 text-red-500"></i>Objectifs Pédagogiques de cette Formation</h2>
+            <p class="text-slate-600 mb-4">À la fin de cette formation sur la Marche en Avant, vous serez en mesure de :</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+                <div class="bg-sky-50 p-4 rounded-lg border border-sky-200">
+                    <h3 class="font-semibold text-sky-700 mb-2"><i class="fas fa-brain mr-1"></i>Savoirs (Cognitifs)</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600">
+                        <li>Définir le principe de la marche en avant et son importance.</li>
+                        <li>Identifier les circuits "propres" et "souillés".</li>
+                        <li>Expliquer son application aux flux (personnel, denrées, etc.).</li>
+                        <li>Reconnaître les différentes zones et leur rôle.</li>
+                        <li>Comprendre les risques de contamination et leur prévention.</li>
+                        <li>Citer les solutions en l'absence de sectorisation physique.</li>
+                    </ul>
+                </div>
+                <div class="bg-lime-50 p-4 rounded-lg border border-lime-200">
+                    <h3 class="font-semibold text-lime-700 mb-2"><i class="fas fa-tools mr-1"></i>Savoir-faire (Opérationnels)</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600">
+                        <li>Analyser un plan de cuisine pour les flux.</li>
+                        <li>Appliquer la marche en avant dans des scénarios pratiques.</li>
+                        <li>Organiser un poste de travail de manière hygiénique.</li>
+                        <li>Prendre des décisions pour éviter les contaminations.</li>
+                    </ul>
+                </div>
+                <div class="bg-fuchsia-50 p-4 rounded-lg border border-fuchsia-200">
+                    <h3 class="font-semibold text-fuchsia-700 mb-2"><i class="fas fa-users mr-1"></i>Savoir-être (Comportementaux)</h3>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600">
+                        <li>Adopter une vigilance constante face aux risques.</li>
+                        <li>Développer une rigueur professionnelle en hygiène.</li>
+                        <li>Comprendre sa responsabilité dans la sécurité alimentaire.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 0.2: Podcast -->
+        <section id="podcast-section" class="learning-section content-box">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4"><i class="fas fa-podcast mr-2 text-red-500"></i>Podcast : Approfondir la Marche en Avant</h2>
+            <p class="text-slate-600 mb-4">Écoutez pour renforcer votre compréhension.</p>
+            <div class="audio-player-container bg-slate-100 p-4 rounded-lg">
+                <audio controls src="https://ddeamil.github.io/e-format.github.io/CAP-PSR/Hygiène/MA.wav
+" class="w-full">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+                 <p class="text-xs text-slate-500 mt-2 text-center">(Assurez-vous que le fichier audio est accessible ou utilisez un service d'hébergement de podcast)</p>
+            </div>
+        </section>
+         <main class="container mx-auto px-4 py-8">
+
         <!-- Section 1: Introduction (Contenu HTML identique) -->
         <section id="introduction" class="learning-section content-box">
             <h2 class="text-2xl font-bold text-slate-800 mb-4"><i class="fas fa-info-circle mr-2 text-red-500"></i>Qu'est-ce que la Marche en Avant ?</h2>
@@ -151,6 +156,26 @@
                 <p class="text-yellow-700 font-medium"><i class="fas fa-exclamation-triangle mr-2"></i>Le principe clé : progresser toujours du "sale" vers le "propre", sans jamais revenir en arrière ni croiser les flux pour éviter les contaminations croisées.</p>
             </div>
         </section>
+
+      <!-- Section 0.3: Vidéo Explicative -->
+<section id="video-section" class="learning-section content-box">
+    <h2 class="text-2xl font-bold text-slate-800 mb-4">
+        <i class="fas fa-video mr-2 text-red-500"></i>Vidéo : La Marche en Avant en Action
+    </h2>
+    <p class="text-slate-600 mb-4">Visualisez le concept en pratique.</p>
+
+    <div class="video-container">
+        <iframe
+            src="https://www.youtube.com/embed/c1HgwAi6vWc"
+            title="LES CIRCUITS DE LA MARCHE-EN-AVANT EN RESTAURATION"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowfullscreen
+        ></iframe>
+    </div>
+</section>
+
+        
 
         <!-- Section 2: Terminologie (Contenu HTML identique) -->
         <section id="terminology" class="learning-section content-box">
