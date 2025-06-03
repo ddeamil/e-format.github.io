@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation Hygiène HACCP - Cuisine Professionnelle</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        /* --- Styles Généraux --- */
+        body { margin: 0; padding: 0; background-color: #f0f4f8; font-family: Arial, sans-serif; line-height: 1.6; color: #333333; }
+        
+        /* --- Styles Navigation SPA --- */
+        .spa-page { display: none; opacity: 0; transition: opacity 0.4s ease-in-out; animation: fadeInAnimation 0.4s ease-in-out; }
+        @keyframes fadeInAnimation { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .spa-page.active { display: block; opacity: 1; }
+
+        .main-page-title { color: #388E3C; font-size: 1.7em; font-weight:bold; margin-top: 10px; margin-bottom: 20px; display: flex; align-items: center; border-bottom: 1px solid #E8F5E9; padding-bottom: 10px; }
+        .main-page-title i { margin-right: 12px; color: #4CAF50; font-size: 1.1em; flex-shrink: 0; }
+        
+        /* --- Styles Cartes de Contenu --- */
+        .content-block-card { background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .content-block-card h4 { font-size: 1.4em; margin-top:0; margin-bottom: 15px; display: flex; align-items: center; color: #388E3C; }
+        .content-block-card h4 i { margin-right: 10px; font-size: 1em; flex-shrink: 0; color: #4CAF50; }
+        .content-block-card h5 { font-size: 1.1em; color: #4CAF50; margin-top: 15px; margin-bottom: 8px; font-weight: bold; }
+        .content-block-card h5 i { font-size: 0.8em; margin-right: 5px;}
+        .content-block-card ul, .content-block-card ol { padding-left: 20px; margin-bottom: 10px; }
+        .content-block-card li { margin-bottom: 8px; }
+
+        /* NOUVEAUX Styles Colonnes Objectifs inspirés de Marche-Avant.html */
+        .objectives-grid-MA {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* auto-fit pour responsivité */
+            gap: 1.5rem; /* gap-6 de Tailwind */
+        }
+        .objectives-column-MA {
+            padding: 1rem; /* p-4 */
+            border-radius: 0.5rem; /* rounded-lg */
+            border-width: 1px;
+            border-style: solid;
+        }
+        .objectives-column-MA h5 { /* Titres des colonnes */
+            font-size: 1.125rem; /* text-lg (approximatif) */
+            margin-top:0; 
+            margin-bottom: 0.75rem; /* mb-3 */
+            font-weight: 600; /* font-semibold */
+            display: flex;
+            align-items: center;
+        }
+        .objectives-column-MA h5 i {
+            margin-right: 0.5rem; 
+            font-size: 1em; /* Ajusté pour cohérence */
+        }
+        .objectives-column-MA ul {
+            list-style-type: disc;
+            list-style-position: inside;
+            padding-left: 0; 
+            font-size: 0.9rem; /* text-sm de Tailwind (approximatif) */
+            color: #374151; /* text-slate-700 (approximatif) */
+        }
+        .objectives-column-MA ul li {
+            margin-bottom: 0.35rem; /* space-y-1 (ajusté) */
+        }
+
+        .objectives-column-MA-savoirs {
+            background-color: #f0f9ff; /* bg-sky-50 */
+            border-color: #bae6fd; /* border-sky-200 */
+        }
+        .objectives-column-MA-savoirs h5 {
+            color: #0369a1; /* text-sky-700 */
+        }
+        .objectives-column-MA-savoirs h5 i { 
+            color: #4CAF50; /* Icône originale conservée */
+        }
+
+        .objectives-column-MA-savoirfaire {
+            background-color: #f7fee7; /* bg-lime-50 */
+            border-color: #d9f99d; /* border-lime-200 */
+        }
+        .objectives-column-MA-savoirfaire h5 {
+            color: #4d7c0f; /* text-lime-700 */
+        }
+        .objectives-column-MA-savoirfaire h5 i {
+            color: #5cb85c; /* Icône originale conservée */
+        }
+
+        .objectives-column-MA-savoiretre {
+            background-color: #fdf4ff; /* bg-fuchsia-50 */
+            border-color: #f5d0fe; /* border-fuchsia-200 */
+        }
+        .objectives-column-MA-savoiretre h5 {
+            color: #86198f; /* text-fuchsia-700 */
+        }
+         .objectives-column-MA-savoiretre h5 i {
+            color: #FBC02D; /* Icône originale conservée */
+        }
+        
+        /* --- Styles Blocs Thématiques Internes --- */
+        .theme-podcast { background-color: #E8F5E9; border-left: 5px solid #4CAF50; }
+        .theme-7principles { background-color: #EDF7ED; border-left: 5px solid #5cb85c; }
+        .theme-haccphygiene { background-color: #FFF9C4; border-left: 5px solid #FBC02D; }
+        .theme-prp-intro { background-color: #E8F5E9; border-left: 5px solid #4CAF50; } 
+        .theme-5m { background-color: #FFF9C4; border-left: 5px solid #FBC02D; } 
+
+        /* --- Styles Timeline Navigation --- */
+        .timeline-card { background-color: #ffffff; padding: 15px 5px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 35px; display: flex; justify-content: space-around; align-items: flex-start; }
+        .timeline-step { display: flex; flex-direction: column; align-items: center; text-align: center; text-decoration: none; color: #555; transition: transform 0.2s ease; padding:5px; border-radius: 8px; flex-basis: 0; flex-grow: 1; min-width: 60px; font-size: 0.75em; cursor:pointer;}
+        .timeline-step:hover { transform: translateY(-2px); }
+        .timeline-step-circle { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #a5d6a7; background-color: #E8F5E9; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; color: #4CAF50; transition: all 0.3s ease; pointer-events: none; }
+        .timeline-step:hover .timeline-step-circle { border-color: #388E3C; transform: scale(1.05); }
+        .timeline-step.active .timeline-step-circle { width: 45px; height: 45px; border: 3px solid #388E3C; background-color: #4CAF50; color: white; font-weight: bold; font-size:1.1em;}
+        .timeline-step.active span { color: #388E3C; font-weight: bold; }
+        .timeline-connector { width: 10px; height: 2px; background-color: #a5d6a7; margin-top: 22px; flex-grow:0.1; }
+
+        /* --- Styles Flèches Nav Bas de Page --- */
+        .nav-arrow { display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background-color: #4CAF50; color: white; border-radius: 50%; text-decoration: none; font-size: 1.3em; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: background-color 0.2s, transform 0.2s; cursor:pointer; }
+        .nav-arrow:hover { background-color: #388E3C; transform: scale(1.05); }
+        .nav-arrow.disabled { background-color: #cccccc; opacity: 0.6; cursor: not-allowed; }
+        .nav-arrow.disabled:hover { background-color: #cccccc; transform: none; }
+
+        /* --- Styles Listes Spécifiques --- */
+        .styled-list li { padding-left: 25px; position: relative; margin-bottom:10px; }
+        .styled-list li i.fa-check { position: absolute; left: 0; top: 5px; color: #4CAF50; }
+        .styled-list-ordered { list-style: none; padding-left: 0; counter-reset: list-item; }
+        .styled-list-ordered li { padding-left: 30px; position: relative; margin-bottom:10px; }
+        .styled-list-ordered li::before { content: counter(list-item) "."; position: absolute; left: 0; top: 0px; color: #4CAF50; font-weight: bold; font-size: 1em; width: 20px; text-align: right; margin-right:10px;}
+        
+        /* --- Styles FAQ (accordéon) --- */
+        .faq-item details { margin-bottom: 12px; border: 1px solid #d7e9d8; border-left: 4px solid #4CAF50; border-radius: 0 4px 4px 0; background-color: #f8f9fa; }
+        .faq-item summary { padding: 12px 15px; font-weight: bold; color: #388E3C; cursor: pointer; background-color: #E8F5E9; border-radius: 0 3px 0 0; display: flex; justify-content: space-between; align-items: center; }
+        .faq-item summary:hover { background-color: #dcedda; }
+        .faq-item details[open] summary { background-color: #c8e6c9; }
+        .faq-item .faq-answer { padding: 15px 20px; border-top: 1px solid #d7e9d8; background-color: #ffffff; }
+        .faq-item .faq-answer ul { list-style-type: disc; padding-left: 20px; margin-top: 10px;}
+        .faq-item summary::after { content: ' ▼'; font-size: 0.9em; color: #4CAF50; } 
+        .faq-item details[open] summary::after { content: ' ▲'; }
+
+        /* --- Styles Lexique --- */
+        .lexique-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
+        .lexique-item { background-color: #f8f9fa; padding: 15px; border-radius: 6px; border: 1px solid #e0e0e0; border-left: 4px solid #5cb85c; }
+        .lexique-item strong { display: block; color: #388E3C; margin-bottom: 5px; font-size: 1.05em; }
+        .lexique-item p { font-size: 0.9em; margin:0; }
+        .lexique-item ul { list-style-type: disc; padding-left: 20px; margin-top: 5px; font-size: 0.85em; }
+
+        /* --- Styles pour le Quiz --- */
+        .quiz-option-btn { display: block; width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 10px; background-color: #E8F5E9; border: 1px solid #a5d6a7; color: #388E3C; border-radius: 5px; cursor: pointer; transition: background-color 0.2s, border-color 0.2s; font-size: 1em;}
+        .quiz-option-btn:hover:not([disabled]) { background-color: #dcedda; border-color: #8fbc8f; }
+        .quiz-option-btn.selected { background-color: #c8e6c9 !important; border-color: #388E3C !important; }
+        .quiz-option-btn.correct { background-color: #5cb85c !important; border-color: #4cae4c !important; color: white !important; }
+        .quiz-option-btn.incorrect { background-color: #d9534f !important; border-color: #d43f3a !important; color: white !important; }
+        .quiz-option-btn:disabled { cursor: not-allowed; opacity: 0.7; }
+        
+        #quiz-feedback { margin-top: 15px; padding: 12px; border-radius: 5px; font-size: 0.95em; line-height:1.5; display:none; }
+        #quiz-feedback.correct-feedback { background-color: #e6ffed; border-left: 5px solid #28a745; color: #155724; }
+        #quiz-feedback.incorrect-feedback { background-color: #ffebee; border-left: 5px solid #d9534f; color: #b71c1c; }
+
+        /* Styles pour l'activité SVG Tenue Professionnelle */
+        .attire-hotspot {
+            fill: rgba(0, 169, 157, 0.3); /* Semi-transparent teal */
+            stroke: #007C73; /* Teal border */
+            stroke-width: 1.5px;
+            cursor: pointer;
+            transform-box: fill-box; 
+            transform-origin: center; 
+            transition: transform 0.15s ease-in-out, fill 0.15s ease-in-out;
+        }
+        .attire-hotspot:hover {
+            transform: scale(1.2);
+            fill: rgba(0, 169, 157, 0.75); 
+        }
+        #attire-tooltip-description p { margin-bottom: 0.25rem; }
+        #attire-tooltip-description p:last-child { margin-bottom: 0; }
+
+        /* --- Styles Responsifs pour la Timeline (NOUVEAU) --- */
+        @media (max-width: 768px) { /* Seuil général pour tablettes en mode portrait et mobiles */
+            .timeline-card {
+                overflow-x: auto; /* Permet le défilement horizontal */
+                -webkit-overflow-scrolling: touch; /* Défilement plus fluide sur iOS */
+                justify-content: flex-start; /* Aligner les étapes au début */
+                padding-right: 15px; /* Espace pour ne pas coller la barre de scroll */
+                padding-bottom: 10px; /* Espace pour la barre de scroll si visible */
+            }
+            .timeline-step {
+                flex-basis: auto; /* Laisse la largeur être déterminée par min-width */
+                flex-grow: 0; 
+                flex-shrink: 0; 
+                min-width: 70px; /* Un peu plus d'espace pour chaque étape */
+                font-size: 0.7em; /* Réduire la police du texte sous l'icône */
+            }
+            .timeline-step-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9em; /* Taille de l'icône */
+            }
+            .timeline-step.active .timeline-step-circle {
+                width: 40px;
+                height: 40px;
+                font-size: 1em;
+            }
+            .timeline-connector {
+                min-width: 15px; 
+                flex-grow: 0; /* Empêche les connecteurs de trop s'étirer/rétrécir */
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+        }
+
+        @media (max-width: 480px) { /* Seuil pour petits mobiles */
+            .timeline-step {
+                min-width: 60px; /* Encore un peu plus petit */
+            }
+            .timeline-step-circle {
+                width: 30px;
+                height: 30px;
+                font-size: 0.8em;
+            }
+            .timeline-step.active .timeline-step-circle {
+                width: 35px;
+                height: 35px;
+                font-size: 0.9em;
+            }
+            /* Optionnel : masquer le texte sous l'icône si l'espace est très limité */
+            /*
+            .timeline-step span {
+                display: none;
+            }
+            .timeline-step-circle {
+                margin-bottom: 0;
+            }
+            */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div style="height: 8px; background-color: #388E3C;"></div>
+    <header style="background-color: #ffffff; padding: 25px 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); border-bottom: 1px solid #e0e0e0;">
+        <div style="margin-bottom: 15px;"><i class="fas fa-hands-wash" style="font-size: 3.5em; color: #4CAF50; margin-bottom: 10px;"></i><h1 style="color: #388E3C; font-size: 2em; font-weight: bold; margin: 0 0 8px 0;">Hygiène Personnelle, Lavage des Mains et tenue Pro</h1><p style="font-size: 1.1em; color: #555; margin: 0 0 15px 0;">Principes HACCP Essentiels en Cuisine Professionnelle</p></div>
+        <div><span style="display: inline-block; background-color: #E8F5E9; color: #388E3C; padding: 6px 12px; border-radius: 15px; font-size: 0.85em; font-weight: bold; margin: 5px; border: 1px solid #a5d6a7;">HACCP</span><span style="display: inline-block; background-color: #E8F5E9; color: #388E3C; padding: 6px 12px; border-radius: 15px; font-size: 0.85em; font-weight: bold; margin: 5px; border: 1px solid #a5d6a7;">Sécurité Alimentaire</span></div>
+    </header>
+    <div style="margin: 0 auto; max-width: 1400px; padding: 20px; background-color: transparent;">
+
+        <nav class="timeline-card">
+            <a class="timeline-step" data-pageindex="0" title="Objectifs Pédagogiques"><div class="timeline-step-circle"><i class="fas fa-bullseye"></i></div><span>Objectifs</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="1" title="Introduction"><div class="timeline-step-circle"><i class="fas fa-info-circle"></i></div><span>Introduction</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="2" title="Comprendre l'HACCP"><div class="timeline-step-circle"><i class="fas fa-shield-alt"></i></div><span>HACCP</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="3" title="PRP - Fondations"><div class="timeline-step-circle"><i class="fas fa-tasks"></i></div><span>PRP Fond.</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="4" title="PRP - Standards d'Hygiène"><div class="timeline-step-circle"><i class="fas fa-user-shield"></i></div><span>PRP Stand.</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="5" title="Hygiène des Mains"><div class="timeline-step-circle"><i class="fas fa-hands"></i></div><span>Mains</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="6" title="FAQ"><div class="timeline-step-circle"><i class="fas fa-question-circle"></i></div><span>FAQ</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="7" title="Lexique"><div class="timeline-step-circle"><i class="fas fa-book"></i></div><span>Lexique</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="8" title="Quiz"><div class="timeline-step-circle"><i class="fas fa-graduation-cap"></i></div><span>Quiz</span></a>
+            <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="9" title="Conclusion"><div class="timeline-step-circle"><i class="fas fa-flag-checkered"></i></div><span>Conclusion</span></a>
+        </nav>
+        <div id="spa-pages-container">
+
+            <div id="page-objectifs" class="spa-page">
+                <div style="margin: 0px 0px 25px 0px; padding: 10px; background-color: #ffffff; border: 1px solid #4CAF50; border-radius: 8px; text-align: center; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                    <img src="https://ddeamil.github.io/e-format.github.io/CAP-PSR/Hygi%C3%A8ne/Hygi%C3%A8ne%20et%20HACCP%20en%20Cuisine%20Professionnelle.jpg" alt="Hygiène et HACCP en Cuisine Professionnelle" style="width: 100%; max-width: 900px; height: auto; border-radius: 5px; margin: 0 auto 5px auto; display:block;">
+                     <p style="font-size:0.9em; color: #555; margin-top: 5px;"><em>Illustration des principes d'hygiène en cuisine.</em></p>
+                </div>
+                <div class="content-block-card"> 
+                    <h2 style="font-size: 1.8rem; font-weight: bold; color: #1e293b; margin-bottom: 1rem;"><i class="fas fa-bullseye" style="margin-right: 0.75rem; color: #4CAF50;"></i>Objectifs Pédagogiques</h2>
+                    <p style="color: #4b5563; margin-bottom: 1.5rem;">À la fin de ce module, vous serez en mesure de :</p>
+                    <div class="objectives-grid-MA">
+                        <div class="objectives-column-MA objectives-column-MA-savoirs">
+                            <h5><i class="fas fa-brain"></i>Savoirs</h5>
+                            <ul><li>Expliquer l'importance de l'hygiène personnelle.</li><li>Décrire l'intégration de l'hygiène dans HACCP/PRP.</li><li>Identifier les standards de tenue professionnelle.</li><li>Reconnaître les risques et le cadre réglementaire.</li></ul>
+                        </div>
+                        <div class="objectives-column-MA objectives-column-MA-savoirfaire">
+                            <h5><i class="fas fa-tools"></i>Savoir-faire</h5>
+                            <ul><li>Appliquer la procédure de lavage des mains.</li><li>Citer les moments critiques du lavage des mains.</li></ul>
+                        </div>
+                        <div class="objectives-column-MA objectives-column-MA-savoiretre">
+                            <h5><i class="fas fa-users"></i>Savoir-être</h5>
+                            <ul><li>Adopter une vigilance constante face aux risques.</li><li>Comprendre sa responsabilité dans la sécurité alimentaire.</li></ul>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            
+            <div id="page-introduction" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-info-circle"></i>1. Introduction : L'Impératif de l'Hygiène</h2>
+                <div class="content-block-card"><p style="margin-top:0; margin-bottom: 15px;">La région Paris Île-de-France, avec sa densité exceptionnelle d'établissements de restauration, impose des standards d'hygiène alimentaire particulièrement élevés. La protection de la santé publique et la préservation de la réputation des entreprises deviennent des enjeux majeurs.</p><p style="margin-bottom: 0;">Au cœur de la démarche HACCP, l'hygiène personnelle et le lavage des mains sont des piliers fondamentaux, la première ligne de défense contre les toxi-infections alimentaires.</p></div>
+                <div class="content-block-card theme-podcast"><h4 style="color: #388E3C;"><i class="fas fa-podcast" style="color: #4CAF50;"></i>Approfondir : L'importance de l'hygiène</h4><p style="margin-bottom: 15px;">Écoutez ce court podcast pour mieux comprendre les enjeux de l'hygiène en restauration.</p>
+                <audio controls style="width: 100%; border-radius: 5px;" src="https://ddeamil.github.io/e-format.github.io/CAP-PSR/Hygi%C3%A8ne/Hygi%C3%A8ne%20et%20HACCP%20en%20Cuisine%20Professionnelle%20(1).wav">Votre navigateur ne supporte pas l'élément audio.</audio>
+                <p style="font-size: 0.85em; color: #555; margin-top: 12px;"><em>(Podcast: Hygiène et HACCP en Cuisine Professionnelle)</em></p></div>
+                <div class="content-block-card"><p style="margin-top:0; margin-bottom: 0;">Ce guide vise à fournir un cadre pratique, détaillant exigences réglementaires, procédures optimales, risques et intégration dans un Plan de Maîtrise Sanitaire (PMS) efficace.</p></div>
+            </div>
+
+            <div id="page-haccp" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-shield-alt"></i>2. Comprendre l'HACCP et l'Hygiène Personnelle</h2>
+                <div class="content-block-card"><h4 style="color: #4CAF50; margin-top:0; margin-bottom:10px;">Définition Fondamentale de l'HACCP</h4><p style="margin-bottom: 0;">L'acronyme HACCP signifie "<strong>Hazard Analysis Critical Control Point</strong>" (Analyse des Dangers et Points Critiques pour leur Maîtrise). C'est une méthode préventive pour garantir la sécurité sanitaire des aliments.</p></div>
+                <div class="content-block-card theme-7principles"><h4 style="color: #3B873E;"><i class="fas fa-list-ol" style="color: #5cb85c;"></i>Les 7 Principes de l'HACCP</h4><ol style="list-style-type: decimal; padding-left: 25px; color: #333333; font-size: 0.95em;"><li style="margin-bottom: 8px;"><strong>Analyser les dangers.</strong></li><li style="margin-bottom: 8px;"><strong>Déterminer les CCP.</strong></li><li style="margin-bottom: 8px;"><strong>Établir les limites critiques.</strong></li><li style="margin-bottom: 8px;"><strong>Établir un système de surveillance.</strong></li><li style="margin-bottom: 8px;"><strong>Établir les mesures correctives.</strong></li><li style="margin-bottom: 8px;"><strong>Établir des procédures de vérification.</strong></li><li style="margin-bottom: 0;"><strong>Établir un système documentaire.</strong></li></ol></div>
+                <div class="content-block-card theme-haccphygiene"><h4 style="color: #AD5C00;"><i class="fas fa-lightbulb" style="color: #FBC02D;"></i>Lien entre HACCP et Hygiène Personnelle</h4><p style="margin-bottom: 10px; color: #AD5C00;">L'hygiène personnelle relève majoritairement des <strong>Programmes Prérequis (PRP)</strong>, socle du système HACCP.</p><p style="margin-bottom: 10px; color: #AD5C00;">Sans PRP robustes, les CCP sont insuffisants. Le personnel est une source primaire de contamination.</p><p style="color: #AD5C00; margin-bottom: 0;">Les 7 principes HACCP structurent la gestion de ces risques. C'est un processus dynamique.</p></div>
+            </div>
+
+            <div id="page-prp-fondations" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-tasks"></i>3. PRP : Fondations (Intro & 5M)</h2>
+                <div class="content-block-card theme-prp-intro"> <h4 style="color: #388E3C;"><i class="fas fa-layer-group" style="color: #4CAF50;"></i>Les Fondations : Que sont les PRP ?</h4><p style="margin-bottom: 10px;">Avant d'identifier les CCP via HACCP, les <strong>Programmes Prérequis (PRP)</strong> doivent être établis.</p><p style="margin-bottom: 0;">Ils englobent BPH et BPF, créant l'environnement hygiénique nécessaire, focus sur le personnel.</p></div>
+                <div class="content-block-card theme-5m"> <h4 style="color: #AD5C00;"><i class="fas fa-sitemap" style="color: #FBC02D;"></i>La Méthode des "5M" : Focus sur la "Main d'œuvre"</h4><p style="margin-bottom: 10px; color: #AD5C00;">Les "5M" analysent les sources de dangers : Matière, Milieu, Main-d'œuvre, Méthode, Matériel.</p><p style="margin-bottom: 10px; color: #AD5C00;">La "<strong>Main d'œuvre</strong>" (personnel) est critique, souvent le premier vecteur de contamination (jusqu'à 80% des cas).</p><p style="color: #AD5C00; margin-bottom: 0;">Cela souligne l'importance de la formation continue et du respect de l'hygiène personnelle.</p></div>
+            </div>
+
+            <div id="page-prp-standards" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-user-shield"></i>3. PRP : Standards d'Hygiène Personnelle</h2>
+                <div class="content-block-card"> <h4 style="color: #388E3C;"><i class="fas fa-user-tie" style="color: #4CAF50;"></i>Tenue Professionnelle</h4><p style="margin-bottom: 15px;">Double rôle : protéger le personnel et agir comme barrière contre la contamination des denrées.</p><h5><i class="fas fa-caret-right"></i>Propreté et Changement</h5><p style="margin-bottom: 10px;">Propre, changée <strong>quotidiennement</strong> (+ si besoin), lavée > 60°C.</p><h5><i class="fas fa-caret-right"></i>Séparation et Vestiaires</h5><p style="margin-bottom: 10px;">Distinction ville/travail. Changement en <strong>vestiaires dédiés/propres</strong>. Kit visiteur.</p><h5><i class="fas fa-caret-right"></i>Spécificités de la Tenue</h5><ul style="list-style-type: disc;"><li><strong>Veste :</strong> Claire, fermée, résistante.</li><li><strong>Pantalon :</strong> Couvrant, résistant.</li><li><strong>Tablier :</strong> Clair, changé souvent.</li></ul>
+                <div id="interactive-attire-placeholder" style="margin: 20px 0; padding: 15px; background-color: #E8F5E9; border: 1px dashed #4CAF50; border-radius: 5px; text-align: center; color: #388E3C;">
+                    <i class="fas fa-tshirt" style="font-size: 2em; margin-bottom: 10px;"></i><br/><strong>Activité Interactive :</strong> Tenue professionnelle.
+                </div>
+                <h5><i class="fas fa-caret-right"></i>Protection Cheveux/Barbe</h5><p style="margin-bottom: 10px;"><strong>Coiffe</strong> obligatoire. Barbus : <strong>couvre-barbe</strong>.</p><h5><i class="fas fa-caret-right"></i>Chaussures</h5><p style="margin-bottom: 10px;"><strong>Chaussures dédiées</strong>, propres, antidérapantes.</p><h5><i class="fas fa-caret-right"></i>Masques</h5><p style="margin-bottom: 15px;">Peut être exigé si symptômes légers.</p><p style="font-style: italic; color: #555; font-size:0.9em; background-color: #f8f9fa; padding:10px; border-radius:4px; border-top: 2px solid #e0e0e0;">Approche scientifique. Responsabilité employeur.</p></div>
+                <div class="content-block-card"> <h4 style="color: #388E3C;"><i class="fas fa-ring" style="color: #4CAF50;"></i>Bijoux et Effets Personnels</h4><p style="margin-bottom: 10px;">Port de bijoux <strong>interdit</strong> (sauf alliance lisse). Téléphones aux vestiaires. Ongles courts, propres, <strong>sans vernis</strong>.</p></div>
+                <div class="content-block-card theme-haccphygiene"> <h4 style="color: #AD5C00;"><i class="fas fa-first-aid" style="color: #FBC02D;"></i>État de Santé et Signalement</h4><p style="margin-bottom: 10px; color: #AD5C00;">Santé du personnel déterminante.</p><h5><i class="fas fa-caret-right" style="color: #AD5C00;"></i>Exclusion si Symptômes</h5><p style="margin-bottom: 10px; color: #AD5C00;">Gastro-entérite, etc. : <strong>écartement impératif</strong>.</p><h5><i class="fas fa-caret-right" style="color: #AD5C00;"></i>Protection Blessures</h5><p style="margin-bottom: 10px; color: #AD5C00;">Nettoyées, désinfectées, protégées par <strong>pansement étanche et coloré</strong>.</p><h5><i class="fas fa-caret-right" style="color: #AD5C00;"></i>Obligation de Signalement</h5><p style="margin-bottom: 15px; color: #AD5C00;">Signalement immédiat maladie/blessure. Doit figurer au PMS.</p><p style="font-style: italic; color: #734d00; font-size:0.9em; background-color: #fffde7; padding:10px; border-radius:4px; border-top: 2px solid #F7DEA0;">Climat de confiance, matériel de secours.</p></div>
+                <div class="content-block-card"> <h4 style="color: #388E3C;"><i class="fas fa-ban" style="color: #4CAF50;"></i>Comportement Personnel : Les Interdits</h4><ul style="list-style-type: disc;"><li>Fumer, vapoter, manger, boire (hors zones/pauses).</li><li>Se toucher visage/nez/bouche/cheveux.</li><li>Goûter avec doigts/ustensile non lavé.</li><li>S'essuyer mains sur tablier. Souffler dans sachets.</li><li>Toux/éternuement : se détourner, mouchoir unique, jeter, puis laver mains.</li></ul><p style="margin-top: 15px; font-style: italic; color: #555; font-size:0.9em; background-color: #f8f9fa; padding:10px; border-radius:4px; border-top: 2px solid #e0e0e0;">"Main d'œuvre" : attention et formation continues.</p></div>
+            </div>
+
+            <div id="page-hygiene-mains" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-hands-wash"></i>4. Hygiène des Mains : Une Mesure Critique</h2>
+                <div class="content-block-card"><p style="margin-top:0;">Les mains du personnel sont l'un des principaux vecteurs de transmission des micro-organismes pathogènes en cuisine. Elles entrent en contact avec de multiples surfaces et peuvent transférer ces contaminants, provoquant des contaminations croisées.</p></div>
+                <div class="content-block-card theme-prp-intro"><h4 style="color: #388E3C;"><i class="fas fa-clock" style="color: #4CAF50;"></i>Quand se Laver les Mains?</h4><p style="margin-bottom: 15px;">Un lavage fréquent et aux moments opportuns est essentiel. Voici les situations clés :</p><ul class="styled-list"><li><i class="fas fa-check"></i>À la prise de poste / En commençant le travail.</li><li><i class="fas fa-check"></i>Après être allé aux toilettes <strong>(Impératif)</strong>.</li><li><i class="fas fa-check"></i>Après avoir manipulé des aliments crus.</li><li><i class="fas fa-check"></i>Après s'être touché le nez, la bouche, les cheveux, le visage.</li><li><i class="fas fa-check"></i>Après avoir toussé, éternué ou s'être mouché.</li><li><i class="fas fa-check"></i>Après avoir manipulé des poubelles ou des déchets.</li><li><i class="fas fa-check"></i>Après nettoyage ou manipulation de produits chimiques.</li><li><i class="fas fa-check"></i>Après avoir manipulé de l'argent.</li><li><i class="fas fa-check"></i>Après une pause.</li><li><i class="fas fa-check"></i><strong>Avant</strong> de mettre des gants et <strong>après</strong> les avoir retirés.</li><li><i class="fas fa-check"></i>Entre la manipulation d'aliments de natures différentes.</li><li><i class="fas fa-check"></i>Avant de manipuler des aliments prêts à être consommés.</li><li><i class="fas fa-check"></i>Avant de toucher des équipements propres.</li><li><i class="fas fa-check"></i>Après toute action potentiellement contaminante.</li></ul><p style="font-style: italic; color: #388E3C; margin-top:15px;">Bon sens : "À chaque action contaminante", un lavage s'impose.</p></div>
+                <div class="content-block-card"><h4 style="color: #388E3C;"><i class="fas fa-soap" style="color: #4CAF50;"></i>La Procédure Correcte de Lavage des Mains</h4><p style="margin-bottom: 10px;">Un lavage efficace suit une méthode précise. Durée de frottage : <strong>30 secondes</strong>.</p>
+                <div style="margin: 20px 0; padding: 10px; background-color: #E8F5E9; border: 1px solid #4CAF50; border-radius: 8px; text-align: center; color: #388E3C;">
+                    <img src="https://ddeamil.github.io/e-format.github.io/CAP-PSR/Hygi%C3%A8ne/procedure%20lavage%20des%20mains.jpg" alt="Procédure de lavage des mains" style="width: 100%; max-width: 600px; height: auto; border-radius: 5px; margin: 0 auto 10px auto; display: block;">
+                    <p style="font-size:0.9em; color: #555;"><em>Illustration des étapes clés du lavage des mains.</em></p>
+                </div>
+                <ol class="styled-list-ordered"><li>Se mouiller les mains (eau courante tiède).</li><li>Appliquer une dose suffisante de savon liquide bactéricide.</li><li>Frotter paume contre paume.</li><li>Frotter le dos de chaque main avec les doigts entrelacés.</li><li>Frotter paume contre paume, doigts entrelacés.</li><li>Frotter le dos des doigts emboîtés dans la paume opposée.</li><li>Frotter chaque pouce par rotation.</li><li>Frotter le bout des doigts et les ongles contre la paume opposée.</li><li>Frotter les poignets.</li><li><strong>Durée du frottage : au moins 30 secondes.</strong></li><li>Rincer abondamment (mains vers le bas).</li><li>Sécher soigneusement (serviette papier à usage unique).</li><li>Fermer le robinet (si manuel) avec la serviette usagée.</li></ol></div>
+                <div class="content-block-card theme-prp-intro"><h4 style="color: #388E3C;"><i class="fas fa-sink" style="color: #4CAF50;"></i>Postes de Lavage Dédiés</h4><p>Lavabos spécifiques, accessibles, équipés. Robinets non manuels recommandés.</p></div>
+                <div class="content-block-card"><h4 style="color: #388E3C;"><i class="fas fa-hands" style="color: #4CAF50;"></i>Séchage des Mains</h4><p style="margin-bottom: 10px;">Crucial.</p><h5><i class="fas fa-check-circle" style="color:#5cb85c;"></i>Méthodes Approuvées :</h5><ul style="list-style-type: disc;"><li>Serviettes papier.</li><li>Sèche-mains air pulsé.</li></ul><h5><i class="fas fa-times-circle" style="color:#d9534f;"></i>Pratiques Interdites :</h5><ul style="list-style-type: disc;"><li>Torchons tissu.</li><li>S'essuyer sur tablier.</li></ul></div>
+                <div class="content-block-card theme-haccphygiene"><h4 style="color: #AD5C00;"><i class="fas fa-pump-medical" style="color: #FBC02D;"></i>Gels Hydroalcooliques (SHA)</h4><p style="color: #AD5C00;">Complément, <strong>non substitut</strong> (surtout si mains sales/grasses).</p></div>
+                <div class="content-block-card"><h4 style="color: #388E3C;"><i class="fas fa-gloves" style="color: #4CAF50;"></i>Utilisation des Gants</h4><p style="margin-bottom: 10px;">Faux sentiment de sécurité.</p><h5><i class="fas fa-exclamation-triangle" style="color:#FBC02D;"></i>Pas un Substitut :</h5><p style="margin-bottom:10px;">Laver mains avant/après.</p><h5><i class="fas fa-sync-alt" style="color:#4CAF50;"></i>Changement Fréquent.</h5><h5><i class="fas fa-recycle" style="color:#d9534f;"></i>Usage Unique.</h5><p style="font-style: italic; color: #555; font-size:0.9em; background-color: #f8f9fa; padding:10px; border-radius:4px; border-top: 2px solid #e0e0e0;">Gants contaminés = transfert.</p></div>
+                <div class="content-block-card theme-haccphygiene"><h4 style="color: #AD5C00;"><i class="fas fa-exclamation-circle" style="color: #FBC02D;"></i>Erreurs Courantes</h4><ul style="color: #AD5C00; list-style-type: disc;"><li>Lavage rapide/zones oubliées.</li><li>Séchage sur torchon.</li><li>Oubli aux moments clés.</li><li>Séchage insuffisant.</li><li>Dépendance aux gants.</li></ul></div>
+            </div>
+
+            <div id="page-faq" class="spa-page">
+                 <h2 class="main-page-title"><i class="fas fa-question-circle"></i>Foire Aux Questions (FAQ)</h2>
+                 <div class="content-block-card">
+                    <p style="margin-top:0; margin-bottom:20px;">Voici les réponses aux questions fréquemment posées concernant l'hygiène personnelle en cuisine professionnelle et l'HACCP.</p>
+                    <div class="faq-item"><details><summary>Quel est le rôle principal de l'hygiène personnelle et du lavage des mains en cuisine ?</summary><div class="faq-answer"><p>L'hygiène personnelle, et notamment le lavage des mains, joue plusieurs rôles cruciaux :</p><ul><li>Elle est la <strong>première ligne de défense</strong> contre les toxi-infections alimentaires.</li><li>Elle constitue un <strong>pilier fondamental</strong> de la sécurité sanitaire.</li><li>Dans la méthode HACCP, ces pratiques s'intègrent aux <strong>Programmes Prérequis (PRP)</strong>.</li><li>Les PRP créent l'<strong>environnement hygiénique de base</strong> nécessaire à l'efficacité du système HACCP.</li><li>Elle est essentielle car le personnel est une <strong>source primaire de contamination</strong>.</li></ul></div></details></div>
+                    <div class="faq-item"><details><summary>Comment l'hygiène personnelle (tenue, comportement) est-elle intégrée aux PRP de l'HACCP ?</summary><div class="faq-answer"><p>Les Programmes Prérequis (PRP) englobent les règles d'hygiène personnelle, notamment :</p><ul><li>Le port d'une <strong>tenue professionnelle propre et adaptée</strong>, lavée à haute température (>60°C).</li><li>L'interdiction du port de <strong>bijoux</strong> (sauf alliance lisse).</li><li>L'obligation pour le personnel de <strong>signaler maladies ou blessures</strong>.</li><li>La proscription de certains <strong>comportements</strong> en zone de production.</li></ul><p>Ces règles sont documentées dans le Plan de Maîtrise Sanitaire (PMS).</p></div></details></div>
+                    <div class="faq-item"><details><summary>Quand et comment doit-on se laver les mains en cuisine professionnelle ?</summary><div class="faq-answer"><p>Le lavage des mains est impératif à des <strong>moments critiques</strong> (prise de poste, après toilettes, manipulation d'aliments crus, etc.).</p><p>La <strong>procédure correcte</strong> inclut : mouillage, savon, frottage de toutes les surfaces (mains et poignets) pendant <strong>au moins 30 secondes</strong>, rinçage et séchage soigneux.</p></div></details></div>
+                    <div class="faq-item"><details><summary>Quelles sont les exigences pour les postes de lavage des mains et l'utilisation de gants ?</summary><div class="faq-answer"><p><strong>Postes de lavage :</strong></p><ul><li>Dédiés, accessibles, équipés d'eau courante (tiède/chaude), savon liquide (distributeur), et moyens de séchage hygiéniques.</li><li>Robinets à commande non manuelle fortement recommandés.</li></ul><p><strong>Utilisation des gants :</strong></p><ul><li>Ne remplacent <strong>jamais</strong> le lavage des mains.</li><li>Lavage des mains obligatoire avant de les mettre et après les avoir retirés.</li><li>Usage unique, changés très régulièrement.</li></ul></div></details></div>
+                    <div class="faq-item"><details><summary>Quels sont les principaux risques et conséquences en cas de non-respect de l'hygiène personnelle ?</summary><div class="faq-answer"><p>Le non-respect peut causer des <strong>Toxi-Infections Alimentaires Collectives (TIAC)</strong> graves.</p><p>Les conséquences pour l'établissement incluent :</p><ul><li><strong>Sanctions légales et administratives</strong> (amendes, fermeture).</li><li><strong>Pertes financières</strong> (destruction de produits, perte de clientèle).</li><li><strong>Atteinte durable à la réputation</strong>.</li></ul></div></details></div>
+                    <div class="faq-item"><details><summary>Quel est le cadre réglementaire principal et le rôle du GBPH Restaurateur ?</summary><div class="faq-answer"><p>Le cadre s'appuie sur le <strong>"Paquet Hygiène" européen</strong> et des textes français.</p><p>Le <strong>Guide de Bonnes Pratiques d'Hygiène (GBPH) Restaurateur</strong> est un document de référence validé, fournissant des recommandations pratiques pour appliquer la réglementation et l'HACCP, et prouver sa conformité.</p></div></details></div>
+                    <div class="faq-item"><details><summary>Quelle est l'importance de la formation à l'hygiène (HACCP) pour le personnel ?</summary><div class="faq-answer"><p>Bien qu'un référent doive suivre une formation HACCP de 14h, il est crucial que <strong>tout le personnel manipulant des denrées soit formé</strong> et reçoive des rappels réguliers pour une culture de sécurité efficace.</p></div></details></div>
+                    <div class="faq-item"><details><summary>Comment le Plan de Maîtrise Sanitaire (PMS) intègre-t-il l'hygiène personnelle ?</summary><div class="faq-answer"><p>Le PMS, document obligatoire, détaille les mesures d'hygiène. L'hygiène personnelle fait partie des BPH/PRP, incluant :</p><ul><li>Règles de tenue, procédure de lavage des mains.</li><li>Gestion de la santé du personnel, plan de formation.</li></ul><p>Il contient aussi le plan HACCP et les enregistrements prouvant l'application.</p></div></details></div>
+                 </div>
+            </div>
+
+            <div id="page-lexique" class="spa-page">
+                 <h2 class="main-page-title"><i class="fas fa-book"></i>Lexique des Termes Clés</h2>
+                 <div class="content-block-card">
+                    <p style="margin-top:0; margin-bottom:25px;">Comprendre ces termes est essentiel pour maîtriser l'hygiène en cuisine professionnelle.</p>
+                    <div class="lexique-grid">
+                        <div class="lexique-item"><strong>HACCP</strong><p>Méthode préventive pour garantir la sécurité sanitaire des aliments par l'identification, l'évaluation et la maîtrise des dangers.</p></div>
+                        <div class="lexique-item"><strong>PMS</strong><p>Document obligatoire décrivant les mesures de l'établissement pour l'hygiène et la sécurité (BPH, plan HACCP, etc.).</p></div>
+                        <div class="lexique-item"><strong>PRP / BPH</strong><p>Mesures d'hygiène de base (dont hygiène personnelle) créant l'environnement propre nécessaire à l'HACCP.</p></div>
+                        <div class="lexique-item"><strong>CCP</strong><p>Étape où un contrôle est essentiel pour prévenir/éliminer/réduire un danger. Une mauvaise hygiène (PRP) peut compromettre un CCP.</p></div>
+                        <div class="lexique-item"><strong>GBPH Restaurateur</strong><p>Guide de référence avec recommandations pratiques pour appliquer la réglementation et l'HACCP.</p></div>
+                        <div class="lexique-item"><strong>TIAC</strong><p>Maladie (≥ 2 cas) liée à un même repas, souvent due à une mauvaise hygiène.</p></div>
+                        <div class="lexique-item"><strong>DDPP</strong><p>Service de l'État réalisant les contrôles sanitaires et vérifiant l'application des règles d'hygiène et du PMS.</p></div>
+                        <div class="lexique-item"><strong>Contamination Croisée</strong><p>Transfert de microbes ou dangers d'une source contaminée (mains, surface, aliment cru) à un aliment sain.</p></div>
+                        <div class="lexique-item"><strong>Lavage des Mains</strong><p>Procédure (eau, savon, frottage min. 30s, rinçage, séchage) pour éliminer microbes des mains.</p></div>
+                        <div class="lexique-item"><strong>Tenue Professionnelle</strong><p>Vêtements spécifiques (veste, pantalon, tablier, coiffe, chaussures dédiées) propres, portés en cuisine.</p></div>
+                        <div class="lexique-item"><strong>Pathogènes</strong><p>Micro-organismes dangereux (bactéries, virus) pouvant provoquer des maladies (ex: Salmonella, Norovirus).</p></div>
+                        <div class="lexique-item"><strong>Culture de Sécurité Sanitaire</strong><p>État d'esprit où toute l'équipe valorise et applique rigoureusement l'hygiène et la sécurité alimentaire.</p></div>
+                        <div class="lexique-item"><strong>SHA (Solution Hydroalcoolique)</strong><p>Produit désinfectant pour les mains, complément au lavage, sur mains propres et sèches.</p></div>
+                        <div class="lexique-item"><strong>5M (Méthode des)</strong><p>Outil d'analyse des causes de dangers (Matière, Milieu, Main-d'œuvre, Méthode, Matériel).</p></div>
+                        <div class="lexique-item"><strong>Alim'confiance</strong><p>Dispositif de transparence rendant publics les résultats des contrôles d'hygiène.</p></div>
+                    </div>
+                 </div>
+            </div>
+
+            <div id="page-quiz" class="spa-page">
+                 <h2 class="main-page-title"><i class="fas fa-graduation-cap"></i>Quiz Sommatif : Évaluez vos connaissances</h2>
+                 <div class="content-block-card" id="quiz-container-card">
+                    <div id="quiz-start-screen" style="text-align:center;">
+                        <h4 style="color: #388E3C; font-size: 1.6em; margin-bottom:10px;">Testez Vos Connaissances</h4>
+                        <p id="quiz-intro-text" style="color: #555; margin-bottom: 15px; font-size: 1.05em;">Ce quiz vous permettra de tester vos connaissances sur les bases essentielles de l'hygiène en cuisine professionnelle, un sujet crucial pour votre future carrière. Il est basé sur les informations que nous avons explorées ensemble. Prenez votre temps pour répondre.</p>
+                        <p id="quiz-score-required-text" style="font-size:0.9em; color:#777; margin-bottom:25px;">Score requis pour valider les bases : 75%</p>
+                        <button id="start-quiz-btn" style="padding: 12px 25px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#388E3C';" onmouseout="this.style.backgroundColor='#4CAF50';"><i class="fas fa-play" style="margin-right: 8px;"></i>Commencer le quiz</button>
+                    </div>
+                    <div id="quiz-question-area" style="display: none;">
+                        <div id="quiz-progress-bar-container" style="width: 100%; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 20px; height: 12px; overflow:hidden;"><div id="quiz-progress-bar" style="height: 100%; width: 0%; background-color: #4CAF50; border-radius: 4px; transition: width 0.3s ease-in-out;"></div></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;"><span id="quiz-question-counter" style="font-size: 0.9em; color: #555;"></span><span id="quiz-score" style="font-size: 0.9em; color: #4CAF50; font-weight: bold; background-color: #E8F5E9; padding: 3px 8px; border-radius: 10px;"></span></div>
+                        <h5 id="quiz-question-text" style="font-size: 1.25em; color: #333; margin-bottom: 20px; line-height:1.4;"></h5>
+                        <div id="quiz-options-container" style="display: flex; flex-direction: column; gap: 10px;"></div>
+                        <div id="quiz-feedback"></div> <button id="quiz-next-question-btn" style="display: none; margin: 20px auto 0 auto; padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 1em; cursor: pointer; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#388E3C';" onmouseout="this.style.backgroundColor='#4CAF50';">Question suivante <i class="fas fa-arrow-right" style="margin-left: 5px;"></i></button>
+                    </div>
+                    <div id="quiz-results-screen" style="display: none; text-align: center;">
+                        <h4 style="color: #388E3C; font-size: 1.6em; margin-bottom:15px;">Résultats du Quiz</h4>
+                        <div id="quiz-results-icon" style="font-size: 3.5em; margin-bottom: 15px;"></div>
+                        <p id="quiz-results-score-text" style="font-size: 1.4em; font-weight: bold; color: #4CAF50; margin-bottom: 10px;"></p>
+                        <p id="quiz-results-message" style="color: #555; margin-bottom: 30px; font-size: 1.05em;"></p>
+                        <button id="quiz-restart-btn" style="padding: 12px 25px; background-color: #4CAF50; color: white; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; transition: background-color 0.3s;" onmouseover="this.style.backgroundColor='#388E3C';" onmouseout="this.style.backgroundColor='#4CAF50';"><i class="fas fa-redo" style="margin-right: 8px;"></i>Refaire le quiz</button>
+                    </div>
+                    </div>
+                 </div>
+
+            <div id="page-conclusion" class="spa-page">
+                 <h2 class="main-page-title"><i class="fas fa-flag-checkered"></i>Conclusion : Vers une Culture de la Sécurité Sanitaire</h2>
+                 <div class="content-block-card">
+                    <p style="margin-top:0; margin-bottom:15px;">Félicitations pour avoir exploré ce module sur l'hygiène personnelle et le lavage des mains !</p>
+                    <p style="margin-bottom:15px;">La maîtrise de ces pratiques est une condition <strong>non négociable</strong> en cuisine professionnelle. Elle est essentielle pour :</p>
+                    <ul style="list-style-type: disc;"><li>Garantir la <strong>sécurité des consommateurs</strong>.</li><li>Préserver la <strong>réputation</strong> de votre établissement.</li><li>Assurer sa <strong>pérennité</strong>.</li></ul>
+                    <p style="margin-bottom:15px;">Nous avons vu l'importance de leur intégration rigoureuse au sein d'un <strong>Plan de Maîtrise Sanitaire (PMS)</strong> fondé sur les principes HACCP, la connaissance du cadre réglementaire, et la conscience des conséquences de tout manquement.</p>
+                    <p style="margin-bottom:15px;">Rappelez-vous que la <strong>responsabilité</strong> est partagée : elle incombe à la direction et à <strong>chaque membre du personnel</strong>.</p>
+                    <p style="margin-bottom:0; font-weight:bold; color:#388E3C; text-align:center; font-size:1.1em;">Cultiver une culture positive de la sécurité sanitaire, basée sur la connaissance, la rigueur et l'amélioration continue, est un investissement indispensable.</p>
+                 </div>
+            </div>
+        </div> <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eeeeee;">
+            <span id="nav-prev" class="nav-arrow"><i class="fas fa-arrow-left"></i></span>
+            <span id="nav-page-info" style="font-size: 0.9em; color: #777;">Page X / Y</span>
+            <span id="nav-next" class="nav-arrow"><i class="fas fa-arrow-right"></i></span>
+        </div>
+    </div> <footer style="background-color: #333333; color: #cccccc; padding: 30px 20px; text-align: center; margin-top: 0;">
+        <p style="margin: 0 0 5px 0;">© 2025 Formation Hygiène Professionnelle - d.de Amil | IRP</p>
+        <p style="font-size: 0.85em; color: #999999; margin: 0;">Support pédagogique. Ne remplace pas une formation certifiante.</p>
+    </footer>
+
+    <script>
+//<![CDATA[
+document.addEventListener('DOMContentLoaded', () => {
+    const spaPagesConfig = [
+        { id: 'page-objectifs',        timelineStepMatch: 0, title: "Objectifs Pédagogiques" },
+        { id: 'page-introduction',     timelineStepMatch: 1, title: "Introduction" },
+        { id: 'page-haccp',            timelineStepMatch: 2, title: "Comprendre l'HACCP" },
+        { id: 'page-prp-fondations',   timelineStepMatch: 3, title: "PRP - Fondations" },
+        { id: 'page-prp-standards',    timelineStepMatch: 4, title: "PRP - Standards d'Hygiène" },
+        { id: 'page-hygiene-mains',    timelineStepMatch: 5, title: "Hygiène des Mains" },
+        { id: 'page-faq',              timelineStepMatch: 6, title: "FAQ" },
+        { id: 'page-lexique',          timelineStepMatch: 7, title: "Lexique" },
+        { id: 'page-quiz',             timelineStepMatch: 8, title: "Quiz Sommatif" },
+        { id: 'page-conclusion',       timelineStepMatch: 9, title: "Conclusion"}
+    ];
+    let currentPageIndex = 0;
+    let score = 0;
+    let currentQuestionIndexQuiz = 0;
+
+    // Données du Quiz (30 questions basées sur votre document "LeQUIZ")
+    const quizQuestions = [
+        // Q1
+        { question: "Quel est le rôle principal de l'hygiène personnelle dans la prévention des toxi-infections alimentaires selon les sources ?", 
+          options: ["Améliorer le goût des plats.", "Être la \"première ligne de défense contre les toxi-infections alimentaires\".", "Accélérer la préparation des repas.", "Réduire l'utilisation d'uniformes."], 
+          answer: 1, 
+          feedbackCorrect: "Correct ! C'est une phrase clé ! L'hygiène personnelle est la première barrière pour éviter de rendre les clients malades.", 
+          feedback: "Incorrect. La bonne réponse était : être la \"première ligne de défense contre les toxi-infections alimentaires\". L'hygiène personnelle est la première barrière pour éviter de rendre les clients malades." 
+        },
+        // Q2
+        { question: "Dans la méthode HACCP, où se situe généralement l'hygiène personnelle ? Est-ce un CCP ou un PRP ?", 
+          options: ["C'est toujours un Point Critique pour la Maîtrise (CCP) car elle est d'une importance critique.","Elle fait partie des Programmes Prérequis (PRP) ou Bonnes Pratiques d'Hygiène (BPH).","Elle est considérée uniquement lors des actions correctives si un problème survient.","Ce n'est pas une composante formelle du système HACCP, mais relève du bon sens."], 
+          answer: 1, 
+          feedbackCorrect: "Correct ! L'hygiène personnelle est la base de l'HACCP.", 
+          feedback: "Incorrect. La bonne réponse est : Elle fait partie des Programmes Prérequis (PRP) ou Bonnes Pratiques d'Hygiène (BPH). L'hygiène personnelle est la base (le socle ou la fondation) de l'HACCP. Comprendre cette différence est essentiel." 
+        },
+        // Q3 (Reformulée pour correspondre au feedback sur "source primaire")
+        { question: "Pourquoi le personnel est-il une \"source primaire de contamination potentielle\" ?",
+          options: ["Car le personnel coûte cher à former.", "Parce que le personnel introduit facilement des microbes s'il ne suit pas les règles d'hygiène.", "Car les uniformes clairs se salissent vite.", "Si le personnel n'est pas polyvalent."],
+          answer: 1,
+          feedbackCorrect: "Correct ! C'est une responsabilité importante. Votre corps, vos mains, votre tenue peuvent être des vecteurs si les règles ne sont pas suivies.",
+          feedback: "Incorrect. La bonne réponse est : Car le personnel peut facilement introduire des micro-organismes dangereux s'il ne respecte pas les règles d'hygiène. C'est pour cela que l'hygiène personnelle est si cruciale."
+        },
+        // Q4
+        { question: "Votre tenue de travail en cuisine doit-elle être propre et réservée uniquement à la zone de travail ?",
+          options: ["Vrai","Faux"],
+          answer: 0,
+          feedbackCorrect: "Absolument. Cela évite d'apporter des contaminations de l'extérieur.",
+          feedback: "La bonne réponse est Vrai. Votre tenue de travail est une barrière physique. La porter uniquement en zone de travail et la maintenir propre évite d'apporter des contaminations de l'extérieur."
+        },
+        // Q5
+        { question: "À quelle température minimale les vêtements de travail doivent-ils être lavés pour assurer une bonne désinfection thermique ?",
+          options: ["30°C","45°C","Supérieure à 60°C","La température n'a pas d'importance si on utilise une bonne lessive."],
+          answer: 2,
+          feedbackCorrect: "Cette température est importante pour la désinfection thermique, c'est-à-dire tuer une grande partie des bactéries.",
+          feedback: "La bonne réponse est : Supérieure à 60°C. Cette température est importante pour la désinfection thermique. Un lavage à basse température ne suffit pas."
+        },
+        // Q6
+        { question: "Pourquoi est-il important d'avoir des vestiaires dédiés pour se changer avant de commencer le service ?",
+          options: ["Pour y stocker ses affaires personnelles en sécurité.", "Pour garantir une séparation stricte entre les vêtements de ville (contaminés) et la tenue de travail propre.", "Pour faire une pause discrètement.", "Pour des questions de confort."],
+          answer: 1,
+          feedbackCorrect: "C'est une règle fondamentale pour la prévention des contaminations croisées.",
+          feedback: "La bonne réponse est : Pour garantir une séparation stricte entre les vêtements de ville (potentiellement contaminés) et la tenue de travail propre. Ne jamais porter sa tenue de cuisine à l'extérieur."
+        },
+        // Q7
+        { question: "Est-il obligatoire de porter une coiffe en cuisine si vos cheveux sont courts ?",
+          options: ["Vrai, la coiffe doit recouvrir la totalité de la chevelure.","Faux, si les cheveux sont très courts et ne touchent pas le col."],
+          answer: 0,
+          feedbackCorrect: "Oui, la coiffe doit recouvrir la totalité de la chevelure pour éviter la chute de cheveux ou de pellicules.",
+          feedback: "La bonne réponse est Vrai. La coiffe doit recouvrir la totalité de la chevelure pour éviter la chute de cheveux ou de pellicules dans les aliments, même avec des cheveux courts. Un couvre-barbe est aussi recommandé si vous portez une barbe."
+        },
+        // Q8
+        { question: "Pourquoi le port de bijoux (sauf alliance lisse) est-il interdit en zone de manipulation des aliments ? (deux raisons)",
+          options: ["Risque de vol et de perte.", "Ils abritent des microbes ET peuvent tomber dans les aliments.", "Ils peuvent rayer les plans de travail ET sont démodés.", "Ils sont inconfortables ET peuvent provoquer des allergies."],
+          answer: 1,
+          feedbackCorrect: "Exact ! Ces deux raisons (microbes et risque de chute) sont primordiales.",
+          feedback: "Incorrect. Les deux raisons principales sont qu'ils peuvent <strong>abriter des micro-organismes</strong> et qu'ils présentent un <strong>risque de contamination physique</strong> s'ils tombent dans les aliments. Ils gênent aussi le lavage efficace des mains."
+        },
+        // Q9
+        { question: "Pouvez-vous garder votre téléphone portable dans la poche de votre veste de cuisine pendant le service ?",
+          options: ["Oui, pour les urgences uniquement.", "Non, il doit rester aux vestiaires.", "Oui, s'il est dans une pochette étanche.", "Oui, s'il est désinfecté régulièrement."],
+          answer: 1, 
+          feedbackCorrect: "Correct, les téléphones sont des nids à microbes et doivent rester en dehors des zones de production.",
+          feedback: "La bonne réponse est : Non, il doit rester aux vestiaires. Les téléphones portables sont considérés comme des effets personnels et sont de véritables nids à microbes ; ils ne doivent pas être introduits en zone de production."
+        },
+        // Q10
+        { question: "Pourquoi vos ongles doivent-ils être courts, propres et sans vernis en cuisine ?",
+          options: ["C'est une question de mode en cuisine.", "Pour ne pas faire de bruit en tapant sur les plans de travail.","Pour éviter qu'ils ne retiennent saletés/bactéries et que le vernis ne s'écaille dans les aliments.","Pour ne pas se casser les ongles en travaillant."],
+          answer: 2,
+          feedbackCorrect: "C'est essentiel pour l'hygiène des mains et la prévention.",
+          feedback: "La bonne réponse est : Pour éviter qu'ils ne retiennent saletés/bactéries et que le vernis ne s'écaille dans les aliments. Les ongles longs ou vernis sont des refuges pour les microbes et le vernis écaillé est un contaminant physique."
+        },
+        // Questions 11 à 30, basées sur votre document "LeQUIZ"
+        // Q11
+        { question: "Si vous avez une blessure légère à la main, que devez-vous faire avant de manipuler des aliments ?", 
+          options: ["La couvrir simplement avec un gant.", "La nettoyer, la désinfecter, et la protéger avec un pansement étanche et de couleur vive.", "Appliquer un désinfectant et laisser à l'air libre.", "Ne rien faire si elle ne saigne pas."], 
+          answer: 1, feedbackCorrect: "Correct, une protection adéquate est indispensable.", feedback: "Incorrect. La bonne réponse est : La nettoyer, la désinfecter, et la protéger avec un pansement étanche et de couleur vive. Le port d'un gant peut être nécessaire en plus. La couleur vive permet de repérer facilement le pansement s'il tombe." },
+        // Q12
+        { question: "Êtes-vous obligé de signaler à votre responsable si vous avez des symptômes de gastro-entérite ?", 
+          options: ["Non, si vous vous sentez capable de travailler.", "Oui, c'est une obligation impérative.", "Seulement si vous avez de la fièvre.", "Seulement si un collègue a les mêmes symptômes."], 
+          answer: 1, feedbackCorrect: "Correct, le signalement est crucial pour la sécurité de tous.", feedback: "Incorrect. La bonne réponse est : Oui, c'est une obligation impérative. Si vous avez une maladie transmissible, vous devez être écarté des zones de manipulation pour ne pas contaminer les aliments et les collègues." },
+        // Q13
+        { question: "Pourquoi est-il interdit de manger, boire ou mâcher du chewing-gum dans les zones de production alimentaire ?", 
+          options: ["Cela donne une mauvaise image de l'établissement.", "Ces actions augmentent le risque de contamination des aliments par des projections de salive ou des particules.", "Cela peut tacher l'uniforme de travail.", "C'est pour éviter les bruits gênants pour les collègues."], 
+          answer: 1, feedbackCorrect: "Correct, la salive contient de nombreux microbes.", feedback: "Incorrect. La bonne réponse est : Ces actions augmentent le risque de contamination des aliments par des projections de salive (qui contient des bactéries) ou des particules alimentaires. Manger, boire ou fumer doit se faire en dehors des zones de production dans des espaces dédiés." },
+        // Q14
+        { question: "Que devez-vous faire immédiatement si vous toussez ou éternuez en cuisine, même si vous vous détournez des aliments ?", 
+          options: ["Vous excuser poliment et continuer votre tâche.", "Utiliser votre main pour couvrir votre bouche, puis l'essuyer sur votre tablier.", "Vous détourner des aliments, utiliser un mouchoir en papier à usage unique, le jeter immédiatement, PUIS vous laver les mains soigneusement.", "Prendre une pastille pour la gorge pour éviter de recommencer."], 
+          answer: 2, feedbackCorrect: "Correct, la séquence complète est importante pour éviter la contamination.", feedback: "Incorrect. La bonne réponse est : Vous détourner des aliments, utiliser un mouchoir en papier à usage unique, le jeter immédiatement, PUIS vous laver les mains soigneusement. Même en se détournant, des micro-organismes peuvent être projetés ou se déposer sur vos mains." },
+        // Q15
+        { question: "Pourquoi dit-on que les mains sont le \"principal vecteur de transmission des micro-organismes pathogènes\" ?", 
+          options: ["Parce qu'elles sont la partie du corps la plus souvent découverte.", "Parce qu'elles sont constamment en contact avec des surfaces diverses (aliments, corps, équipements) et peuvent facilement transférer des micro-organismes d'un endroit à un autre.", "Parce qu'elles sont plus difficiles à nettoyer que les ustensiles de cuisine.", "C'est une expression courante, mais les pieds sont en réalité plus sales."], 
+          answer: 1, feedbackCorrect: "Correct, le contact permanent est le risque principal de transfert de microbes.", feedback: "Incorrect. La bonne réponse est : Parce qu'elles sont constamment en contact avec des surfaces diverses (aliments, corps, équipements) et peuvent facilement transférer des micro-organismes d'un endroit à un autre. C'est pour cette raison fondamentale que le lavage des mains est la mesure d'hygiène la plus importante." },
+        // Q16
+        { question: "Citez au moins trois moments cruciaux où vous devez absolument vous laver les mains en cuisine.", 
+          options: ["Avant chaque repas, après chaque sieste, avant de rentrer chez soi.", "Après être allé aux toilettes, après avoir manipulé des aliments crus, avant de manipuler des aliments prêts à être consommés.", "Après avoir salué un collègue, avant de commencer une nouvelle recette, après avoir aiguisé un couteau.", "Avant de prendre sa pause, pendant le nettoyage des sols, après avoir bu de l'eau."], 
+          answer: 1, feedbackCorrect: "Très bien ! Ce sont des moments critiques où le risque de contamination est élevé.", feedback: "Incorrect. La bonne réponse est : Après être allé aux toilettes, après avoir manipulé des aliments crus, avant de manipuler des aliments prêts à être consommés. D'autres moments cruciaux incluent : après avoir touché son corps/vêtements, après avoir manipulé des déchets/argent, après une pause, avant de mettre des gants, après avoir retiré des gants, entre différentes tâches, à chaque action potentiellement contaminante." },
+        // Q17
+        { question: "Est-il nécessaire de se laver les mains avant de mettre des gants ?", 
+          options: ["Oui, toujours.", "Non, les gants protègent de toute façon.", "Seulement si les mains sont très sales.", "Uniquement si on manipule des produits allergènes."], 
+          answer: 0, feedbackCorrect: "Absolument ! Pour ne pas contaminer l'intérieur des gants.", feedback: "Incorrect. La bonne réponse est Oui, toujours. Les mains doivent être propres avant de mettre des gants pour ne pas enfermer des bactéries et les faire proliférer, ou contaminer l'intérieur du gant." },
+        // Q18
+        { question: "Quelle est la durée minimale recommandée pour le frottage des mains avec du savon lors d'un lavage efficace, selon la meilleure pratique mentionnée dans les sources ?", 
+          options: ["15 secondes", "Au moins 30 secondes", "45 secondes", "Une minute si les mains sont très sales"], 
+          answer: 1, feedbackCorrect: "Le temps est crucial pour que le savon agisse et que le frottage mécanique élimine les micro-organismes.", feedback: "Incorrect. La bonne réponse est : Au moins 30 secondes. Le temps est crucial pour que le savon agisse et que le frottage mécanique élimine les micro-organismes. Certaines sources acceptent 20 secondes minimum, mais 30 secondes est la durée recommandée pour une meilleure efficacité." },
+        // Q19
+        { question: "Quel type de savon est spécifiquement recommandé pour le lavage des mains en cuisine professionnelle ?", 
+          options: ["Savon en pain parfumé", "Savon liquide doux pour le corps", "Savon liquide bactéricide ou antibactérien", "Liquide vaisselle concentré"], 
+          answer: 2, feedbackCorrect: "Ce type de savon aide à tuer ou inhiber les bactéries.", feedback: "Incorrect. La bonne réponse est : Savon liquide bactéricide ou antibactérien. Ce type de savon contient des agents qui complètent l'action mécanique du frottage pour éliminer ou neutraliser les micro-organismes présents sur les mains." },
+        // Q20
+        { question: "Pourquoi l'étape du séchage des mains est-elle aussi importante que le lavage lui-même ?", 
+          options: ["Pour éviter de laisser des traces d'eau.", "Car les mains humides favorisent la prolifération et la dissémination des bactéries.", "Pour économiser les serviettes.", "Pour avoir les mains douces."], 
+          answer: 1, feedbackCorrect: "Le séchage complet empêche la recontamination et la dissémination des microbes.", feedback: "Incorrect. La bonne réponse est : Car les mains humides favorisent la prolifération et la dissémination des bactéries. Des mains mal séchées peuvent recontaminer rapidement les surfaces ou les aliments. Le séchage complet est une étape non négociable." },
+        // Q21
+        { question: "Quels sont les moyens de séchage des mains considérés comme hygiéniques et recommandés en cuisine ? Citez-en au moins un.", 
+          options: ["Le torchon à vaisselle propre.", "Laisser sécher à l'air ambiant.", "Serviettes en papier à usage unique.", "Son propre tablier de cuisine."], 
+          answer: 2, feedbackCorrect: "L'usage unique est clé pour l'hygiène.", feedback: "Incorrect. La bonne réponse est : Serviettes en papier à usage unique. Les sèche-mains à air pulsé approuvés sont aussi une option. Ces méthodes garantissent qu'on ne recontamine pas ses mains propres pendant le séchage." },
+        // Q22
+        { question: "Est-il acceptable d'utiliser le même torchon en tissu pour s'essuyer les mains et les ustensiles propres ?", 
+          options: ["Oui, s'il est lavé tous les jours.", "Non, c'est formellement interdit.", "Uniquement pour les ustensiles en inox.", "Seulement en fin de service."], 
+          answer: 1, feedbackCorrect: "Les torchons sont des vecteurs majeurs de contamination croisée.", feedback: "Incorrect. La bonne réponse est Non. C'est formellement interdit ! Les torchons en tissu sont de véritables nids à microbes et constituent un risque élevé de contamination croisée entre les mains, les surfaces et les ustensiles/aliments." },
+        // Q23
+        { question: "Les gants à usage unique remplacent-ils un lavage de mains rigoureux ?", 
+          options: ["Oui, c'est leur fonction principale.", "Non, jamais.", "Oui, si on les change après chaque aliment manipulé.", "Seulement si les mains ne sont pas visiblement sales au départ."], 
+          answer: 1, feedbackCorrect: "Attention ! Les gants sont un complément, pas un substitut au lavage des mains.", feedback: "Incorrect. La bonne réponse est Non, jamais. Les gants ne remplacent pas le lavage des mains. Les mains doivent être lavées avant et après le port de gants. Les gants peuvent facilement se souiller et devenir eux-mêmes des vecteurs s'ils ne sont pas changés très fréquemment." },
+        // Q24
+        { question: "À quelle fréquence minimale devez-vous changer de gants si vous les utilisez de manière continue pour une même tâche ?", 
+          options: ["Toutes les 4 heures.", "Au minimum toutes les deux heures.", "Seulement s'ils sont troués.", "Une fois par service."], 
+          answer: 1, feedbackCorrect: "Un changement fréquent est essentiel, même pour une tâche continue.", feedback: "Incorrect. La bonne réponse est : Au minimum toutes les deux heures. Les gants s'usent et accumulent des bactéries avec le temps. Un changement très régulier est indispensable, même pour une même tâche, et plus souvent si vous changez de tâche, s'ils sont souillés ou déchirés." },
+        // Q25
+        { question: "Les gels hydroalcooliques peuvent-ils remplacer un lavage des mains à l'eau et au savon sur des mains visiblement sales ?", 
+          options: ["Oui, ils sont spécialement conçus pour cela.", "Non, leur efficacité est très limitée dans ces conditions.", "Oui, si on en applique une double dose.", "Seulement s'ils sont parfumés."], 
+          answer: 1, feedbackCorrect: "Les gels sont un complément sur mains propres, pas un substitut au lavage pour les souillures.", feedback: "Incorrect. La bonne réponse est Non. Sur des mains visiblement sales ou grasses, l'efficacité des gels hydroalcooliques est <strong>très limitée</strong>. Ils sont conçus pour être utilisés sur des mains propres et sèches, en complément du lavage, pas en remplacement." },
+        // Q26
+        { question: "Citez deux exemples de maladies (causées par des pathogènes) qui peuvent être transmises par de mauvaises pratiques d'hygiène personnelle, notamment des mains mal lavées.", 
+          options: ["Le rhume des foins et l'eczéma.", "Salmonellose et infections à Norovirus.", "L'hypertension et le diabète.", "La myopie et l'otite."], 
+          answer: 1, feedbackCorrect: "Ces pathogènes sont fréquemment associés à une mauvaise hygiène en cuisine.", feedback: "La bonne réponse est : Salmonellose et infections à Norovirus. Ces pathogènes, ainsi que Staphylococcus aureus, E. coli, et Listeria, sont fréquemment associés à une hygiène personnelle insuffisante et peuvent causer des maladies graves." },
+        // Q27
+        { question: "Qu'est-ce qu'une TIAC et quel est son lien avec l'hygiène personnelle ?", 
+          options: ["Une Très Importante Action Commerciale ; elle n'a pas de lien avec l'hygiène.", "Une Toxi-Infection Alimentaire Collective ; une mauvaise hygiène personnelle en est une cause majeure.", "Un Test Interne d'Aptitude Culinaire ; il évalue les compétences du personnel.", "Une Taxe sur les Ingrédients Alimentaires Communautaires ; elle finance les contrôles sanitaires."], 
+          answer: 1, feedbackCorrect: "Comprendre ce terme est vital pour appréhender les conséquences d'un manquement.", feedback: "La bonne réponse est : Une Toxi-Infection Alimentaire Collective ; une mauvaise hygiène personnelle en est une cause majeure. Une TIAC se produit quand au moins deux personnes tombent malades après avoir consommé le même repas contaminé." },
+        // Q28
+        { question: "Quel est le nom du document obligatoire pour chaque établissement de restauration qui décrit toutes les mesures d'hygiène et de sécurité, y compris les règles d'hygiène personnelle ?", 
+          options: ["Le Cahier de Recettes de l'établissement.","Le Plan de Maîtrise Sanitaire (PMS).","Le Contrat d'Assurance Multirisque Professionnelle.","Le Menu détaillé avec la liste des allergènes."], 
+          answer: 1, feedbackCorrect: "Le PMS est le document de référence de l'établissement pour la sécurité sanitaire.", feedback: "La bonne réponse est : Le Plan de Maîtrise Sanitaire (PMS). C'est un document obligatoire et spécifique à chaque établissement qui détaille toutes les mesures pour assurer la sécurité des aliments, incluant les Bonnes Pratiques d'Hygiène comme l'hygiène personnelle, le plan HACCP, la traçabilité, etc." },
+        // Q29
+        { question: "Qu'est-ce que le GBPH Restaurateur et quel est son rôle pour les professionnels de la restauration ?", 
+          options: ["Un classement des meilleurs guides gastronomiques.","Un Guide de Bonnes Pratiques d'Hygiène qui aide à appliquer la réglementation et l'HACCP.","Un logiciel de gestion des commandes et des stocks.","Une certification obligatoire pour ouvrir un restaurant."], 
+          answer: 1, feedbackCorrect: "Le GBPH est un outil précieux pour la mise en conformité pratique.", feedback: "La bonne réponse est : Un Guide de Bonnes Pratiques d'Hygiène qui aide à appliquer la réglementation et l'HACCP. Ce guide, validé par les autorités, fournit des recommandations pratiques et sert de référence pour prouver sa conformité lors des contrôles." },
+        // Q30
+        { question: "Selon les sources, la formation à l'hygiène (HACCP) est-elle uniquement une obligation légale pour une personne, ou est-ce important que tout le personnel soit formé ?", 
+          options: ["Seul le responsable de l'établissement doit être formé.","Il est important que tout le personnel manipulant des denrées soit formé et sensibilisé régulièrement.","La formation n'est qu'une formalité administrative sans impact réel.","Les employés avec plusieurs années d'expérience n'ont pas besoin de cette formation."], 
+          answer: 1, feedbackCorrect: "La sécurité alimentaire est l'affaire de toute l'équipe.", feedback: "La bonne réponse est : Il est important que tout le personnel manipulant des denrées soit formé et sensibilisé régulièrement. Bien que la loi exige un référent formé, une véritable culture de sécurité sanitaire implique la formation continue et la sensibilisation de TOUT le personnel pour garantir des pratiques cohérentes et efficaces." }
+    ];
+    const totalQuestionsQuiz = quizQuestions.length; 
+
+    // --- Références aux éléments DOM (inchangées) ---
+    const pageElements = document.querySelectorAll('.spa-page');
+    const timelineStepElements = document.querySelectorAll('.timeline-card .timeline-step');
+    const navPrev = document.getElementById('nav-prev');
+    const navNext = document.getElementById('nav-next');
+    const navPageInfo = document.getElementById('nav-page-info');
+    const quizStartScreen = document.getElementById('quiz-start-screen');
+    const quizQuestionArea = document.getElementById('quiz-question-area');
+    const quizResultsScreen = document.getElementById('quiz-results-screen');
+    const startQuizBtn = document.getElementById('start-quiz-btn');
+    const quizQuestionText = document.getElementById('quiz-question-text');
+    const quizOptionsContainer = document.getElementById('quiz-options-container');
+    const quizFeedback = document.getElementById('quiz-feedback');
+    const quizNextQuestionBtn = document.getElementById('quiz-next-question-btn');
+    const quizQuestionCounter = document.getElementById('quiz-question-counter');
+    const quizScoreDisplay = document.getElementById('quiz-score');
+    const quizProgressBar = document.getElementById('quiz-progress-bar');
+    const quizResultsScoreText = document.getElementById('quiz-results-score-text');
+    const quizResultsMessage = document.getElementById('quiz-results-message');
+    const quizResultsIcon = document.getElementById('quiz-results-icon');
+    const quizRestartBtn = document.getElementById('quiz-restart-btn');
+    const quizIntroText = document.getElementById('quiz-intro-text');
+    const quizScoreRequiredText = document.getElementById('quiz-score-required-text');
+
+
+    // --- START: SVG Tenue Professionnelle ---
+    const attireAnnotations = [
+      { id: 'coiffe', title: 'COIFFE', descriptionLines: ['une toque, calot,', 'charlotte, casquette ou', 'un foulard afin d’éviter', 'aux cheveux de tomber', 'dans les aliments.'], hotspot: { x: 230, y: 90 } },
+      { id: 'tour_de_cou', title: 'TOUR DE COU', descriptionLines: ['permet d’absorber la', 'transpiration et limite', 'l’usure des cols de chemise.'], hotspot: { x: 275, y: 185 } },
+      { id: 'tablier', title: 'TABLIER', descriptionLines: ['Avec ou sans bavette', 'sert à protéger le', 'pantalon et le bas du', 'corps des salissures', 'et brûlures.', 'De préférence en coton.'], hotspot: { x: 275, y: 393 } },
+      { id: 'veste', title: 'VESTE', descriptionLines: ['De préférence: Long', 'et en coton, pour', 'éviter les brûlures et', 'pour pouvoir être', 'lavée à 60°C. Mais un', 'T-shirt est toléré.'], hotspot: { x: 330, y: 250 } },
+      { id: 'pantalon', title: 'PANTALON', descriptionLines: ['De préférence longue', 'et en coton pour éviter', 'les brûlures et pour', 'pouvoir être lavé à 60°C.'], hotspot: { x: 315, y: 530 } },
+      { id: 'chaussures', title: 'CHAUSSURES DE SÉCURITÉ', descriptionLines: ['Chaussures fermés préférable en cuir sans lacets à bout coqué et', 'semelle antidérapante. Evitent les chutes et brûlures.'], hotspot: { x: 275, y: 635 } },
+    ];
+
+    const interactiveAttireHTML = `
+    <div id="interactive-attire-container" style="position: relative; width: 100%; margin: 20px 0;">
+        <svg id="kitchen-attire-svg" viewBox="0 0 550 750" xmlns="http://www.w3.org/2000/svg" style="width: 100%; height: auto; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));" aria-labelledby="svgTitle-attire svgDesc-attire" role="img">
+            <title id="svgTitle-attire">Illustration de la tenue d'hygiène et sécurité en cuisine</title>
+            <desc id="svgDesc-attire">Un chef cuisinier illustré avec des annotations décrivant les différents éléments de sa tenue et leur importance pour l'hygiène et la sécurité. Les éléments incluent la coiffe, le tour de cou, la veste, le tablier, le pantalon et les chaussures de sécurité. Interagissez avec les points sur l'image pour en savoir plus.</desc>
+            <g id="chef">
+              <circle cx="275" cy="135" r="35" fill="#7B5D54" /> <path d="M260 170 C 260 190, 290 190, 290 170 Z" fill="#7B5D54" /> <path d="M180 200 L 210 400 L 200 410 L 150 220 Z" fill="#7B5D54" /> <path d="M370 200 L 340 400 L 350 410 L 400 220 Z" fill="#7B5D54" /> <ellipse cx="160" cy="220" rx="25" ry="15" fill="#7B5D54" transform="rotate(-20 160 220)" /> <ellipse cx="390" cy="220" rx="25" ry="15" fill="#7B5D54" transform="rotate(20 390 220)" />
+              <path d="M230 105 Q 230 70, 275 70 Q 320 70, 320 105 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" /> <rect x="240" y="100" width="70" height="15" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" /> <line x1="250" y1="75" x2="250" y2="100" stroke="#cccccc" stroke-width="1" /> <line x1="275" y1="72" x2="275" y2="100" stroke="#cccccc" stroke-width="1" /> <line x1="300" y1="75" x2="300" y2="100" stroke="#cccccc" stroke-width="1" />
+              <path d="M240 110 Q 275 120, 310 110 C 305 120, 280 125, 245 120 Z" fill="#1A1A1A" />
+              <circle cx="265" cy="130" r="3" fill="#1A1A1A" /> <circle cx="285" cy="130" r="3" fill="#1A1A1A" /> <path d="M270 145 Q 275 150, 280 145" fill="none" stroke="#1A1A1A" stroke-width="1.5" /> <line x1="260" y1="120" x2="245" y2="115" stroke="#1A1A1A" stroke-width="1" /> <line x1="290" y1="120" x2="305" y2="115" stroke="#1A1A1A" stroke-width="1" />
+              <path d="M265 175 Q 275 190, 285 175 L 300 185 L 275 195 L 250 185 Z" fill="#00A99D" />
+              <rect x="225" y="350" width="45" height="250" fill="#00A99D" /> <rect x="280" y="350" width="45" height="250" fill="#00A99D" /> <line x1="275" y1="350" x2="275" y2="595" stroke="#007C73" stroke-width="1" />
+              <path d="M210 180 L 210 350 L 340 350 L 340 180 Q 300 200, 275 180 Q 250 200, 210 180 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" /> <path d="M180 200 L 210 200 L 210 280 L 190 270 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.5"/> <path d="M370 200 L 340 200 L 340 280 L 360 270 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.5"/> <path d="M250 180 Q 275 190, 300 180 L 310 190 L 275 210 L 240 190 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" />
+              <circle cx="265" cy="230" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="285" cy="230" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="265" cy="260" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="285" cy="260" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="265" cy="290" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="285" cy="290" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="265" cy="320" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" /> <circle cx="285" cy="320" r="5" fill="#FFFFFF" stroke="#333333" stroke-width="1" />
+              <path d="M220 330 L 220 455 L 330 455 L 330 330 Z" fill="#FFFFFF" stroke="#333333" stroke-width="1.5" /> <line x1="220" y1="340" x2="330" y2="340" stroke="#cccccc" stroke-width="1" />
+              <path d="M210 600 Q 230 590, 250 600 L 245 620 L 205 620 Z" fill="#00A99D" stroke="#007C73" stroke-width="1.5"/> <path d="M300 600 Q 320 590, 340 600 L 335 620 L 295 620 Z" fill="#00A99D" stroke="#007C73" stroke-width="1.5"/> <rect x="205" y="618" width="40" height="5" fill="#007C73" /> <rect x="295" y="618" width="40" height="5" fill="#007C73" />
+            </g>
+            <g id="attire-hotspots"></g>
+        </svg>
+        <div id="attire-tooltip" style="position: absolute; display: none; background-color: #2d3748; color: white; padding: 1rem; border-radius: 0.75rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05); max-width: 16rem; z-index: 50; transition: opacity 0.2s ease-in-out; pointer-events: none; opacity: 0;">
+            <h4 id="attire-tooltip-title" style="font-weight: bold; color: #34d399; font-size: 1.125rem; margin-bottom: 0.5rem;"></h4>
+            <div id="attire-tooltip-description"></div>
+        </div>
+    </div>`;
+    
+    function initAttireSVG() {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const container = document.getElementById('interactive-attire-container');
+        const svgElement = document.getElementById('kitchen-attire-svg');
+        const tooltip = document.getElementById('attire-tooltip');
+        const tooltipTitle = document.getElementById('attire-tooltip-title');
+        const tooltipDescription = document.getElementById('attire-tooltip-description');
+        const hotspotsGroup = document.getElementById('attire-hotspots');
+
+        if (!container || !svgElement || !tooltip || !tooltipTitle || !tooltipDescription || !hotspotsGroup) {
+            // console.error("Attire SVG interactive elements not found."); // Keep console quiet for production
+            return;
+        }
+
+        attireAnnotations.forEach(ann => {
+            const circle = document.createElementNS(svgNS, "circle");
+            circle.setAttribute("id", `hotspot-${ann.id}`);
+            circle.setAttribute("class", "attire-hotspot");
+            circle.setAttribute("cx", ann.hotspot.x.toString());
+            circle.setAttribute("cy", ann.hotspot.y.toString());
+            circle.setAttribute("r", "10");
+            
+            circle.addEventListener('mouseenter', (event) => {
+                tooltipTitle.textContent = ann.title;
+                tooltipDescription.innerHTML = ann.descriptionLines.map(line => `<p style="font-size: 0.875rem; color: #e2e8f0; margin-bottom: 0.25rem;">${line}</p>`).join('');
+                
+                const containerRect = container.getBoundingClientRect();
+                
+                let left = event.clientX - containerRect.left + 15;
+                let top = event.clientY - containerRect.top + 15;
+
+                tooltip.style.display = 'block'; 
+                const tooltipRect = tooltip.getBoundingClientRect();
+
+                if (left + tooltipRect.width > containerRect.width) {
+                    left = event.clientX - containerRect.left - tooltipRect.width - 15;
+                }
+                if (top + tooltipRect.height > containerRect.height) {
+                    top = event.clientY - containerRect.top - tooltipRect.height - 15;
+                }
+                if (top < 0) { top = 10; } // Ensure tooltip is not cut off at the top
+                if (left < 0) { left = 10; } // Ensure tooltip is not cut off at the left
+
+                tooltip.style.left = `${left}px`;
+                tooltip.style.top = `${top}px`;
+                tooltip.style.opacity = '1';
+                circle.setAttribute('aria-describedby', 'attire-tooltip');
+            });
+
+            circle.addEventListener('mouseleave', () => {
+                tooltip.style.opacity = '0';
+                setTimeout(() => {
+                    if (tooltip.style.opacity === '0') { // Check if it's still hidden before setting display to none
+                        tooltip.style.display = 'none';
+                    }
+                }, 200); // Duration of opacity transition
+                circle.removeAttribute('aria-describedby');
+            });
+            hotspotsGroup.appendChild(circle);
+        });
+    }
+
+    const placeholderAttireDiv = document.getElementById('interactive-attire-placeholder');
+    if (placeholderAttireDiv) {
+        // Replace the placeholder content with the interactive SVG HTML
+        placeholderAttireDiv.innerHTML = interactiveAttireHTML;
+        // Remove placeholder styling if it's no longer needed or conflicts
+        placeholderAttireDiv.style.padding = '0';
+        placeholderAttireDiv.style.backgroundColor = 'transparent';
+        placeholderAttireDiv.style.border = 'none';
+        placeholderAttireDiv.style.textAlign = 'left'; // Or whatever is appropriate for the SVG
+        placeholderAttireDiv.style.color = 'inherit';
+        initAttireSVG();
+    } else {
+         // Fallback for safety, though the specific ID is better.
+        const allDivs = document.querySelectorAll('#page-prp-standards .content-block-card div');
+        let genericPlaceholderDiv = null;
+        for (const div of allDivs) {
+            if (div.textContent.includes("Activité Interactive : Tenue professionnelle.")) {
+                genericPlaceholderDiv = div;
+                break;
+            }
+        }
+        if (genericPlaceholderDiv) {
+            genericPlaceholderDiv.outerHTML = interactiveAttireHTML; // Replace the whole div
+            initAttireSVG();
+        } else {
+            // console.error("Placeholder for interactive attire SVG not found."); // Keep console quiet
+        }
+    }
+    // --- END: SVG Tenue Professionnelle ---
+
+
+    // --- Fonction showPage (logique de scroll améliorée) ---
+    function showPage(pageIndexToShow) {
+        if (pageIndexToShow < 0 || pageIndexToShow >= spaPagesConfig.length) { return; }
+        currentPageIndex = pageIndexToShow;
+        pageElements.forEach((page) => { page.classList.remove('active'); });
+        const currentPageElement = document.getElementById(spaPagesConfig[currentPageIndex].id);
+        if (currentPageElement) {
+            currentPageElement.classList.add('active');
+            const headerElement = document.querySelector('header');
+            const timelineCardElement = document.querySelector('.timeline-card');
+            let fixedHeaderHeight = 0;
+            if (headerElement) fixedHeaderHeight += headerElement.offsetHeight;
+            if (timelineCardElement) fixedHeaderHeight += timelineCardElement.offsetHeight;
+            fixedHeaderHeight += 20; 
+
+            const pageContainer = document.getElementById('spa-pages-container');
+            if (pageContainer){
+                let pageActualTop = currentPageElement.offsetTop; 
+                if (currentPageElement.offsetParent === pageContainer) {
+                     pageActualTop += pageContainer.offsetTop;
+                }
+                // Définir targetScroll par rapport au haut du document
+                const targetScroll = pageContainer.offsetTop + currentPageElement.offsetTop - fixedHeaderHeight + 20;
+
+
+                // On ne scrolle que si la page n'est pas déjà dans la vue au bon endroit
+                 if (Math.abs(window.scrollY - targetScroll) > 100) { // Augmenter la tolérance pour éviter micro-scrolls
+                    window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+                } else { 
+                    const rect = currentPageElement.getBoundingClientRect();
+                     // Si le haut de la page est caché ou trop bas, on scrolle
+                    if (rect.top < fixedHeaderHeight - 50 || rect.top > fixedHeaderHeight + 100) { 
+                         window.scrollTo({ top: targetScroll, behavior: 'smooth' });
+                    }
+                }
+            }
+        }
+        const currentTimelineStepIndex = spaPagesConfig[currentPageIndex].timelineStepMatch;
+        timelineStepElements.forEach((step, index) => {
+            step.classList.toggle('active', index === currentTimelineStepIndex);
+        });
+        navPageInfo.textContent = `Page ${currentPageIndex + 1} / ${spaPagesConfig.length} - ${spaPagesConfig[currentPageIndex].title}`;
+        navPrev.classList.toggle('disabled', currentPageIndex === 0);
+        navNext.classList.toggle('disabled', currentPageIndex === spaPagesConfig.length - 1);
+
+        if (spaPagesConfig[currentPageIndex].id === 'page-quiz') {
+            quizQuestionArea.style.display = 'none';
+            quizResultsScreen.style.display = 'none';
+            quizStartScreen.style.display = 'block';
+            if(quizIntroText) quizIntroText.innerHTML = `Ce quiz contient <strong>${totalQuestionsQuiz} questions</strong> pour valider votre apprentissage sur les bases essentielles de l'hygiène en cuisine professionnelle, un sujet crucial pour votre future carrière. Il est basé sur les informations que nous avons explorées ensemble. Prenez votre temps pour répondre.`;
+            if(quizScoreRequiredText) quizScoreRequiredText.innerHTML = `Score requis pour valider les bases : 75% (soit ${Math.ceil(totalQuestionsQuiz * 0.75)} bonnes réponses sur ${totalQuestionsQuiz})`;
+        }
+    }
+
+    // --- Fonctions du Quiz (logique interne inchangée) ---
+    function startQuiz() {
+        score = 0;
+        currentQuestionIndexQuiz = 0;
+        quizStartScreen.style.display = 'none';
+        quizResultsScreen.style.display = 'none';
+        quizQuestionArea.style.display = 'block';
+        quizProgressBar.style.width = '0%';
+        displayQuizQuestion();
+    }
+
+    function displayQuizQuestion() {
+        quizFeedback.style.display = 'none'; 
+        quizFeedback.className = ''; 
+        if (currentQuestionIndexQuiz >= quizQuestions.length) { 
+            showQuizResults(); return;
+        }
+        const questionData = quizQuestions[currentQuestionIndexQuiz];
+        // Vérification plus robuste des données de la question
+        if (!questionData || typeof questionData.question !== 'string' || !Array.isArray(questionData.options) || questionData.options.length === 0 || typeof questionData.answer !== 'number' || questionData.answer < 0 || questionData.answer >= questionData.options.length || typeof questionData.feedback !== 'string' || (questionData.feedbackCorrect && typeof questionData.feedbackCorrect !== 'string') ) {
+             quizQuestionText.innerHTML = "Erreur : Données de question invalides pour la question " + (currentQuestionIndexQuiz + 1) + ".";
+             quizOptionsContainer.innerHTML = '';
+             quizFeedback.innerHTML = "Veuillez vérifier la structure de cette question dans les données.";
+             quizFeedback.style.display = 'block';
+             quizFeedback.className = 'incorrect-feedback';
+             quizNextQuestionBtn.style.display = 'block';
+             quizNextQuestionBtn.innerHTML = 'Passer cette question (erreur) <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>';
+             return;
+        }
+        quizQuestionText.innerHTML = questionData.question;
+        quizOptionsContainer.innerHTML = '';
+        questionData.options.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.innerHTML = option;
+            button.className = 'quiz-option-btn';
+            button.onclick = () => selectQuizAnswer(index, button);
+            quizOptionsContainer.appendChild(button);
+        });
+        quizNextQuestionBtn.style.display = 'none';
+        quizQuestionCounter.textContent = `Question ${currentQuestionIndexQuiz + 1}/${totalQuestionsQuiz}`;
+        quizScoreDisplay.textContent = `Score: ${score}`;
+        quizProgressBar.style.width = `${((currentQuestionIndexQuiz) / totalQuestionsQuiz) * 100}%`;
+    }
+
+    function selectQuizAnswer(selectedIndex, button) {
+        const questionData = quizQuestions[currentQuestionIndexQuiz];
+        if (!questionData || typeof questionData.answer === 'undefined' || !questionData.options || !Array.isArray(questionData.options) || selectedIndex >= questionData.options.length || questionData.options[questionData.answer] === undefined) {
+            quizFeedback.innerHTML = "Erreur interne (données de réponse invalides) pour la question " + (currentQuestionIndexQuiz + 1) + ".";
+            quizFeedback.style.display = 'block';
+            quizFeedback.className = 'incorrect-feedback'; 
+            quizNextQuestionBtn.style.display = 'block';
+            return;
+        }
+        const optionsButtons = quizOptionsContainer.querySelectorAll('.quiz-option-btn');
+        optionsButtons.forEach(btn => { btn.disabled = true; });
+        
+        button.classList.add('selected');
+        if (selectedIndex === questionData.answer) {
+            score++;
+            button.classList.remove('selected'); 
+            button.classList.add('correct');
+            quizFeedback.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 5px;"></i><strong>Correct !</strong> ${questionData.feedbackCorrect || "Bonne réponse."}`;
+            quizFeedback.className = 'correct-feedback';
+        } else {
+            button.classList.remove('selected');
+            button.classList.add('incorrect');
+            const correctButton = optionsButtons[questionData.answer];
+            if (correctButton) correctButton.classList.add('correct');
+            quizFeedback.innerHTML = `<i class="fas fa-times-circle" style="margin-right: 5px;"></i><strong>Incorrect.</strong> La bonne réponse était : <em>"${questionData.options[questionData.answer]}"</em>. <br/>${questionData.feedback}`;
+            quizFeedback.className = 'incorrect-feedback';
+        }
+        quizFeedback.style.display = 'block';
+        quizScoreDisplay.textContent = `Score: ${score}`;
+        quizNextQuestionBtn.style.display = 'block';
+        if (currentQuestionIndexQuiz === totalQuestionsQuiz - 1) {
+            quizNextQuestionBtn.innerHTML = 'Voir les résultats <i class="fas fa-poll" style="margin-left: 5px;"></i>';
+        } else {
+            quizNextQuestionBtn.innerHTML = 'Question suivante <i class="fas fa-arrow-right" style="margin-left: 5px;"></i>';
+        }
+    }
+
+    function showQuizResults() {
+        quizQuestionArea.style.display = 'none';
+        quizResultsScreen.style.display = 'block';
+        const percentage = Math.round((score / totalQuestionsQuiz) * 100);
+        quizResultsScoreText.textContent = `Votre score : ${score}/${totalQuestionsQuiz} (${percentage}%)`;
+        if (percentage >= 75) { 
+            quizResultsMessage.textContent = "Très bon niveau de maîtrise des bases ! Vous avez bien compris les principes fondamentaux de l'hygiène personnelle en cuisine. Excellent travail !";
+            quizResultsIcon.innerHTML = '<i class="fas fa-trophy" style="color: #FFD700; font-size: 2em;"></i>';
+        } else if (percentage >= 50) {
+            quizResultsMessage.textContent = "Bonne progression ! Vous avez acquis une partie des connaissances clés. Reprenez les points où vous avez eu des difficultés grâce aux feedbacks détaillés.";
+            quizResultsIcon.innerHTML = '<i class="fas fa-thumbs-up" style="color: #4CAF50; font-size: 2em;"></i>';
+        } else { 
+            quizResultsMessage.textContent = "Encore des bases à consolider. Ne vous découragez pas, l'hygiène est un apprentissage continu. Les explications vous aideront à mieux comprendre les points essentiels.";
+            quizResultsIcon.innerHTML = '<i class="fas fa-book-reader" style="color: #FFB300; font-size: 2em;"></i>';
+        }
+    }
+    
+    if(startQuizBtn) { startQuizBtn.addEventListener('click', startQuiz); }
+    if(quizRestartBtn) { quizRestartBtn.addEventListener('click', startQuiz); }
+    if (quizNextQuestionBtn) {
+        quizNextQuestionBtn.addEventListener('click', () => {
+            if (currentQuestionIndexQuiz < totalQuestionsQuiz -1) { // S'assurer qu'on ne dépasse pas après incrémentation
+                currentQuestionIndexQuiz++;
+                displayQuizQuestion();
+            } else if (currentQuestionIndexQuiz === totalQuestionsQuiz - 1) { // Si c'est la dernière question, afficher les résultats
+                quizProgressBar.style.width = '100%';
+                showQuizResults();
+            }
+        });
+    }
+
+    // --- Gestionnaires d'événements SPA Globale ---
+    navPrev.addEventListener('click', () => { if (currentPageIndex > 0) { showPage(currentPageIndex - 1); } });
+    navNext.addEventListener('click', () => { if (currentPageIndex < spaPagesConfig.length - 1) { showPage(currentPageIndex + 1); } });
+    timelineStepElements.forEach(step => {
+        const timelineIndex = parseInt(step.dataset.pageindex);
+        if (!isNaN(timelineIndex)) {
+            step.addEventListener('click', () => {
+                const targetSpaPageIndex = spaPagesConfig.findIndex(p => p.timelineStepMatch === timelineIndex);
+                if (targetSpaPageIndex !== -1) { showPage(targetSpaPageIndex); }
+            });
+        }
+    });
+    
+    // Initialise sur la première page (Objectifs) par défaut ou la page souhaitée
+    showPage(0); 
+});
+//]]>
+</script>
+</body>
+</html>
