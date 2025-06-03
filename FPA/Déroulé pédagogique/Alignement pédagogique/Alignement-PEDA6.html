@@ -1,0 +1,1680 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'Alignement Pédagogique</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+        }
+
+        #presentation-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        #presentation-container {
+            background-color: #ffffff;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1), 0 6px 10px rgba(0,0,0,0.08);
+            width: 100%; 
+            height: 100%;
+            max-width: none; 
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .presentation-header {
+            background-color: #1a5f7a;
+            color: white;
+            padding: 12px 20px;
+            text-align: center;
+            border-bottom: 3px solid #43a0c2;
+            flex-shrink: 0;
+        }
+
+        .presentation-header h1 {
+            font-size: 1.6rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        
+        #slides-viewport {
+            flex-grow: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .slide {
+            opacity: 0;
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 20px 30px; 
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            visibility: hidden;
+            transform: translateX(50px);
+        }
+
+        #slide-0.slide {
+             justify-content: center; 
+        }
+        
+        .slide:not(#slide-0) {
+            padding-top: 20px; 
+        }
+        .slide:not(#slide-0) .slide-main-content-wrapper {
+            flex-grow: 1; 
+            display: flex;
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            width: 100%; 
+        }
+
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            position: relative; 
+        }
+        
+        .slide.exit-left {
+            transform: translateX(-50px);
+        }
+
+        .slide-title { 
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a5f7a;
+            margin-bottom: 20px; 
+            text-align: center;
+            width: 100%;
+            flex-shrink: 0; 
+        }
+        .slide-title i {
+            margin-right: 10px;
+            color: #43a0c2;
+        }
+
+        #slide-0 .title-main-text { 
+            font-size: 2.2rem; 
+            md:font-size: 2.5rem;
+            font-weight: bold;
+            color: #1a5f7a;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+        #slide-0 .title-sub-text { 
+            font-size: 1.1rem;
+            md:font-size: 1.25rem;
+            color: #555; 
+            margin-bottom: 2rem; 
+            text-align: center;
+        }
+        
+        .concept-circles-container {
+            display: flex;
+            flex-direction: row; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 1.5rem; 
+            margin-bottom: 2rem; 
+            flex-wrap: wrap; 
+        }
+
+        .concept-circle {
+            width: 150px; 
+            height: 150px; 
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem; 
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            flex-shrink: 0; 
+            text-align: center;
+            padding: 5px;
+        }
+        .concept-circle i {
+            font-size: 3rem; 
+            margin-bottom: 8px; 
+        }
+        .concept-circle:hover {
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2), 0 3px 8px rgba(0,0,0,0.15);
+        }
+        .circle-obj { background-color: #43a0c2; } 
+        .circle-act { background-color: #5cb85c; } 
+        .circle-eva { background-color: #f0ad4e; } 
+
+        .content-box {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 5px solid #43a0c2; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 800px;
+            flex-shrink: 0;
+        }
+        .content-box-highlight {
+            background-color: #e7f5ff; 
+            border-left-color: #1a5f7a; 
+            padding: 15px;
+            margin-top:15px;
+            border-radius: 8px;
+            text-align: center;
+            font-style: italic;
+            color: #1a5f7a; 
+        }
+        
+        .diagram-box {
+            border: 1px solid #e0e0e0;
+            padding: 10px; 
+            margin: 6px; 
+            border-radius: 6px;
+            background-color: #ffffff;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            min-width: 140px; 
+            flex: 1 1 auto; 
+        }
+        .diagram-box:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .diagram-box .icon {
+            font-size: 1.8rem; 
+            margin-bottom: 6px; 
+        }
+        .arrow-symbol {
+            font-size: 1.6rem; 
+            color: #43a0c2; 
+            margin: 0 8px; 
+            align-self: center;
+        }
+
+        .flip-card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 1rem;
+            width: 100%;
+            max-width: 900px; 
+            margin-top: 10px; 
+            margin-bottom: 10px;
+        }
+        .flip-card {
+            background-color: transparent;
+            perspective: 1000px;
+            cursor: pointer;
+            border-radius: 8px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%; 
+            min-height: 220px; 
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%; 
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-sizing: border-box; 
+        }
+        .flip-card-front {
+            background-color: #ffffff;
+            color: #1a5f7a; 
+        }
+        .flip-card-front .icon {
+             font-size: 2.5rem;
+             margin-bottom: 10px;
+        }
+        .flip-card-front .title-text {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .flip-card-front .action-text {
+            font-size: 0.8rem;
+            color: #43a0c2; 
+            margin-top: 8px;
+        }
+        .flip-card-back {
+            background-color: #43a0c2; 
+            color: white;
+            transform: rotateY(180deg);
+            overflow-y: auto; 
+            justify-content: flex-start; 
+            padding-top: 20px; 
+        }
+        .flip-card-back h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 600;
+            flex-shrink: 0; 
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+            padding-bottom: 5px;
+        }
+        .flip-card-back h4 { 
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 3px;
+            color: #e0f7fa; 
+        }
+        .flip-card-back p {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            text-align: left; 
+            padding-left: 5px;
+            padding-right: 5px;
+            flex-grow: 1; 
+        }
+        .flip-card-back ul {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            text-align: left;
+            list-style-position: inside;
+            padding-left: 10px;
+        }
+        .flip-card-back ul li {
+            margin-bottom: 3px;
+        }
+
+        .animated-list-item, .concept-circle { 
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        .slide.active .animated-list-item, 
+        .slide.active .concept-circle, 
+        .slide.active .timeline-step, 
+        .slide.active .quiz-question-item,
+        .slide.active .solo-svg-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .slide.active .animated-list-item:nth-child(1), 
+        .slide.active .concept-circle:nth-child(1),
+        .slide.active .timeline-step:nth-child(1),
+        .slide.active .quiz-question-item:nth-child(1),
+        .slide.active .solo-svg-container { transition-delay: 0.1s; }
+
+
+        .slide.active .animated-list-item:nth-child(2),
+        .slide.active .concept-circle:nth-child(2),
+        .slide.active .timeline-step:nth-child(2),
+        .slide.active .quiz-question-item:nth-child(2) { transition-delay: 0.2s; }
+        
+        .slide.active .animated-list-item:nth-child(3),
+        .slide.active .concept-circle:nth-child(3),
+        .slide.active .timeline-step:nth-child(3),
+        .slide.active .quiz-question-item:nth-child(3) { transition-delay: 0.3s; }
+
+        .slide.active .animated-list-item:nth-child(4),
+        .slide.active .quiz-question-item:nth-child(4) { transition-delay: 0.4s; }
+
+        .slide.active .animated-list-item:nth-child(5),
+        .slide.active .quiz-question-item:nth-child(5) { transition-delay: 0.5s; }
+        
+        .slide.active .animated-list-item:nth-child(6),
+        .slide.active .quiz-question-item:nth-child(6) { transition-delay: 0.6s; }
+        
+        .slide.active .animated-list-item:nth-child(7),
+        .slide.active .quiz-question-item:nth-child(7) { transition-delay: 0.7s; }
+        .slide.active .animated-list-item:nth-child(8),
+        .slide.active .quiz-question-item:nth-child(8) { transition-delay: 0.8s; }
+        .slide.active .quiz-question-item:nth-child(9) { transition-delay: 0.9s; }
+        .slide.active .quiz-question-item:nth-child(10) { transition-delay: 1.0s; }
+
+
+        .navigation-controls {
+            padding: 10px 15px;
+            background-color: #f1f3f5;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .nav-button {
+            background-color: #43a0c2; 
+            color: white;
+            font-weight: 600;
+            padding: 8px 15px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .nav-button:hover:not(:disabled) {
+            background-color: #1a5f7a; 
+            transform: translateY(-2px);
+        }
+        .nav-button:disabled {
+            background-color: #a5b4c0;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+        .nav-button i {
+            margin-right: 5px;
+        }
+        #slideIndicator {
+            display: flex;
+            gap: 6px;
+        }
+        .indicator-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ced4da;
+            transition: background-color 0.3s ease;
+            cursor: pointer;
+        }
+        .indicator-dot.active {
+            background-color: #43a0c2; 
+        }
+        .presentation-footer {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.75rem;
+            color: #6c757d;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            flex-shrink: 0;
+        }
+        
+        .taxonomy-level-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .taxonomy-level-box h3 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .taxonomy-surface { border-left: 3px solid #f0ad4e; }
+        .taxonomy-depth { border-left: 3px solid #5cb85c; }
+
+        /* Timeline Styles */
+        .timeline-container {
+            position: relative;
+        }
+        .timeline-step {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px; 
+            display: flex; 
+            flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .timeline-step:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .timeline-content {
+            text-align: left;
+        }
+        .timeline-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin: 0 auto 15px auto; 
+            flex-shrink: 0;
+        }
+        .timeline-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        .timeline-subtitle {
+            font-size: 0.9rem;
+            color: #555;
+            margin-bottom: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+        .timeline-details p {
+            font-size: 0.85rem;
+            color: #444;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .timeline-details p i {
+            margin-right: 8px;
+            width: 16px; 
+            text-align: center;
+        }
+        .timeline-details p strong {
+            color: #2c3e50;
+        }
+        .timeline-arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #43a0c2; 
+            padding: 0 10px; 
+            margin: 10px 0; 
+        }
+        @media (max-width: 1023px) { 
+            .timeline-arrow {
+                transform: rotate(90deg);
+                margin: 15px auto; 
+            }
+        }
+        /* Quiz Styles */
+        .quiz-question-item {
+            border-left: 5px solid #1a5f7a;
+        }
+        .option-button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 10px 15px;
+            background-color: #e9f5f9;
+            border: 1px solid #cce3ed;
+            border-radius: 6px;
+            color: #1a5f7a;
+            font-weight: 500;
+            transition: background-color 0.2s ease, border-color 0.2s ease;
+            cursor: pointer;
+        }
+        .option-button:hover:not(:disabled) {
+            background-color: #d1e9f3;
+            border-color: #b3d7e7;
+        }
+        .option-button.correct {
+            background-color: #28a745 !important; 
+            color: white !important;
+            border-color: #1e7e34 !important;
+        }
+        .option-button.incorrect {
+            background-color: #dc3545 !important; 
+            color: white !important;
+            border-color: #b02a37 !important;
+        }
+        .option-button:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .feedback-text.correct-feedback {
+            color: #1e7e34; 
+            font-weight: bold;
+        }
+        .feedback-text.incorrect-feedback {
+            color: #b02a37; 
+            font-weight: bold;
+        }
+        #quiz-score-container {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #1a5f7a;
+            padding: 15px;
+            background-color: #e9f5f9;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        /* SOLO Taxonomie SVG Styles */
+        .solo-svg-container {
+            width: 100%;
+            max-width: 900px; 
+            margin: auto;
+            padding:10px;
+        }
+        .solo-svg {
+            width: 100%;
+            height: auto; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: visible; 
+        }
+        .solo-svg .level-group {
+            cursor: default; 
+            transition: opacity 0.3s ease;
+        }
+         .solo-svg .level-group .shape {
+            stroke: #333;
+            stroke-width: 1px;
+            transition: transform 0.2s ease-out, filter 0.2s ease-out;
+        }
+        .solo-svg .level-group:hover .shape {
+            transform: scale(1.03); 
+            filter: drop-shadow(2px 2px 3px rgba(0,0,0,0.3));
+        }
+
+        .solo-svg .level-title {
+            font-size: 14px; 
+            font-weight: bold;
+            fill: #2c3e50;
+            text-anchor: middle;
+        }
+        .solo-svg .level-desc {
+            font-size: 11px; 
+            fill: #555;
+            font-style: italic;
+            text-anchor: middle;
+        }
+        .solo-svg .action-text {
+            font-size: 10px; 
+            fill: #333;
+        }
+         .solo-svg .phase-text {
+            font-size: 12px;
+            font-weight: bold;
+            fill: #7f8c8d;
+            text-anchor: middle;
+        }
+        .solo-svg .main-title-text {
+            font-size: 18px;
+            font-weight: bold;
+            fill: #1a5f7a;
+            text-anchor: middle;
+        }
+        .solo-svg .tooltip-bg {
+            fill: rgba(255, 255, 230, 0.98); 
+            stroke: #b0a993; 
+            stroke-width: 0.5px;
+            rx:4; ry:4; 
+            visibility: hidden; 
+            pointer-events: none;
+        }
+        .solo-svg .tooltip-text-solo {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px; 
+            fill: #1a5f7a; 
+            visibility: hidden; 
+            pointer-events: none; 
+        }
+        .solo-svg .level-group:hover .tooltip-bg,
+        .solo-svg .level-group:hover .tooltip-text-solo {
+            visibility: visible; 
+        }
+        .solo-svg .color-pre { fill: #bababa; } 
+        .solo-svg .color-uni { fill: #5dade2; } 
+        .solo-svg .color-multi { fill: #3498db; } 
+        .solo-svg .color-rel { fill: #2ecc71; } 
+        .solo-svg .color-abs { fill: #9b59b6; } 
+        .solo-svg .connector-line {
+            stroke: #7f8c8d;
+            stroke-width: 1.5px;
+            stroke-dasharray: 3,2;
+        }
+        .solo-svg .phase-line {
+            stroke: #7f8c8d;
+            stroke-width: 1.5px;
+        }
+
+
+        @media (max-width: 768px) { 
+            .slide-title { font-size: 1.6rem; }
+            .slide:not(#slide-0) { padding: 15px; padding-top: 15px; }
+            .slide#slide-0 { padding: 15px; }
+            .content-box { max-width: 95%; }
+            .diagram-box .icon { font-size: 1.6rem; }
+            .diagram-box p.font-semibold { font-size: 0.9rem; }
+            .diagram-box p.text-xs { font-size: 0.7rem; }
+            .flip-card-grid { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));}
+            
+            .concept-circles-container { gap: 1rem; } 
+            .concept-circle { 
+                width: 120px; 
+                height: 120px; 
+                font-size: 1.3rem; 
+            }
+            .concept-circle i { font-size: 2.5rem; } 
+
+            #slide-0 .title-main-text { font-size: 2rem; }
+            #slide-0 .title-sub-text { font-size: 1rem;}
+            .timeline-title {font-size: 1.1rem;}
+            .timeline-details p {font-size: 0.8rem;}
+            .solo-svg .main-title-text { font-size: 16px; }
+            .solo-svg .level-title { font-size: 12px; }
+            .solo-svg .level-desc, .solo-svg .action-text { font-size: 9px; }
+            .solo-svg .tooltip-text-solo { font-size: 10px;}
+        }
+
+
+        @media (max-width: 480px) { 
+            .concept-circles-container { gap: 0.75rem; } 
+            .concept-circle { 
+                width: 105px; 
+                height: 105px; 
+                font-size: 1.2rem; 
+            }
+            .concept-circle i { font-size: 2.25rem;  }
+            .flip-card-inner { min-height: 200px; } 
+            .flip-card-front .icon { font-size: 2rem; }
+            .flip-card-front .title-text { font-size: 1rem; }
+            .flip-card-back h3 { font-size: 1rem; }
+            .flip-card-back p, .flip-card-back ul { font-size: 0.8rem; }
+            #slide-0 .title-main-text { font-size: 1.8rem; } 
+            #slide-0 .title-sub-text { font-size: 0.9rem; } 
+            .timeline-icon { width: 40px; height: 40px; font-size: 1.5rem; margin-bottom: 10px;}
+            .timeline-title { font-size: 1rem; }
+            .timeline-subtitle { font-size: 0.8rem; }
+            .timeline-details p { font-size: 0.75rem; }
+            .question-text {font-size: 1rem;} 
+            .option-button {padding: 8px 12px; font-size:0.9rem;}
+            .solo-svg .main-title-text { font-size: 14px; }
+            .solo-svg .level-title { font-size: 10px; }
+            .solo-svg .level-desc, .solo-svg .action-text { font-size: 8px; }
+            .solo-svg .tooltip-text-solo { font-size: 9px;}
+            .solo-svg-container { padding: 5px;}
+
+        }
+        
+        @media (max-height: 700px) { 
+            .concept-circle { 
+                width: 120px; 
+                height: 120px; 
+                font-size: 1.35rem; 
+            }
+            .concept-circle i { font-size: 2.7rem;  }
+            #slide-0 .title-main-text { font-size: 1.8rem; }
+            #slide-0 .title-sub-text { font-size: 1rem; margin-bottom: 1rem;}
+            .concept-circles-container { margin-bottom: 1rem; }
+        }
+         @media (max-height: 550px) { 
+            .concept-circle { 
+                width: 105px; 
+                height: 105px; 
+                font-size: 1.2rem; 
+            }
+            .concept-circle i { font-size: 2.25rem;  }
+            #slide-0 .title-main-text { font-size: 1.5rem;}
+            #slide-0 .title-sub-text { font-size: 0.9rem;}
+         }
+
+        @media (max-height: 600px) and (max-width: 768px) { 
+            .presentation-header h1 { font-size: 1.3rem; }
+            .slide-title { font-size: 1.5rem; margin-bottom: 10px;}
+            .content-box { padding: 10px; margin-bottom: 8px; }
+            .diagram-box { padding: 8px; margin: 4px; min-width: 120px;}
+            .diagram-box .icon { font-size: 1.5rem; }
+            .navigation-controls { padding: 8px 10px;}
+            .nav-button { padding: 6px 10px; }
+            .presentation-footer { font-size: 0.7rem; padding: 6px;}
+            .slide:not(#slide-0) { padding: 15px 20px; padding-top: 15px; }
+            .slide#slide-0 { padding: 15px 20px;}
+            .flip-card-front .icon { font-size: 2rem; }
+            .flip-card-front .title-text { font-size: 1rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="presentation-wrapper">
+    <div id="presentation-container">
+        <header class="presentation-header">
+            <h1><i class="fas fa-project-diagram"></i> L'Alignement Pédagogique</h1>
+        </header>
+
+        <div id="slides-viewport">
+            <div id="slide-0" class="slide active">
+                 <h1 class="title-main-text">L'Alignement <span class="text-cyan-600">Pédagogique</span></h1>
+                <p class="title-sub-text">Clé de la cohérence et de l'efficacité d'un cours.</p>
+                <div class="concept-circles-container">
+                    <div class="concept-circle circle-obj animated-list-item">
+                        <i class="fas fa-bullseye"></i>Objectifs
+                    </div>
+                    <div class="concept-circle circle-act animated-list-item">
+                        <i class="fas fa-puzzle-piece"></i>Activités
+                    </div>
+                    <div class="concept-circle circle-eva animated-list-item">
+                        <i class="fas fa-check-double"></i>Évaluations
+                    </div>
+                </div>
+                <p class="text-sm text-gray-400 mt-4 animated-list-item">Utilisez les flèches pour naviguer ou cliquez sur les indicateurs.</p>
+            </div>
+
+            <div id="slide-1" class="slide">
+                <h2 class="slide-title"><i class="fas fa-chalkboard-teacher"></i> Objectifs Pédagogiques de cette Séance</h2>
+                <div class="slide-main-content-wrapper w-full max-w-3xl">
+                    <div class="content-box w-full animated-list-item">
+                        <p class="text-gray-700 mb-3 leading-relaxed">
+                            Bienvenue, futurs Formateurs Professionnels d'Adultes ! Cette séance a pour but de vous introduire à un concept fondamental pour la conception et l'animation de formations réussies : <strong>l'alignement pédagogique</strong>.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed">
+                            Maîtriser ce principe vous permettra de construire des parcours d'apprentissage cohérents, pertinents et efficaces pour vos futurs apprenants.
+                        </p>
+                    </div>
+                    <div class="content-box w-full mt-4 animated-list-item" style="transition-delay: 0.2s;">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-3 text-center"><i class="fas fa-check-circle text-green-500 mr-2"></i>À l'issue de cette séance, vous serez capable de :</h3>
+                        <ul class="list-none space-y-3 text-gray-700">
+                            <li class="p-3 bg-sky-50 rounded-md shadow-sm border-l-4 border-sky-400 animated-list-item" style="transition-delay: 0.3s;">
+                                <i class="fas fa-comments text-sky-600 mr-2"></i> <strong>Définir</strong> ce qu'est l'alignement pédagogique et son importance pour la cohérence d'une action de formation.
+                            </li>
+                            <li class="p-3 bg-sky-50 rounded-md shadow-sm border-l-4 border-sky-400 animated-list-item" style="transition-delay: 0.4s;">
+                                <i class="fas fa-sitemap text-sky-600 mr-2"></i> <strong>Identifier</strong> les trois composantes clés de l'alignement pédagogique (objectifs, activités, évaluations).
+                            </li>
+                            <li class="p-3 bg-sky-50 rounded-md shadow-sm border-l-4 border-sky-400 animated-list-item" style="transition-delay: 0.5s;">
+                                <i class="fas fa-lightbulb text-sky-600 mr-2"></i> <strong>Expliquer</strong> le rôle des niveaux taxonomiques dans la formulation d'objectifs d'apprentissage clairs et pertinents.
+                            </li>
+                            <li class="p-3 bg-sky-50 rounded-md shadow-sm border-l-4 border-sky-400 animated-list-item" style="transition-delay: 0.6s;">
+                                <i class="fas fa-balance-scale text-sky-600 mr-2"></i> <strong>Reconnaître</strong> la nécessité d'adapter les activités d'apprentissage et les modalités d'évaluation au niveau taxonomique des objectifs visés.
+                            </li>
+                            <li class="p-3 bg-sky-50 rounded-md shadow-sm border-l-4 border-sky-400 animated-list-item" style="transition-delay: 0.7s;">
+                                <i class="fas fa-route text-sky-600 mr-2"></i> <strong>Comprendre</strong> comment une progression pédagogique structurée, des fondations à la maîtrise, s'appuie sur un alignement constant.
+                            </li>
+                        </ul>
+                    </div>
+                    <p class="mt-6 text-sm text-gray-600 italic w-full text-center animated-list-item" style="transition-delay: 0.8s;">
+                        Ces compétences sont essentielles pour concevoir des formations qui mènent réellement vos apprenants vers la réussite.
+                    </p>
+                </div>
+            </div>
+
+            <div id="slide-2" class="slide">
+                <h2 class="slide-title"><i class="fas fa-link"></i>Qu'est-ce que l'Alignement Pédagogique ?</h2>
+                <div class="slide-main-content-wrapper">
+                    <div class="content-box w-full max-w-2xl animated-list-item">
+                        <p class="text-gray-700 mb-3 leading-relaxed text-center">
+                            L'alignement pédagogique est un principe fondamental qui assure la <strong>cohérence</strong> d'un cours ou d'une formation.
+                        </p>
+                        <p class="text-gray-700 leading-relaxed text-center">
+                            Il vise l'arrimage étroit entre trois composantes essentielles :
+                        </p>
+                    </div>
+                    <div class="flex flex-col md:flex-row justify-center items-center gap-4 w-full max-w-3xl mt-4">
+                        <div class="diagram-box animated-list-item">
+                            <div class="icon text-blue-500"><i class="fas fa-bullseye"></i></div>
+                            <p class="font-semibold">Objectifs Visés</p>
+                        </div>
+                        <div class="arrow-symbol animated-list-item"><i class="fas fa-arrows-alt-h"></i></div>
+                        <div class="diagram-box animated-list-item">
+                            <div class="icon text-green-500"><i class="fas fa-tasks"></i></div>
+                            <p class="font-semibold">Activités Proposées</p>
+                        </div>
+                        <div class="arrow-symbol animated-list-item"><i class="fas fa-arrows-alt-h"></i></div>
+                        <div class="diagram-box animated-list-item">
+                            <div class="icon text-yellow-500"><i class="fas fa-clipboard-check"></i></div>
+                            <p class="font-semibold">Évaluations Choisies</p>
+                        </div>
+                    </div>
+                     <p class="mt-6 text-sm text-gray-600 italic w-full max-w-3xl text-center animated-list-item">
+                        Cet arrimage permet aux apprenants de développer les apprentissages visés et à l'enseignant d'en observer l'acquisition.
+                    </p>
+                </div>
+            </div>
+
+            <div id="slide-3" class="slide">
+                <h2 class="slide-title"><i class="fas fa-bullseye"></i>1. Les Objectifs d'Apprentissage</h2>
+                <div class="slide-main-content-wrapper">
+                    <div class="content-box w-full max-w-3xl animated-list-item">
+                        <p class="text-gray-700 mb-2">Ce sont les apprentissages visés par un cours, formulés sous la forme d'objectifs précis à atteindre par les apprenants.</p>
+                        <p class="text-gray-700">Ils se situent à différents niveaux taxonomiques, notamment :</p>
+                        <ul class="list-disc list-inside ml-4 mt-2 text-gray-700">
+                            <li><strong>Cognitif :</strong> Connaissances, compréhension, application, analyse, synthèse, évaluation, création.</li>
+                            <li><strong>Socio-affectif :</strong> Attitudes, valeurs, comportements sociaux.</li>
+                            <li><strong>Psychomoteur :</strong> Habiletés gestuelles, coordination.</li>
+                        </ul>
+                    </div>
+                    <div class="w-full max-w-3xl mt-3 grid md:grid-cols-2 gap-4">
+                        <div class="taxonomy-level-box taxonomy-surface animated-list-item">
+                            <h3 class="text-orange-600"><i class="fas fa-water"></i> Apprentissage en Surface</h3>
+                            <p class="text-sm text-gray-600">Vise la mémorisation et la compréhension de base.</p>
+                            <p class="text-sm text-gray-700 font-semibold mt-1">Exemples (Cognitif) : Retenir, Comprendre.</p>
+                        </div>
+                        <div class="taxonomy-level-box taxonomy-depth animated-list-item">
+                             <h3 class="text-green-600"><i class="fas fa-seedling"></i> Apprentissage en Profondeur</h3>
+                            <p class="text-sm text-gray-600">Implique l'application, l'analyse critique et la création.</p>
+                            <p class="text-sm text-gray-700 font-semibold mt-1">Exemples (Cognitif) : Appliquer, Analyser, Évaluer, Créer.</p>
+                        </div>
+                    </div>
+                    <div class="content-box-highlight w-full max-w-3xl animated-list-item">
+                        <p>"Si les objectifs d'apprentissage sont d'un haut niveau taxonomique... alors les activités d'apprentissage et d'évaluation doivent l'être également."</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="slide-4" class="slide">
+                 <h2 class="slide-title"><i class="fas fa-puzzle-piece"></i>2. Les Activités d'Apprentissage</h2>
+                <div class="slide-main-content-wrapper">
+                    <div class="content-box w-full max-w-3xl text-center animated-list-item">
+                        <p class="text-gray-700 mb-4">Ce sont les tâches, exercices et expériences proposés par l'enseignant pour permettre aux apprenants de travailler et de développer les apprentissages visés. Cliquez sur chaque carte pour des exemples.</p>
+                    </div>
+                    <div class="flip-card-grid w-full">
+                        <div class="flip-card animated-list-item">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="icon text-blue-500"><i class="fas fa-brain"></i></div>
+                                    <p class="title-text">Domaine Cognitif</p>
+                                    <p class="action-text">Exemples d'Activités</p>
+                                </div>
+                                <div class="flip-card-back">
+                                    <h3>Activités Cognitives</h3>
+                                    <h4>Apprentissage en Surface :</h4>
+                                    <ul>
+                                        <li>Exposé magistral</li>
+                                        <li>Lecture</li>
+                                        <li>Vidéo</li>
+                                    </ul>
+                                    <h4 class="mt-3">Apprentissage en Profondeur :</h4>
+                                    <ul>
+                                        <li>Débat</li>
+                                        <li>Étude de cas</li>
+                                        <li>Jeu de rôle</li>
+                                        <li>Projet</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-card animated-list-item">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="icon text-green-500"><i class="fas fa-users"></i></div>
+                                    <p class="title-text">Domaine Socio-affectif</p>
+                                    <p class="action-text">Exemples d'Activités</p>
+                                </div>
+                                <div class="flip-card-back">
+                                    <h3>Activités Socio-affectives</h3>
+                                    <h4>Apprentissage en Surface :</h4>
+                                     <ul>
+                                        <li>Exposé magistral</li>
+                                        <li>Observation</li>
+                                        <li>Vidéo</li>
+                                    </ul>
+                                    <h4 class="mt-3">Apprentissage en Profondeur :</h4>
+                                    <ul>
+                                        <li>Expérimentation</li>
+                                        <li>Jeu de rôle</li>
+                                        <li>Mise en situation</li>
+                                        <li>Travail de groupe</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-card animated-list-item">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="icon text-orange-500"><i class="fas fa-running"></i></div>
+                                    <p class="title-text">Domaine Psychomoteur</p>
+                                    <p class="action-text">Exemples d'Activités</p>
+                                </div>
+                                <div class="flip-card-back">
+                                    <h3>Activités Psychomotrices</h3>
+                                    <h4>Apprentissage en Surface :</h4>
+                                    <ul>
+                                        <li>Exposé magistral</li>
+                                        <li>Observation</li>
+                                        <li>Vidéo</li>
+                                    </ul>
+                                    <h4 class="mt-3">Apprentissage en Profondeur :</h4>
+                                    <ul>
+                                        <li>Simulation</li>
+                                        <li>Exercice pratique</li>
+                                        <li>Stage pratique</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="slide-5" class="slide">
+                <h2 class="slide-title"><i class="fas fa-check-double"></i>3. Les Activités d'Évaluation</h2>
+                <div class="slide-main-content-wrapper">
+                    <div class="content-box w-full max-w-3xl text-center animated-list-item">
+                        <p class="text-gray-700 mb-4">Ce sont les activités mises en place pour observer et mesurer l'acquisition des apprentissages visés par les objectifs. Elles doivent être alignées tant sur les objectifs que sur les activités d'apprentissage. Cliquez pour des exemples.</p>
+                    </div>
+                    <div class="flip-card-grid w-full">
+                        <div class="flip-card animated-list-item">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="icon text-blue-500"><i class="fas fa-brain"></i></div>
+                                    <p class="title-text">Domaine Cognitif</p>
+                                    <p class="action-text">Exemples d'Évaluations</p>
+                                </div>
+                                <div class="flip-card-back">
+                                    <h3>Évaluations Cognitives</h3>
+                                    <h4>Apprentissage en Surface :</h4>
+                                    <ul>
+                                        <li>Quiz</li>
+                                        <li>Exposé oral (restitution)</li>
+                                        <li>Compte rendu (descriptif)</li>
+                                    </ul>
+                                    <h4 class="mt-3">Apprentissage en Profondeur :</h4>
+                                    <ul>
+                                        <li>Dissertation (analyse, argumentation)</li>
+                                        <li>Recherche</li>
+                                        <li>Dossier / Portfolio</li>
+                                        <li>Projet (création, solution)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-card animated-list-item">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="icon text-green-500"><i class="fas fa-users"></i></div>
+                                    <p class="title-text">Domaine Socio-affectif</p>
+                                    <p class="action-text">Exemples d'Évaluations</p>
+                                </div>
+                                <div class="flip-card-back">
+                                    <h3>Évaluations Socio-affectives</h3>
+                                    <h4>Apprentissage en Surface :</h4>
+                                     <ul>
+                                        <li>Exposé oral (présentation de valeurs comprises)</li>
+                                        <li>Compte rendu (d'observation)</li>
+                                    </ul>
+                                    <h4 class="mt-3">Apprentissage en Profondeur :</h4>
+                                    <ul>
+                                        <li>Observation (participante, grille)</li>
+                                        <li>Dossier (réflexif sur attitudes)</li>
+                                        <li>Mise en situation (évaluée)</li>
+                                        <li>Portfolio (développement personnel)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-card animated-list-item">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front">
+                                    <div class="icon text-orange-500"><i class="fas fa-running"></i></div>
+                                    <p class="title-text">Domaine Psychomoteur</p>
+                                    <p class="action-text">Exemples d'Évaluations</p>
+                                </div>
+                                <div class="flip-card-back">
+                                    <h3>Évaluations Psychomotrices</h3>
+                                     <h4>Apprentissage en Surface :</h4>
+                                    <ul>
+                                        <li>Exposé oral (description d'une technique)</li>
+                                        <li>Compte rendu (d'une démonstration observée)</li>
+                                    </ul>
+                                    <h4 class="mt-3">Apprentissage en Profondeur :</h4>
+                                    <ul>
+                                        <li>Démonstration (performance d'une habileté)</li>
+                                        <li>Observation (directe de la compétence)</li>
+                                        <li>Stage pratique (évaluation en milieu réel)</li>
+                                        <li>Portfolio (preuves de maîtrise gestuelle)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="slide-6" class="slide">
+                <h2 class="slide-title"><i class="fas fa-sync-alt"></i>Le Principe Fondamental de l'Alignement</h2>
+                <div class="slide-main-content-wrapper">
+                    <div class="content-box w-full max-w-3xl animated-list-item">
+                        <p class="text-gray-700 mb-3 leading-relaxed text-center text-lg">
+                            "Les activités d'apprentissage et d'évaluation sont choisies en fonction des objectifs du cours pour permettre aux apprenants de développer les apprentissages visés et à l'enseignant d'en observer l'acquisition."
+                        </p>
+                    </div>
+                    <div class="w-full max-w-3xl mt-4 p-6 bg-sky-50 border border-sky-300 rounded-lg shadow-md animated-list-item">
+                        <h3 class="text-xl font-semibold text-sky-700 text-center mb-3">Cohérence des Niveaux Taxonomiques</h3>
+                        <p class="text-gray-700 text-center">
+                            Si les <strong class="text-sky-600">objectifs d'apprentissage</strong> visent un haut niveau taxonomique (ex: analyser, créer)...
+                        </p>
+                        <div class="text-center my-3 text-2xl text-sky-500 animated-list-item" style="transition-delay: 0.2s;">
+                            <i class="fas fa-arrow-down"></i>
+                        </div>
+                        <p class="text-gray-700 text-center">
+                            ...alors les <strong class="text-sky-600">activités d'apprentissage</strong> ET les <strong class="text-sky-600">activités d'évaluation</strong> doivent impérativement solliciter et mesurer des compétences de ce même niveau.
+                        </p>
+                    </div>
+                    <div class="mt-4 w-full max-w-3xl grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div class="p-3 bg-blue-100 rounded-md shadow animated-list-item" style="transition-delay: 0.3s;">
+                            <i class="fas fa-bullseye text-blue-600 text-2xl mb-2"></i>
+                            <p class="font-semibold text-blue-700">Objectifs Ambitieux</p>
+                        </div>
+                         <div class="p-3 bg-green-100 rounded-md shadow animated-list-item" style="transition-delay: 0.4s;">
+                            <i class="fas fa-tasks text-green-600 text-2xl mb-2"></i>
+                            <p class="font-semibold text-green-700">Activités Stimulantes</p>
+                        </div>
+                         <div class="p-3 bg-yellow-100 rounded-md shadow animated-list-item" style="transition-delay: 0.5s;">
+                            <i class="fas fa-clipboard-check text-yellow-700 text-2xl mb-2"></i>
+                            <p class="font-semibold text-yellow-800">Évaluations Pertinentes</p>
+                        </div>
+                    </div>
+                    <p class="mt-4 text-sm text-gray-600 italic w-full max-w-3xl text-center animated-list-item" style="transition-delay: 0.6s;">
+                        Un alignement rigoureux garantit que l'on enseigne ce que l'on souhaite que les apprenants apprennent, et que l'on évalue ce qui a été effectivement enseigné et appris.
+                    </p>
+                </div>
+            </div>
+            
+            <div id="slide-7" class="slide">
+                <h2 class="slide-title"><i class="fas fa-chart-line"></i> Cohérence Pédagogique Progressive</h2>
+                <div class="slide-main-content-wrapper w-full max-w-5xl">
+                    <div class="content-box w-full animated-list-item">
+                        <p class="text-gray-700 text-center mb-4">
+                            Une formation efficace, qu'elle soit courte ou longue, se construit sur une progression logique des apprentissages. L'alignement pédagogique soutient cette montée en complexité, en s'assurant que les bases sont solides avant d'aborder des compétences plus avancées.
+                        </p>
+                    </div>
+            
+                    <div class="timeline-container mt-6 w-full animated-list-item" style="transition-delay: 0.2s;">
+                        <div class="flex flex-col lg:flex-row items-stretch justify-between w-full gap-2">
+            
+                            <div class="timeline-step flex-1 animated-list-item" style="transition-delay: 0.3s;">
+                                <div class="timeline-content">
+                                    <div class="timeline-icon bg-blue-500"><i class="fas fa-layer-group"></i></div>
+                                    <h3 class="timeline-title">Phase 1: Fondations</h3>
+                                    <p class="timeline-subtitle">Mémorisation & Compréhension</p>
+                                    <div class="timeline-details">
+                                        <p><strong><i class="fas fa-book-open text-blue-600"></i> Savoirs Visés:</strong> Concepts clés, définitions, faits, vocabulaire de base.</p>
+                                        <p><strong><i class="fas fa-chalkboard-teacher text-blue-600"></i> Activités Types:</strong> Lectures, exposés, vidéos didactiques, démonstrations.</p>
+                                        <p><strong><i class="fas fa-tasks text-blue-600"></i> Évaluations Types:</strong> QCM de restitution, questions Vrai/Faux, définitions à donner.</p>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <div class="timeline-arrow lg:flex hidden items-center animated-list-item" style="transition-delay: 0.4s;"><i class="fas fa-arrow-right"></i></div>
+                            <div class="timeline-arrow lg:hidden flex items-center justify-center animated-list-item" style="transition-delay: 0.4s;"><i class="fas fa-arrow-down"></i></div>
+
+            
+                            <div class="timeline-step flex-1 animated-list-item" style="transition-delay: 0.5s;">
+                                 <div class="timeline-content">
+                                    <div class="timeline-icon bg-green-500"><i class="fas fa-cogs"></i></div>
+                                    <h3 class="timeline-title">Phase 2: Application & Analyse</h3>
+                                    <p class="timeline-subtitle">Mise en Pratique & Réflexion</p>
+                                     <div class="timeline-details">
+                                        <p><strong><i class="fas fa-book-open text-green-600"></i> Savoirs Visés:</strong> Méthodes, procédures, résolution de problèmes types, analyse de cas simples.</p>
+                                        <p><strong><i class="fas fa-users text-green-600"></i> Activités Types:</strong> Exercices pratiques, études de cas, débats structurés, simulations simples.</p>
+                                        <p><strong><i class="fas fa-tasks text-green-600"></i> Évaluations Types:</strong> Mises en situation guidées, rapports d'analyse, résolution de problèmes.</p>
+                                    </div>
+                                </div>
+                            </div>
+            
+                            <div class="timeline-arrow lg:flex hidden items-center animated-list-item" style="transition-delay: 0.6s;"><i class="fas fa-arrow-right"></i></div>
+                            <div class="timeline-arrow lg:hidden flex items-center justify-center animated-list-item" style="transition-delay: 0.6s;"><i class="fas fa-arrow-down"></i></div>
+
+                            <div class="timeline-step flex-1 animated-list-item" style="transition-delay: 0.7s;">
+                                <div class="timeline-content">
+                                    <div class="timeline-icon bg-purple-500"><i class="fas fa-rocket"></i></div>
+                                    <h3 class="timeline-title">Phase 3: Maîtrise & Création</h3>
+                                    <p class="timeline-subtitle">Autonomie & Innovation</p>
+                                    <div class="timeline-details">
+                                        <p><strong><i class="fas fa-book-open text-purple-600"></i> Savoirs Visés:</strong> Stratégies complexes, évaluation critique, conception de solutions originales.</p>
+                                        <p><strong><i class="fas fa-flask text-purple-600"></i> Activités Types:</strong> Projets de recherche/création, simulations complexes, stages, leadership de groupe.</p>
+                                        <p><strong><i class="fas fa-tasks text-purple-600"></i> Évaluations Types:</strong> Soutenance de projet, portfolio de compétences, création originale, études de cas complexes.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                     <p class="mt-6 text-sm text-gray-600 italic w-full text-center animated-list-item" style="transition-delay: 0.8s;">
+                        Chaque phase s'appuie sur la précédente, assurant une progression solide et cohérente des compétences.
+                    </p>
+                </div>
+            </div>
+
+            <div id="slide-8" class="slide">
+                <h2 class="slide-title"><i class="fas fa-graduation-cap"></i>En Résumé : L'Importance de l'Alignement</h2>
+                <div class="slide-main-content-wrapper">
+                    <div class="content-box w-full max-w-3xl animated-list-item">
+                        <p class="text-gray-700 mb-4 leading-relaxed">
+                            L'alignement pédagogique est plus qu'une simple recommandation ; c'est une condition essentielle pour :
+                        </p>
+                        <ul class="list-none space-y-3 w-full">
+                            <li class="animated-list-item bg-green-50 p-3 rounded-lg shadow border-l-4 border-green-500">
+                                <i class="fas fa-link text-green-600 mr-2"></i> <strong>Assurer la cohérence</strong> globale du cours ou de la formation.
+                            </li>
+                            <li class="animated-list-item bg-blue-50 p-3 rounded-lg shadow border-l-4 border-blue-500" style="transition-delay: 0.2s;">
+                                <i class="fas fa-rocket text-blue-600 mr-2"></i> <strong>Optimiser l'efficacité de l'apprentissage</strong> en s'assurant que les activités sont ciblées.
+                            </li>
+                            <li class="animated-list-item bg-yellow-50 p-3 rounded-lg shadow border-l-4 border-yellow-500" style="transition-delay: 0.3s;">
+                                <i class="fas fa-balance-scale text-yellow-600 mr-2"></i> <strong>Garantir la validité et la pertinence des évaluations</strong>.
+                            </li>
+                             <li class="animated-list-item bg-purple-50 p-3 rounded-lg shadow border-l-4 border-purple-500" style="transition-delay: 0.4s;">
+                                <i class="fas fa-users-cog text-purple-600 mr-2"></i> <strong>Clarifier les attentes</strong> pour les apprenants et les enseignants.
+                            </li>
+                        </ul>
+                    </div>
+                    <p class="mt-6 text-lg text-cyan-700 font-semibold w-full max-w-3xl text-center animated-list-item" style="transition-delay: 0.5s;">
+                        Un cours bien aligné est un cours où chaque élément sert un but précis, menant à un apprentissage significatif et mesurable.
+                    </p>
+                    <p class="text-xs text-gray-500 mt-6 text-center animated-list-item" style="transition-delay: 0.6s;">
+                        Inspiré très librement de Biggs (1999) <br> 
+                    </p>
+                </div>
+            </div>
+            
+            <div id="slide-9" class="slide">
+                <h2 class="slide-title"><i class="fas fa-sitemap"></i> Synthèse : Taxonomie SOLO (Biggs & Collis, 1982)</h2>
+                <div class="slide-main-content-wrapper w-full items-center justify-center">
+                    <div class="content-box w-full max-w-4xl text-center mb-3 animated-list-item">
+                        <p class="text-gray-700">La taxonomie SOLO (Structure of Observed Learning Outcomes) décrit des niveaux croissants de complexité dans la compréhension d'un sujet par un apprenant. Survolez chaque niveau pour plus de détails.</p>
+                    </div>
+                    <div class="solo-svg-container animated-list-item" style="transition-delay: 0.2s;">
+                        <svg viewBox="0 0 800 540" class="solo-svg" preserveAspectRatio="xMidYMid meet"> <text x="400" y="30" class="main-title-text">Taxonomie SOLO (Biggs et Collis, 1982)</text>
+            
+                            <g class="level-group" id="solo-pre">
+                                <rect class="tooltip-bg" x="30" y="60" width="140" height="55"/>
+                                <text class="tooltip-text-solo" x="35" y="75">L'apprenant ne saisit</text>
+                                <text class="tooltip-text-solo" x="35" y="89">pas le sujet, utilise des</text>
+                                <text class="tooltip-text-solo" x="35" y="103">infos non pertinentes.</text>
+                                <circle cx="100" cy="150" r="15" class="shape color-pre"/>
+                                <text x="100" y="195" text-anchor="middle" class="level-title">Pré-structurel</text>
+                                <text x="100" y="210" text-anchor="middle" class="level-desc">Échec, Incompétence</text>
+                            </g>
+            
+                            <g class="level-group" id="solo-uni">
+                                <rect class="tooltip-bg" x="150" y="40" width="145" height="55"/>
+                                <text class="tooltip-text-solo" x="155" y="55">L'apprenant se concentre</text>
+                                <text class="tooltip-text-solo" x="155" y="69">sur un seul aspect</text>
+                                <text class="tooltip-text-solo" x="155" y="83">pertinent de la tâche.</text>
+                                <rect x="210" y="120" width="15" height="60" class="shape color-uni"/>
+                                <text x="217.5" y="205" text-anchor="middle" class="level-title">Uni-structurel</text>
+                                <text x="217.5" y="220" text-anchor="middle" class="level-desc">Un élément pertinent</text>
+                                <text x="217.5" y="245" text-anchor="middle" class="action-text">Définir</text>
+                                <text x="217.5" y="258" text-anchor="middle" class="action-text">Identifier</text>
+                                <text x="217.5" y="271" text-anchor="middle" class="action-text">Procéd. simples</text>
+                            </g>
+            
+                            <g class="level-group" id="solo-multi">
+                                <rect class="tooltip-bg" x="280" y="30" width="170" height="68"/>
+                                <text class="tooltip-text-solo" x="285" y="45">L'apprenant identifie</text>
+                                <text class="tooltip-text-solo" x="285" y="59">plusieurs aspects pertinents</text>
+                                <text class="tooltip-text-solo" x="285" y="73">mais ne les relie pas.</text>
+                                <text class="tooltip-text-solo" x="285" y="87">Traités indépendamment.</text>
+                                <rect x="320" y="120" width="15" height="60" class="shape color-multi"/>
+                                <rect x="345" y="120" width="15" height="60" class="shape color-multi"/>
+                                <rect x="370" y="120" width="15" height="60" class="shape color-multi"/>
+                                <text x="352.5" y="205" text-anchor="middle" class="level-title">Multi-structurel</text>
+                                <text x="352.5" y="220" text-anchor="middle" class="level-desc">Plusieurs éléments</text>
+                                <text x="352.5" y="233" text-anchor="middle" class="level-desc">pertinents indépendants</text>
+                                <text x="352.5" y="255" text-anchor="middle" class="action-text">Définir</text>
+                                <text x="352.5" y="268" text-anchor="middle" class="action-text">Décrire</text>
+                                <text x="352.5" y="281" text-anchor="middle" class="action-text">Lister</text>
+                                <text x="352.5" y="294" text-anchor="middle" class="action-text">Combiner</text>
+                            </g>
+            
+                            <line x1="50" y1="400" x2="400" y2="400" class="phase-line"/> <polygon points="400,395 410,400 400,405" style="fill:#7f8c8d;"/>
+                            <text x="225" y="420" text-anchor="middle" class="phase-text">Phase Quantitative</text> <g class="level-group" id="solo-rel">
+                                <rect class="tooltip-bg" x="420" y="20" width="180" height="82"/>
+                                <text class="tooltip-text-solo" x="425" y="35">L'apprenant intègre les</text>
+                                <text class="tooltip-text-solo" x="425" y="49">différents aspects en un</text>
+                                <text class="tooltip-text-solo" x="425" y="63">tout cohérent, comprend</text>
+                                <text class="tooltip-text-solo" x="425" y="77">les relations et peut</text>
+                                <text class="tooltip-text-solo" x="425" y="91">expliquer le concept.</text>
+                                <rect x="470" y="120" width="15" height="60" class="shape color-rel"/>
+                                <rect x="495" y="120" width="15" height="60" class="shape color-rel"/>
+                                <rect x="520" y="120" width="15" height="60" class="shape color-rel"/>
+                                <path d="M477.5 120 Q 502.5 100 527.5 120" stroke="#333" fill="none" stroke-width="1"/>
+                                <path d="M477.5 180 Q 502.5 200 527.5 180" stroke="#333" fill="none" stroke-width="1"/>
+                                <text x="502.5" y="205" text-anchor="middle" class="level-title">Relationnel</text>
+                                <text x="502.5" y="220" text-anchor="middle" class="level-desc">Intégration dans</text>
+                                <text x="502.5" y="233" text-anchor="middle" class="level-desc">une structure</text>
+                                <text x="502.5" y="255" text-anchor="middle" class="action-text">Comparer</text>
+                                <text x="502.5" y="269" text-anchor="middle" class="action-text">Expliquer causes</text> <text x="502.5" y="283" text-anchor="middle" class="action-text">Séquencer</text>
+                                <text x="502.5" y="297" text-anchor="middle" class="action-text">Classer</text>
+                                <text x="502.5" y="311" text-anchor="middle" class="action-text">Analyser</text>
+                                <text x="502.5" y="325" text-anchor="middle" class="action-text">Appliquer</text>
+                                <text x="502.5" y="339" text-anchor="middle" class="action-text">Formuler quest.</text>
+                            </g>
+            
+                            <g class="level-group" id="solo-abs">
+                                <rect class="tooltip-bg" x="580" y="20" width="180" height="82"/>
+                                <text class="tooltip-text-solo" x="585" y="35">L'apprenant généralise</text>
+                                <text class="tooltip-text-solo" x="585" y="49">la structure à de nouveaux</text>
+                                <text class="tooltip-text-solo" x="585" y="63">contextes, théorise et</text>
+                                <text class="tooltip-text-solo" x="585" y="77">formule des hypothèses.</text>
+                                <text class="tooltip-text-solo" x="585" y="91">Va au-delà du donné.</text>
+                                <rect x="620" y="120" width="15" height="60" class="shape color-abs"/>
+                                <rect x="645" y="120" width="15" height="60" class="shape color-abs"/>
+                                <rect x="670" y="120" width="15" height="60" class="shape color-abs"/>
+                                <path d="M627.5 120 Q 652.5 100 677.5 120" stroke="#333" fill="none" stroke-width="1"/>
+                                <path d="M627.5 180 Q 652.5 200 677.5 180" stroke="#333" fill="none" stroke-width="1"/>
+                                <ellipse cx="652.5" cy="150" rx="50" ry="65" class="shape color-abs" fill-opacity="0.2" stroke-dasharray="3,2"/>
+                                <circle cx="700" cy="110" r="5" fill="#777"/> <circle cx="710" cy="130" r="4" fill="#777"/>
+                                <circle cx="705" cy="155" r="6" fill="#777"/> <circle cx="700" cy="180" r="3" fill="#777"/>
+                                <text x="652.5" y="205" text-anchor="middle" class="level-title">Abstrait Étendu</text>
+                                <text x="652.5" y="220" text-anchor="middle" class="level-desc">Généralisé à un</text>
+                                <text x="652.5" y="233" text-anchor="middle" class="level-desc">nouveau domaine</text>
+                                <text x="652.5" y="255" text-anchor="middle" class="action-text">Évaluer</text>
+                                <text x="652.5" y="269" text-anchor="middle" class="action-text">Théoriser</text> <text x="652.5" y="283" text-anchor="middle" class="action-text">Généraliser</text>
+                                <text x="652.5" y="297" text-anchor="middle" class="action-text">Prédire</text>
+                                <text x="652.5" y="311" text-anchor="middle" class="action-text">Créer</text>
+                                <text x="652.5" y="325" text-anchor="middle" class="action-text">Imaginer</text>
+                            </g>
+            
+                             <line x1="410" y1="400" x2="750" y2="400" class="phase-line"/> <text x="580" y="420" text-anchor="middle" class="phase-text">Phase Qualitative</text> <line x1="100" y1="225" x2="100" y2="400" class="connector-line"/>
+                            <line x1="217.5" y1="276" x2="217.5" y2="400" class="connector-line"/>
+                            <line x1="352.5" y1="299" x2="352.5" y2="400" class="connector-line"/>
+                            <line x1="502.5" y1="344" x2="502.5" y2="400" class="connector-line"/> <line x1="652.5" y1="330" x2="652.5" y2="400" class="connector-line"/> </svg>
+                    </div>
+                    <p class="text-xs text-gray-500 text-center mt-2 animated-list-item" style="transition-delay: 0.3s;">
+                        Cette taxonomie offre un cadre pour évaluer la qualité de la compréhension et guider la conception d'activités d'apprentissage progressives.
+                    </p>
+                </div>
+            </div>
+
+
+            <div id="slide-10" class="slide">
+                 <h2 class="slide-title"><i class="fas fa-question-circle"></i> Quiz : Testez vos Connaissances</h2>
+                <div class="slide-main-content-wrapper w-full max-w-3xl">
+                    <p class="text-center text-gray-600 mb-4 animated-list-item">Répondez aux questions suivantes pour évaluer votre compréhension des concepts clés de l'alignement pédagogique.</p>
+                    <div id="quiz-container" class="space-y-6">
+                        </div>
+                    <div id="quiz-score-container" class="mt-6 text-center animated-list-item" style="transition-delay: 0.5s;">
+                        </div>
+                </div>
+            </div>
+
+        </div>
+
+        <nav class="navigation-controls">
+            <button id="prevBtn" class="nav-button"><i class="fas fa-arrow-left"></i> Précédent</button>
+            <div id="slideIndicator"></div>
+            <button id="nextBtn" class="nav-button">Suivant <i class="fas fa-arrow-right"></i></button>
+        </nav>
+        <footer class="presentation-footer">
+            Alignement Pédagogique - Concept et Importance | Inspiré par Biggs (1999) | d.de Amil IRP-2025
+        </footer>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideIndicatorContainer = document.getElementById('slideIndicator');
+    let currentSlide = 0;
+    let previousSlide = 0;
+    let quizLoadedOnce = false; 
+
+    const quizData = [
+        {
+            question: "1. Quelle est la principale visée de l'alignement pédagogique ?",
+            options: [
+                "Assurer la discipline en classe",
+                "Garantir la cohérence d'un cours ou d'une formation",
+                "Augmenter la durée des cours pour couvrir plus de matière",
+                "Utiliser le plus de technologies éducatives possible"
+            ],
+            answer: "Garantir la cohérence d'un cours ou d'une formation",
+            feedback: {
+                correct: "Correct ! L'alignement pédagogique vise avant tout à assurer une forte cohérence entre les objectifs, les activités et les évaluations.",
+                incorrect: "Incorrect. L'objectif principal est la cohérence entre objectifs, activités et évaluations. La discipline ou la technologie sont secondaires."
+            }
+        },
+        {
+            question: "2. Quels sont les trois éléments clés que l'alignement pédagogique cherche à arrimer ?",
+            options: [
+                "L'enseignant, l'apprenant et le directeur",
+                "Les objectifs d'apprentissage, les activités d'apprentissage et les activités d'évaluation",
+                "Le manuel scolaire, les examens et les devoirs à la maison",
+                "Le contenu théorique, les exercices pratiques et les projets de groupe"
+            ],
+            answer: "Les objectifs d'apprentissage, les activités d'apprentissage et les activités d'évaluation",
+            feedback: {
+                correct: "Exact ! Ce sont bien les objectifs, les activités d'apprentissage et les activités d'évaluation qui doivent être alignés.",
+                incorrect: "Pas tout à fait. Les trois piliers sont : les objectifs d'apprentissage, les activités d'apprentissage, et les activités d'évaluation."
+            }
+        },
+        {
+            question: "3. Selon la taxonomie de Biggs (simplifiée), 'Retenir' et 'Comprendre' sont des verbes typiques de quel niveau d'apprentissage cognitif ?",
+            options: [
+                "Apprentissage en profondeur",
+                "Apprentissage en surface",
+                "Apprentissage psychomoteur",
+                "Apprentissage socio-affectif"
+            ],
+            answer: "Apprentissage en surface",
+            feedback: {
+                correct: "Bien joué ! 'Retenir' et 'Comprendre' caractérisent l'apprentissage en surface, axé sur la mémorisation et la compréhension de base.",
+                incorrect: "Ce n'est pas ça. 'Retenir' et 'Comprendre' relèvent de l'apprentissage en surface. L'apprentissage en profondeur implique des niveaux plus élevés comme 'Analyser' ou 'Créer'."
+            }
+        },
+        {
+            question: "4. Si les objectifs d'apprentissage visent un haut niveau taxonomique (ex: 'Analyser'), que doit-on faire concernant les activités d'évaluation ?",
+            options: [
+                "Les simplifier pour s'assurer que tous les étudiants réussissent facilement",
+                "Les rendre optionnelles pour ne pas stresser les apprenants",
+                "S'assurer qu'elles sollicitent et mesurent également des compétences de ce même haut niveau",
+                "Se concentrer uniquement sur la mémorisation des faits de base"
+            ],
+            answer: "S'assurer qu'elles sollicitent et mesurent également des compétences de ce même haut niveau",
+            feedback: {
+                correct: "Parfait ! Il est crucial que les évaluations soient alignées sur le niveau taxonomique des objectifs pour être pertinentes.",
+                incorrect: "Attention, l'alignement exige que les évaluations correspondent au niveau des objectifs. Si les objectifs sont élevés, les évaluations doivent l'être aussi."
+            }
+        },
+        {
+            question: "5. Un 'Quiz à choix multiples' portant sur des définitions est typiquement une activité d'évaluation pour quel type d'apprentissage principal ?",
+            options: [
+                "La création de nouvelles solutions",
+                "L'analyse critique de textes complexes",
+                "La mémorisation et la compréhension de base",
+                "Le développement d'habiletés psychomotrices fines"
+            ],
+            answer: "La mémorisation et la compréhension de base",
+            feedback: {
+                correct: "C'est exact ! Un QCM sur des définitions évalue principalement la mémorisation et la compréhension de base, relevant souvent de l'apprentissage en surface.",
+                incorrect: "Non. Un QCM sur des définitions teste surtout la mémorisation et la compréhension initiale, pas la création ou l'analyse profonde."
+            }
+        },
+        {
+            question: "6. Lequel de ces domaines taxonomiques concerne principalement le développement des attitudes et des valeurs ?",
+            options: ["Cognitif", "Psychomoteur", "Socio-affectif", "Métacognitif"],
+            answer: "Socio-affectif",
+            feedback: {
+                correct: "Correct ! Le domaine socio-affectif est celui qui se rapporte aux attitudes, émotions, valeurs et relations interpersonnelles.",
+                incorrect: "Incorrect. C'est le domaine socio-affectif qui traite des attitudes et des valeurs. Le cognitif concerne la pensée, le psychomoteur les gestes."
+            }
+        },
+        {
+            question: "7. Vrai ou Faux : L'alignement pédagogique implique que toutes les activités d'un cours doivent être difficiles et complexes.",
+            options: ["Vrai", "Faux"],
+            answer: "Faux",
+            feedback: {
+                correct: "Exact ! L'alignement signifie que la difficulté est appropriée aux objectifs, pas nécessairement que tout doit être complexe. Il faut une progression.",
+                incorrect: "Faux. L'alignement pédagogique vise la cohérence et la progression. Certaines étapes, notamment initiales, nécessitent des activités plus simples axées sur la compréhension de base."
+            }
+        },
+        {
+            question: "8. Quelle est l'implication principale si les activités d'apprentissage sont de haut niveau taxonomique mais que l'évaluation finale est un simple QCM de mémorisation ?",
+            options: [
+                "C'est un excellent moyen de vérifier les bases solides.",
+                "Il y a un désalignement : l'évaluation ne mesure pas les compétences réellement travaillées.",
+                "Cela permet aux étudiants d'obtenir de bonnes notes facilement.",
+                "C'est la meilleure approche pour les cours longs."
+            ],
+            answer: "Il y a un désalignement : l'évaluation ne mesure pas les compétences réellement travaillées.",
+            feedback: {
+                correct: "Absolument ! C'est un cas typique de désalignement. L'évaluation doit correspondre à la complexité des objectifs et des activités.",
+                incorrect: "C'est un problème de désalignement. L'évaluation ne refléterait pas les apprentissages de haut niveau qui ont été visés et travaillés."
+            }
+        },
+        {
+            question: "9. Organiser un débat argumenté en classe est une activité d'apprentissage qui favorise principalement :",
+            options: [
+                "La mémorisation de dates historiques.",
+                "L'apprentissage en profondeur (analyse, évaluation, argumentation).",
+                "Le développement de la coordination motrice.",
+                "La compréhension passive d'un exposé."
+            ],
+            answer: "L'apprentissage en profondeur (analyse, évaluation, argumentation).",
+            feedback: {
+                correct: "Très bien ! Un débat sollicite des compétences cognitives de haut niveau comme l'analyse, l'évaluation d'arguments et la communication orale structurée.",
+                incorrect: "Un débat est une activité active qui va bien au-delà de la simple mémorisation. Il vise l'apprentissage en profondeur."
+            }
+        },
+        {
+            question: "10. Pourquoi insiste-t-on sur la clarification des objectifs d'apprentissage au début d'une démarche d'alignement ?",
+            options: [
+                "Pour que le cours paraisse plus académique et sérieux.",
+                "Uniquement pour satisfaire des exigences administratives.",
+                "Parce qu'ils servent de point de départ pour choisir des activités et des évaluations cohérentes.",
+                "Pour pouvoir les réutiliser dans d'autres cours sans modification."
+            ],
+            answer: "Parce qu'ils servent de point de départ pour choisir des activités et des évaluations cohérentes.",
+            feedback: {
+                correct: "C'est la raison principale ! Des objectifs clairs sont le fondement sur lequel repose tout l'édifice pédagogique aligné.",
+                incorrect: "Des objectifs clairs sont essentiels car ils guident le choix des activités et des évaluations. Ce n'est pas qu'une formalité."
+            }
+        }
+    ];
+
+    let score = 0;
+    const quizContainer = document.getElementById('quiz-container');
+    const scoreContainer = document.getElementById('quiz-score-container');
+
+    function loadQuiz() {
+        if (!quizContainer) return; 
+        quizContainer.innerHTML = ''; 
+        if(scoreContainer) scoreContainer.innerHTML = '';
+        score = 0;
+        quizLoadedOnce = true;
+
+        quizData.forEach((qData, index) => {
+            const questionItem = document.createElement('div');
+            questionItem.classList.add('quiz-question-item', 'bg-white', 'p-5', 'rounded-lg', 'shadow-md', 'animated-list-item');
+            
+            const questionTextEl = document.createElement('p');
+            questionTextEl.classList.add('question-text', 'text-lg', 'font-semibold', 'text-gray-700', 'mb-3');
+            questionTextEl.textContent = qData.question;
+            questionItem.appendChild(questionTextEl);
+
+            const optionsContainerEl = document.createElement('div');
+            optionsContainerEl.classList.add('options', 'space-y-2');
+
+            qData.options.forEach(optionText => {
+                const button = document.createElement('button');
+                button.classList.add('option-button');
+                button.textContent = optionText;
+                button.addEventListener('click', (e) => selectAnswer(e, qData, questionItem));
+                optionsContainerEl.appendChild(button);
+            });
+            questionItem.appendChild(optionsContainerEl);
+
+            const feedbackDiv = document.createElement('div');
+            feedbackDiv.classList.add('feedback-text', 'mt-3', 'text-sm');
+            questionItem.appendChild(feedbackDiv);
+
+            quizContainer.appendChild(questionItem);
+        });
+    }
+
+    function selectAnswer(event, questionData, questionItemElement) {
+        const selectedButton = event.target;
+        const allOptionsInQuestion = questionItemElement.querySelectorAll('.option-button');
+        
+        allOptionsInQuestion.forEach(opt => {
+            opt.disabled = true;
+            opt.classList.remove('selected'); 
+        });
+
+        const feedbackDiv = questionItemElement.querySelector('.feedback-text');
+
+        if (selectedButton.textContent === questionData.answer) {
+            selectedButton.classList.add('correct');
+            feedbackDiv.innerHTML = questionData.feedback.correct; 
+            feedbackDiv.classList.add('correct-feedback');
+            feedbackDiv.classList.remove('incorrect-feedback');
+            score++;
+        } else {
+            selectedButton.classList.add('incorrect');
+            feedbackDiv.innerHTML = questionData.feedback.incorrect; 
+            feedbackDiv.classList.add('incorrect-feedback');
+            feedbackDiv.classList.remove('correct-feedback');
+            allOptionsInQuestion.forEach(opt => {
+                if (opt.textContent === questionData.answer) {
+                    opt.classList.add('correct'); 
+                }
+            });
+        }
+        updateQuizScoreDisplay();
+    }
+
+    function updateQuizScoreDisplay() {
+        let answeredQuestions = 0;
+        quizData.forEach((qData, index) => {
+            const questionItem = quizContainer.children[index];
+            if (questionItem && questionItem.querySelector('.option-button:disabled')) {
+                answeredQuestions++;
+            }
+        });
+
+        if (answeredQuestions === quizData.length && scoreContainer) {
+            scoreContainer.innerHTML = `Votre score : <strong class="text-2xl">${score} / ${quizData.length}</strong>`;
+            if (score === quizData.length) {
+                scoreContainer.innerHTML += '<br><span class="text-green-600 font-semibold">Excellent ! Vous maîtrisez les concepts clés !</span>';
+            } else if (score >= quizData.length * 0.7) { 
+                scoreContainer.innerHTML += '<br><span class="text-orange-500 font-semibold">Très bien ! Quelques points à revoir pour une maîtrise parfaite.</span>';
+            }  else if (score >= quizData.length / 2) { 
+                scoreContainer.innerHTML += '<br><span class="text-yellow-600 font-semibold">Pas mal ! Continuez à réviser pour renforcer votre compréhension.</span>';
+            } else {
+                scoreContainer.innerHTML += '<br><span class="text-red-500 font-semibold">Revoyez attentivement les concepts pour améliorer votre compréhension.</span>';
+            }
+        }
+    }
+
+
+    function createSlideIndicators() {
+        slideIndicatorContainer.innerHTML = ''; 
+        slides.forEach((_, index) => {
+            const indicator = document.createElement('button');
+            indicator.classList.add('indicator-dot');
+            if (index === currentSlide) {
+                indicator.classList.add('active');
+            }
+            indicator.addEventListener('click', () => {
+                previousSlide = currentSlide;
+                currentSlide = index;
+                showSlide(currentSlide, previousSlide);
+            });
+            slideIndicatorContainer.appendChild(indicator);
+        });
+    }
+    
+    function updateSlideIndicators() {
+        const indicators = slideIndicatorContainer.children;
+        Array.from(indicators).forEach((indicator, index) => {
+            indicator.classList.toggle('active', index === currentSlide);
+        });
+    }
+
+    function showSlide(index, oldIndex) {
+        slides.forEach((slide, i) => {
+            slide.classList.remove('active', 'exit-left');
+             if (i === oldIndex && i !== index) {
+                const animatedItemsOld = slide.querySelectorAll('.animated-list-item, .concept-circle, .timeline-step, .quiz-question-item, .solo-svg-container');
+                animatedItemsOld.forEach(item => {
+                    item.style.opacity = '0';
+                    item.style.transform = 'translateY(15px)';
+                });
+                 if (index > oldIndex) {
+                    slide.classList.add('exit-left');
+                }
+            }
+        });
+        
+        const currentSlideElement = slides[index];
+        if (currentSlideElement) {
+            currentSlideElement.classList.add('active');
+            
+            const scrollableContent = currentSlideElement.querySelector('.slide-main-content-wrapper') || currentSlideElement;
+            if (scrollableContent) { 
+                scrollableContent.scrollTop = 0;
+            }
+
+            const animatedItemsNew = currentSlideElement.querySelectorAll('.animated-list-item, .concept-circle, .timeline-step, .quiz-question-item, .solo-svg-container');
+            void currentSlideElement.offsetWidth; 
+            animatedItemsNew.forEach(item => {
+                item.style.transition = 'none'; 
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(15px)';
+                
+                item.offsetHeight; 
+
+                item.style.transition = 'opacity 0.4s ease-out, transform 0.4s ease-out';
+                const delay = item.style.transitionDelay || '0s'; 
+                item.style.transitionDelay = delay;
+
+                item.style.opacity = '1';
+                item.style.transform = 'translateY(0)';
+            });
+
+            if (currentSlideElement.id === 'slide-10') { // ID de la slide Quiz mis à jour
+                if (!quizLoadedOnce || (quizContainer && quizContainer.children.length === 0) ) { 
+                   loadQuiz();
+                }
+            }
+        }
+
+        prevBtn.disabled = index === 0;
+        nextBtn.disabled = index === slides.length - 1;
+        updateSlideIndicators();
+    }
+
+    prevBtn.addEventListener('click', () => {
+        if (currentSlide > 0) {
+            previousSlide = currentSlide;
+            currentSlide--;
+            showSlide(currentSlide, previousSlide);
+        }
+    });
+
+    nextBtn.addEventListener('click', () => {
+        if (currentSlide < slides.length - 1) {
+            previousSlide = currentSlide;
+            currentSlide++;
+            showSlide(currentSlide, previousSlide);
+        }
+    });
+
+    const flipCards = document.querySelectorAll('.flip-card');
+    flipCards.forEach(card => {
+        card.addEventListener('click', function() {
+            this.classList.toggle('flipped');
+        });
+        card.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                this.classList.toggle('flipped');
+            }
+        });
+        card.setAttribute('tabindex', '0'); 
+    });
+    
+    createSlideIndicators(); 
+    showSlide(currentSlide, -1); 
+});
+</script>
+
+</body>
+</html>
