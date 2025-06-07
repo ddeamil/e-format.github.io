@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation : Le Plan de Nettoyage et de Désinfection (PND)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-1ycn6IcaQQ40/MKBW2W4Rhis/DbILU74C1vSrLJxCq57o941Ym01SwNsOMqvEBFlcgUa6xLiPY/NS5R+E6ztJQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <style>
+        :root { --main-green: #388E3C; --light-green: #4CAF50; --accent-yellow: #FBC02D; --bg-light: #f0f4f8; --card-bg: #ffffff; --text-dark: #333; --text-light: #555; }
+        html, body { height: 100%; }
+        body { margin: 0; padding: 0; background-color: var(--bg-light); font-family: Arial, sans-serif; line-height: 1.6; color: var(--text-dark); display: flex; flex-direction: column; }
+        .main-container { margin: 0 auto; max-width: 1100px; width: 100%; padding: 20px; background-color: transparent; flex-grow: 1; }
+        header { background-color: var(--main-green); color: white; padding: 20px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        header i { color: white; font-size: 3em; margin-bottom: 10px; }
+        header h1 { color: white; font-size: 2.2em; font-weight: bold; margin: 0 0 8px 0; }
+        header p { color: #e8f5e9; font-size: 1.1em; margin: 0 0 15px 0; }
+        .header-tags span { display: inline-block; background-color: #E8F5E9; color: #388E3C; padding: 6px 12px; border-radius: 15px; font-size: 0.85em; font-weight: bold; margin: 5px; border: 1px solid #a5d6a7; }
+        .spa-page { display: none; opacity: 0; animation: fadeInAnimation 0.5s ease-in-out forwards; }
+        @keyframes fadeInAnimation { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .spa-page.active { display: block; }
+        .main-page-title { color: var(--main-green); font-size: 1.8em; font-weight:bold; margin-top: 10px; margin-bottom: 25px; display: flex; align-items: center; border-bottom: 2px solid #E8F5E9; padding-bottom: 12px; }
+        .main-page-title i { margin-right: 15px; color: var(--light-green); font-size: 1.2em; }
+        .content-block-card { background-color: var(--card-bg); padding: 25px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.08); margin-bottom: 25px; border: 1px solid #e8e8e8; }
+        .content-block-card h4 { font-size: 1.5em; margin-top:0; margin-bottom: 15px; display: flex; align-items: center; color: var(--main-green); }
+        .content-block-card h4 i { margin-right: 12px; font-size: 1em; color: var(--light-green); }
+        .content-block-card h5 { font-size: 1.2em; color: var(--light-green); margin-top: 20px; margin-bottom: 10px; font-weight: bold; border-left: 3px solid var(--accent-yellow); padding-left: 10px; }
+        .objectives-grid-MA { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .objectives-column-MA { padding: 1.5rem; border-radius: 0.5rem; border-width: 1px; border-style: solid; }
+        .objectives-column-MA h5 { font-size: 1.2rem; margin: 0 0 1rem 0; font-weight: 600; display: flex; align-items: center; }
+        .objectives-column-MA h5 i { margin-right: 0.75rem; }
+        .objectives-column-MA ul { list-style-type: disc; list-style-position: inside; padding-left: 0; font-size: 0.95rem; color: #374151; }
+        .objectives-column-MA-savoir { background-color: #f0f9ff; border-color: #bae6fd; }
+        .objectives-column-MA-savoir h5 { color: #0369a1; }
+        .objectives-column-MA-savoirfaire { background-color: #f7fee7; border-color: #d9f99d; }
+        .objectives-column-MA-savoirfaire h5 { color: #4d7c0f; }
+        .objectives-column-MA-comprendre { background-color: #fffbeb; border-color: #fde68a; }
+        .objectives-column-MA-comprendre h5 { color: #b45309; }
+        .theme-highlight { background-color: #E8F5E9; border-left: 5px solid var(--light-green); padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .theme-danger { background-color: #ffebee; border-left: 5px solid #d9534f; padding: 20px; margin: 20px 0; border-radius: 0 8px 8px 0; }
+        .timeline-card { background-color: var(--card-bg); padding: 15px 5px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); margin-bottom: 35px; display: flex; justify-content: space-around; align-items: flex-start; }
+        @media (max-width: 880px) { .timeline-card { overflow-x: auto; -webkit-overflow-scrolling: touch; justify-content: flex-start; padding-right: 15px; padding-bottom: 10px; } .timeline-step { flex-basis: auto; flex-grow: 0; flex-shrink: 0; min-width: 70px; font-size: 0.7em; } .timeline-connector { min-width: 15px; flex-grow: 0; margin: 20px 5px 0 5px; } }
+        .timeline-step { display: flex; flex-direction: column; align-items: center; text-align: center; text-decoration: none; color: var(--text-light); transition: transform 0.2s ease; padding:5px; border-radius: 8px; flex-basis: 0; flex-grow: 1; min-width: 65px; font-size: 0.7em; cursor:pointer;}
+        .timeline-step-circle { width: 38px; height: 38px; border-radius: 50%; border: 2px solid #a5d6a7; background-color: #E8F5E9; display: flex; justify-content: center; align-items: center; margin-bottom: 8px; color: var(--light-green); transition: all 0.3s ease; font-size:1.1em; }
+        .timeline-step.active .timeline-step-circle { width: 42px; height: 42px; border: 3px solid var(--main-green); background-color: var(--light-green); color: white; font-weight: bold; }
+        .timeline-step.active span { color: var(--main-green); font-weight: bold; }
+        .timeline-connector { width: 10px; height: 2px; background-color: #a5d6a7; margin-top: 20px; flex-grow:0.1; }
+        .protocol-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; }
+        .protocol-accordion { background: var(--card-bg); border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e0e0e0; transition: all 0.3s ease; }
+        .protocol-header { padding: 20px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .protocol-header h5 { font-size: 1.2em; color: var(--main-green); margin: 0; display: flex; align-items: center; }
+        .protocol-header h5 i { margin-right: 10px; }
+        .protocol-header .toggle-icon { font-size: 1.2em; color: var(--main-green); transition: transform 0.3s ease; }
+        .protocol-accordion.active .toggle-icon { transform: rotate(45deg); }
+        .protocol-details { padding: 0 20px; max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out, padding 0.4s ease-out; }
+        .protocol-accordion.active .protocol-details { max-height: 800px; padding-bottom: 20px; transition: max-height 0.6s ease-in, padding 0.6s ease-in; }
+        .protocol-details p { font-size: 0.9em; color: var(--text-light); margin: 5px 0 10px 0; display: flex; align-items: start; border-bottom: 1px solid #f0f0f0; padding-bottom: 10px; }
+        .protocol-details p i { width: 20px; text-align: center; margin-right: 5px; color: var(--main-green); }
+        .protocol-details .important-note { color: #b45309; font-weight: bold; background-color: #fffbeb; padding: 5px; border-radius: 4px; border: 1px solid #fde68a; }
+        .protocol-steps h6 { font-size: 1em; color: var(--main-green); margin:15px 0 10px 0; }
+        .protocol-steps ul { list-style: none; padding: 0; font-size: 0.9em; width: 100%; }
+        .protocol-steps li { margin-bottom: 8px; display: flex; align-items: center; }
+        .protocol-steps li i { margin-right: 8px; color: var(--light-green); width: 20px; text-align: center; }
+        .flip-card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+        .flip-card { background-color: transparent; height: 240px; perspective: 1000px; cursor: pointer; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card:hover .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .flip-card-front { background: linear-gradient(135deg, var(--main-green), var(--light-green)); color: white; }
+        .flip-card-front .flip-card-icon { font-size: 3.5em; margin-bottom: 15px; }
+        .flip-card-front h5 { color: white; font-size: 1.8em; margin: 0; }
+        .flip-card-back { background-color: var(--card-bg); color: var(--text-dark); transform: rotateY(180deg); border: 1px solid #e0e0e0; }
+        .flip-card-back h5 { color: var(--main-green); font-size: 1.5em; margin: 0 0 10px 0; }
+        .flip-card-back p { font-size: 0.95em; color: var(--text-light); margin: 0; line-height: 1.5; }
+        .haccp-diagram .line { stroke: #a5d6a7; stroke-width: 2.5; }
+        .haccp-diagram .box { rx: 8; ry: 8; stroke-width: 1.5; }
+        .haccp-diagram .main-box { fill: #E8F5E9; stroke: var(--main-green); }
+        .haccp-diagram .sub-box { fill: #f0f9ff; stroke: #0369a1; }
+        .haccp-diagram .highlight-box { fill: #fffbeb; stroke: var(--accent-yellow); stroke-width: 3; }
+        .haccp-diagram .text-container { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100%; text-align: center; color: var(--text-dark); font-size: 0.9em; padding: 5px; box-sizing: border-box;}
+        .haccp-diagram .text-container i { font-size: 1.5em; margin-bottom: 5px; }
+        .haccp-diagram .text-container strong { font-size: 1.1em; }
+        .haccp-diagram .main-box .text-container i { color: var(--main-green); }
+        .haccp-diagram .sub-box .text-container i { color: #0369a1; }
+        .haccp-diagram .highlight-box .text-container i { color: #b45309; }
+        
+        .dnd-activity-container { display: none; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px; border-top: 1px dashed #ddd; padding-top: 15px; }
+        .dnd-source-list, .dnd-drop-zone { min-height: 200px; padding: 10px; border-radius: 8px; }
+        .dnd-source-list { background-color: #f8f9fa; border: 1px solid #e9ecef; }
+        .dnd-drop-zone { background-color: #f0f4f8; border: 2px dashed #a5d6a7; }
+        .dnd-item { background-color: white; color: var(--text-dark); padding: 10px; margin-bottom: 8px; border-radius: 4px; border-left: 4px solid var(--accent-yellow); box-shadow: 0 2px 4px rgba(0,0,0,0.06); cursor: grab; display: flex; align-items: center; }
+        .dnd-item i { margin-right: 10px; color: var(--main-green); }
+        .dnd-item.dragging { opacity: 0.5; }
+        .dnd-drop-zone.drag-over { border-color: var(--main-green); background-color: #e8f5e9; }
+        .dnd-controls { grid-column: 1 / -1; display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 15px; }
+        .dnd-feedback { flex-grow: 1; font-size: 0.9em; font-weight: bold; }
+        .dnd-feedback.correct { color: #28a745; }
+        .dnd-feedback.incorrect { color: #d9534f; }
+        .dnd-btn { font-size: 0.9em; padding: 8px 15px; border-radius: 5px; border: none; cursor: pointer; color: white; }
+        .dnd-check-btn { background-color: var(--light-green); }
+        .dnd-reset-btn { background-color: #757575; }
+        .practice-btn { display: inline-block; background-color: var(--accent-yellow); color: #333; font-weight: bold; padding: 10px 18px; border-radius: 5px; border: none; cursor: pointer; margin-top: 20px; transition: background-color 0.2s; }
+        .practice-btn:hover { background-color: #fdd835; }
+
+        .quiz-progress-bar-container { width: 100%; background-color: #e0e0e0; border-radius: 4px; margin-bottom: 15px; height: 8px; overflow:hidden; }
+        .quiz-progress-bar { height: 100%; width: 0%; background-color: var(--light-green); border-radius: 4px; transition: width 0.3s ease-in-out; }
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; font-size: 0.9em; color: var(--text-light); }
+        .quiz-option-btn { display: block; width: 100%; text-align: left; padding: 12px 15px; margin-bottom: 10px; background-color: #E8F5E9; border: 1px solid #a5d6a7; color: var(--main-green); border-radius: 5px; cursor: pointer; transition: all 0.2s; font-size: 1em; }
+        .quiz-option-btn:hover:not([disabled]) { background-color: #dcedda; border-color: #8fbc8f; }
+        .quiz-option-btn.correct { background-color: #5cb85c !important; border-color: #4cae4c !important; color: white !important; font-weight:bold; }
+        .quiz-option-btn.incorrect { background-color: #d9534f !important; border-color: #d43f3a !important; color: white !important; }
+        .quiz-option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+        .activity-feedback { margin-top: 15px; padding: 12px; border-radius: 5px; font-size: 0.95em; line-height:1.5; display:none; }
+        .activity-feedback.correct { background-color: #e6ffed; border-left: 5px solid #28a745; color: #155724; }
+        .activity-feedback.incorrect { background-color: #ffebee; border-left: 5px solid #d9534f; color: #b71c1c; }
+        .quiz-nav-btn { padding: 10px 20px; font-size: 1em; border-radius: 5px; border: none; cursor: pointer; background-color: var(--light-green); color: white; }
+        .quiz-results-screen { text-align: center; }
+        .quiz-results-icon { font-size: 3.5em; margin: 15px 0; }
+        .quiz-results-score-text { font-size: 1.4em; font-weight: bold; margin-bottom: 10px; }
+        .quiz-results-message { color: var(--text-light); margin-bottom: 30px; font-size: 1.05em; }
+        .log-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.9em; } .log-table th, .log-table td { border: 1px solid #ddd; padding: 10px; text-align: left; } .log-table th { background-color: #E8F5E9; color: var(--main-green); }
+        .open-question { margin-bottom: 20px; } .open-question p { font-weight: bold; } .reveal-answer-btn { font-size: 0.8em; padding: 4px 8px; margin-left: 10px; cursor:pointer; background-color: #e0e0e0; border:1px solid #ccc; border-radius:4px; }
+        .model-answer { display: none; background-color: #f8f9fa; border: 1px dashed #ccc; padding: 10px; margin-top: 5px; border-radius: 5px; font-style: italic; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animated-list-item { background-color: var(--card-bg); margin-bottom: 10px; padding: 15px; border-radius: 8px; border-left: 4px solid; display: flex; align-items: center; opacity: 0; animation: fadeInUp 0.5s ease-out forwards; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .animated-list-item i { font-size: 1.5em; margin-right: 15px; }
+        .color-1 { border-color: #3b82f6; } .color-1 i { color: #3b82f6; }
+        .color-2 { border-color: #f59e0b; } .color-2 i { color: #f59e0b; }
+        .color-3 { border-color: #ef4444; } .color-3 i { color: #ef4444; }
+        .color-4 { border-color: #10b981; } .color-4 i { color: #10b981; }
+        .color-5 { border-color: #10b981; } .color-5 i { color: #10b981; }
+        .nav-arrow { display: inline-flex; align-items: center; justify-content: center; width: 45px; height: 45px; background-color: var(--light-green); color: white; border-radius: 50%; text-decoration: none; font-size: 1.3em; box-shadow: 0 2px 5px rgba(0,0,0,0.2); transition: all 0.2s; cursor:pointer; }
+        .nav-arrow:hover:not(.disabled) { background-color: var(--main-green); transform: scale(1.05); } .nav-arrow.disabled { background-color: #cccccc; opacity: 0.6; cursor: not-allowed; transform: none; }
+        footer { background-color: var(--text-dark); color: #cccccc; padding: 25px 20px; text-align: center; }
+        .sinner-container { display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .sinner-quadrant { transition: all 0.3s ease; cursor: pointer; }
+        .sinner-quadrant:hover { fill-opacity: 0.95; stroke: white; stroke-width: 2px; }
+        .sinner-container foreignObject { pointer-events: none; }
+        #sinner-tooltip { position: absolute; display: none; background-color: rgba(0,0,0,0.8); color: white; padding: 10px 15px; border-radius: 5px; font-size: 0.9em; max-width: 200px; text-align: center; pointer-events: none; z-index: 1000; }
+    </style>
+</head>
+
+<body>
+    <header>
+        <i class="fas fa-spray-can"></i>
+        <h1>Le Plan de Nettoyage et de Désinfection</h1>
+        <p>Maîtriser les protocoles d'hygiène pour la sécurité alimentaire.</p>
+        <div class="header-tags">
+            <span>HACCP</span>
+            <span>Sécurité Alimentaire</span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <nav class="timeline-card">
+            <a class="timeline-step" data-pageindex="0" title="Objectifs"><div class="timeline-step-circle"><i class="fas fa-bullseye"></i></div><span>Objectifs</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="1" title="Introduction"><div class="timeline-step-circle"><i class="fas fa-info"></i></div><span>Intro</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="2" title="Lire un protocole"><div class="timeline-step-circle"><i class="fas fa-book-open"></i></div><span>Protocole</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="3" title="Exploration"><div class="timeline-step-circle"><i class="fas fa-search"></i></div><span>Explore</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="4" title="Produits & Gestes"><div class="timeline-step-circle"><i class="fas fa-soap"></i></div><span>Produits</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="5" title="La Méthode"><div class="timeline-step-circle"><i class="fas fa-list-ol"></i></div><span>Méthode</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="6" title="La Traçabilité"><div class="timeline-step-circle"><i class="fas fa-clipboard-check"></i></div><span>Suivi</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="7" title="Règles Clés"><div class="timeline-step-circle"><i class="fas fa-star"></i></div><span>Règles</span></a> <div class="timeline-connector"></div>
+            <a class="timeline-step" data-pageindex="8" title="Évaluation"><div class="timeline-step-circle"><i class="fas fa-graduation-cap"></i></div><span>Éval</span></a>
+        </nav>
+
+        <div id="spa-pages-container">
+            <div id="page-objectifs" class="spa-page"><h2 class="main-page-title"><i class="fas fa-bullseye"></i>Objectifs Pédagogiques</h2><div class="content-block-card"><div style="display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center;"><i class="fas fa-image" style="font-size:3em; color:var(--light-green); margin-bottom:10px;"></i><p style="color:#555;">Emplacement pour votre image de présentation</p></div></div><div class="content-block-card"><div class="objectives-grid-MA"><div class="objectives-column-MA objectives-column-MA-savoir"><h5><i class="fas fa-lightbulb"></i>Savoir</h5><ul><li>Définir ce qu'est un PND et son rôle obligatoire.</li><li>Distinguer un détergent d'un désinfectant.</li></ul></div><div class="objectives-column-MA objectives-column-MA-savoirfaire"><h5><i class="fas fa-list"></i>Savoir-faire</h5><ul><li>Lister les informations clés d'un protocole (QQOQCP).</li><li>Décrire les 4 étapes du nettoyage.</li></ul></div><div class="objectives-column-MA objectives-column-MA-comprendre"><h5><i class="fas fa-project-diagram"></i>Comprendre</h5><ul><li>Expliquer l'importance du dosage et du temps de contact.</li><li>Justifier la nécessité de la traçabilité.</li></ul></div></div></div></div>
+            
+            <div id="page-module1" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-info-circle"></i>Module 1 : Le PND, un Pilier de Votre Responsabilité</h2>
+                <div class="content-block-card">
+                    <h4><i class="fas fa-exclamation-triangle"></i>Pourquoi le PND est-il obligatoire ?</h4>
+                    <p>Le Plan de Nettoyage et Désinfection est une obligation légale car la propreté visible ne suffit pas. Les plus grands dangers en cuisine sont les <strong>micro-organismes invisibles à l'œil nu</strong>. Une cuisine qui "semble propre" peut en réalité être couverte de microbes pathogènes, capables de provoquer de graves intoxications alimentaires.</p>
+                </div>
+                <div class="content-block-card">
+                    <h4><i class="fas fa-podcast"></i>Approfondir avec l'audio</h4>
+                    <div style="display:flex; align-items:center; justify-content:center; flex-direction:column; text-align:center; padding: 20px 0;">
+                        <i class="fas fa-microphone-alt" style="font-size: 2.5em; color: var(--light-green); margin-bottom: 15px;"></i>
+                        <p style="color:#555;">Emplacement pour votre lecteur audio</p>
+                    </div>
+                </div>
+                <div class="content-block-card">
+                    <h4><i class="fas fa-sitemap"></i>Le PND dans le Contexte Global</h4>
+                    <svg viewBox="0 0 500 420" class="haccp-diagram" width="100%" style="margin-top: 15px;">
+                        <g>
+                            <rect x="150" y="10" width="200" height="80" class="box main-box" />
+                            <foreignObject x="150" y="10" width="200" height="80">
+                                <div class="text-container"><i class="fas fa-shield-alt"></i><strong>Plan de Maîtrise Sanitaire (PMS)</strong></div>
+                            </foreignObject>
+                        </g>
+                        <path d="M 250 90 V 130" class="line" />
+                        <path d="M 125 130 H 375" class="line" />
+                        <path d="M 125 130 V 150" class="line" />
+                        <path d="M 375 130 V 150" class="line" />
+                        <g>
+                            <rect x="25" y="150" width="200" height="100" class="box sub-box" />
+                            <foreignObject x="25" y="150" width="200" height="100">
+                                <div class="text-container"><i class="fas fa-tasks"></i><strong>Bonnes Pratiques d'Hygiène (BPH)</strong><small>(Pré-requis)</small></div>
+                            </foreignObject>
+                        </g>
+                        <g>
+                            <rect x="275" y="150" width="200" height="100" class="box sub-box" />
+                            <foreignObject x="275" y="150" width="200" height="100">
+                                <div class="text-container"><i class="fas fa-project-diagram"></i><strong>Plan HACCP</strong><small>(Analyse des dangers)</small></div>
+                            </foreignObject>
+                        </g>
+                        <path d="M 125 250 V 290" class="line" />
+                        <g>
+                             <rect x="25" y="290" width="200" height="100" class="box highlight-box" />
+                             <foreignObject x="25" y="290" width="200" height="100">
+                                <div class="text-container"><i class="fas fa-spray-can"></i><strong>Plan de Nettoyage et Désinfection (PND)</strong><small>NOTRE SUJET</small></div>
+                            </foreignObject>
+                        </g>
+                    </svg>
+                </div>
+                <div class="content-block-card">
+                    <h4><i class="fas fa-question-circle"></i>Testez vos connaissances</h4>
+                    <div id="quiz-intro"></div>
+                </div>
+            </div>
+            
+            <div id="page-module2" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-book-open"></i>Module 2 : Comprendre un Protocole - La Règle QQOQCP</h2>
+                <div class="content-block-card">
+                    <h4><i class="fas fa-cogs"></i>La structure d'un protocole efficace</h4>
+                    <p>Chaque protocole suit une structure logique qui répond à la méthode <strong>QQOQCP</strong>. Passez votre souris sur chaque carte pour la retourner et découvrir sa signification dans notre contexte.</p>
+                    <div id="qqoqcp-container" class="flip-card-grid"></div>
+                </div>
+            </div>
+            
+            <div id="page-exploration" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-search"></i>Exploration des Protocoles</h2>
+                <div class="content-block-card">
+                    <p>Explorez les protocoles du plan de nettoyage. Pour chaque protocole, apprenez d'abord les étapes, puis cliquez sur le bouton <strong>"Mettez-vous à l'épreuve !"</strong> pour passer à l'activité interactive et tester vos connaissances.</p>
+                    <div class="protocol-grid" id="protocol-grid-container"></div>
+                </div>
+            </div>
+            
+            <div id="page-produits" class="spa-page"><h2 class="main-page-title"><i class="fas fa-soap"></i>Module 3 : Les Bons Produits et la Bonne Méthode</h2><div class="content-block-card"><h4><i class="fas fa-key"></i>Nettoyer VS Désinfecter</h4><ul><li><strong>Nettoyer (Détergent) :</strong> Enlever la saleté <strong>visible</strong>.</li><li><strong>Désinfecter (Désinfectant) :</strong> Tuer les microbes <strong>invisibles</strong>.</li></ul><div class="theme-highlight"><p><strong>Analogie Clé :</strong> La saleté fait comme un <strong>bouclier pour les microbes</strong>. Un désinfectant ne peut pas fonctionner si la surface est sale. Il faut donc <strong>toujours nettoyer AVANT de désinfecter</strong>.</p></div></div><div class="content-block-card"><h4><i class="fas fa-lightbulb"></i>Le secret d'un nettoyage efficace : Le T.A.C.T.</h4><p>Un nettoyage réussi repose sur l'équilibre de quatre facteurs, connu sous le nom de <strong>Cercle de Sinner</strong>. Survolez chaque section du cercle pour en savoir plus.</p><div class="sinner-container"><svg id="sinner-circle" viewBox="0 0 200 200" width="300" height="300"><g><path id="sinner-chimie" class="sinner-quadrant" d="M100 100 L100 0 A100 100 0 0 1 200 100 Z" fill="#66BB6A" data-info="<strong>Chimie :</strong> Le choix du bon produit (détergent, désinfectant) et son dosage correct."></path><path id="sinner-temps" class="sinner-quadrant" d="M100 100 L200 100 A100 100 0 0 1 100 200 Z" fill="#FFCA28" data-info="<strong>Temps :</strong> La durée pendant laquelle le produit doit agir pour être efficace (temps de contact)."></path><path id="sinner-action" class="sinner-quadrant" d="M100 100 L100 200 A100 100 0 0 1 0 100 Z" fill="#EF5350" data-info="<strong>Action Mécanique :</strong> L'énergie fournie pour décoller la saleté (frotter, brosser, pression)."></path><path id="sinner-temp" class="sinner-quadrant" d="M100 100 L0 100 A100 100 0 0 1 100 0 Z" fill="#42A5F5" data-info="<strong>Température :</strong> La chaleur de l'eau, qui peut augmenter l'efficacité d'un produit."></path><foreignObject x="135" y="35" width="30" height="30"><i class="fas fa-flask" style="color:white; font-size:24px;"></i></foreignObject><foreignObject x="135" y="135" width="30" height="30"><i class="fas fa-hourglass-half" style="color:white; font-size:24px;"></i></foreignObject><foreignObject x="35" y="135" width="30" height="30"><i class="fas fa-hands-wash" style="color:white; font-size:24px;"></i></foreignObject><foreignObject x="35" y="35" width="30" height="30"><i class="fas fa-thermometer-half" style="color:white; font-size:24px;"></i></foreignObject></g><circle cx="100" cy="100" r="40" fill="white"/><text x="100" y="105" font-size="10" text-anchor="middle" fill="#333" font-weight="bold">T.A.C.T.</text></svg></div><div class="theme-highlight"><p><strong>Principe :</strong> Ces quatre facteurs sont interdépendants. Si vous diminuez l'un, vous devez augmenter un ou plusieurs autres pour obtenir le même résultat !</p></div></div><div class="content-block-card"><h4><i class="fas fa-exclamation-triangle"></i>Pièges à Éviter</h4><div class="theme-danger"><h5><strong>Mélanges Dangereux</strong></h5><p>Ne JAMAIS mélanger les produits entre eux, et surtout pas l'eau de Javel avec un produit acide (détartrant, vinaigre). Cela dégage des gaz toxiques très dangereux !</p></div></div><div class="content-block-card"><h4><i class="fas fa-question-circle"></i>Testez votre nouvelle expertise</h4><div id="quiz-produits"></div></div></div>
+            
+            <div id="page-methode" class="spa-page"><h2 class="main-page-title"><i class="fas fa-list-ol"></i>Module 4 : La Méthode Structurée</h2><div class="content-block-card"><h4><i class="fas fa-shoe-prints"></i>Les 4 Étapes Incontournables</h4><ol style="list-style:none; padding-left:0;"><li class="animated-list-item color-1" style="animation-delay:0.1s;"><i class="fas fa-sort-numeric-up-alt"></i><strong>1. Pré-nettoyage</strong></li><li class="animated-list-item color-2" style="animation-delay:0.2s;"><i class="fas fa-sort-numeric-up-alt"></i><strong>2. Nettoyage</strong></li><li class="animated-list-item color-4" style="animation-delay:0.3s;"><i class="fas fa-sort-numeric-up-alt"></i><strong>3. Désinfection</strong></li><li class="animated-list-item" style="border-color: #6366f1; animation-delay:0.4s;"><i class="fas fa-sort-numeric-up-alt" style="color: #6366f1;"></i><strong>4. Rinçage & Séchage</strong></li></ol></div><div class="content-block-card"><h4><i class="fas fa-directions"></i>Les 3 Règles d'Or du Nettoyage</h4><p>Pour une efficacité maximale, suivez toujours ces trois règles de direction :</p><ul style="list-style:none; padding-left:0; margin-top:20px;"><li class="animated-list-item color-1"><i class="fas fa-arrow-down"></i><div><strong>1. Du haut vers le bas</strong><br><small>Pour que les saletés tombent sur des zones pas encore nettoyées.</small></div></li><li class="animated-list-item color-4"><i class="fas fa-sort-amount-up-alt"></i><div><strong>2. Du plus propre vers le plus sale</strong><br><small>Pour ne pas étaler les micro-organismes sur les zones saines.</small></div></li><li class="animated-list-item color-2"><i class="fas fa-door-open"></i><div><strong>3. Du fond de la pièce vers la sortie</strong><br><small>Pour ne pas marcher sur la zone que vous venez de nettoyer.</small></div></li></ul></div></div>
+            
+            <div id="page-tracabilite" class="spa-page"><h2 class="main-page-title"><i class="fas fa-clipboard-check"></i>Module 5 : La Traçabilité</h2><div class="content-block-card"><h4><i class="fas fa-pen-alt"></i>"Ce qui n'est pas écrit n'a pas été fait."</h4><h5>Exemple de Fiche de Suivi</h5><table class="log-table"><thead><tr><th>Tâche</th><th>Fréquence</th><th>Lun</th><th>Mar</th><th>Mer</th><th>Jeu</th><th>Ven</th><th>Sam</th><th>Dim</th></tr></thead><tbody><tr><td>Nettoyage Sol Cuisine</td><td>Journalier</td><td>OK-JP</td><td>OK-ML</td><td>OK-AD</td><td>OK-JP</td><td>OK-ML</td><td>OK-AD</td><td>OK-JP</td></tr><tr><td>Plans de travail</td><td>Journalier</td><td>OK-JP</td><td>OK-ML</td><td>OK-AD</td><td>OK-JP</td><td>OK-ML</td><td>OK-AD</td><td>OK-JP</td></tr><tr><td>Nettoyage Filtres Hotte</td><td>Hebdomadaire</td><td>OK-AD</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Nettoyage Friteuse</td><td>Hebdomadaire</td><td></td><td></td><td>OK-ML</td><td></td><td></td><td></td><td></td></tr></tbody></table></div><div class="content-block-card"><h4><i class="fas fa-question-circle"></i>Activité : Questions de Réflexion</h4><div id="open-questions-container" style="margin-top:20px;"></div></div></div>
+            
+            <div id="page-regles" class="spa-page"><h2 class="main-page-title"><i class="fas fa-star"></i>Règles Clés : Synthèse</h2><div class="content-block-card"><ul style="list-style:none; padding-left:0; margin-top:20px;"><li class="animated-list-item color-1"><i class="fas fa-hard-hat"></i>Se munir d'un calot et de chaussures de sécurité.</li><li class="animated-list-item color-2"><i class="fas fa-layer-group"></i>Ne jamais rien poser à même le sol.</li><li class="animated-list-item color-3"><i class="fas fa-trash-alt"></i>Garder les poubelles fermées.</li><li class="animated-list-item color-4"><i class="fas fa-hands-wash"></i>Se laver les mains, même après le port des gants.</li><li class="animated-list-item color-5"><i class="fas fa-temperature-low"></i>Respecter la chaîne du froid.</li></ul></div></div>
+            
+            <div id="page-evaluation" class="spa-page">
+                <h2 class="main-page-title"><i class="fas fa-graduation-cap"></i>Évaluation Finale</h2>
+                <div class="content-block-card">
+                    <h4><i class="fas fa-tasks"></i>Testez vos connaissances sur l'ensemble du module</h4>
+                    <p>Répondez aux 20 questions suivantes pour valider votre formation. Un score de 75% est requis pour réussir.</p>
+                    <div id="quiz-evaluation-finale" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eeeeee;">
+            <span id="nav-prev" class="nav-arrow"><i class="fas fa-arrow-left"></i></span>
+            <span id="nav-page-info" style="font-size: 0.9em; color: #777;"></span>
+            <span id="nav-next" class="nav-arrow"><i class="fas fa-arrow-right"></i></span>
+        </div>
+    </div>
+
+    <footer>
+        <p style="margin: 0 0 5px 0;">© 2025 Formation PND |  d.de Amil- IRP</p>
+        <p style="font-size: 0.85em; color: #999999; margin: 0;">Ce module est un support pédagogique.</p>
+    </footer>
+    
+    <div id="sinner-tooltip"></div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // ========== CONFIGURATION & ÉLÉMENTS DOM ==========
+        const spaPagesConfig = [ { id: 'page-objectifs', timelineStepMatch: 0 }, { id: 'page-module1', timelineStepMatch: 1 }, { id: 'page-module2', timelineStepMatch: 2 }, { id: 'page-exploration', timelineStepMatch: 3 }, { id: 'page-produits', timelineStepMatch: 4 }, { id: 'page-methode', timelineStepMatch: 5 }, { id: 'page-tracabilite', timelineStepMatch: 6 }, { id: 'page-regles', timelineStepMatch: 7 }, { id: 'page-evaluation', timelineStepMatch: 8 } ];
+        let currentPageIndex = 0;
+        const navPrev = document.getElementById('nav-prev');
+        const navNext = document.getElementById('nav-next');
+        const navPageInfo = document.getElementById('nav-page-info');
+
+        // ========== LOGIQUE DE NAVIGATION SPA ==========
+        function showPage(pageIndexToShow) {
+            if (pageIndexToShow < 0 || pageIndexToShow >= spaPagesConfig.length) return;
+            currentPageIndex = pageIndexToShow;
+            document.querySelectorAll('.spa-page').forEach(page => page.classList.remove('active'));
+            const currentPageElement = document.getElementById(spaPagesConfig[currentPageIndex].id);
+            if (currentPageElement) {
+                currentPageElement.classList.add('active');
+                if (window.scrollY > 150) document.querySelector('.main-container').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                if(['page-regles', 'page-methode'].includes(spaPagesConfig[currentPageIndex].id)) {
+                    currentPageElement.querySelectorAll('.animated-list-item').forEach((item, index) => { item.style.animation = 'none'; item.offsetHeight; item.style.animation = `fadeInUp 0.5s ease-out ${index * 0.1}s forwards`; });
+                }
+            }
+            document.querySelectorAll('.timeline-card .timeline-step').forEach((step, index) => step.classList.toggle('active', index === spaPagesConfig[currentPageIndex].timelineStepMatch));
+            navPageInfo.textContent = `Page ${currentPageIndex + 1} / ${spaPagesConfig.length}`;
+            navPrev.classList.toggle('disabled', currentPageIndex === 0);
+            navNext.classList.toggle('disabled', currentPageIndex === spaPagesConfig.length - 1);
+        }
+        navPrev.addEventListener('click', () => !navPrev.classList.contains('disabled') && showPage(currentPageIndex - 1));
+        navNext.addEventListener('click', () => !navNext.classList.contains('disabled') && showPage(currentPageIndex + 1));
+        document.querySelectorAll('.timeline-card .timeline-step').forEach((step, i) => step.addEventListener('click', () => showPage(spaPagesConfig.findIndex(p=>p.timelineStepMatch===i))));
+
+        // ========== LOGIQUE DES COMPOSANTS INTERACTIFS ==========
+        function createMultiQuestionQuiz(containerId, questions, successRate) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            let currentQ = 0, score = 0;
+            const startQuiz = () => { currentQ = 0; score = 0; renderQuestion(); };
+            const renderQuestion = () => {
+                const q = questions[currentQ];
+                const optionsHtml = q.options.map((opt, i) => `<button class="quiz-option-btn" data-index="${i}">${opt}</button>`).join('');
+                container.innerHTML = `<div class="quiz-progress-bar-container"><div class="quiz-progress-bar" style="width: ${currentQ / questions.length * 100}%"></div></div><div class="quiz-header"><span>Question ${currentQ + 1}/${questions.length}</span><span>Score: ${score}</span></div><h5>${q.question}</h5><div class="quiz-options">${optionsHtml}</div><div class="activity-feedback"></div><div style="text-align:right; margin-top:10px;" id="quiz-nav-controls-${containerId}"></div>`;
+                container.querySelectorAll('.quiz-option-btn').forEach(btn => btn.addEventListener('click', e => selectAnswer(parseInt(e.target.dataset.index))));
+            };
+            const selectAnswer = (selectedIndex) => {
+                const q = questions[currentQ];
+                const feedbackEl = container.querySelector('.activity-feedback');
+                const btns = container.querySelectorAll('.quiz-option-btn');
+                const progressBar = container.querySelector('.quiz-progress-bar');
+                if (btns.length > 0 && btns[0].disabled) return;
+                btns.forEach(b => b.disabled = true);
+                progressBar.style.width = `${(currentQ + 1) / questions.length * 100}%`;
+                if (selectedIndex === q.answer) {
+                    score++;
+                    btns[selectedIndex].classList.add('correct');
+                    feedbackEl.innerHTML = `<i class="fas fa-check-circle"></i> ${q.feedbackCorrect}`; feedbackEl.className = 'activity-feedback correct';
+                    container.querySelector('.quiz-header span:last-child').textContent = `Score: ${score}`;
+                } else {
+                    btns[selectedIndex].classList.add('incorrect');
+                    btns[q.answer].classList.add('correct');
+                    feedbackEl.innerHTML = `<i class="fas fa-times-circle"></i> ${q.feedbackIncorrect}`; feedbackEl.className = 'activity-feedback incorrect';
+                }
+                feedbackEl.style.display = 'block';
+                const controls = container.querySelector(`#quiz-nav-controls-${containerId}`);
+                if (currentQ < questions.length - 1) {
+                    controls.innerHTML = `<button id="next-q-btn-${containerId}" class="quiz-nav-btn">Suivant →</button>`;
+                    document.getElementById(`next-q-btn-${containerId}`).addEventListener('click', () => { currentQ++; renderQuestion(); });
+                } else {
+                    renderResults();
+                }
+            };
+            const renderResults = () => {
+                const percentage = Math.round((score / questions.length) * 100);
+                const passed = percentage >= (successRate * 100);
+                let resultMessage = passed ? "Félicitations, vous avez atteint le seuil de réussite !" : `Vous n'avez pas atteint le seuil de ${successRate * 100}%. N'hésitez pas à revoir le module.`;
+                let iconClass = passed ? 'fa-trophy' : 'fa-book-reader';
+                let iconColor = passed ? 'gold' : 'var(--accent-yellow)';
+                container.innerHTML = `<div class="quiz-results-screen"><h4>Résultats du Quiz</h4><div class="quiz-results-icon" style="color:${iconColor};"><i class="fas ${iconClass}"></i></div><p class="quiz-results-score-text">Votre score : ${score}/${questions.length} (${percentage}%)</p><p class="quiz-results-message">${resultMessage}</p><button id="restart-q-btn-${containerId}" class="quiz-nav-btn"><i class="fas fa-redo"></i> Refaire le quiz</button></div>`;
+                document.getElementById(`restart-q-btn-${containerId}`).addEventListener('click', startQuiz);
+            };
+            startQuiz();
+        }
+
+        createMultiQuestionQuiz('quiz-intro', [ { question: "Quel est le statut du PND pour une cuisine professionnelle, même neuve ?", answer: 2, options: ["Facultatif si la cuisine est neuve.", "Une simple recommandation d'hygiène.", "Une obligation réglementaire stricte."], feedbackCorrect: "Exact ! Le PND est une obligation pour tous les établissements, dès leur ouverture.", feedbackIncorrect: "Incorrect. Le PND est bien une obligation réglementaire pour tous, même pour une cuisine neuve." }, { question: "Pourquoi une cuisine qui semble propre doit-elle quand même être nettoyée selon un plan ?", answer: 0, options: ["Car les microbes sont invisibles.", "Pour user les produits avant leur date de péremption.", "C'est juste pour les contrôles."], feedbackCorrect: "C'est la raison principale ! L'œil ne voit pas les bactéries.", feedbackIncorrect: "La bonne réponse est que les microbes sont invisibles." }, { question: "Que signifie 'PMS' dans le contexte de l'hygiène ?", answer: 2, options: ["Protocole de Maintenance Standard", "Personnel Mieux Supervisé", "Plan de Maîtrise Sanitaire"], feedbackCorrect: "Correct. Le PND est une composante du PMS.", feedbackIncorrect: "La bonne réponse est Plan de Maîtrise Sanitaire." }, { question: "Le PND fait partie d'une démarche plus globale. Laquelle ?", answer: 1, options: ["La norme ISO 9001", "La méthode HACCP", "Le code du travail"], feedbackCorrect: "Oui, le PND est un prérequis essentiel à la méthode HACCP.", feedbackIncorrect: "Le PND est un pilier de la méthode HACCP." } ], 0.75);
+        createMultiQuestionQuiz('quiz-produits', [ { question: "Selon le cercle de Sinner, si vous diminuez le temps d'action, que devez-vous faire ?", answer: 2, options: ["Utiliser de l'eau plus froide.", "Moins frotter.", "Augmenter l'action mécanique ou la concentration du produit."], feedbackCorrect: "Exact, il faut compenser en augmentant un autre facteur.", feedbackIncorrect: "Incorrect. Il faut compenser en augmentant un autre facteur comme la force de frottage." }, { question: "Un collègue mélange de l'eau de Javel et un détartrant acide. Que faites-vous ?", answer: 1, options: ["Vous l'aidez, c'est une bonne idée.", "Vous l'arrêtez immédiatement et aérez la pièce.", "Vous ne dites rien pour ne pas le vexer."], feedbackCorrect: "Parfait ! Ce mélange crée des gaz toxiques très dangereux.", feedbackIncorrect: "La bonne réponse est de l'arrêter. Ce mélange est extrêmement dangereux." }, { question: "Pour nettoyer une planche ayant servi à découper du poulet cru avant de couper de la salade, que faut-il faire ?", answer: 2, options: ["Juste la rincer à l'eau chaude.", "L'essuyer avec un chiffon sec.", "La nettoyer, la désinfecter, respecter le temps de contact et rincer."], feedbackCorrect: "Excellent. C'est la seule façon d'éviter la contamination croisée.", feedbackIncorrect: "Il faut impérativement un cycle complet : nettoyage + désinfection." }, { question: "Le flacon de votre désinfectant est presque vide. Pouvez-vous le diluer avec beaucoup d'eau ?", answer: 0, options: ["Non, le dosage doit être respecté pour être efficace.", "Oui, un peu de produit c'est mieux que rien.", "Oui, mais il faut laisser agir plus longtemps."], feedbackCorrect: "Exact. Un dosage incorrect rend le produit inefficace.", feedbackIncorrect: "Non. Le dosage précis est crucial pour l'efficacité du produit." }, { question: "Le 'temps de contact' d'un désinfectant est :", answer: 1, options: ["Le temps pour le pulvériser.", "Le temps minimum où il doit rester sur la surface pour agir.", "Le temps qu'il met à sécher."], feedbackCorrect: "C'est exact, c'est le temps d'action du produit.", feedbackIncorrect: "C'est le temps minimum où il doit rester sur la surface pour tuer les microbes." } ], 0.75);
+        createMultiQuestionQuiz('quiz-evaluation-finale', [ { question: "Le PND est-il obligatoire pour un food truck qui ne fonctionne que l'été ?", answer: 0, options: ["Oui, pour tout établissement manipulant des denrées alimentaires.", "Non, uniquement pour les restaurants traditionnels.", "Seulement s'il a déjà eu un contrôle sanitaire."], feedbackCorrect: "Exact ! Tout établissement, quelle que soit sa taille ou sa saisonnalité, doit avoir un PND.", feedbackIncorrect: "Incorrect. Le PND est une obligation réglementaire pour tout professionnel de l'alimentation." }, { question: "Quel est le danger principal qu'un PND bien appliqué permet d'éliminer ?", answer: 2, options: ["Les mauvaises odeurs.", "La saleté visible sur le sol.", "Les contaminations par des micro-organismes pathogènes."], feedbackCorrect: "Très bien. La lutte contre l'invisible (bactéries, virus) est la priorité absolue du PND.", feedbackIncorrect: "L'objectif premier est de maîtriser les dangers microbiologiques, qui sont invisibles." }, { question: "Dans un protocole de nettoyage, la mention 'Plan de travail Inox n°3' correspond à quelle partie du QQOQCP ?", answer: 1, options: ["Quand ?", "Quoi / Où ?", "Comment ?", "Qui ?"], feedbackCorrect: "Parfait. Cela désigne précisément la surface à nettoyer.", feedbackIncorrect: "Cette mention répond aux questions 'Quoi nettoyer ?' et 'Où se trouve-t-il ?'." }, { question: "Quelle information trouve-t-on dans la section 'Comment' d'un protocole ?", answer: 3, options: ["Le nom de la personne responsable.", "La fréquence (ex: journalier).", "La raison du nettoyage.", "Les étapes précises, les produits et leur dosage."], feedbackCorrect: "C'est exact. Le 'Comment' est le mode opératoire détaillé de la tâche.", feedbackIncorrect: "Le 'Comment' décrit la méthode : les étapes à suivre, les produits à utiliser, le dosage, etc." }, { question: "Pour enlever une tache de graisse sur un plan de travail, on utilise en premier lieu un...", answer: 0, options: ["Détergent", "Désinfectant", "Détartrant", "Produit 2-en-1 directement"], feedbackCorrect: "Correct. Le détergent a pour rôle de décoller la saleté et les graisses.", feedbackIncorrect: "On utilise d'abord un détergent pour enlever la saleté visible. Le désinfectant agit sur les microbes." }, { question: "Le 'Temps de contact' est une instruction critique pour l'efficacité d'un...", answer: 1, options: ["Détergent", "Désinfectant", "Chiffon microfibre", "Balai brosse"], feedbackCorrect: "Oui, un désinfectant a besoin d'un temps d'action minimum pour tuer les microbes.", feedbackIncorrect: "Le temps de contact est crucial pour les désinfectants, c'est le temps nécessaire à l'action biocide." }, { question: "Selon le Cercle de Sinner (T.A.C.T.), si vous n'avez pas le temps de frotter (Action mécanique faible), que pouvez-vous faire pour garantir un bon nettoyage ?", answer: 2, options: ["Utiliser de l'eau plus froide.", "Rincer immédiatement.", "Augmenter le temps de contact ou utiliser un produit plus concentré.", "Utiliser moins de produit."], feedbackCorrect: "Exact ! Il faut compenser la baisse d'un facteur par l'augmentation d'un ou plusieurs autres.", feedbackIncorrect: "Pour compenser une faible action mécanique, il faut augmenter un autre paramètre : Temps, Chimie ou Température." }, { question: "Pourquoi ne faut-il JAMAIS mélanger de l'eau de Javel avec un produit acide (détartrant, vinaigre) ?", answer: 1, options: ["Car cela annule l'efficacité des deux produits.", "Car cela produit un dégagement de chlore gazeux, très toxique.", "Car cela tache les surfaces en inox.", "Car c'est interdit par le code du travail."], feedbackCorrect: "C'est une règle de sécurité fondamentale. Ce mélange est extrêmement dangereux pour les voies respiratoires.", feedbackIncorrect: "La raison est la sécurité : ce mélange libère du chlore gazeux, un poison violent." }, { question: "Un dosage de désinfectant inférieur à la recommandation du fabricant...", answer: 3, options: ["Est plus écologique.", "Permet de faire des économies sans risque.", "Doit être compensé par un frottage plus énergique.", "Rend le produit inefficace et ne garantit pas la destruction des microbes."], feedbackCorrect: "Précisément. Le sous-dosage est une fausse sécurité et ne désinfecte pas correctement.", feedbackIncorrect: "Un produit sous-dosé n'atteint pas la concentration nécessaire pour être efficace. C'est inutile et dangereux." }, { question: "Quelle est la toute première étape physique lors du nettoyage d'une zone très sale (ex: sol après le service) ?", answer: 0, options: ["Le pré-nettoyage : enlever les plus gros déchets.", "L'application du désinfectant.", "Le rinçage à grande eau.", "Le séchage avec une raclette."], feedbackCorrect: "Oui, on 'dégrossit' toujours le travail en enlevant le plus gros à sec avant d'appliquer les produits.", feedbackIncorrect: "La première étape est toujours le pré-nettoyage (ou dégrossissage) pour enlever les déchets solides." }, { question: "Pourquoi le rinçage est-il une étape obligatoire après la désinfection ?", answer: 2, options: ["Pour faire briller la surface.", "Pour refroidir la surface.", "Pour éliminer les résidus de produits chimiques potentiellement nocifs.", "Pour activer le produit désinfectant."], feedbackCorrect: "Exact. Les surfaces en contact avec les aliments doivent être exemptes de tout résidu chimique.", feedbackIncorrect: "Le rinçage est crucial pour enlever les résidus de produits chimiques, qui ne doivent pas se retrouver dans les aliments." }, { question: "Quelle est la règle d'or concernant la direction du nettoyage ?", answer: 1, options: ["Du plus sale vers le plus propre.", "Du haut vers le bas.", "De la sortie vers le fond de la pièce.", "Peu importe la direction."], feedbackCorrect: "Excellent. On nettoie du haut vers le bas pour que les saletés tombent sur des zones non encore nettoyées.", feedbackIncorrect: "Une des 3 règles est 'du haut vers le bas' pour ne pas re-salir ce qui vient d'être fait." }, { question: "Vous nettoyez un plan de travail. À votre gauche se trouve la zone de découpe de légumes (propre) et à votre droite la zone de dépose des poubelles (sale). Dans quel sens progressez-vous ?", answer: 0, options: ["De la zone légumes vers la zone poubelles.", "De la zone poubelles vers la zone légumes.", "Du milieu vers les deux côtés.", "Le sens n'a pas d'importance."], feedbackCorrect: "Parfait. On va toujours du plus propre vers le plus sale pour ne pas étaler la contamination.", feedbackIncorrect: "La règle est de nettoyer du plus propre vers le plus sale pour éviter de contaminer les zones saines." }, { question: "À quoi sert principalement la fiche de suivi du nettoyage ?", answer: 3, options: ["À commander les produits de nettoyage.", "À décorer le bureau du manager.", "À noter les pannes de matériel.", "À prouver que les opérations ont été réalisées et à responsabiliser les équipes."], feedbackCorrect: "C'est sa double fonction : preuve et responsabilisation. 'Ce qui n'est pas écrit n'a pas été fait'.", feedbackIncorrect: "La fiche de suivi est un document de traçabilité qui sert de preuve et implique le personnel." }, { question: "Qui doit apposer ses initiales ou sa signature sur la fiche de suivi ?", answer: 2, options: ["Le directeur du restaurant uniquement.", "Le plongeur, car c'est lui qui gère les produits.", "La personne qui a EFFECTIVEMENT réalisé la tâche.", "N'importe quel membre de l'équipe présent ce jour-là."], feedbackCorrect: "C'est fondamental. La signature engage la responsabilité de la personne qui a fait le travail.", feedbackIncorrect: "C'est la personne qui réalise la tâche qui doit signer, car elle atteste de sa bonne exécution." }, { question: "Lors d'un contrôle sanitaire, vous ne retrouvez pas vos fiches de suivi des 3 dernières semaines. Quelle peut être la conséquence ?", answer: 1, options: ["Un simple avertissement oral sans suite.", "Un procès-verbal, une amende, voire une demande de fermeture administrative.", "L'obligation de nettoyer toute la cuisine devant l'inspecteur.", "Aucune, si la cuisine est visiblement propre."], feedbackCorrect: "C'est exact. L'absence de traçabilité est une non-conformité majeure.", feedbackIncorrect: "Le défaut de traçabilité est une infraction grave pouvant entraîner des sanctions sévères." }, { question: "Le matériel de nettoyage (brosses, lavettes) doit être...", answer: 2, options: ["Laissé dans un coin pour sécher à l'air libre.", "Rangé immédiatement après usage, même humide.", "Nettoyé, désinfecté et mis à sécher suspendu après chaque utilisation.", "Partagé avec le personnel de salle pour plus d'efficacité."], feedbackCorrect: "Oui, le matériel de nettoyage doit être impeccable pour ne pas devenir lui-même une source de contamination.", feedbackIncorrect: "Le matériel de nettoyage doit être entretenu (nettoyé, désinfecté, séché) pour ne pas re-contaminer les surfaces." }, { question: "Est-il acceptable de poser un carton de livraison directement sur le sol de la cuisine ?", answer: 1, options: ["Oui, si c'est pour une courte durée.", "Non, jamais. Le sol est considéré comme contaminé.", "Oui, si le carton contient des produits non alimentaires.", "Seulement si le sol vient d'être lavé."], feedbackCorrect: "Règle de base de l'hygiène. Le sol est une surface hautement contaminée.", feedbackIncorrect: "Non, rien ne doit être posé à même le sol. Il faut utiliser des palettes ou des étagères basses." }, { question: "Après avoir porté des gants pour nettoyer les poubelles, quelle action est impérative ?", answer: 3, options: ["Réutiliser les gants pour manipuler de la nourriture.", "Jeter les gants et commencer à cuisiner directement.", "Simplement s'essuyer les mains sur son tablier.", "Jeter les gants, puis se laver et se désinfecter les mains."], feedbackCorrect: "Très bien. Les gants protègent, mais ne remplacent pas le lavage des mains, qui reste l'étape finale obligatoire.", feedbackIncorrect: "Le lavage des mains est obligatoire après le retrait des gants." }, { question: "La démarche HACCP et le PND sont :", answer: 0, options: ["Étroitement liés, le PND étant un pré-requis (PRP) indispensable à l'HACCP.", "Totalement indépendants l'un de l'autre.", "Concurrents, un établissement doit choisir entre les deux.", "La même chose, PND est juste un autre nom pour HACCP."], feedbackCorrect: "Excellent ! Le PND fait partie des Bonnes Pratiques d'Hygiène (BPH), qui sont le socle sur lequel repose une démarche HACCP efficace.", feedbackIncorrect: "Le PND est un programme pré-requis (PRP), une base essentielle pour que la méthode HACCP puisse fonctionner." } ], 0.75);
+
+        function createOpenQuestions(containerId, questions) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            container.innerHTML = questions.map((q, i) => `<div class="open-question"><p>${i+1}. ${q.question} <button class="reveal-answer-btn" data-target="answer-${i}">Réponse</button></p><div class="model-answer" id="answer-${i}">${q.answer}</div></div>`).join('');
+            container.querySelectorAll('.reveal-answer-btn').forEach(btn => btn.addEventListener('click', e => { const targetId = e.target.dataset.target; const answerEl = document.getElementById(targetId); if (answerEl) { answerEl.style.display = answerEl.style.display === 'block' ? 'none' : 'block'; e.target.textContent = answerEl.style.display === 'block' ? 'Masquer' : 'Réponse'; } }));
+        }
+        createOpenQuestions('open-questions-container', [ { question: "Pourquoi la traçabilité du nettoyage est-elle importante ?", answer: "Elle permet de prouver aux contrôles que les protocoles sont suivis et de responsabiliser l'équipe." }, { question: "Qui doit signer la fiche de suivi ?", answer: "La personne qui a réalisé l'opération de nettoyage." }, { question: "Que risque un restaurant qui ne peut pas prouver la traçabilité de son nettoyage ?", answer: "Une amende, voire une fermeture administrative, car c'est une obligation légale." }, { question: "Quel est l'intérêt de la colonne 'Fréquence' sur un plan de nettoyage ?", answer: "Elle indique à quel moment précis une tâche doit être faite (ex: journalier, hebdomadaire)." }, { question: "Pourquoi la colonne 'QUI' ou 'Fait par' est-elle cruciale ?", answer: "Elle permet de responsabiliser une personne pour chaque tâche, assurant que rien n'est oublié." }, { question: "Un contrôle sanitaire a lieu. L'inspecteur vous demande si les armoires froides ont été nettoyées cette semaine. Que faites-vous ?", answer: "Je lui présente la fiche de suivi de nettoyage où la tâche est cochée et paraphée à la date correspondante." }, { question: "Est-ce que noter mentalement que le nettoyage a été fait est suffisant ?", answer: "Non. En sécurité alimentaire, la seule chose qui compte est la preuve écrite." }, { question: "À quoi sert la vérification par un manager sur une fiche de suivi ?", answer: "Elle ajoute un deuxième niveau de contrôle et de qualité pour confirmer que le travail a été bien fait." }, { question: "La fiche de suivi doit-elle être conservée longtemps ?", answer: "Oui, elle doit être archivée et conservée pendant une période définie pour être présentée lors de contrôles ultérieurs." } ]);
+
+        function getIconForStep(stepText) {
+            const text = stepText.toLowerCase();
+            if (text.includes('protéger')) return 'fa-user-shield';
+            if (text.includes('pulvériser')) return 'fa-spray-can';
+            if (text.includes('brosser') || text.includes('frotter')) return 'fa-brush';
+            if (text.includes('laisser agir') || text.includes('laisser tremper')) return 'fa-hourglass-half';
+            if (text.includes('rincer')) return 'fa-tint';
+            if (text.includes('sécher') || text.includes('essuyer') || text.includes('racler')) return 'fa-wind';
+            if (text.includes('éliminer') || text.includes('jeter') || text.includes('enlever le sac')) return 'fa-trash-alt';
+            if (text.includes('démonter') || text.includes('vidanger')) return 'fa-cogs';
+            if (text.includes('remonter') || text.includes('replacer') || text.includes('remplir')) return 'fa-plus-square';
+            if (text.includes('compléter la fiche')) return 'fa-clipboard-check';
+            if (text.includes('suspendre') || text.includes('égoutter')) return 'fa-hanger';
+            if (text.includes('lave-vaisselle')) return 'fa-water';
+            if (text.includes('débrancher')) return 'fa-plug';
+            return 'fa-check';
+        }
+
+        const protocoles = [
+            { "quoi": "Murs (n°1)", "quand": "Fin de service", "icon": "fa-ruler-vertical", "avec": "Dégraissant Désinfectant, Eau tiède, Gants...", "comment": ["Se protéger","Pulvériser","Brosser/Frotter","Laisser agir 5mn","Rincer"] },
+            { "quoi": "Sol (n°3)", "quand": "Fin de service", "icon": "fa-shoe-prints", "avec": "Dégraissant Désinfectant, Eau tiède, Gants...", "comment": ["Eliminer les déchets","Pulvériser","Laisser agir 5mn","Brosser","Racler, sécher, nettoyer siphon"] },
+            { "quoi": "Poubelle (n°7)", "quand": "Fin de service & si nécessaire", "icon": "fa-trash-alt", "avec": "Dégraissant Désinfectant, Eau tiède, Gants, Lavette", "comment": ["Enlever le sac","Eliminer les déchets","Pulvériser","Laisser agir 5mn","Frotter/brosser","Replacer un sac"] },
+            { "quoi": "Poignées/Portes (n°15)", "quand": "1 fois par jour", "icon": "fa-door-open", "avec": "Lingette désinfectante", "comment": ["Nettoyer","Laisser sécher"] },
+            { "quoi": "Plan travail/Chariot (n°6)", "quand": "Après utilisation", "icon": "fa-dolly", "avec": "Dégraissant Désinfectant, Eau tiède, Gants, Lavette", "comment": ["Eliminer les déchets","Pulvériser","Laisser agir 5mn","Essuyer / Laisser sécher"] },
+            { "quoi": "Matériel Prépa (n°4)", "quand": "Après utilisation", "icon": "fa-utensils", "avec": "Dégraissant Désinfectant, Eau tiède, Gants, Lavette", "comment": ["Débrancher","Démonter pièces","Eliminer déchets","Pulvériser/tremper","Laisser agir 5mn","Rincer & Sécher","Remonter"] },
+            { "quoi": "Four (n°10)", "quand": "Fin de service", "icon": "fa-stroopwafel", "avec": "Dégraissant Désinfectant, Eau tiède, Gants, Lavette", "comment": ["Se protéger","Pulvériser","Laisser agir 5mn","Frotter","Rincer","Sécher"] },
+            { "quoi": "Bac Plonge (n°14)", "quand": "Si nécessaire", "icon": "fa-sink", "avec": "Dégraissant Désinfectant, Eau tiède, Gants, Lavette", "comment": ["Se protéger","Eliminer déchets","Pulvériser","Laisser agir 5mn","Frotter","Rincer"] },
+            { "quoi": "Armoires froides (n°17)", "quand": "Hebdomadaire", "icon": "fa-snowflake", "avec": "Dégraissant Désinfectant, Eau tiède, Gants, Lavette", "important": "ATTENTION CHAINE DU FROID", "comment": ["Vider (ATTENTION FROID)","Eliminer déchets","Pulvériser","Laisser agir 5mn","Frotter","Rincer (lavette humide)","Sécher & Replacer"] }
+        ];
+        
+        function renderProtocols() {
+            const protocolGridContainer = document.getElementById('protocol-grid-container');
+            if (!protocolGridContainer) return;
+            
+            const shuffle = (array) => { let a = [...array]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+            protocolGridContainer.innerHTML = protocoles.map((p, index) => {
+                const solutionHtml = `
+                    <div class="protocol-steps">
+                        <h6><i class="fas fa-list-ol"></i> Étapes :</h6>
+                        <ul>${p.comment.map(c => `<li><i class="fas ${getIconForStep(c)}"></i>${c}</li>`).join('')}</ul>
+                    </div>
+                `;
+                
+                const activityHtml = `
+                    <button class="practice-btn"><i class="fas fa-gamepad"></i> Mettez-vous à l'épreuve !</button>
+                    <div class="dnd-activity-container" data-protocol-index="${index}">
+                        <div>
+                            <h6>Étapes à ordonner :</h6>
+                            <div class="dnd-source-list">
+                                ${shuffle(p.comment).map((c, i) => `<div class="dnd-item" draggable="true" id="dnd-item-${index}-${i}" data-content="${c}"><i class="fas ${getIconForStep(c)}"></i>${c}</div>`).join('')}
+                            </div>
+                        </div>
+                        <div>
+                            <h6>Déposez ici dans le bon ordre :</h6>
+                            <div class="dnd-drop-zone"></div>
+                        </div>
+                        <div class="dnd-controls">
+                            <div class="dnd-feedback"></div>
+                            <button class="dnd-btn dnd-reset-btn">Réinitialiser</button>
+                            <button class="dnd-btn dnd-check-btn">Vérifier</button>
+                        </div>
+                    </div>
+                `;
+
+                return `
+                <div class="protocol-accordion">
+                    <div class="protocol-header">
+                        <h5><i class="fas ${p.icon}"></i>${p.quoi}</h5>
+                        <span class="toggle-icon"><i class="fas fa-plus"></i></span>
+                    </div>
+                    <div class="protocol-details">
+                        <p><i class="fas fa-tools"></i><strong>Avec :</strong> ${p.avec}</p>
+                        <p><i class="fas fa-clock"></i><strong>Quand :</strong> ${p.quand}</p>
+                        ${p.important ? `<p class="important-note"><i class="fas fa-exclamation-triangle"></i>${p.important}</p>` : ''}
+                        ${solutionHtml}
+                        ${activityHtml}
+                    </div>
+                </div>`;
+            }).join('');
+            
+            setupProtocolInteractions();
+        }
+
+        function setupProtocolInteractions() {
+            document.querySelectorAll('#protocol-grid-container .protocol-accordion').forEach(accordion => {
+                const header = accordion.querySelector('.protocol-header');
+                const details = accordion.querySelector('.protocol-details');
+                header.addEventListener('click', () => {
+                    accordion.classList.toggle('active');
+                    const icon = header.querySelector('.toggle-icon i');
+                    icon.classList.toggle('fa-plus'); icon.classList.toggle('fa-times');
+
+                    if (!accordion.classList.contains('active')) {
+                        const dndContainer = details.querySelector('.dnd-activity-container');
+                        if (dndContainer) {
+                            details.querySelector('.protocol-steps').style.display = 'block';
+                            details.querySelector('.practice-btn').style.display = 'inline-block';
+                            dndContainer.style.display = 'none';
+                        }
+                    }
+                });
+            });
+
+            document.querySelectorAll('.practice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const parentDetails = e.target.closest('.protocol-details');
+                    parentDetails.querySelector('.protocol-steps').style.display = 'none';
+                    e.target.style.display = 'none';
+                    parentDetails.querySelector('.dnd-activity-container').style.display = 'grid';
+                });
+            });
+
+            document.querySelectorAll('.dnd-activity-container').forEach(container => {
+                const dropZone = container.querySelector('.dnd-drop-zone');
+                const sourceList = container.querySelector('.dnd-source-list');
+                const checkBtn = container.querySelector('.dnd-check-btn');
+                const resetBtn = container.querySelector('.dnd-reset-btn');
+                const feedbackEl = container.querySelector('.dnd-feedback');
+                const protocolIndex = container.dataset.protocolIndex;
+                const correctOrder = protocoles[protocolIndex].comment;
+                
+                let draggedItem = null;
+
+                container.querySelectorAll('.dnd-item').forEach(item => {
+                    item.addEventListener('dragstart', (e) => {
+                        draggedItem = e.target;
+                        setTimeout(() => { if(draggedItem) draggedItem.classList.add('dragging') }, 0);
+                    });
+                    item.addEventListener('dragend', () => {
+                        if (draggedItem) draggedItem.classList.remove('dragging');
+                    });
+                });
+
+                dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+                dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    if (draggedItem) { dropZone.appendChild(draggedItem); }
+                    dropZone.classList.remove('drag-over');
+                });
+
+                checkBtn.addEventListener('click', () => {
+                    const droppedItems = Array.from(dropZone.querySelectorAll('.dnd-item'));
+                    if (droppedItems.length === 0) {
+                        feedbackEl.textContent = "";
+                        return;
+                    }
+                    if (droppedItems.length !== correctOrder.length) {
+                        feedbackEl.textContent = "Veuillez ordonner toutes les étapes.";
+                        feedbackEl.className = "dnd-feedback incorrect";
+                        return;
+                    }
+                    const userOrder = droppedItems.map(item => item.dataset.content);
+                    const isCorrect = JSON.stringify(userOrder) === JSON.stringify(correctOrder);
+
+                    feedbackEl.textContent = isCorrect ? "Excellent ! L'ordre est correct." : "Ce n'est pas tout à fait ça. Essayez encore !";
+                    feedbackEl.className = isCorrect ? "dnd-feedback correct" : "dnd-feedback incorrect";
+                });
+
+                resetBtn.addEventListener('click', () => {
+                    dropZone.querySelectorAll('.dnd-item').forEach(item => sourceList.appendChild(item));
+                    feedbackEl.textContent = "";
+                    feedbackEl.className = "dnd-feedback";
+                });
+            });
+        }
+        
+        renderProtocols();
+        
+        const qqoqcpContainer = document.getElementById('qqoqcp-container');
+        if(qqoqcpContainer){
+            const qqoqcpData = [ { question: "Qui ?", answer: "Désigne la personne ou la fonction responsable de la tâche.", icon: "fa-user" }, { question: "Quoi ?", answer: "L'équipement, la surface ou la zone spécifique à nettoyer.", icon: "fa-sitemap" }, { question: "Où ?", answer: "L'emplacement précis de l'élément à nettoyer dans la cuisine.", icon: "fa-map-marker-alt" }, { question: "Quand ?", answer: "La fréquence du nettoyage (ex: journalier, hebdomadaire, après service...).", icon: "fa-calendar-alt" }, { question: "Comment ?", answer: "Le mode opératoire : produits, dosage, étapes, temps de contact...", icon: "fa-list-ol" }, { question: "Pourquoi ?", answer: "La raison est toujours la même : éviter les contaminations et garantir la sécurité !", icon: "fa-shield-alt" } ];
+            qqoqcpContainer.innerHTML = qqoqcpData.map(item => `<div class="flip-card"><div class="flip-card-inner"><div class="flip-card-front"><i class="fas ${item.icon} flip-card-icon"></i><h5>${item.question}</h5></div><div class="flip-card-back"><h5>${item.question}</h5><p>${item.answer}</p></div></div></div>`).join('');
+        }
+        
+        const sinnerQuadrants = document.querySelectorAll('.sinner-quadrant');
+        const sinnerTooltip = document.getElementById('sinner-tooltip');
+        if (sinnerTooltip) {
+            sinnerQuadrants.forEach(quad => {
+                quad.addEventListener('mouseover', (e) => { sinnerTooltip.innerHTML = quad.dataset.info; sinnerTooltip.style.display = 'block'; });
+                quad.addEventListener('mousemove', (e) => { sinnerTooltip.style.left = `${e.pageX + 15}px`; sinnerTooltip.style.top = `${e.pageY + 15}px`; });
+                quad.addEventListener('mouseleave', () => { sinnerTooltip.style.display = 'none'; });
+            });
+        }
+        
+        showPage(0);
+    });
+    </script>
+</body>
+</html>
