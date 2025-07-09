@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CléA Numérique | Votre Parcours vers la Résilience Digitale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #1e293b; font-size: 17px; }
+        .nav-link { position: relative; transition: color 0.3s; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 50%; transform: translateX(-50%); background-color: #0d9488; transition: width 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+        .accordion-content { overflow: hidden; }
+        .accordion-button.open .accordion-icon { transform: rotate(180deg); }
+        .assessment-btn { transition: all 0.2s ease-in-out; }
+        .assessment-btn.active { transform: scale(1.05); box-shadow: 0 0 0 2px white, 0 0 0 4px #0d9488; }
+        .assessment-btn.disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+        .toggle-switch-container { cursor: pointer; }
+        .toggle-switch-container input:checked ~ #label-decouverte { background-color: transparent; color: #475569; box-shadow: none; }
+        .toggle-switch-container input:checked ~ #label-evaluation { background-color: white; color: #0d9488; box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1); }
+        .btn { font-weight: 600; padding: 0.75rem 1.75rem; border-radius: 9999px; transition: all 0.3s ease-in-out; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .btn:disabled { background-color: #94a3b8; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background-color: #0d9488; color: white; }
+        .btn-primary:hover:not(:disabled) { background-color: #0f766e; }
+        .btn-secondary { background-color: #1d4ed8; color: white; }
+        .btn-secondary:hover:not(:disabled) { background-color: #1e40af; }
+        .btn-destructive { background-color: #dc2626; color: white; }
+        .btn-destructive:hover:not(:disabled) { background-color: #b91c1c; }
+        .btn-outline { background-color: transparent; border: 2px solid #0d9488; color: #0d9488; }
+        .btn-outline:hover:not(:disabled) { background-color: #0d9488; color: white; }
+        #pdf-export-loader { display: none; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin: auto; height: 350px; }
+        .checklist-container {
+    overflow: hidden;
+    height: 0;
+    opacity: 0;
+    transition: height 0.4s ease, opacity 0.4s ease;
+}
+.checklist-container.visible {
+    height: auto;
+    opacity: 1;
+    margin-top: 1rem;
+}
+        .checklist-container.visible { opacity: 1; margin-top: 1rem; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="main-header" class="bg-white/90 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="#accueil" class="text-xl font-bold text-teal-700">CléA Numérique</a>
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="#ecouter" class="nav-link text-slate-600 hover:text-teal-600 font-medium">Écouter</a>
+                    <a href="#comprendre" class="nav-link text-slate-600 hover:text-teal-600 font-medium">Comprendre</a>
+                    <a href="#agir" class="nav-link text-slate-600 hover:text-teal-600 font-medium">Agir</a>
+                    <a href="#ressources" class="nav-link text-slate-600 hover:text-teal-600 font-medium">Ressources</a>
+                </div>
+                <a href="#agir" class="hidden md:block btn btn-primary">Commencer mon parcours</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <section id="accueil" class="text-center py-16">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Bienvenue sur votre parcours <span class="text-teal-600">CléA Numérique</span></h1>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">Cet outil est conçu pour vous aider, formateur ou apprenant, à comprendre les enjeux du numérique et à faire le point sur vos compétences, simplement et sans stress.</p>
+        </section>
+
+        <section id="ecouter" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900"><span class="text-4xl mr-2">🎧</span>Étape 1 : ÉCOUTER pour prendre conscience</h2>
+                <p class="mt-4 text-slate-600 max-w-3xl mx-auto">Prenez quelques minutes pour écouter ces deux podcasts. Ils vous donneront les clés pour comprendre pourquoi cette démarche est importante pour vous.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800">Podcast : Le Défi Numérique de Demain (5 min)</h3>
+                    <audio controls class="w-full" controlsList="nodownload"><source src="#" type="audio/mpeg">Votre navigateur ne supporte pas l'audio.</audio>
+                    <p class="text-sm text-slate-500 mt-3">Ce podcast explique simplement ce qu'est la "fracture numérique" et pourquoi l'arrivée de l'Intelligence Artificielle rend essentiel de maîtriser les bases.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800">Podcast : CléA Numérique, Votre Point de Départ (3 min)</h3>
+                    <audio controls class="w-full" controlsList="nodownload"><source src="#" type="audio/mpeg">Votre navigateur ne supporte pas l'audio.</audio>
+                    <p class="text-sm text-slate-500 mt-3">Découvrez ce qu'est vraiment CléA Numérique : pas un examen, mais une boîte à outils pour faire le point sur vos forces et vos axes de progression.</p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-slate-200">
+
+        <section id="comprendre" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900"><span class="text-4xl mr-2">📊</span>Étape 2 : COMPRENDRE le contexte en images</h2>
+                <p class="mt-4 text-slate-600 max-w-3xl mx-auto">Ces quelques graphiques résument la situation en France. Ils vous aideront à visualiser les enjeux et à comprendre où vous vous situez. Pour un formateur, c'est un support essentiel pour construire un accompagnement pertinent.</p>
+            </div>
+            <div class="space-y-12">
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold text-center text-slate-800 mb-6">Le Paradoxe Français : Tous connectés, mais pas tous armés</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div class="bg-slate-50 p-4 rounded-lg"><div class="text-5xl font-black text-blue-600">94%</div><p class="mt-1 font-semibold text-slate-700">de la population est internaute</p></div>
+                        <div class="bg-slate-50 p-4 rounded-lg"><div class="text-5xl font-black text-orange-500">15%</div><p class="mt-1 font-semibold text-slate-700">sont en situation d'illectronisme</p></div>
+                        <div class="bg-slate-50 p-4 rounded-lg"><div class="text-5xl font-black text-red-500">56%</div><p class="mt-1 font-semibold text-slate-700">n'ont pas les compétences de base</p></div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold text-center text-slate-800 mb-2">Les Compétences en Difficulté</h3>
+                        <p class="text-center text-sm text-slate-500 mb-4">La maîtrise des logiciels et la sécurité sont les points faibles majeurs, un risque à l'ère de l'IA.</p>
+                        <div class="chart-container h-64"><canvas id="competencesManquantesChart"></canvas></div>
+                    </div>
+                    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                        <h3 class="text-2xl font-bold text-center text-slate-800 mb-2">Le Taux d'Équipement</h3>
+                        <p class="text-center text-sm text-slate-500 mb-4">Le smartphone domine, ce qui peut limiter l'apprentissage des compétences complexes qui nécessitent un ordinateur.</p>
+                        <div class="chart-container h-64"><canvas id="equipementChart"></canvas></div>
+                    </div>
+                </div>
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold text-center text-slate-800 mb-6">La Fracture de l'Âge : un fossé générationnel</h3>
+                    <p class="text-center text-slate-600 max-w-2xl mx-auto mb-6">L'illectronisme touche beaucoup plus les seniors. C'est un défi majeur pour que personne ne soit laissé pour compte.</p>
+                    <div class="chart-container"><canvas id="illectronismeAgeChart"></canvas></div>
+                </div>
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold text-center text-slate-800 mb-6">L'Avenir du Travail face à l'IA</h3>
+                    <p class="text-center text-slate-600 max-w-2xl mx-auto mb-6">L'IA ne va pas supprimer tous les emplois, mais elle va transformer la plupart des métiers. Se former est la clé pour s'adapter.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div class="bg-slate-50 p-4 rounded-lg"><div class="text-5xl mb-2">⚙️</div><h4 class="font-bold text-lg text-slate-800">Métiers transformés</h4><p class="text-sm text-slate-600">Les tâches répétitives (secrétariat, comptabilité) seront de plus en plus automatisées.</p></div>
+                        <div class="bg-slate-50 p-4 rounded-lg"><div class="text-5xl mb-2">✨</div><h4 class="font-bold text-lg text-slate-800">Métiers augmentés</h4><p class="text-sm text-slate-600">L'IA deviendra un assistant pour de nombreux métiers (médecins, ingénieurs, artisans).</p></div>
+                        <div class="bg-slate-50 p-4 rounded-lg"><div class="text-5xl mb-2">🌱</div><h4 class="font-bold text-lg text-slate-800">Métiers en croissance</h4><p class="text-sm text-slate-600">Les métiers du soin, de l'informatique et de la transition écologique vont créer beaucoup d'emplois.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-12"><a href="#agir" class="btn btn-primary text-lg">J'ai compris, je commence mon parcours →</a></div>
+        </section>
+
+        <hr class="my-16 border-slate-200">
+
+        <section id="agir" class="py-12 scroll-mt-16">
+            <div class="text-center mb-12">
+                 <h2 class="text-3xl font-bold text-slate-900"><span class="text-4xl mr-2">📝</span>Étape 3 : AGIR en faisant le point sur vos compétences</h2>
+                <p class="mt-4 text-slate-600 max-w-3xl mx-auto">Maintenant que vous avez le contexte, il est temps de passer à l'action. Ce parcours est conçu pour vous guider pas à pas.</p>
+            </div>
+            
+            <div id="identite" class="mb-12">
+                <div class="max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-md">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">1. Point de Départ : Qui êtes-vous ?</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-4 text-slate-800">Vos informations</h4>
+                            <div class="space-y-4">
+                                <div><label for="prenom" class="block text-sm font-medium text-slate-700">Prénom</label><input type="text" id="prenom" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"></div>
+                                <div><label for="nom" class="block text-sm font-medium text-slate-700">Nom</label><input type="text" id="nom" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"></div>
+                                <div><label for="poste" class="block text-sm font-medium text-slate-700">Poste / Formation</label><input type="text" id="poste" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-4 text-slate-800">Gestion des évaluations</h4>
+                            <div class="space-y-4">
+                                <div><label for="eval-type" class="block text-sm font-medium text-slate-700">Type d'évaluation à réaliser</label><select id="eval-type" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"><option value="initiale">Initiale</option><option value="intermediaire">Intermédiaire</option><option value="finale">Finale</option></select></div>
+                                <div><label for="eval-date" class="block text-sm font-medium text-slate-700">Date de l'évaluation</label><input type="date" id="eval-date" class="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500"></div>
+                                <div class="pt-2 flex flex-col space-y-2"><button id="start-eval-btn" class="btn btn-primary w-full">Commencer / Mettre à jour</button><button id="reset-all-btn" class="btn btn-destructive w-full">Réinitialiser toutes les données</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="evaluation">
+                 <div class="max-w-4xl mx-auto">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">2. Diagnostic : Où en êtes-vous ?</h3>
+                    <div class="flex justify-center mb-8">
+                        <label class="toggle-switch-container flex items-center flex-shrink-0 bg-slate-200 p-1 rounded-full">
+                            <input type="checkbox" id="mode-toggle" class="sr-only">
+                            <span id="label-decouverte" class="px-4 py-2 rounded-full font-semibold text-sm cursor-pointer bg-white text-teal-700 shadow transition-all duration-300">Mode Découverte</span>
+                            <span id="label-evaluation" class="px-4 py-2 rounded-full font-semibold text-sm cursor-pointer text-slate-600 transition-all duration-300">Mode Auto-évaluation</span>
+                        </label>
+                    </div>
+                    <div class="space-y-4" id="accordion-container"></div>
+                    
+                    <!-- New Button Container -->
+                    <div id="finish-eval-container" class="hidden text-center mt-8">
+                        <button id="finish-eval-btn" class="btn btn-primary text-lg" disabled>Terminer et voir mon bilan</button>
+                        <p id="completion-status" class="text-sm text-slate-500 mt-2"></p>
+                    </div>
+
+                 </div>
+            </div>
+
+            <div id="bilan" class="hidden mt-12">
+                <div class="max-w-4xl mx-auto">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">3. Bilan & Plan d'Action : Votre feuille de route</h3>
+                    <div id="bilan-content" class="bg-white p-6 sm:p-8 rounded-xl shadow-md">
+                        <div id="bilan-intro" class="text-center text-lg text-slate-700 mb-8 p-4 bg-slate-50 rounded-lg"></div>
+                        <div class="grid lg:grid-cols-5 gap-8 items-start">
+                            <div class="lg:col-span-2">
+                                <h4 class="font-bold text-xl mb-4 text-center text-slate-800">Profil de Compétences</h4>
+                                <div class="chart-container h-80"><canvas id="skillsRadarChart"></canvas></div>
+                            </div>
+                            <div class="lg:col-span-3 min-h-full">
+                                <div id="valorisation-container" class="mb-6"></div>
+                                <div id="action-plan-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button id="pdf-export-btn" class="btn btn-secondary"><span id="pdf-export-text">Exporter mon Bilan en PDF</span><span id="pdf-export-loader" class="loader">Chargement...</span></button>
+                        <button id="reference-btn" class="btn btn-outline">📸 Enregistrer comme référence</button>
+                    </div>
+                    <p id="reference-info" class="text-center text-sm text-slate-500 mt-2"></p>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-16 border-slate-200">
+
+        <section id="ressources" class="py-12 scroll-mt-16">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900">Aller plus loin : Vos Prochaines Étapes</h2>
+                <p class="mt-4 text-slate-600 max-w-3xl mx-auto">CléA Numérique est une étape essentielle. Voici des ressources pour continuer à progresser et à valoriser votre parcours.</p>
+            </div>
+            <div class="max-w-4xl mx-auto space-y-8">
+                 <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800">Votre Parcours, Votre Force Numérique</h3>
+                    <p class="text-slate-600 mb-4">Votre expérience de vie est un atout. Ne partez pas du principe que vous êtes "nul" en numérique. Voyez comment votre parcours vous a déjà préparé :</p>
+                    <div class="grid sm:grid-cols-2 gap-4 mt-4">
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-slate-700">Vous êtes en reconversion ?</h4>
+                            <p class="text-sm text-slate-600">Votre capacité à apprendre un nouveau métier prouve votre adaptabilité, une compétence clé.</p>
+                        </div>
+                        <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-slate-700">Vous n'avez pas de diplôme ?</h4>
+                            <p class="text-sm text-slate-600">Votre expérience de terrain vous a donné un sens pratique pour résoudre les problèmes concrets.</p>
+                        </div>
+                         <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-slate-700">Vous êtes senior ?</h4>
+                            <p class="text-sm text-slate-600">Votre expérience de vie vous apporte une sagesse et une prise de recul pour évaluer les informations.</p>
+                        </div>
+                         <div class="bg-slate-50 p-4 rounded-lg">
+                            <h4 class="font-semibold text-slate-700">Vous revenez à l'emploi ?</h4>
+                            <p class="text-sm text-slate-600">Votre motivation et votre capacité à vous réorganiser sont des qualités très recherchées.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800">Boîte à Outils du Citoyen Numérique</h3>
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-slate-700">Top 5 des Logiciels de Base (2025)</h4>
+                            <p class="text-sm text-slate-500 mb-3">La maîtrise de ces outils est un prérequis dans la plupart des environnements professionnels.</p>
+                            <ol class="list-decimal list-inside space-y-2">
+                                <li><strong>Suite Bureautique :</strong> Microsoft 365 (Word, Excel) ou Google Workspace (Docs, Sheets).</li>
+                                <li><strong>Visioconférence :</strong> Teams, Zoom, ou Google Meet.</li>
+                                <li><strong>Messagerie Collaborative :</strong> Slack ou Teams.</li>
+                                <li><strong>Stockage Cloud :</strong> OneDrive ou Google Drive.</li>
+                                <li><strong>Gestion de Tâches/Projets :</strong> Trello, Planner, ou Notion.so.</li>
+                            </ol>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-lg mb-2 text-slate-700">Liens Utiles et Fiables</h4>
+                            <p class="text-sm text-slate-500 mb-3">Quelques sites de référence pour vous aider au quotidien.</p>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li><strong>Sécurité :</strong> <a href="https://www.cybermalveillance.gouv.fr/" target="_blank" class="text-teal-600 hover:underline font-medium">Cybermalveillance.gouv.fr</a></li>
+                                <li><strong>Mots de passe :</strong> <a href="https://bitwarden.com/fr/" target="_blank" class="text-teal-600 hover:underline font-medium">Bitwarden</a> (gestionnaire gratuit)</li>
+                                <li><strong>Vérification de l'info :</strong> <a href="https://factuel.afp.com/" target="_blank" class="text-teal-600 hover:underline font-medium">AFP Factuel</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-md">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800">Et après CléA Numérique ?</h3>
+                    <p class="text-slate-600 mb-4">CléA Numérique est le socle. Selon vos objectifs, d'autres certifications peuvent compléter votre parcours :</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="border-b-2 border-slate-200"><tr><th class="p-2 font-semibold">Certification</th><th class="p-2 font-semibold">Pour quoi faire ?</th></tr></thead>
+                            <tbody>
+                                <tr class="border-b border-slate-100"><td class="p-2 font-medium text-teal-700">CléA Numérique</td><td class="p-2">Valider un socle de compétences pour l'emploi.</td></tr>
+                                <tr class="border-b border-slate-100"><td class="p-2 font-medium text-teal-700">PIX</td><td class="p-2">Évaluer et améliorer ses compétences numériques globales (citoyen, perso, pro).</td></tr>
+                                <tr><td class="p-2 font-medium text-teal-700">TOSA</td><td class="p-2">Prouver un niveau expert sur un logiciel précis (Excel, Word, etc.).</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                 <!-- Added section for the reference document -->
+                <div class="bg-white p-8 rounded-xl shadow-md text-center">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800">Consulter le Référentiel Officiel</h3>
+                    <p class="text-slate-600 mb-6">Accédez au document complet détaillant les compétences et les critères du CléA Numérique.</p>
+                    <a href="https://www.certificat-clea.fr/media/2020/02/Referentiel-clea-numerique-certif-pro-2020.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V17a2 2 0 01-2 2z"></path></svg>
+                        Télécharger le Référentiel
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-slate-300 mt-20">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>© 2025 Parcours CléA Numérique | d.de Amil - IRP - 2025</p>
+            <p class="text-sm text-slate-400 mt-2">Cet outil est une ressource d'accompagnement et d'auto-évaluation basée sur le référentiel officiel. Il ne remplace pas une évaluation menée par un organisme habilité.</p>
+        </div>
+    </footer>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- App Namespace and State ---
+        const app = {};
+        app.dbKey = 'cleaNumUserData_v14';
+        app.state = { 
+            user: { prenom: '', nom: '', poste: '' }, 
+            evaluations: { initiale: null, intermediaire: null, finale: null }, 
+            referenceEval: null,
+            currentEvalType: 'initiale', 
+            isEvaluationMode: false 
+        };
+        
+        // --- Data ---
+        app.referentielData = [
+            {
+                domaine: "Compétence 1 – Identifier son environnement et utiliser les outils associés",
+                contexte2035: "Dans un monde où les outils (y compris l'IA) évoluent constamment, maîtriser son environnement de base n'est plus une option. C'est le socle qui vous permet de vous adapter rapidement aux nouvelles technologies sans être dépassé.",
+                subCompetences: [
+                    { id: 1, text: "Identifier son environnement numérique", explication: "C'est savoir nommer les outils que vous utilisez (ordinateur, smartphone, logiciels comme Word ou une messagerie) et savoir à quoi ils servent. C'est comme connaître les outils dans une caisse à outils avant de bricoler.", criteres: ["Savoir nommer les outils que j'utilise (ordinateur, logiciels...)", "Savoir dire à quoi ils servent principalement", "Voir des avantages et des inconvénients à mes outils", "Classer mes fichiers dans des dossiers pour les retrouver", "Savoir stocker mes données de manière organisée", "Savoir choisir entre une connexion Wi-Fi et un câble"] },
+                    { id: 2, text: "Accéder aux outils de son environnement numérique", explication: "C'est être capable d'utiliser concrètement les outils : allumer l'ordinateur, lancer une application, créer un compte sur un site, et utiliser les fonctions de base d'un logiciel (mettre en gras, faire un calcul simple...).", criteres: ["Utiliser les fonctions de base d'un ordinateur, d'une tablette ou d'un smartphone", "Créer un compte sur un site ou un service en ligne", "Renseigner les informations de mon profil professionnel", "Gérer les notifications pour ne pas être dérangé inutilement", "Utiliser les fonctions simples d'un traitement de texte ou d'un tableur"] }
+                ]
+            },
+            {
+                domaine: "Compétence 2 – Acquérir et exploiter de l'information dans un environnement professionnel numérisé",
+                contexte2035: "L'IA génère une quantité massive d'informations, vraies comme fausses. Savoir trouver, trier et évaluer la fiabilité des sources est devenu une compétence de survie pour ne pas se noyer dans le bruit ou être victime de désinformation.",
+                subCompetences: [
+                    { id: 3, text: "Utiliser les outils pour trouver l'information", explication: "C'est savoir utiliser un moteur de recherche comme Google ou Qwant de manière efficace, en choisissant les bons mots-clés pour trouver rapidement ce que l'on cherche.", criteres: ["Choisir le bon outil (Google, intranet...) pour ma recherche", "Utiliser les fonctions de base d'un moteur de recherche", "Utiliser les applications de recherche sur mon smartphone ou ma tablette"] },
+                    { id: 4, text: "Collecter des informations professionnelles", explication: "C'est savoir juger si une information trouvée sur internet est digne de confiance. Qui l'a écrite ? Quand ? Est-ce un site sérieux ? C'est développer son esprit critique.", criteres: ["Utiliser un moteur de recherche pour trouver une information", "Consulter les publications de mes collègues pour m'informer", "Consulter des sites de référence de mon secteur professionnel", "Me poser des questions sur la fiabilité d'une source"] }
+                ]
+            },
+            {
+                domaine: "Compétence 3 – Interagir en mode collaboratif",
+                contexte2035: "L'IA automatise les tâches individuelles, ce qui rend la collaboration humaine encore plus précieuse. Savoir utiliser les outils collaboratifs est essentiel pour travailler en équipe de manière fluide et efficace.",
+                subCompetences: [
+                    { id: 5, text: "Échanger de l'information", explication: "C'est savoir communiquer avec les autres en utilisant les bons outils : quand envoyer un email ? Quand utiliser une messagerie instantanée (chat) ? C'est aussi savoir partager des informations de manière claire et respectueuse.", criteres: ["Repérer les bons groupes ou réseaux professionnels", "Partager des informations utiles avec mon équipe ou ma hiérarchie", "Alerter mes collègues quand un nouveau document est disponible", "Choisir le bon canal de communication (mail, chat, téléphone...)", "Respecter la charte graphique de l'entreprise dans mes communications"] },
+                    { id: 6, text: "Contribuer à une production commune", explication: "C'est savoir travailler à plusieurs sur un même document en ligne (comme un Google Docs ou un Word partagé), en ajoutant sa contribution sans effacer le travail des autres.", criteres: ["Apporter ma contribution à un travail collectif", "Classer les informations dans les dossiers partagés prévus (Drive, Cloud...)", "Communiquer sur l'avancement de mon travail à l'équipe"] },
+                    { id: 7, text: "Partager les bonnes pratiques", explication: "C'est avoir l'esprit d'équipe : si vous découvrez une astuce qui vous fait gagner du temps, vous la partagez avec vos collègues. C'est contribuer à rendre tout le monde meilleur.", criteres: ["Donner mon avis de manière constructive sur les méthodes de travail", "Partager des astuces 'métier' avec mes collègues", "Échanger régulièrement des idées avec mon réseau"] }
+                ]
+            },
+            {
+                domaine: "Compétence 4 – Appliquer les règles et bonnes pratiques de la sécurité numérique",
+                contexte2035: "La cybersécurité est l'un des 3 domaines de compétences les plus recherchés. Avec l'IA, les menaces (phishing, arnaques) deviennent plus sophistiquées. Maîtriser les règles de sécurité est votre meilleure défense et un atout majeur pour votre employabilité.",
+                subCompetences: [
+                    { id: 8, text: "Protéger ses outils et ses données au quotidien", explication: "C'est prendre soin de son matériel et de ses informations : verrouiller son ordinateur quand on s'absente, faire des sauvegardes régulières pour ne pas tout perdre en cas de problème.", criteres: ["Appliquer les règles de la charte informatique de l'entreprise", "Faire des sauvegardes régulières de mes données importantes", "Garder mes équipements en sécurité (contre le vol, etc.)", "Verrouiller mon ordinateur quand je quitte mon poste", "Protéger mes données personnelles et ma vie privée"] },
+                    { id: 9, text: "Identifier les risques et s'en prémunir", explication: "C'est apprendre à reconnaître les dangers comme les emails frauduleux (phishing) qui essaient de voler vos mots de passe. C'est aussi savoir créer des mots de passe solides et difficiles à deviner.", criteres: ["Reconnaître les principaux types d'attaques (virus, phishing...)", "Mettre à jour mes logiciels et mon antivirus", "Créer des mots de passe forts et les changer régulièrement", "Alerter en cas d'intrusion ou d'infection"] },
+                    { id: 10, text: "Protéger son e-reputation et celle de son entreprise", explication: "C'est faire attention à ce que l'on publie en ligne, que ce soit sur les réseaux sociaux ou par email. C'est aussi respecter la confidentialité des informations de son entreprise.", criteres: ["Respecter la charte de communication de l'entreprise", "M'assurer de la confidentialité des informations que je partage"] }
+                ]
+            }
+        ];
+        app.totalSubCompetences = app.referentielData.reduce((acc, domaine) => acc + domaine.subCompetences.length, 0);
+        app.actionPlanTips = {
+            1: ["Cette semaine, prenez 15 min pour réorganiser les icônes de votre bureau ou les favoris de votre navigateur.", "Identifiez un outil que vous utilisez mal et regardez un tutoriel de 5 min à son sujet."],
+            2: ["Mettez à jour votre photo et votre fonction sur un de vos profils professionnels (LinkedIn, intranet...).", "Désactivez les notifications d'une application qui vous dérange souvent."],
+            3: ["Pour votre prochaine recherche Google, essayez d'utiliser les guillemets pour chercher une expression exacte.", "Comparez les résultats d'une même recherche sur deux moteurs différents (Google, Qwant, DuckDuckGo...)."],
+            4: ["Identifiez 3 sources d'information fiables pour votre secteur et mettez-les en favoris.", "Avant de partager un article, vérifiez sa date de publication et son auteur."],
+            5: ["Partagez une information utile (article, astuce) à votre équipe cette semaine, en choisissant le bon canal (mail, chat...).", "Lors de votre prochaine réunion, entraînez-vous à reformuler les propos d'un collègue pour vous assurer d'avoir bien compris."],
+            6: ["Si vous travaillez sur un document partagé, utilisez la fonction 'commentaire' pour suggérer une modification au lieu de la faire directement.", "Créez une règle simple de nommage de fichiers pour un projet (ex: AAAA-MM-JJ_NomProjet_Version.docx)."],
+            7: ["Identifiez une bonne pratique que vous maîtrisez (un raccourci clavier, une astuce sur un logiciel) et montrez-la à un collègue.", "Proposez une petite amélioration dans la façon de travailler de votre équipe (ex: 'Et si on faisait un point rapide de 5 min tous les matins ?')."],
+            8: ["Activez le verrouillage automatique de votre ordinateur ou smartphone après une courte période d'inactivité.", "Planifiez une sauvegarde hebdomadaire de vos fichiers importants sur un disque dur externe ou un cloud."],
+            9: ["Utilisez un gestionnaire de mots de passe ou une phrase secrète pour créer et retenir des mots de passe complexes.", "Analysez le dernier email suspect que vous avez reçu : quels étaient les indices de phishing ? (adresse de l'expéditeur, fautes d'orthographe...)."],
+            10: ["Vérifiez les paramètres de confidentialité de l'un de vos comptes de réseau social.", "Avant d'envoyer un email avec des destinataires multiples, vérifiez deux fois la liste pour éviter de diffuser une information à la mauvaise personne."]
+        };
+        
+        // --- UI Elements ---
+        app.ui = {
+            prenom: document.getElementById('prenom'), nom: document.getElementById('nom'), poste: document.getElementById('poste'),
+            evalType: document.getElementById('eval-type'), evalDate: document.getElementById('eval-date'), startEvalBtn: document.getElementById('start-eval-btn'), resetAllBtn: document.getElementById('reset-all-btn'),
+            modeToggle: document.getElementById('mode-toggle'), labelDecouverte: document.getElementById('label-decouverte'), labelEvaluation: document.getElementById('label-evaluation'),
+            accordionContainer: document.getElementById('accordion-container'),
+            finishEvalContainer: document.getElementById('finish-eval-container'),
+            finishEvalBtn: document.getElementById('finish-eval-btn'),
+            completionStatus: document.getElementById('completion-status'),
+            bilanSection: document.getElementById('bilan'), bilanIntro: document.getElementById('bilan-intro'),
+            valorisationContainer: document.getElementById('valorisation-container'), actionPlanContainer: document.getElementById('action-plan-container'),
+            pdfExportBtn: document.getElementById('pdf-export-btn'), pdfExportText: document.getElementById('pdf-export-text'), pdfExportLoader: document.getElementById('pdf-export-loader'),
+            referenceBtn: document.getElementById('reference-btn'), referenceInfo: document.getElementById('reference-info'),
+        };
+        app.chart = null;
+
+        // --- Core Functions ---
+        app.saveState = () => localStorage.setItem(app.dbKey, JSON.stringify(app.state));
+        app.loadState = () => { if (localStorage.getItem(app.dbKey)) app.state = JSON.parse(localStorage.getItem(app.dbKey)); };
+
+        app.init = () => {
+            // Assurer que l'utilisateur soit en haut de page au lancement
+            window.scrollTo(0, 0);
+
+            // Replier tous les menus dépliants au lancement
+            document.querySelectorAll('.accordion-button').forEach(button => {
+                button.classList.remove('open');
+                const content = button.nextElementSibling;
+                if (content) {
+                    content.style.display = 'none';
+                    // Reset max-height if it was set previously
+                    content.style.maxHeight = null; 
+                }
+            });
+
+            app.loadState();
+            app.initCharts();
+            app.bindUIListeners();
+            app.renderUIFromState();
+        };
+
+        app.initCharts = () => {
+            const defaultChartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
+            new Chart(document.getElementById('competencesManquantesChart'), {
+                type: 'doughnut',
+                data: { labels: ['Manque de compétences en protection de la vie privée', 'Manque de compétences en utilisation de logiciels'], datasets: [{ data: [31.6, 29.4], backgroundColor: ['#f97316', '#f59e0b'], borderColor: '#f8fafc', borderWidth: 4 }] },
+                options: { ...defaultChartOptions, plugins: { legend: { position: 'bottom', labels: { boxWidth: 15, padding: 20 } } } }
+            });
+            new Chart(document.getElementById('equipementChart'), {
+                type: 'bar',
+                data: { labels: ['Smartphone', 'Ordinateur', 'Tablette'], datasets: [{ label: "Taux d'équipement (%)", data: [91, 89, 54], backgroundColor: '#0d9488', borderRadius: 4 }] },
+                options: { ...defaultChartOptions, indexAxis: 'y' }
+            });
+            new Chart(document.getElementById('illectronismeAgeChart'), {
+                type: 'bar',
+                data: { labels: ['15-24 ans', 'Moyenne Nationale', '60-74 ans', '75 ans et plus'], datasets: [{ label: "Taux d'illectronisme (%)", data: [2.4, 15.4, 24.2, 61.9], backgroundColor: ['#99f6e4', '#2dd4bf', '#0d9488', '#0f766e'], borderRadius: 4 }] },
+                options: { ...defaultChartOptions, scales: { y: { beginAtZero: true, max: 70 } } }
+            });
+        };
+
+        app.buildEvaluationUI = () => {
+            const isEvalMode = app.state.isEvaluationMode;
+            app.ui.accordionContainer.innerHTML = app.referentielData.map(domaine => `
+                <div class="bg-white rounded-xl shadow-md">
+                    <button class="w-full text-left p-6 flex justify-between items-center accordion-button">
+                        <h3 class="text-lg font-bold text-slate-800">${domaine.domaine}</h3>
+                        <svg class="accordion-icon w-6 h-6 text-teal-600 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </button>
+                    <div class="accordion-content px-6">
+                        <div class="py-4 space-y-6">
+                           <div class="p-4 bg-teal-50 text-teal-800 rounded-lg text-sm italic">${domaine.contexte2035}</div>
+                            ${domaine.subCompetences.map(sc => {
+                                let content;
+                                if (isEvalMode) {
+                                    const currentEval = app.state.evaluations[app.state.currentEvalType];
+                                    const evalData = currentEval?.assessment[sc.id];
+                                    const selectedLevel = evalData?.level;
+                                    const checklistVisible = selectedLevel !== undefined;
+                                    
+                                    content = `<div class="mt-3 space-y-2" data-sc-container-id="${sc.id}">
+                                        <div>
+                                            <p class="text-sm font-semibold text-slate-600 mb-2">1. Comment évaluez-vous votre niveau ?</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                <button data-sc-id="${sc.id}" data-value="developper" class="assessment-btn ${selectedLevel === 'developper' ? 'active' : ''} ${checklistVisible && selectedLevel !== 'developper' ? 'disabled' : ''} text-xs px-3 py-1 rounded-full border border-orange-400 text-orange-600 hover:bg-orange-50 transition">À développer</button>
+                                                <button data-sc-id="${sc.id}" data-value="partiel" class="assessment-btn ${selectedLevel === 'partiel' ? 'active' : ''} ${checklistVisible && selectedLevel !== 'partiel' ? 'disabled' : ''} text-xs px-3 py-1 rounded-full border border-amber-400 text-amber-600 hover:bg-amber-50 transition">Partiellement Acquis</button>
+                                                <button data-sc-id="${sc.id}" data-value="acquis" class="assessment-btn ${selectedLevel === 'acquis' ? 'active' : ''} ${checklistVisible && selectedLevel !== 'acquis' ? 'disabled' : ''} text-xs px-3 py-1 rounded-full border border-green-400 text-green-600 hover:bg-green-50 transition">Acquis</button>
+                                            </div>
+                                        </div>
+                                        <div class="checklist-container ${checklistVisible ? 'visible' : ''}" data-checklist-id="${sc.id}">
+                                            <p class="text-sm font-semibold text-slate-600 mb-2">2. Vérifions ensemble. Cochez ce que vous savez faire :</p>
+                                            <div class="space-y-2">
+                                            ${sc.criteres.map((critere, index) => {
+                                                const critereId = `${sc.id}-${index}`;
+                                                const isChecked = evalData?.checklist[critereId] || false;
+                                                return `<label class="flex items-center p-2 bg-slate-50 rounded-md hover:bg-slate-100 cursor-pointer">
+                                                    <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500" data-sc-id="${sc.id}" data-critere-id="${critereId}" ${isChecked ? 'checked' : ''}>
+                                                    <span class="ml-3 text-slate-700">${critere}</span>
+                                                </label>`;
+                                            }).join('')}
+                                            </div>
+                                            <div class="text-sm text-teal-700 italic mt-2" data-feedback-id="${sc.id}">${evalData?.feedback || ''}</div>
+                                        </div>
+                                    </div>`;
+                                } else {
+                                    content = `<div class="mt-2 p-3 bg-slate-100 rounded-md">
+                                        <p class="text-sm font-semibold text-slate-600 mb-1">En clair, ça veut dire quoi ?</p>
+                                        <p class="text-sm text-slate-500">${sc.explication}</p>
+                                    </div>`;
+                                }
+                                return `<div class="border-t border-slate-200 pt-4">
+                                    <p class="font-semibold text-slate-700">${sc.text}</p>
+                                    ${content}
+                                </div>`;
+                            }).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        };
+        
+        
+
+        app.checkCompletionStatus = () => {
+            const currentEval = app.state.evaluations[app.state.currentEvalType];
+            if (!currentEval) return;
+
+            const assessedCount = Object.keys(currentEval.assessment).length;
+            const totalCount = app.totalSubCompetences;
+            
+            if (assessedCount >= totalCount) {
+                app.ui.finishEvalBtn.disabled = false;
+                app.ui.completionStatus.textContent = "Vous avez terminé ! Cliquez sur le bouton pour voir votre bilan.";
+                app.ui.completionStatus.classList.add('text-green-600', 'font-semibold');
+            } else {
+                app.ui.finishEvalBtn.disabled = true;
+                app.ui.completionStatus.textContent = `Progression : ${assessedCount} / ${totalCount} compétences évaluées.`;
+                app.ui.completionStatus.classList.remove('text-green-600', 'font-semibold');
+            }
+        };
+
+        app.bindUIListeners = () => {
+            ['prenom', 'nom', 'poste'].forEach(key => app.ui[key].addEventListener('input', (e) => { app.state.user[key] = e.target.value; app.saveState(); }));
+            app.ui.evalType.addEventListener('change', (e) => { app.state.currentEvalType = e.target.value; app.renderUIFromState(); });
+            app.ui.modeToggle.addEventListener('change', (e) => { 
+                app.state.isEvaluationMode = e.target.checked; 
+                app.ui.bilanSection.classList.add('hidden'); // Hide bilan when toggling mode
+                app.renderUIFromState(); 
+            });
+
+            app.ui.startEvalBtn.addEventListener('click', () => {
+                const type = app.ui.evalType.value, date = app.ui.evalDate.value;
+                if (!date) { alert("Veuillez sélectionner une date pour l'évaluation."); return; }
+                if (!app.state.evaluations[type]) {
+                    app.state.evaluations[type] = { date: date, assessment: {} };
+                } else { app.state.evaluations[type].date = date; }
+                app.state.currentEvalType = type;
+                app.ui.bilanSection.classList.add('hidden'); // Ensure bilan is hidden on new eval
+                app.saveState();
+                app.renderUIFromState();
+                alert(`Évaluation ${type} commencée/mise à jour. Vous pouvez maintenant basculer en "Mode Auto-évaluation" et remplir le diagnostic.`);
+            });
+
+            app.ui.resetAllBtn.addEventListener('click', () => {
+                if (confirm("Êtes-vous sûr de vouloir supprimer TOUTES vos données ? Cette action est irréversible.")) {
+                    localStorage.removeItem(app.dbKey);
+                    app.state = { user: { prenom: '', nom: '', poste: '' }, evaluations: { initiale: null, intermediaire: null, finale: null }, referenceEval: null, currentEvalType: 'initiale', isEvaluationMode: false };
+                    if(app.chart) { app.chart.destroy(); app.chart = null; }
+                    app.renderUIFromState();
+                }
+            });
+
+            app.ui.accordionContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('.accordion-button');
+                if (button) {
+        const content = button.nextElementSibling;
+        const wasOpen = button.classList.contains('open');
+        document.querySelectorAll('.accordion-button').forEach(btn => {
+            btn.classList.remove('open');
+            btn.nextElementSibling.style.display = 'none';
+        });
+        if (!wasOpen) {
+            button.classList.add('open');
+            content.style.display = 'block';
+        }
+    }
+                
+                const currentEval = app.state.evaluations[app.state.currentEvalType];
+                if (!currentEval) {
+                    if (e.target.matches('.assessment-btn, input[type="checkbox"]')) {
+                        alert("Veuillez d'abord 'Commencer l'évaluation' dans la section Point de Départ.");
+                    }
+                    return;
+                }
+
+                if (e.target.classList.contains('assessment-btn')) {
+                    const scId = e.target.dataset.scId, value = e.target.dataset.value;
+                    
+                    if (!currentEval.assessment[scId]) {
+                        currentEval.assessment[scId] = { level: value, checklist: {}, adjustedLevel: value, feedback: '' };
+                    } else {
+                        currentEval.assessment[scId].level = value;
+                        currentEval.assessment[scId].adjustedLevel = value;
+                    }
+                    
+                    const parentContainer = e.target.closest('[data-sc-container-id]');
+                    parentContainer.querySelectorAll('.assessment-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.add('disabled');
+                    });
+                    e.target.classList.add('active');
+                    e.target.classList.remove('disabled');
+
+                    const checklist = parentContainer.querySelector(`[data-checklist-id="${scId}"]`);
+                    checklist.classList.add('visible');
+                    
+                    // BUG FIX: Use setTimeout to ensure the DOM has updated before calculating height
+                    setTimeout(() => {
+                        // Ensure the element exists and has scrollHeight before setting max-height
+                        if (checklist && checklist.scrollHeight > 0) {
+                            checklist.style.maxHeight = checklist.scrollHeight + 'px';
+                        } else {
+                            // Fallback if scrollHeight is not available or 0
+                            checklist.style.maxHeight = '200px'; // Or some default value
+                        }
+                    }, 50);
+
+                    app.applyEvaluationLogic(scId);
+                    app.checkCompletionStatus();
+                    app.saveState();
+                }
+
+                if (e.target.matches('input[type="checkbox"]')) {
+                    const scId = e.target.dataset.scId, critereId = e.target.dataset.critereId;
+                    if (currentEval.assessment[scId]) {
+                        currentEval.assessment[scId].checklist[critereId] = e.target.checked;
+                        app.applyEvaluationLogic(scId);
+                        app.checkCompletionStatus();
+                        app.saveState();
+                        
+                    }
+                }
+            });
+            
+            app.ui.finishEvalBtn.addEventListener('click', () => {
+                if(app.ui.finishEvalBtn.disabled) return;
+                app.updateBilan();
+                app.ui.bilanSection.classList.remove('hidden');
+                app.ui.bilanSection.scrollIntoView({ behavior: 'smooth' });
+            });
+
+            app.ui.referenceBtn.addEventListener('click', () => {
+                const currentEval = app.state.evaluations[app.state.currentEvalType];
+                if(currentEval && Object.keys(currentEval.assessment).length > 0) {
+                    app.state.referenceEval = JSON.parse(JSON.stringify(currentEval));
+                    app.saveState();
+                    app.updateBilan();
+                    alert(`L'évaluation '${app.state.currentEvalType}' a été enregistrée comme référence.`);
+                } else {
+                    alert("Veuillez compléter l'évaluation actuelle avant de l'enregistrer comme référence.");
+                }
+            });
+
+            app.ui.pdfExportBtn.addEventListener('click', app.exportToPDF);
+        };
+        
+        app.applyEvaluationLogic = (scId) => {
+            const currentEval = app.state.evaluations[app.state.currentEvalType];
+            const evalData = currentEval.assessment[scId];
+            if (!evalData) return;
+
+            const subCompetence = app.referentielData.flatMap(d => d.subCompetences).find(sc => sc.id == scId);
+            const totalCriteres = subCompetence.criteres.length;
+            const checkedCount = Object.values(evalData.checklist).filter(Boolean).length;
+            const percentage = totalCriteres > 0 ? (checkedCount / totalCriteres) * 100 : 0;
+
+            let newAdjustedLevel = evalData.level;
+            let feedbackMsg = '';
+
+            if (percentage === 0) {
+                newAdjustedLevel = 'developper';
+                feedbackMsg = "💡 Aucun critère n'a été coché. Le niveau 'À développer' est recommandé comme point de départ.";
+            } else if (percentage <= 50) { // Changement ici : <= 50% pour "À développer"
+                newAdjustedLevel = 'developper';
+                feedbackMsg = "💡 Moins de la moitié des critères ont été validés. Le niveau 'À développer' est recommandé pour progresser sereinement.";
+            } else if (percentage <= 75) { // <= 75% pour "Partiellement Acquis"
+                newAdjustedLevel = 'partiel';
+                feedbackMsg = "💡 Plus de la moitié des critères sont validés, mais pas tous. Le niveau 'Partiellement Acquis' est une bonne base pour viser l'expertise.";
+            } else { // > 75% pour "Acquis"
+                newAdjustedLevel = 'acquis';
+                feedbackMsg = "";
+            }
+
+            evalData.adjustedLevel = newAdjustedLevel;
+            evalData.feedback = feedbackMsg;
+            
+            const feedbackEl = document.querySelector(`[data-feedback-id="${scId}"]`);
+            if (feedbackEl) feedbackEl.textContent = feedbackMsg;
+
+            if (evalData.level !== newAdjustedLevel) {
+                const allBtns = document.querySelectorAll(`.assessment-btn[data-sc-id="${scId}"]`);
+                allBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.classList.add('disabled');
+                });
+                const btnToActivate = document.querySelector(`.assessment-btn[data-sc-id="${scId}"][data-value="${newAdjustedLevel}"]`);
+                if(btnToActivate) {
+                    btnToActivate.classList.add('active');
+                    btnToActivate.classList.remove('disabled');
+                }
+            }
+        };
+
+        app.renderUIFromState = () => {
+            app.ui.prenom.value = app.state.user.prenom;
+            app.ui.nom.value = app.state.user.nom;
+            app.ui.poste.value = app.state.user.poste;
+            app.ui.evalType.value = app.state.currentEvalType;
+            app.ui.evalDate.value = app.state.evaluations[app.state.currentEvalType]?.date || new Date().toISOString().split('T')[0];
+            
+            app.ui.modeToggle.checked = app.state.isEvaluationMode;
+            app.ui.labelDecouverte.classList.toggle('bg-white', !app.state.isEvaluationMode);
+            app.ui.labelDecouverte.classList.toggle('text-teal-700', !app.state.isEvaluationMode);
+            app.ui.labelDecouverte.classList.toggle('shadow', !app.state.isEvaluationMode);
+            app.ui.labelDecouverte.classList.toggle('text-slate-600', app.state.isEvaluationMode);
+            app.ui.labelEvaluation.classList.toggle('bg-white', app.state.isEvaluationMode);
+            app.ui.labelEvaluation.classList.toggle('text-teal-700', app.state.isEvaluationMode);
+            app.ui.labelEvaluation.classList.toggle('shadow', app.state.isEvaluationMode);
+            app.ui.labelEvaluation.classList.toggle('text-slate-600', !app.state.isEvaluationMode);
+
+            app.buildEvaluationUI();
+            
+            app.ui.bilanSection.classList.add('hidden');
+            if (app.state.isEvaluationMode && app.state.evaluations[app.state.currentEvalType]) {
+                app.ui.finishEvalContainer.classList.remove('hidden');
+                app.checkCompletionStatus();
+            } else {
+                app.ui.finishEvalContainer.classList.add('hidden');
+            }
+        };
+
+        app.getFinalLevel = (evalData) => {
+            if (!evalData) return 'developper';
+            return evalData.adjustedLevel || evalData.level || 'developper';
+        };
+
+        app.calculateScores = (assessment) => {
+            return app.referentielData.map(domaine => {
+                const subCompetences = domaine.subCompetences;
+                if (subCompetences.length === 0) return 0;
+                
+                const totalScore = subCompetences.reduce((acc, sc) => {
+                    const level = app.getFinalLevel(assessment[sc.id]);
+                    if (level === 'acquis') return acc + 2;
+                    if (level === 'partiel') return acc + 1;
+                    return acc;
+                }, 0);
+
+                const maxScore = subCompetences.length * 2;
+                return maxScore > 0 ? (totalScore / maxScore) * 100 : 0;
+            });
+        };
+        
+        app.updateBilan = () => {
+            const datasets = [];
+            const evalColors = { initiale: { bg: 'rgba(59, 130, 246, 0.2)', border: 'rgba(59, 130, 246, 1)' }, intermediaire: { bg: 'rgba(249, 115, 22, 0.2)', border: 'rgba(249, 115, 22, 1)' }, finale: { bg: 'rgba(13, 148, 136, 0.2)', border: 'rgba(13, 148, 136, 1)' } };
+            let lastCompletedEval = null;
+
+            const currentEvalType = app.state.currentEvalType;
+            const evaluation = app.state.evaluations[currentEvalType];
+
+            if (evaluation && Object.keys(evaluation.assessment).length > 0) {
+                datasets.push({ label: `${currentEvalType.charAt(0).toUpperCase() + currentEvalType.slice(1)} (${evaluation.date})`, data: app.calculateScores(evaluation.assessment), backgroundColor: evalColors[currentEvalType].bg, borderColor: evalColors[currentEvalType].border, borderWidth: 2, pointRadius: 4 });
+                lastCompletedEval = evaluation;
+            }
+            
+            if (app.state.referenceEval) {
+                 datasets.push({ label: `Référence (${new Date(app.state.referenceEval.date).toLocaleDateString('fr-FR')})`, data: app.calculateScores(app.state.referenceEval.assessment), backgroundColor: 'rgba(107, 114, 128, 0.1)', borderColor: '#6b7280', borderWidth: 2, borderDash: [5, 5], pointRadius: 4 });
+                 app.ui.referenceInfo.textContent = `Comparaison avec la référence enregistrée le ${new Date(app.state.referenceEval.date).toLocaleDateString('fr-FR')}.`;
+            } else {
+                 app.ui.referenceInfo.textContent = '';
+            }
+
+            if (datasets.length > 0) {
+                if (app.chart) { app.chart.data.datasets = datasets; app.chart.update(); } 
+                else {
+                    const ctx = document.getElementById('skillsRadarChart').getContext('2d');
+                    app.chart = new Chart(ctx, {
+                        type: 'radar',
+                        data: { labels: ["1. Outils & Env.", "2. Information", "3. Collaboration", "4. Sécurité"], datasets: datasets },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { r: { angleLines: { color: 'rgba(0,0,0,0.1)' }, grid: { color: 'rgba(0,0,0,0.1)' }, pointLabels: { font: { size: 12 }, color: '#334155' }, ticks: { backdropColor: 'transparent', color: '#475569', stepSize: 25 }, min: 0, max: 100 } }, plugins: { legend: { position: 'bottom' } } }
+                    });
+                }
+
+                const assessment = lastCompletedEval.assessment;
+                const scores = app.calculateScores(assessment);
+                const globalScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                
+                let introText = '';
+                if (globalScore > 75) introText = `<strong>Profil Expert :</strong> Vous démontrez une excellente maîtrise des compétences numériques fondamentales. Votre profil est solide et prêt pour les défis de demain.`;
+                else if (globalScore > 40) introText = `<strong>Profil Solide :</strong> Vous possédez de bons atouts. Ce bilan va vous aider à cibler les compétences à renforcer pour atteindre le niveau expert.`;
+                else introText = `<strong>Profil Prometteur :</strong> Vous avez initié votre montée en compétences. Ce bilan est votre feuille de route pour construire une base solide.`;
+                app.ui.bilanIntro.innerHTML = introText;
+
+                app.ui.valorisationContainer.innerHTML = `<h4 class="font-bold text-xl mb-2 text-slate-800">Comment valoriser vos compétences</h4><div class="p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg"><p class="text-sm text-blue-800">Sur votre CV ou profil LinkedIn, ne vous contentez pas de lister "CléA Numérique". Décrivez le résultat : <strong>"Capacité validée à collaborer en ligne et à appliquer les bonnes pratiques de la sécurité numérique (Référentiel CléA), compétences clés à l'ère de l'IA."</strong></p></div>`;
+
+                const axesDeveloppement = [];
+                app.referentielData.forEach(domaine => {
+                    domaine.subCompetences.forEach(sc => {
+                        if (app.getFinalLevel(assessment[sc.id]) === 'developper') {
+                            axesDeveloppement.push(sc);
+                        }
+                    });
+                });
+                
+                let actionPlanHTML = `<h4 class="font-bold text-xl mb-2 text-slate-800">Mon Plan d'Action Personnalisé</h4>`;
+                if (axesDeveloppement.length > 0) {
+                    actionPlanHTML += `<div class="p-4 bg-orange-50 border-l-4 border-orange-500 rounded-r-lg space-y-4">`;
+                    axesDeveloppement.slice(0, 3).forEach(sc => {
+                        actionPlanHTML += `<div><p class="font-semibold text-orange-900">${sc.text}</p><ul class="list-disc list-inside text-sm text-orange-700 mt-1">${(app.actionPlanTips[sc.id] || []).map(tip => `<li>${tip}</li>`).join('')}</ul></div>`;
+                    });
+                    actionPlanHTML += `</div>`;
+                } else {
+                    actionPlanHTML += `<div class="p-4 bg-green-50 border-l-4 border-green-500 rounded-r-lg"><p class="font-semibold text-green-800">Félicitations ! Vous n'avez pas d'axe de développement prioritaire.</p></div>`;
+                }
+                app.ui.actionPlanContainer.innerHTML = actionPlanHTML;
+
+            }
+        };
+        
+        app.exportToPDF = () => {
+            const { jsPDF } = window.jspdf;
+            const bilanContent = document.getElementById('bilan-content');
+            app.ui.pdfExportLoader.style.display = 'inline';
+            app.ui.pdfExportText.style.display = 'none';
+            app.ui.pdfExportBtn.disabled = true;
+
+            html2canvas(bilanContent, { scale: 2 }).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const ratio = canvas.width / canvas.height;
+                const imgWidth = pdfWidth - 20, imgHeight = imgWidth / ratio;
+                
+                pdf.setFont('Inter', 'bold'); pdf.setFontSize(18); pdf.text('Bilan de Compétences - CléA Numérique', pdfWidth / 2, 20, { align: 'center' });
+                pdf.setFont('Inter', 'normal'); pdf.setFontSize(12);
+                const userInfo = `${app.state.user.prenom} ${app.state.user.nom} - ${app.state.user.poste}`;
+                pdf.text(userInfo, pdfWidth / 2, 30, { align: 'center' });
+                pdf.addImage(imgData, 'PNG', 10, 40, imgWidth, imgHeight);
+                pdf.save(`Bilan_CleA_Numerique_${app.state.user.nom || 'Utilisateur'}.pdf`);
+
+                app.ui.pdfExportLoader.style.display = 'none';
+                app.ui.pdfExportText.style.display = 'inline';
+                app.ui.pdfExportBtn.disabled = false;
+            });
+        };
+
+        app.init();
+    });
+    </script>
+</body>
+</html>

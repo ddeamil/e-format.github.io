@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Soft Skills : Exploration Interactive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        /* --- General & Typography --- */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4; 
+            color: #2c3e50;
+        }
+
+        /* --- Transitions & Interactions --- */
+        .transition-all-300 {
+            transition: all 0.3s ease-in-out;
+        }
+
+        /* --- Navigation --- */
+        .nav-link { position: relative; }
+        .nav-link::after { content: ''; position: absolute; width: 0; height: 2px; bottom: -4px; left: 50%; transform: translateX(-50%); background-color: #14b8a6; transition: width 0.3s ease; }
+        .nav-link:hover::after, .nav-link.active::after { width: 100%; }
+
+        /* --- Accordions --- */
+        .accordion-button::after { content: '+'; font-size: 1.5rem; line-height: 1.5rem; transition: transform 0.3s ease; color: #14b8a6; }
+        .accordion-button.open::after { transform: rotate(45deg); }
+
+        /* --- Harmonized Tabs --- */
+        .tab-button {
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            color: #14b8a6;
+            border-bottom-color: #14b8a6;
+        }
+
+        /* --- Toggle Switch --- */
+        .toggle-switch { cursor: pointer; }
+        .toggle-switch .toggle-bg { transition: background-color 0.3s ease-in-out; }
+        .toggle-switch .toggle-dot { transition: transform 0.3s ease-in-out; }
+        .toggle-switch input:checked ~ .toggle-bg { background-color: #14b8a6; }
+        .toggle-switch input:checked ~ .toggle-dot { transform: translateX(100%); }
+
+        /* --- Assessment Cards --- */
+        .assessment-card { 
+            cursor: pointer; 
+            border: 2px solid #e5e7eb; 
+            transition: all 0.2s ease-in-out; 
+        }
+        .assessment-card:hover { 
+            border-color: #9ca3af; 
+            transform: translateY(-4px); 
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .assessment-card.selected { 
+            background-color: #dbeafe; 
+            border-color: #2563eb; 
+            transform: scale(1.03) translateY(-2px); 
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2); 
+        }
+
+        /* --- Harmonized Buttons --- */
+        .btn {
+            font-weight: 600;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0 4px 14px 0 rgba(0, 0, 0, 0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.15);
+        }
+
+        .btn-primary { background-color: #16a34a; color: white; box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.39); }
+        .btn-primary:hover { background-color: #15803d; box-shadow: 0 6px 20px 0 rgba(22, 163, 74, 0.45); }
+
+        .btn-secondary { background-color: #0d9488; color: white; box-shadow: 0 4px 14px 0 rgba(13, 148, 136, 0.3); }
+        .btn-secondary:hover { background-color: #0f766e; box-shadow: 0 6px 20px 0 rgba(13, 148, 136, 0.4); }
+        
+        .btn-secondary-outline { background-color: transparent; color: #0d9488; border: 2px solid #0d9488; }
+        .btn-secondary-outline:hover { background-color: #0d9488; color: white; }
+
+        .btn-destructive { background-color: #dc2626; color: white; box-shadow: 0 4px 14px 0 rgba(220, 38, 38, 0.3); }
+        .btn-destructive:hover { background-color: #b91c1c; box-shadow: 0 6px 20px 0 rgba(220, 38, 38, 0.4); }
+
+        /* --- Interactive Circles --- */
+        .autonomy-circle { transition: all 0.3s ease-in-out; cursor: pointer; }
+        .autonomy-circle:hover { opacity: 0.8; transform: scale(1.05); }
+        .autonomy-circle.active-circle {
+            transform: scale(1.1) !important; /* Use important to override hover scale */
+            border: 3px solid #14b8a6;
+            box-shadow: 0 0 20px rgba(20, 184, 166, 0.5);
+        }
+        
+        .stat-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .stat-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+
+        /* --- Atypical Profile Section (Color Harmonized) --- */
+        .atypical-card {
+            border: 2px solid #e5e7eb;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .atypical-card:hover {
+            border-color: #99f6e4; /* Teal lighter */
+            transform: translateY(-5px);
+        }
+        .atypical-card.active {
+            border-color: #14b8a6; /* Teal main */
+            background-color: #f0fdfa; /* Teal lightest */
+        }
+        .atypical-card.active .atypical-icon {
+            transform: scale(1.2);
+            color: #14b8a6; /* Teal main */
+        }
+        .atypical-icon {
+            transition: all 0.3s ease;
+        }
+
+        /* --- Chart Containers --- */
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin: auto; height: 450px; max-height: 60vh; }
+        .radar-chart-container { position: relative; width: 100%; max-width: 600px; margin: auto; height: 500px; max-height: 70vh; }
+        @media (max-width: 768px) { .chart-container { height: 400px; max-height: 70vh; } .radar-chart-container { height: 400px; } }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header id="main-header" class="bg-white/80 backdrop-blur-lg fixed top-0 left-0 right-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <a href="#hero" class="text-xl font-bold text-gray-800">Soft Skills ✨</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#podcast" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">Podcast</a>
+                        <a href="#comprendre" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">Comprendre</a>
+                        <a href="#evaluer" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">S'évaluer</a>
+                        <a href="#valoriser" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">Valoriser</a>
+                        <a href="#parcours" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">Votre Parcours</a>
+                        <a href="#outils" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">Outils</a>
+                        <a href="#ressources" class="nav-link text-gray-600 hover:text-teal-600 px-3 py-2 rounded-md text-sm font-medium transition-all-300">Ressources</a>
+                    </div>
+                </div>
+                 <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-teal-600 focus:outline-none">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <div id="mobile-menu" class="md:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                 <a href="#podcast" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">Podcast</a>
+                <a href="#comprendre" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">Comprendre</a>
+                <a href="#evaluer" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">S'évaluer</a>
+                <a href="#valoriser" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">Valoriser</a>
+                <a href="#parcours" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">Votre Parcours</a>
+                <a href="#outils" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">Outils</a>
+                <a href="#ressources" class="nav-link text-gray-600 hover:text-teal-600 block px-3 py-2 rounded-md text-base font-medium transition-all-300">Ressources</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-16">
+        <section id="hero" class="bg-white py-20 sm:py-24 lg:py-32">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 text-center">
+                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-gray-900 tracking-tight">Les Soft Skills : Votre <span class="text-teal-600">Atout Stratégique</span>.</h1>
+                <p class="mt-6 max-w-3xl mx-auto text-lg sm:text-xl text-gray-600 leading-relaxed">Au-delà des diplômes, les compétences comportementales sont le principal levier de performance, d'innovation et d'employabilité. Explorez, évaluez et valorisez ces aptitudes humaines.</p>
+            </div>
+        </section>
+
+        <section id="dashboard" class="py-20 sm:py-24">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Les Soft Skills en 2025 : Chiffres Clés</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        L'importance des compétences comportementales n'est plus à démontrer. Elle est au cœur des nouvelles stratégies de performance et de recrutement.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="stat-card bg-white p-8 rounded-xl shadow-lg text-center">
+                        <span class="text-5xl">👤</span>
+                        <p class="text-6xl font-extrabold text-teal-600 my-4">92%</p>
+                        <p class="text-gray-700 font-medium leading-relaxed">des recruteurs considèrent les soft skills aussi, voire plus, importantes que les compétences techniques.</p>
+                        <p class="text-xs text-gray-400 mt-4">(Source: LinkedIn)</p>
+                    </div>
+                    <div class="stat-card bg-white p-8 rounded-xl shadow-lg text-center">
+                        <span class="text-5xl">🤖</span>
+                        <p class="text-6xl font-extrabold text-blue-600 my-4">65%</p>
+                        <p class="text-gray-700 font-medium leading-relaxed">des métiers seront profondément transformés par l'IA d'ici 2030. La créativité et le jugement deviennent l'avantage compétitif humain.</p>
+                        <p class="text-xs text-gray-400 mt-4">(Source: World Economic Forum)</p>
+                    </div>
+                    <div class="stat-card bg-white p-8 rounded-xl shadow-lg text-center">
+                        <span class="text-5xl">📈</span>
+                        <p class="text-6xl font-extrabold text-purple-600 my-4">+12%</p>
+                        <p class="text-gray-700 font-medium leading-relaxed">de productivité en moyenne pour les équipes avec une intelligence émotionnelle et collaborative élevée.</p>
+                        <p class="text-xs text-gray-400 mt-4">(Source: Boston Consulting Group)</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="podcast" class="py-20 sm:py-24 bg-teal-50 scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">🎙️ Podcast : Les Soft Skills en Audio</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Écoutez une synthèse et des analyses sur l'importance des compétences comportementales dans le monde professionnel d'aujourd'hui.
+                    </p>
+                </div>
+                <div class="max-w-3xl mx-auto">
+                    <div class="bg-white rounded-xl shadow-lg p-6">
+                        <audio controls controlsList="nodownload" class="w-full">
+                            <source src="#" type="audio/mpeg">
+                            Votre navigateur ne supporte pas l'élément audio.
+                        </audio>
+                        <p class="text-sm text-gray-500 mt-4 text-center">Utilisez les contrôles pour écouter le podcast. Le téléchargement n'est pas disponible.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="comprendre" class="py-20 sm:py-24 scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Comprendre les Soft Skills</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Cette section vous invite à découvrir la nature des soft skills. Nous déconstruisons ce concept pour le rendre tangible et expliquons pourquoi il est devenu indispensable.</p>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg mb-16">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Les 4 Grandes Familles de Compétences (France Stratégie)</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Ce modèle organise les soft skills en quatre familles interdépendantes. Cliquez sur chaque famille pour explorer les compétences qui la composent.</p>
+                    <div id="families-controls" class="flex flex-wrap justify-center gap-2 sm:gap-4 mb-8 border-b border-gray-200"></div>
+                    <div id="families-content" class="bg-gray-50 p-6 rounded-lg min-h-[200px] transition-all duration-300"></div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg mb-16">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Le Modèle des 3 Dimensions</h3>
+                     <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Une compétence n'existe pas dans le vide. Son expression dépend d'un écosystème à trois niveaux interdépendants.</p>
+                    <div class="grid md:grid-cols-3 gap-8 text-center">
+                        <div class="border-2 border-teal-200 p-6 rounded-lg bg-teal-50"><h4 class="text-xl font-semibold text-teal-800 mb-2">👤 Individu</h4><p class="text-teal-700">Capacités cognitives, conatives, émotionnelles et relationnelles propres à chaque personne.</p></div>
+                        <div class="border-2 border-blue-200 p-6 rounded-lg bg-blue-50"><h4 class="text-xl font-semibold text-blue-800 mb-2">👥 Collectif</h4><p class="text-blue-700">Capacité d'une équipe à collaborer, communiquer et agir de manière coordonnée.</p></div>
+                        <div class="border-2 border-purple-200 p-6 rounded-lg bg-purple-50"><h4 class="text-xl font-semibold text-purple-800 mb-2">🏢 Organisation</h4><p class="text-purple-700">Culture, structure et management qui favorisent ou freinent l'expression des compétences.</p></div>
+                    </div>
+                </div>
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Le Langage des Compétences : Clarifions les Termes</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Comprendre la nuance entre Qualités, Aptitudes et Soft Skills est la première étape pour mieux les identifier et les valoriser.</p>
+                    
+                    <div id="terms-tabs" class="flex flex-wrap justify-center border-b border-gray-200 mb-6"></div>
+                    <div id="terms-content" class="p-6 bg-gray-50 rounded-lg min-h-[120px]"></div>
+
+                    <h4 class="text-xl font-bold text-gray-800 mt-12 mb-6 text-center">Les Nuances selon le Contexte</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white border border-gray-200 rounded-lg text-sm">
+                            <thead class="bg-gray-100">
+                                <tr>
+                                    <th class="p-3 font-semibold text-left text-gray-700">Contexte</th>
+                                    <th class="p-3 font-semibold text-left text-gray-700">Qualités</th>
+                                    <th class="p-3 font-semibold text-left text-gray-700">Aptitudes</th>
+                                    <th class="p-3 font-semibold text-left text-gray-700">Soft Skills</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-t">
+                                    <td class="p-3 font-medium text-gray-800">Personnel</td>
+                                    <td class="p-3 text-gray-600">Stables, forgent l'identité (ex: honnêteté).</td>
+                                    <td class="p-3 text-gray-600">Capacités naturelles ou acquises.</td>
+                                    <td class="p-3 text-gray-600">Peu formalisées, mobilisées dans la vie quotidienne.</td>
+                                </tr>
+                                <tr class="border-t bg-teal-50/50">
+                                    <td class="p-3 font-medium text-gray-800">Professionnel</td>
+                                    <td class="p-3 text-gray-600">Valorisation dans le CV, marqueur de savoir-être.</td>
+                                    <td class="p-3 text-gray-600">Évaluées lors du recrutement (tests, diplômes).</td>
+                                    <td class="p-3 text-gray-600">Compétences transversales, essentielles à la performance.</td>
+                                </tr>
+                                <tr class="border-t">
+                                    <td class="p-3 font-medium text-gray-800">Social</td>
+                                    <td class="p-3 text-gray-600">Perçues comme des atouts relationnels.</td>
+                                    <td class="p-3 text-gray-600">Utilisées pour s'adapter à des groupes.</td>
+                                    <td class="p-3 text-gray-600">Permettent une intégration et une interaction harmonieuse.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluer" class="py-20 sm:py-24 bg-white scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">S'auto-évaluer</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Explorez les référentiels de manière interactive. Passez en mode "Auto-évaluation" pour vous positionner. Visualisez votre profil et sauvegardez un état pour suivre votre progression.</p>
+                </div>
+                
+                <div id="user-info-form" class="hidden max-w-4xl mx-auto bg-gray-50 p-6 rounded-xl shadow-inner mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4 text-center">Informations pour votre rapport PDF</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="user-prenom" class="block text-sm font-medium text-gray-700">Prénom</label>
+                            <input type="text" id="user-prenom" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" placeholder="Jean">
+                        </div>
+                        <div>
+                            <label for="user-nom" class="block text-sm font-medium text-gray-700">Nom</label>
+                            <input type="text" id="user-nom" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" placeholder="Dupont">
+                        </div>
+                        <div>
+                            <label for="user-position" class="block text-sm font-medium text-gray-700">Formation suivie ou Poste</label>
+                            <input type="text" id="user-position" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm" placeholder="Développeur Web - Session 2025">
+                        </div>
+                        <div>
+                            <label for="user-date" class="block text-sm font-medium text-gray-700">Date de l'évaluation</label>
+                            <input type="date" id="user-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-teal-500 focus:ring-teal-500 sm:text-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="rectec-module" class="bg-gray-50 p-8 rounded-xl shadow-inner mb-16">
+                    <div class="flex flex-col sm:flex-row justify-between items-start mb-8 gap-4">
+                        <div class="flex-grow">
+                            <h3 class="text-2xl font-bold text-gray-800 mb-2 text-center sm:text-left">Le Référentiel RECTEC</h3>
+                            <div class="flex items-center justify-center sm:justify-start">
+                                <input type="checkbox" id="rectec-optional-toggle" class="h-4 w-4 text-teal-600 border-gray-300 rounded focus:ring-teal-500">
+                                <label for="rectec-optional-toggle" class="ml-2 block text-sm text-gray-900">Inclure les compétences liées à la construction du parcours</label>
+                            </div>
+                        </div>
+                        <label class="toggle-switch flex items-center flex-shrink-0">
+                            <span class="mr-3 text-gray-600 font-medium">Exploration</span>
+                            <div class="relative">
+                                <input type="checkbox" id="rectec-toggle" class="sr-only">
+                                <div class="toggle-bg block bg-gray-300 w-14 h-8 rounded-full"></div>
+                                <div class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full"></div>
+                            </div>
+                            <span class="ml-3 text-teal-600 font-medium">Auto-évaluation</span>
+                        </label>
+                    </div>
+
+                    <div id="rectec-legend" class="hidden"></div>
+
+                    <div id="rectec-accordion" class="space-y-4"></div>
+                    <div id="rectec-action" class="text-center mt-8 hidden">
+                        <button id="rectec-generate-btn" class="btn btn-primary">Générer mon profil RECTEC</button>
+                    </div>
+                    <div id="rectec-profile" class="mt-10 hidden"></div>
+                </div>
+
+                <div id="savoir-etre-module" class="bg-gray-50 p-8 rounded-xl shadow-inner">
+                    <div class="flex flex-col sm:flex-row justify-between items-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-4 sm:mb-0 text-center sm:text-left">Autre Regard : Les Savoir-Être Professionnels</h3>
+                        <label class="toggle-switch flex items-center flex-shrink-0">
+                            <span class="mr-3 text-gray-600 font-medium">Exploration</span>
+                            <div class="relative">
+                                <input type="checkbox" id="savoir-etre-toggle" class="sr-only">
+                                <div class="toggle-bg block bg-gray-300 w-14 h-8 rounded-full"></div>
+                                <div class="toggle-dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full"></div>
+                            </div>
+                            <span class="ml-3 text-teal-600 font-medium">Auto-évaluation</span>
+                        </label>
+                    </div>
+                    <div id="savoir-etre-accordion" class="space-y-4"></div>
+                    <div id="savoir-etre-action" class="text-center mt-8 hidden">
+                        <button id="savoir-etre-generate-btn" class="btn btn-primary">Générer mon profil Savoir-Être</button>
+                    </div>
+                    <div id="savoir-etre-profile" class="mt-10 hidden"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="valoriser" class="py-20 sm:py-24 scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Valoriser les Compétences</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Dans un monde transformé par l'IA, la valeur se déplace vers les aptitudes purement humaines. Découvrez les compétences les plus recherchées et comment le marché s'adapte.</p>
+                </div>
+                <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2 text-center">Top des Soft Skills pour 2025</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Ce graphique montre les compétences comportementales jugées les plus cruciales par les recruteurs et les analystes pour l'horizon 2025.</p>
+                    <div class="chart-container"><canvas id="skillsChart2025"></canvas></div>
+
+                    <div class="mt-16">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-2 text-center">Comment les Recruteurs Évaluent vos Compétences</h3>
+                        <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Anticiper les méthodes d'évaluation est la meilleure façon de préparer vos entretiens et de fournir des preuves concrètes de vos atouts.</p>
+                        <div id="evaluation-methods-accordion" class="max-w-4xl mx-auto space-y-4">
+                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                <button class="accordion-button w-full text-left p-4 sm:p-5 bg-white hover:bg-gray-50 flex justify-between items-center transition-colors">
+                                    <span class="font-semibold text-gray-800">1. L'Évaluation des Qualités (Le Socle)</span>
+                                </button>
+                                <div class="accordion-content hidden p-5 pt-0 bg-white">
+                                    <p class="text-gray-600">Les qualités étant des traits de personnalité, le recruteur les évalue de manière indirecte en observant :</p>
+                                    <ul class="list-disc list-inside mt-3 space-y-2 text-gray-600">
+                                        <li><strong>Votre attitude générale :</strong> ponctualité, politesse, cohérence du discours.</li>
+                                        <li><strong>Vos prises de références :</strong> la validation par d'anciens managers ou collègues est une source d'information clé.</li>
+                                        <li><strong>La cohérence de votre parcours :</strong> un parcours démontrant de la persévérance ou de la curiosité est un indicateur fort.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg overflow-hidden">
+                                <button class="accordion-button w-full text-left p-4 sm:p-5 bg-white hover:bg-gray-50 flex justify-between items-center transition-colors">
+                                    <span class="font-semibold text-gray-800">2. L'Évaluation des Soft Skills (Les Preuves)</span>
+                                </button>
+                                <div class="accordion-content hidden p-5 pt-0 bg-white">
+                                    <p class="text-gray-600">Ici, le recruteur ne veut pas des affirmations, il veut des preuves. Il utilisera des méthodes dynamiques pour voir vos compétences en action :</p>
+                                    <ul class="mt-3 space-y-4 text-gray-600">
+                                        <li>
+                                            <strong class="text-teal-700">Questions comportementales (Méthode STAR) :</strong> C'est la méthode la plus courante. Attendez-vous à des questions comme <em class="italic">"Racontez-moi une expérience où vous avez dû gérer un conflit dans une équipe"</em>. Préparez vos réponses en utilisant la méthode <strong>S</strong>ituation, <strong>T</strong>âche, <strong>A</strong>ction, <strong>R</strong>ésultat.
+                                        </li>
+                                        <li>
+                                            <strong class="text-teal-700">Mises en situation et Études de cas :</strong> On vous soumettra un problème concret (ex: "un client important est mécontent, que faites-vous ?"). Le but est d'observer votre raisonnement, votre créativité, et votre gestion du stress en direct.
+                                        </li>
+                                        <li>
+                                            <strong class="text-teal-700">Jeux de rôle et exercices de groupe :</strong> Particulièrement utilisés pour évaluer la collaboration, le leadership, la capacité à fédérer et la communication dans une dynamique collective.
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="parcours" class="py-20 sm:py-24 bg-teal-50/50 scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">✨ Votre Parcours est une Force</h2>
+                    <p class="mt-4 max-w-3xl mx-auto text-lg text-gray-600">
+                        Votre parcours ne correspond pas aux normes ? C'est peut-être votre plus grand atout. Découvrez comment les profils dits "atypiques" sont devenus des moteurs d'innovation et de performance.
+                    </p>
+                </div>
+                
+                <div class="bg-white p-8 rounded-xl shadow-lg mb-12">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">Quel type de profil vous ressemble le plus ?</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-3xl mx-auto">Cliquez sur les cartes pour en savoir plus. Vous pouvez vous reconnaître dans plusieurs profils !</p>
+                    <div id="atypical-profiles-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Les cartes seront injectées ici par JS -->
+                    </div>
+                    <div id="atypical-profile-display" class="mt-8 bg-teal-50 p-6 rounded-lg min-h-[100px] text-center transition-all duration-300">
+                        <p class="text-teal-800">Sélectionnez un profil pour voir sa description.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-8 rounded-xl shadow-lg">
+                     <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center">Les Super-pouvoirs des Parcours Atypiques</h3>
+                     <div id="atypical-strengths-accordion" class="max-w-3xl mx-auto space-y-4">
+                        <!-- Accordéon des forces injecté ici par JS -->
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="outils" class="py-20 sm:py-24 bg-white scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Boîte à Outils des Qualités</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                       Explorez le vaste vocabulaire des soft skills. Ces listes de qualités, organisées par catégorie, peuvent servir d'inspiration pour la rédaction d'un CV ou la préparation d'un entretien.
+                    </p>
+                </div>
+                <div class="bg-gray-50 p-8 rounded-xl shadow-inner">
+                    <div id="qualites-tabs" class="flex flex-wrap justify-center border-b border-gray-200 mb-6"></div>
+                    <div id="qualites-content" class="min-h-[300px]"></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ressources" class="py-20 sm:py-24 bg-gray-100 scroll-mt-16">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-16">
+                    <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-gray-900">Ressources Complémentaires</h2>
+                    <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">
+                        Approfondissez votre compréhension avec notre foire aux questions et notre lexique des termes clés.
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center lg:text-left">Foire Aux Questions (FAQ)</h3>
+                        <div id="faq-accordion" class="space-y-4">
+                            <!-- FAQ items will be injected here -->
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-gray-800 mb-6 text-center lg:text-left">Lexique</h3>
+                        <div id="lexique-content" class="bg-white p-6 rounded-lg shadow-md space-y-4">
+                           <!-- Lexicon items will be injected here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto py-8 px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">Application interactive conçue à partir du rapport de France Stratégie et d'autres sources d'analyse sur les soft skills.</p>
+            <p class="text-sm text-gray-500 mt-2">© 2025 - Exploration des Compétences de Demain.</p>
+        </div>
+    </footer>
+
+    <div id="validation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
+        <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Évaluation Incomplète</h3>
+                <div class="mt-2 px-7 py-3"><p class="text-sm text-gray-500">Veuillez sélectionner un niveau pour toutes les compétences avant de générer le profil. Les compétences manquantes sont surlignées.</p></div>
+                <div class="items-center px-4 py-3"><button id="close-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600">Compris</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            const STORAGE_KEY = 'softSkillsPreviousEval';
+
+            const familiesData = [ { name: "🧠 Cognitives", description: "Processus mentaux liés au traitement de l'information et à la résolution de problèmes.", skills: ["Pensée divergente", "Pensée convergente", "Flexibilité mentale", "Pensée logique"] }, { name: "🏃 Conatives", description: "Ressorts psychologiques qui poussent un individu à s'engager dans l'action.", skills: ["Motivation", "Ouverture à la nouveauté", "Prise de risque", "Persévérance"] }, { name: "🤝 Relationnelles", description: "Capacités au cœur de l'intelligence collective et des interactions sociales.", skills: ["Collaboration", "Communication", "Esprit d'équipe", "Capacité à fédérer"] }, { name: "❤️ Émotionnelles", description: "Compréhension et gestion de ses propres émotions et de celles des autres.", skills: ["Empathie", "Gestion des émotions", "Intelligence sociale"] } ];
+            
+            const rectecData = [ { id: 'rectec-1', pole: 'Pôle ORGANISATIONNEL', name: 'Organiser son activité', optional: false, description: "Degré d'organisation dans la réalisation des activités. Prise en compte d'éléments multiples pour hiérarchiser et établir des priorités. Place à l'anticipation dans l'organisation des activités.", levels: [ { level: 1, descripteur: "Identifie les éléments structurant l'organisation de l'activité prévue", autonomie: "L'organisation de l'activité est imposée et énoncée par le responsable désigné.", indicateurs: "Les éléments constitutifs de l'organisation de l'activité sont clairement énoncés." }, { level: 2, descripteur: "Applique l'organisation prévue pour son activité", autonomie: "L'organisation peut aussi inclure une part d'initiative, sous supervision.", indicateurs: "La réalisation de l'activité est conforme à l'organisation imposée." }, { level: 3, descripteur: "Adapte son organisation aux exigences d'une situation donnée", autonomie: "L'organisation de son activité est réalisée en autonomie et en fonction des exigences situationnelles.", indicateurs: "L'organisation de l'activité intègre entièrement les exigences. L'organisation permet la réalisation dans les temps impartis." }, { level: 4, descripteur: "Prévoit et organise son activité et/ou celle de son équipe", autonomie: "L'organisation de son activité ou celle d'autrui relève de sa responsabilité.", indicateurs: "L'organisation retenue tient compte des différentes variables (objectifs, calendrier, délais, échéances, contraintes, constitution de l'équipe...)" } ]}, { id: 'rectec-2', pole: 'Pôle ORGANISATIONNEL', name: 'Prendre en compte les règlements', optional: false, description: "Étendue de la connaissance des règles et adaptation des gestes professionnels. Mise en lien d'éléments multiples permettant de se conformer à l'objet de chaque règlementation.", levels: [ { level: 1, descripteur: "Identifie les consignes et procédures résultant de l'application des cadres réglementaires associés à son activité", autonomie: "L'identification des consignes et procédures est réalisée sous supervision.", indicateurs: "Les éléments indispensables à l'activité prescrite sont correctement identifiés et nommés." }, { level: 2, descripteur: "Applique les consignes et procédures liées à son activité", autonomie: "L'application des consignes et procédures est sous supervision.", indicateurs: "L'activité est réalisée conformément aux consignes et procédures énoncées." }, { level: 3, descripteur: "Intègre l'ensemble des consignes et procédures dans l'activité prescrite", autonomie: "Les consignes et procédures sont appliquées en autonomie.", indicateurs: "Les risques liés au non-respect des consignes et procédures sont clairement identifiés." }, { level: 4, descripteur: "Assure et contrôle l'application conforme des consignes et procédures règlementaires", autonomie: "Le choix des mesures correctives est de sa responsabilité.", indicateurs: "Les consignes et procédures sont effectivement explicités, rappelés et appliqués. Les éventuelles mesures correctives sont mises en œuvre." } ]}, { id: 'rectec-3', pole: 'Pôle ORGANISATIONNEL', name: 'Travailler en équipe', optional: false, description: "Attitude avec les autres en vue de travailler ensemble. Possibilité de remettre en question ses points de vue et de les élargir à travers l'apport des pairs. Compréhension de l'intérêt du travail collectif – pour soi, pour son projet, pour le travail d'équipe et son efficacité.", levels: [ { level: 1, descripteur: "Identifie les modalités de fonctionnement d'un groupe ou d'une équipe donnés", autonomie: "La présence à un groupe/une équipe est déterminée par le responsable désigné.", indicateurs: "La présence et l'éventuelle participation s'effectuent suivant les consignes reçues." }, { level: 2, descripteur: "Situe le rôle des participants et sa position dans le groupe", autonomie: "La définition des places et rôles relève du responsable du groupe. La gestion des relations interpersonnelles lui revient.", indicateurs: "La participation au groupe se fait en cohérence avec son rôle et sa position dans le groupe." }, { level: 3, descripteur: "Fait des propositions et prend en compte les avis des membres du groupe ou de l'équipe", autonomie: "La contribution aux propositions et aux échanges du groupe s'effectuent de manière autonome.", indicateurs: "Les contenus des propositions effectuées tiennent compte de paramètres multiples, y compris l'avis des autres participants." }, { level: 4, descripteur: "Anime et développe le travail collectif, peut varier sa place et son rôle", autonomie: "La responsabilité du travail collectif est de son ressort.", indicateurs: "La définition des modalités de travail et les rôles assurés par les membres de l'équipe lui reviennent." } ]}, { id: 'rectec-4', pole: 'Pôle ORGANISATIONNEL', name: 'Mobiliser des ressources mathématiques', optional: false, description: "Connaissance des techniques opératoires permettant de résoudre des situations de calcul. Utilisation de stratégies pour gérer des informations liées aux grandeurs, aux volumes, aux données chiffrées, aux calculs de durées. Rapport aux situations nécessitant la mobilisation de compétences mathématiques.", levels: [ { level: 1, descripteur: "Effectue des calculs simples liés à des situations récurrentes", autonomie: "Les calculs sont réalisés avec l'aide d'autrui.", indicateurs: "La réalisation des calculs est partielle, guidée par un tiers désigné." }, { level: 2, descripteur: "Applique les opérations et les mesures dans des situations de calcul liées à son environnement", autonomie: "Les calculs ou les mesures sont réalisés en autonomie, sous supervision.", indicateurs: "Les calculs ou les mesures effectués concernent des situations rencontrées dans son environnement et les consignes sont fournies par un tiers désigné." }, { level: 3, descripteur: "Choisit des raisonnements mathématiques adaptés à une situation donnée", autonomie: "Le choix des raisonnements mathématiques est effectué en autonomie.", indicateurs: "Les résultats des calculs et des mesures s'appuient sur des raisonnements liés à chaque situation." }, { level: 4, descripteur: "Adapte des raisonnements mathématiques appropriés à des situations diversifiées", autonomie: "La résolution des problèmes mathématiques lui revient, pour son activité et/ou celle de son équipe.", indicateurs: "Les problèmes mathématiques sont vérifiés et rectifiés si nécessaire. Le guidage de la réalisation des calculs de son équipe est assuré." } ]}, { id: 'rectec-5', pole: 'Pôle REFLEXIF-PARCOURS', name: 'Gérer des informations', optional: false, description: "Étendue de connaissances nécessaires au choix d'informations. Esprit critique par rapport à la pertinence et la qualité de l'information traitée. Méthodes de recherche et de transmission des informations.", levels: [ { level: 1, descripteur: "Identifie les informations mises à disposition pour son activité", autonomie: "L'accès aux différentes informations est guidé par tiers désigné.", indicateurs: "Les informations sont mises en relation avec l'activité." }, { level: 2, descripteur: "Vérifie la disponibilité des informations nécessaires à son activité", autonomie: "Les informations sont recherchées en partie à son initiative.", indicateurs: "Les informations disponibles sont vérifiées. Les informations éventuellement manquantes sont recherchées." }, { level: 3, descripteur: "Sélectionne des informations en fonction des objectifs et des circonstances de l'activité", autonomie: "Le traitement des informations relève de son initiative.", indicateurs: "Le choix des informations nécessaires est pertinent. La transmission des informations est adaptée." }, { level: 4, descripteur: "Evalue la pertinence de l'information et la diffuse de façon appropriée", autonomie: "La transmission de l'information et ses modalités sont de son ressort.", indicateurs: "L'information choisie est adéquate. La diffusion de l'information atteint les bons destinataires par les canaux adaptés." } ]}, { id: 'rectec-6', pole: 'Pôle REFLEXIF-PARCOURS', name: 'Agir face aux imprévus', optional: false, description: "Capacité à analyser des problèmes (liés à une situation donnée, liés aux ressources internes et/ou externes). Mise en œuvre de protocoles de résolution de problèmes. Possibilité d'anticiper des aléas et de prévoir des solutions en tenant compte de paramètres multiples.", levels: [ { level: 1, descripteur: "Identifie et alerte sur la présence d'un problème ou d'un événement imprévu", autonomie: "Le problème est signalé à qui de droit.", indicateurs: "La personne responsable est avertie dans les délais prescrits." }, { level: 2, descripteur: "Identifie la procédure pour la résolution des aléas courants", autonomie: "La procédure est validée par un responsable avant sa mise en œuvre.", indicateurs: "La procédure identifiée correspond à l'aléas rencontré." }, { level: 3, descripteur: "Met en œuvre la procédure adaptée aux aléas courants liés à son activité", autonomie: "La résolution des aléas relève de son ressort, pour l'activité confiée par l'organisation.", indicateurs: "La procédure mise en œuvre est adaptée aux aléas rencontrés." }, { level: 4, descripteur: "Résout des problèmes courants dans son activité et/ou celle de son équipe", autonomie: "La prise de décision pour résoudre des problèmes lui revient, pour son activité et/ou celle de son équipe.", indicateurs: "La solution retenue permet la réalisation de l'activité." } ]}, { id: 'rectec-7', pole: 'Pôle COMMUNICATIONNEL', name: 'Communiquer à l\'oral', optional: false, description: "Possibilité d'interagir avec des interlocuteurs sur des sujets de moins en moins familiers, dans des circonstances de plus en plus variées. Objet et paramètres des situations de communication informelles et formelles, simples ou complexes, à faible ou fort enjeu. Possibilité de choisir les contenus adaptés à chaque situation (commentaire : de quoi on parle ou pas, selon la situation).", levels: [ { level: 1, descripteur: "Communique très partiellement en situation d'échange de face à face", autonomie: "La participation à l'interaction est limitée à des réponses brèves à la demande de l'interlocuteur.", indicateurs: "Les réponses données à des questions portant sur des sujets connus sont parcellaires." }, { level: 2, descripteur: "Communique dans des interactions concernant des sujets familiers", autonomie: "La capacité d'initiative dépend de la familiarité avec le sujet abordé et du statut de l'interlocuteur.", indicateurs: "Les échanges s'effectuent avec des interlocuteurs connus et portent sur des activités et des objets reliés à son activité quotidienne." }, { level: 3, descripteur: "Communique en fonction de ses besoins dans des situations variées", autonomie: "La gestion de l'échange est effectuée de manière autonome auprès d'interlocuteurs variés.", indicateurs: "L'éventail des échanges concerne des situations de communication multiples auprès d'interlocuteurs connus et inconnus. Les canaux de la communication sont multiples." }, { level: 4, descripteur: "Adapte sa manière de communiquer aux enjeux des interactions", autonomie: "L'initiative de la parole est prise à bon escient dans des interactions multiples, y compris celles à fort enjeu.", indicateurs: "Les interlocuteurs - connus et inconnus - et le type d'échanges nécessite des adaptations dans les manières de dire et de questionner. La gestion de situations de communication complexes est assurée par le biais d'un discours distancié et des procédés de reformulation." } ]}, { id: 'rectec-8', pole: 'Pôle COMMUNICATIONNEL', name: 'Communiquer à l\'écrit', optional: false, description: "Degré de maîtrise en littératie (quantité et typologie des écrits lus et produits, compétences cognitives et métacognitives associées à la lecture et à la production d'écrits). Etendue des genres de discours maîtrisés et des destinataires visés par les productions écrites. Degré de recevabilité de l'écrit suivant destinataires – formes et sens.", levels: [ { level: 1, descripteur: "Identifie les éléments clés d'un écrit informatif très court. Écrit quelques mots relatifs à son contexte", autonomie: "La compréhension et la production prennent appui sur des aides et des ressources disponibles dans le contexte d'usage.", indicateurs: "La reconnaissance de l'organisation typographique des principaux types d'écrits émanant de son environnement permet d'identifier la nature et la fonction de ces écrits. Les écrits récurrents de son environnement sont remplis et des listes de mots concernant l'activité quotidienne sont produites." }, { level: 2, descripteur: "Identifie les informations pertinentes dans des textes simples de son environnement. Écrit des textes informatifs courts relatifs à son contexte", autonomie: "La compréhension et la production dépendent du caractère familier et prévisible du texte.", indicateurs: "La compréhension de la situation de communication et de l'objet du message s'effectue dans des textes courts à caractère informatif et portent sur l'activité quotidienne. Les documents renseignés se réfèrent à son activité quotidienne." }, { level: 3, descripteur: "Utilise la plupart des écrits nécessaires à son activité. Rédige des documents relatifs à son activité et à son contexte", autonomie: "La compréhension concerne des sujets variés. La rédaction de textes répond à des formes adaptées aux situations.", indicateurs: "Les documents utilisés permettent de décrire et d'informer sur son activité. La discrimination et transmission des messages concernent des destinataires connus." }, { level: 4, descripteur: "Gère et traite des textes complexes et variés. Produit des écrits élaborés", autonomie: "Les écrits complexes sont interprétés de manière critique. L'interprétation est assumée.", indicateurs: "Les enjeux de tout type de document relatif à son contexte sont identifiés et compris. Les écrits produits sont très variés – à visée explicative, argumentative ou de développement de l'activité - et portent l'activité de l'organisation/environnement." } ]}, { id: 'rectec-9', pole: 'Pôle COMMUNICATIONNEL', name: 'Prendre en compte les usages socio culturels', optional: false, description: "Étendue de la connaissance des conventions explicites et implicites à respecter. Observation pour discerner ces codes.", levels: [ { level: 1, descripteur: "Identifie les usages élémentaires liés à son environnement professionnel", autonomie: "Les usages sont identifiés avec l'aide d'un tiers désigné.", indicateurs: "Le respect des conventions est conforme aux indications données." }, { level: 2, descripteur: "Applique les conventions en usage dans son environnement professionnel habituel", autonomie: "Les conventions et leur rôle sont identifiés avec l'aide éventuelle d'un tiers.", indicateurs: "Le respect et l'adaptation aux règles et conventions relèvent de situations connues." }, { level: 3, descripteur: "Met en œuvre les conventions dans toutes les situations de l'activité confiée", autonomie: "La compréhension des conventions et de leur rôle s'effectuent en toute autonomie.", indicateurs: "Le respect des conventions est conforme à l'ensemble de situations impliquées par l'activité." }, { level: 4, descripteur: "Assure l'adaptation aux différentes conventions, y compris implicites", autonomie: "L'application des conventions - pour soi et autrui- s'effectue en toute autonomie. L'explicitation pour autrui des conventions est de son ressort.", indicateurs: "L'adaptation aux conventions dans des situations complexes permet la réalisation conforme de l'activité." } ]}, { id: 'rectec-10', pole: 'Pôle COMMUNICATIONNEL', name: 'Utiliser les ressources numériques', optional: false, description: "Capacité à chercher ou à produire de l'information et à la trier en fonction d'un objectif donné de façon autonome. Possibilité de s'adapter à de nouveaux environnements virtuels. Gestion des fonctions de base d'un ordinateur, d'un smartphone, d'une messagerie internet, et des outils de collaboration.", levels: [ { level: 1, descripteur: "Réalise des tâches élémentaires sur ou avec un outil numérique connu", autonomie: "L'utilisation des fonctions de base est guidée par autrui.", indicateurs: "L'accès aux fonctions utilisées est rendu possible par un tiers désigné, qui fournit les éléments de contenu nécessaires à la réalisation." }, { level: 2, descripteur: "Utilise des fonctions de base de quelques outils numériques", autonomie: "Le choix de la fonction numérique est guidé si besoin. L'utilisation des fonctions de base est supervisée.", indicateurs: "L'utilisation des fonctions de base est effectuée suivant les consignes et le guidage d'un tiers désigné." }, { level: 3, descripteur: "Utilise régulièrement les ressources numériques en fonction de l'activité et du contexte", autonomie: "Les fonctions de base sont utilisées de manière autonome. Le choix des fonctions utilisées relève de sa responsabilité.", indicateurs: "Les fonctions utilisées et leurs contenus varient suivant les contextes d'usage." }, { level: 4, descripteur: "Personnalise les ressources numériques au service de sa situation et de ses besoins", autonomie: "La personnalisation des applications relève de sa responsabilité.", indicateurs: "Les ressources numériques et leurs fonctions sont analysées et modifiées si besoin." } ]}, { id: 'rectec-11', pole: 'Pôle REFLEXIF-ACTION', name: 'Construire son parcours professionnel', optional: true, description: "Analyse des pour et des contre reliés à sa situation et à son souhait de projet. Connaissances pour prendre des décisions/faire des choix. Prise en compte des priorités et projection dans le temps.", levels: [ { level: 1, descripteur: "Emet une ou plusieurs idées pour son projet professionnel", autonomie: "L'énoncé des idées se fait seul ou à l'aide d'autrui.", indicateurs: "Formule des idées pour son projet professionnel. Liste des idées, secteurs d'activités, métiers, professions, etc." }, { level: 2, descripteur: "Confronte son projet professionnel aux contraintes socio-économiques et à ses réalités", autonomie: "L'évaluation du projet se fait seul ou à l'aide d'autrui.", indicateurs: "Examine les obstacles et les opportunités pour son projet professionnel. Liste pour/contre de son projet professionnel. Echange avec des professionnels. Se renseigne sur les métiers, etc." }, { level: 3, descripteur: "Définit son parcours professionnel", autonomie: "La définition du parcours professionnel se fait de manière autonome et avertie.", indicateurs: "Fait le lien entre les objectifs de formation et les objectifs professionnels éventuels. Met à jour son CV. Suit une formation. Rencontre des personnes du milieu. Présente et argumente son parcours professionnel auprès d'autrui." }, { level: 4, descripteur: "Planifie la ou les étapes de mise en œuvre de son parcours professionnel", autonomie: "Le choix des étapes relève de sa responsabilité.", indicateurs: "Liste les étapes de mise en œuvre de son parcours professionnel. Rend compte d'un engagement précis pour son parcours professionnel." } ]}, { id: 'rectec-12', pole: 'Pôle REFLEXIF-ACTION', name: 'Actualiser des savoirs et des modes d\'apprentissage', optional: true, description: "Recours à des moyens plus ou moins variés pour apprendre. Degré de négociation entre ses vœux et la réalité environnante. Auto-évaluation des écarts entre ses acquis et les besoins de son environnement/son projet professionnel.", levels: [ { level: 1, descripteur: "Enonce ses manières habituelles d'apprendre", autonomie: "Suit les prescriptions et consignes reçues (en formation ou autre).", indicateurs: "Enumère comment il/elle s'y prend pour mémoriser les normes ou les cadres de réalisation d'une activité confiée." }, { level: 2, descripteur: "Envisage des possibles pour enrichir et varier ses façons d'apprendre", autonomie: "Sélectionne ce qui peut être utile d'apprendre parmi des propositions qui lui sont faites.", indicateurs: "S'inscrit et suit la formation sélectionnée avec l'accord de son supérieur (formation au sens large)." }, { level: 3, descripteur: "Met au point de nouvelles stratégies d'apprentissage pour optimiser son action", autonomie: "Recherche et applique ce qui pourrait combler les lacunes qu'il a constatées.", indicateurs: "Diversifie ses sources d'apprentissage et saisit les occasions de formation qui se présentent ou sont possibles." }, { level: 4, descripteur: "Propose de nouvelles manières d'apprendre – pour soi et éventuellement pour son équipe", autonomie: "Conçoit de nouvelles méthodes (et/ou concepts, approche) dans une perspective de collaboration/partage.", indicateurs: "Analyse, fait des liens et imagine des solutions connues ou neuves." } ]} ].map(skill => ({ ...skill, optional: skill.optional || false }));
+            const savoirEtreSkills = [ { id: 'se-1', dimension: "Individuelle", name: "L'autonomie", description: "Capacité à agir et penser par soi-même dans divers contextes professionnels.", levels: [ { level: 1, descripteur: "Exécute une consigne simple et clairement définie.", autonomie: "Action réalisée sous supervision directe et avec des instructions précises.", indicateurs: "Applique une procédure sans s'en écarter. Ne prend pas d'initiative non sollicitée." }, { level: 2, descripteur: "Trouve l'information nécessaire pour réaliser une tâche.", autonomie: "Agit dans un cadre défini, avec validation ponctuelle des étapes clés.", indicateurs: "Consulte les ressources (documentation, collègues) de manière pertinente avant de solliciter de l'aide." }, { level: 3, descripteur: "Mobilise ses ressources (connaissances, outils) pour accomplir ses missions.", autonomie: "Organise son travail de manière autonome pour atteindre les objectifs fixés par un tiers.", indicateurs: "Prend des initiatives pour résoudre les problèmes courants. Gère ses priorités." }, { level: 4, descripteur: "Se fixe des objectifs et des priorités pour son périmètre.", autonomie: "Agit de manière proactive, en totale responsabilité sur son domaine et peut proposer de nouveaux objectifs.", indicateurs: "Identifie de nouveaux besoins et propose des plans d'action structurés. Peut guider d'autres personnes." } ] }, { id: 'se-2', dimension: "Individuelle", name: "La capacité de décision", description: "Aptitude à faire des choix pertinents et à les assumer.", levels: [ { level: 1, descripteur: "Choisit une action parmi des options données et connues.", autonomie: "Décision guidée par une procédure ou un supérieur.", indicateurs: "Applique la solution prescrite pour un problème connu et clairement identifié." }, { level: 2, descripteur: "Analyse une situation et propose des actions possibles.", autonomie: "Propose des choix qui sont ensuite validés par une tierce personne.", indicateurs: "Pèse le pour et le contre de différentes options et exprime une préférence argumentée." }, { level: 3, descripteur: "Évalue et met en œuvre des actions pour résoudre un problème.", autonomie: "Prend des décisions de manière autonome dans son périmètre d'action habituel.", indicateurs: "Justifie ses choix par une analyse factuelle. Assume les conséquences de ses décisions." }, { level: 4, descripteur: "Prend des décisions pertinentes dans des situations complexes ou incertaines.", autonomie: "Assume la responsabilité de décisions à fort enjeu, même avec des informations incomplètes.", indicateurs: "Anticipe les conséquences de ses décisions à moyen/long terme pour l'équipe ou le projet." } ] }, { id: 'se-3', dimension: "Individuelle", name: "La curiosité", description: "Désir d'apprendre, de découvrir et de comprendre de nouvelles choses.", levels: [ { level: 1, descripteur: "Manifeste de l'intérêt pour des sujets liés directement à ses tâches.", autonomie: "Répond aux sollicitations d'apprentissage et pose des questions de clarification.", indicateurs: "Pose des questions pour clarifier une consigne ou comprendre le but d'une tâche." }, { level: 2, descripteur: "Collecte de l'information ponctuellement pour approfondir un sujet.", autonomie: "Effectue des recherches guidées ou sur des sujets familiers pour améliorer son travail.", indicateurs: "Consulte la documentation interne ou des sources externes pour en savoir plus sur une technologie ou une méthode." }, { level: 3, descripteur: "S'informe de manière autonome sur les évolutions de son métier.", autonomie: "Recherche activement de nouvelles connaissances et compétences pour rester à jour.", indicateurs: "Partage des articles, des tutoriels ou des informations pertinentes avec l'équipe sans y être invité." }, { level: 4, descripteur: "Est en veille permanente et utilise ces informations pour innover.", autonomie: "Explore des domaines connexes pour faire des liens, anticiper les tendances et innover.", indicateurs: "Propose d'expérimenter de nouveaux outils, méthodes ou approches basés sur sa veille active." } ] }, { id: 'se-14', dimension: "Collective", name: "Le travail en équipe", description: "Capacité à collaborer efficacement avec les autres pour atteindre un objectif commun.", levels: [ { level: 1, descripteur: "Respecte ses collègues et réalise sa part du travail assigné.", autonomie: "Participe aux tâches collectives de manière supervisée.", indicateurs: "Communique poliment, écoute les consignes et effectue les actions demandées." }, { level: 2, descripteur: "Respecte les règles de fonctionnement et partage l'information nécessaire.", autonomie: "S'intègre dans le cadre collectif et ses rituels (réunions, outils partagés).", indicateurs: "Informe ses collègues de l'avancement de son travail et respecte les délais communs." }, { level: 3, descripteur: "Se coordonne avec les autres pour atteindre un objectif commun.", autonomie: "Agit de manière autonome pour s'aligner sur les besoins de l'équipe et le succès du groupe.", indicateurs: "Propose son aide spontanément, s'adapte aux contraintes des autres et cherche le compromis." }, { level: 4, descripteur: "S'organise avec l'équipe en confiance et intelligence collective.", autonomie: "Co-construit les objectifs et les méthodes de travail avec l'équipe.", indicateurs: "Facilite la communication, aide à résoudre les tensions et encourage la participation de tous." } ] }, ];
+            
+            const qualitesData = { "Humaines": ["Calme", "Courageux", "Débrouillard", "Déterminé", "Droit", "Endurant", "Énergique", "Engagé", "Enthousiaste", "Épanoui", "Équitable", "Gestion du stress", "Honnête", "Intuitif", "Inventif", "Jovial", "Logique", "Loyal", "Lucide", "Maître de soi", "Obstiné", "Optimiste", "Original", "Ouvert d’esprit", "Passionné", "Patient", "Persévérant", "Pondéré", "Posé", "Positif", "Prévoyant", "Prise de recul", "Prudent", "Pugnace", "Raisonnable", "Réaliste", "Réfléchi", "Sincère", "Soigneux", "Spontané", "Tolérant", "Vigilant", "Volontaire"], "Relationnelles": ["Adaptable", "Avenant", "Bienveillant", "Conciliant", "Contact facile", "Courtois", "Diplomate", "Disponible", "Sens de l’Écoute", "Empathique", "Esprit d’équipe", "Capacité à Fédérer", "Pacificateur", "Rassurant", "Respectueux", "Sens du service", "Serviable", "Sociable", "Solidaire", "Souriant"], "Professionnelles": ["Adroit", "Ambitieux", "Appliqué", "Astucieux", "Audacieux", "Autonome", "Coopératif", "Créatif", "Curieux", "Capacité de Discernement", "Discipliné", "Discret", "Efficace", "Force de proposition", "Goût du challenge", "Habile", "Impliqué", "Influent", "Méthodique", "Minutieux", "Objectif", "Observateur", "Organisé", "Persuasif", "Polyvalent", "Pragmatique", "Précis", "Sens des Priorités", "Proactif", "Productif", "Réactif", "Résistant", "Responsable", "Rigoureux", "Rusé", "Stratège", "Tenace"] };
+            const skillToQualitiesMap = { 'rectec-1': ['Organisé', 'Méthodique', 'Prévoyant', 'Rigoureux', 'Sens des Priorités'], 'rectec-2': ['Discipliné', 'Prudent', 'Respectueux', 'Vigilant', 'Responsable'], 'rectec-3': ['Esprit d’équipe', 'Collaboratif', 'Conciliant', 'Écoute', 'Solidaire', 'Empathique'], 'rectec-4': ['Logique', 'Précis', 'Raisonnable', 'Adroit'], 'rectec-5': ['Curieux', 'Observateur', 'Logique', 'Objectif', 'Capacité de Discernement'], 'rectec-6': ['Réactif', 'Débrouillard', 'Adaptable', 'Prise de recul', 'Logique'], 'rectec-7': ['Avenant', 'Écoute', 'Diplomate', 'Sociable', 'Empathique'], 'rectec-8': ['Appliqué', 'Soigneux', 'Précis', 'Méthodique'], 'rectec-9': ['Respectueux', 'Adaptable', 'Observateur', 'Diplomate', 'Sociable'], 'rectec-10': ['Curieux', 'Débrouillard', 'Adaptable', 'Autonome'], 'rectec-11': ['Ambitieux', 'Prévoyant', 'Réaliste', 'Stratège', 'Volontaire'], 'rectec-12': ['Curieux', 'Ouvert d’esprit', 'Proactif', 'Autonome'], 'se-1': ['Autonome', 'Responsable', 'Proactif', 'Débrouillard'], 'se-2': ['Décidé', 'Courageux', 'Logique', 'Objectif', 'Prise de recul'], 'se-3': ['Curieux', 'Ouvert d’esprit', 'Observateur', 'Inventif'], 'se-4': ['Force de proposition', 'Créatif', 'Proactif', 'Audacieux', 'Impliqué'], 'se-5': ['Persévérant', 'Tenace', 'Déterminé', 'Endurant', 'Volontaire'], 'se-6': ['Prise de recul', 'Pondéré', 'Réfléchi', 'Objectif', 'Lucide'], 'se-7': ['Adaptable', 'Flexible', 'Ouvert d’esprit', 'Tolérant'], 'se-8': ['Gestion du stress', 'Calme', 'Maître de soi', 'Pondéré', 'Résistant'], 'se-9': ['Réactif', 'Vigilant', 'Efficace', 'Débrouillard'], 'se-10': ['Rigoureux', 'Précis', 'Méthodique', 'Discipliné', 'Soigneux'], 'se-11': ['Organisé', 'Prévoyant', 'Méthodique', 'Sens des Priorités'], 'se-12': ['Capacité à Fédérer', 'Influent', 'Enthousiaste', 'Rassurant', 'Leader'], 'se-13': ['Écoute', 'Empathique', 'Diplomate', 'Avenant', 'Clair'], 'se-14': ['Esprit d’équipe', 'Collaboratif', 'Solidaire', 'Conciliant', 'Respectueux'], };
+            const actionPlanTips = { 'rectec-1': ['Avant de commencer une tâche complexe, prenez 5 minutes pour lister toutes les étapes nécessaires par écrit.', 'En fin de journée, planifiez les 3 tâches prioritaires pour le lendemain.'], 'rectec-2': ['Avant de démarrer une nouvelle mission, demandez s\'il existe une procédure ou une documentation à respecter.', 'Identifiez une règle de sécurité ou de qualité dans votre travail et expliquez son importance à un collègue.'], 'rectec-3': ['Lors de votre prochaine réunion, fixez-vous comme objectif de poser une question pour mieux comprendre le point de vue d\'un collègue.', 'Proposez spontanément votre aide à un membre de votre équipe cette semaine.'], 'rectec-4': ['Vérifiez systématiquement vos calculs une deuxième fois avant de communiquer un résultat.', 'Face à un problème chiffré, essayez d\'estimer le résultat attendu avant de faire le calcul précis.'], 'rectec-5': ['Abonnez-vous à une newsletter ou un podcast lié à votre secteur d\'activité.', 'Avant de partager une information, prenez 30 secondes pour vérifier sa source.'], 'rectec-6': ['Quand un imprévu survient, prenez une grande inspiration avant de réagir. Demandez-vous : "Quelle est la première petite action que je peux faire ?".', 'Listez 2-3 problèmes courants dans votre travail et imaginez une solution préventive pour chacun.'], 'rectec-7': ['Entraînez-vous à reformuler ce que votre interlocuteur vient de dire ("Si je comprends bien, tu veux dire que...") pour valider votre compréhension.', 'Préparez 2-3 points clés avant de passer un appel téléphonique important.'], 'rectec-8': ['Relisez systématiquement vos e-mails importants à voix haute avant de les envoyer pour repérer les erreurs.', 'Utilisez des listes à puces pour structurer vos écrits et les rendre plus clairs.'], 'rectec-9': ['Dans un nouvel environnement (réunion, projet), prenez 5 minutes pour observer comment les autres interagissent avant de prendre la parole.', 'Si vous n\'êtes pas sûr d\'un usage, demandez simplement à un collègue : "Quelle est la coutume ici pour... ?"'], 'rectec-10': ['Apprenez un nouveau raccourci clavier cette semaine sur le logiciel que vous utilisez le plus.', 'Regardez un tutoriel de 5 minutes sur une fonctionnalité que vous utilisez peu dans un de vos outils.'], 'rectec-11': ['Identifiez 3 métiers qui vous intéressent et lisez des fiches métiers ou regardez des témoignages vidéo.', 'Mettez à jour votre CV, même si vous ne cherchez pas activement, pour faire le point sur vos nouvelles compétences.'], 'rectec-12': ['Identifiez une compétence que vous souhaitez améliorer et cherchez un article ou une vidéo sur le sujet.', 'Demandez à un collègue ou un manager un feedback sur un travail que vous avez récemment réalisé.'], 'se-1': ['Choisissez une petite tâche et réalisez-la de A à Z sans demander de validation intermédiaire.', 'Avant de poser une question, prenez 5 minutes pour chercher la réponse par vous-même.'], 'se-2': ['Face à une petite décision, listez 2 avantages et 2 inconvénients pour chaque option avant de choisir.', 'Fixez-vous un délai court (ex: 1 minute) pour prendre une décision à faible enjeu.'], 'se-3': ['Posez une question ouverte ("Comment...?", "Pourquoi...?") lors de votre prochaine discussion d\'équipe.', 'Consacrez 15 minutes par semaine à lire des articles sur un sujet professionnel qui n\'est pas directement lié à vos tâches actuelles.'], 'se-4': ['Identifiez un petit problème récurrent dans votre travail et proposez une idée d\'amélioration à votre manager.', 'La prochaine fois que vous avez une idée, préparez un ou deux arguments pour la soutenir.'], 'se-5': ['Choisissez une tâche que vous avez tendance à repousser et travaillez dessus pendant 15 minutes sans interruption.', 'Quand vous êtes bloqué, au lieu d\'arrêter, essayez une autre approche ou demandez un conseil ciblé.'], 'se-6': ['Face à une critique, remerciez la personne et dites "Je vais y réfléchir" au lieu de répondre immédiatement.', 'Après une journée de travail intense, prenez 5 minutes pour noter objectivement ce qui a bien fonctionné et ce qui aurait pu être mieux.'], 'se-7': ['Si un processus change, listez les avantages du nouveau système au lieu de vous concentrer sur les inconvénients.', 'Engagez la conversation avec un collègue d\'un autre service pour mieux comprendre ses contraintes.'], 'se-8': ['Avant une tâche stressante, pratiquez une minute de respiration profonde.', 'Identifiez une source de stress et demandez-vous : "Quelle est la plus petite chose que je peux faire pour réduire ce stress ?"'], 'se-9': ['Traitez les e-mails urgents en premier le matin pour libérer votre esprit.', 'Si une demande urgente arrive, demandez quel est le délai exact au lieu de supposer que c\'est pour "tout de suite".'], 'se-10': ['Utilisez une check-list pour les tâches répétitives afin de ne rien oublier.', 'Avant de rendre un travail, prenez 5 minutes pour le relire en vous mettant à la place de la personne qui va le recevoir.'], 'se-11': ['Planifiez votre semaine de travail le vendredi après-midi ou le lundi matin.', 'Utilisez un code couleur dans votre agenda pour distinguer les réunions, les tâches de fond et les pauses.'], 'se-12': ['Partagez une information utile ou un succès avec votre équipe lors de la prochaine réunion.', 'Lorsque vous proposez une idée, expliquez en quoi elle bénéficiera à l\'ensemble du groupe.'], 'se-13': ['Dans une conversation, fixez-vous l\'objectif de parler moins et d\'écouter plus.', 'Entraînez-vous à donner un feedback positif et constructif à un collègue cette semaine.'], 'se-14': ['Clarifiez votre rôle et vos responsabilités au début d\'un projet de groupe.', 'Offrez votre aide à un coéquipier si vous voyez qu\'il est en difficulté ou surchargé.'], };
+            const skills2025Data = { labels: ['Adaptabilité & Résilience', 'Agilité d\'apprentissage', 'Pensée critique', 'Créativité', 'Intelligence Émotionnelle', 'Collaboration', 'Communication', 'Leadership & Initiative'], values: [92, 88, 85, 82, 80, 78, 75, 70] };
+
+            let rectecScores = {};
+            let savoirEtreScores = {};
+            let rectecChart = null;
+            let savoirEtreChart = null;
+            let skillsAnalysis = {};
+
+            function initFamilies() {
+                const familiesControlsContainer = document.getElementById('families-controls');
+                const familiesContentContainer = document.getElementById('families-content');
+                function renderFamilyContent(index) {
+                    const family = familiesData[index];
+                    familiesContentContainer.innerHTML = `<h4 class="font-bold text-xl mb-2 text-gray-800">${family.name.replace(/🧠|🏃|🤝|❤️/, '').trim()}</h4><p class="text-gray-600 mb-4">${family.description}</p><ul class="space-y-2">${family.skills.map(skill => `<li class="flex items-start"><span class="mr-2 mt-1 text-xs text-teal-600">◆</span><span>${skill}</span></li>`).join('')}</ul>`;
+                }
+                familiesData.forEach((family, index) => {
+                    const button = document.createElement('button');
+                    button.innerHTML = family.name;
+                    button.className = `tab-button px-4 py-2 -mb-px font-semibold text-gray-600 hover:text-teal-600`;
+                    button.addEventListener('click', (e) => {
+                        document.querySelectorAll('#families-controls .tab-button').forEach(btn => btn.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        renderFamilyContent(index);
+                    });
+                    familiesControlsContainer.appendChild(button);
+                });
+                if (familiesControlsContainer.children.length > 0) {
+                    familiesControlsContainer.children[0].classList.add('active');
+                    renderFamilyContent(0);
+                }
+            }
+
+            function updateInteractiveDisplay(dataSource, skillId, levelNumber) {
+                const skillData = dataSource.find(s => s.id === skillId);
+                const levelData = skillData.levels.find(l => l.level == levelNumber);
+                if (!levelData) return;
+                const titleEl = document.getElementById(`display-title-${skillId}`);
+                const contentEl = document.getElementById(`display-content-${skillId}`);
+                if (!titleEl || !contentEl) return;
+                titleEl.textContent = `Niveau ${levelData.level} : ${levelData.descripteur}`;
+                const autonomieLabel = skillData.pole ? "Autonomie et responsabilité" : "Niveau d'autonomie attendu";
+                const indicateursLabel = skillData.pole ? "Indicateurs génériques" : "Indicateurs & comportements observables";
+                contentEl.innerHTML = `
+                    <dl class="space-y-3">
+                        <div><dt class="font-semibold text-gray-800">${autonomieLabel} :</dt>
+                        <dd class="text-gray-600 ml-4">${levelData.autonomie}</dd></div>
+                        <div><dt class="font-semibold text-gray-800">${indicateursLabel} :</dt>
+                        <dd class="text-gray-600 ml-4">${levelData.indicateurs}</dd></div>
+                    </dl>`;
+            }
+            
+            function setupAssessmentModule(config) {
+                const { toggle, accordion, action, profile, skills, scores, chartInstance, generateBtn, optionalToggle, introBlockId } = config;
+                
+                function render(isAssessmentMode) {
+                    const skillsToRender = optionalToggle ? skills.filter(s => !s.optional || optionalToggle.checked) : skills;
+                    accordion.innerHTML = '';
+                    action.classList.toggle('hidden', !isAssessmentMode);
+                    profile.classList.add('hidden');
+                    if (chartInstance.chart) chartInstance.chart.destroy();
+
+                    const introElement = introBlockId ? document.getElementById(introBlockId) : null;
+                    if(introElement){
+                        introElement.classList.toggle('hidden', isAssessmentMode);
+                    }
+
+                    const groupedSkills = skillsToRender.reduce((acc, skill) => {
+                        const key = skill[config.groupBy] || 'default';
+                        if (!acc[key]) acc[key] = []; acc[key].push(skill); return acc;
+                    }, {});
+                    Object.keys(groupedSkills).forEach(groupName => {
+                        if (groupName !== 'default') {
+                            const groupHeader = document.createElement('h4');
+                            groupHeader.className = 'text-xl font-bold text-gray-700 mb-4 mt-6 first:mt-0';
+                            groupHeader.textContent = groupName;
+                            accordion.appendChild(groupHeader);
+                        }
+                        groupedSkills[groupName].forEach(skill => accordion.appendChild(createSkillElement(skill, isAssessmentMode)));
+                    });
+                }
+
+                function createSkillElement(skill, isAssessmentMode) {
+                    const skillWrapper = document.createElement('div');
+                    skillWrapper.className = 'border border-gray-200 rounded-lg overflow-hidden';
+                    skillWrapper.id = `wrapper-${skill.id}`;
+                    let contentHTML;
+                    if (isAssessmentMode) {
+                        const currentScore = scores[skill.id];
+                        contentHTML = `<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+                            ${skill.levels.map((level) => `
+                                <div class="assessment-card rounded-lg p-4 flex flex-col ${currentScore === level.level ? 'selected' : ''}" data-skill-id="${skill.id}" data-level="${level.level}">
+                                    <h5 class="font-bold text-md mb-2">Niveau ${level.level}</h5>
+                                    <p class="text-sm text-gray-600 flex-grow">${level.descripteur}</p>
+                                </div>`).join('')}
+                        </div>`;
+                    } else { // Interactive Exploration Mode
+                        const skillDescriptionHTML = skill.description ? `<div class="italic text-gray-600 mb-6 bg-blue-50 p-4 rounded-md">${skill.description}</div>` : '';
+                        contentHTML = `
+                            <div class="p-5">
+                                ${skillDescriptionHTML}
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-interactive-container="${skill.id}">
+                                    <div class="relative w-full max-w-xs mx-auto h-64">
+                                        ${[...skill.levels].reverse().map(l => `
+                                            <div class="autonomy-circle absolute inset-0 m-auto rounded-full flex items-center justify-center" 
+                                                 data-level="${l.level}" 
+                                                 style="width: ${64 * l.level}px; height: ${64 * l.level}px; background-color: rgba(20, 184, 166, ${0.55 - (l.level * 0.1)}); z-index: ${5 - l.level};">
+                                                 ${l.level === 1 ? '<span class="text-white font-bold text-sm">Niv.</span>' : ''}
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="bg-white p-6 rounded-lg shadow-md min-h-[16rem]">
+                                        <h5 id="display-title-${skill.id}" class="text-xl font-bold text-teal-700 mb-2 transition-all-300"></h5>
+                                        <div id="display-content-${skill.id}" class="text-sm transition-all-300"></div>
+                                    </div>
+                                </div>
+                            </div>`;
+                    }
+                    skillWrapper.innerHTML = `
+                        <button class="accordion-button w-full text-left p-4 sm:p-5 bg-white hover:bg-gray-50 flex justify-between items-center transition-colors">
+                            <span class="font-semibold text-lg text-gray-800">${skill.name}</span>
+                        </button>
+                        <div class="accordion-content hidden bg-white">${contentHTML}</div>`;
+                    return skillWrapper;
+                }
+
+                accordion.addEventListener('click', e => {
+                    const button = e.target.closest('.accordion-button');
+                    if (button) {
+                        const content = button.nextElementSibling;
+                        const isOpen = button.classList.toggle('open');
+                        content.classList.toggle('hidden');
+                        if (isOpen && content.querySelector('[data-interactive-container]')) {
+                            const container = content.querySelector('[data-interactive-container]');
+                            const skillId = container.dataset.interactiveContainer;
+                            container.querySelectorAll('.autonomy-circle').forEach(c => c.classList.remove('active-circle'));
+                            updateInteractiveDisplay(skills, skillId, 1);
+                        }
+                    }
+                    const card = e.target.closest('.assessment-card');
+                    if (card) {
+                        const skillId = card.dataset.skillId;
+                        const level = parseInt(card.dataset.level, 10);
+                        scores[skillId] = level;
+                        document.querySelectorAll(`.assessment-card[data-skill-id="${skillId}"]`).forEach(c => c.classList.remove('selected'));
+                        card.classList.add('selected');
+                        document.getElementById(`wrapper-${skillId}`).style.borderColor = '';
+                    }
+                    const circle = e.target.closest('.autonomy-circle');
+                    if (circle) {
+                        const container = circle.closest('[data-interactive-container]');
+                        const skillId = container.dataset.interactiveContainer;
+                        container.querySelectorAll('.autonomy-circle').forEach(c => c.classList.remove('active-circle'));
+                        circle.classList.add('active-circle');
+                        updateInteractiveDisplay(skills, skillId, circle.dataset.level);
+                    }
+                });
+
+                accordion.addEventListener('mouseover', e => {
+                    const circle = e.target.closest('.autonomy-circle');
+                    if (circle) {
+                        const container = circle.closest('[data-interactive-container]');
+                        if (container && !container.querySelector('.autonomy-circle.active-circle')) {
+                            const skillId = container.dataset.interactiveContainer;
+                            updateInteractiveDisplay(skills, skillId, circle.dataset.level);
+                        }
+                    }
+                });
+                
+                toggle.addEventListener('change', e => {
+                    document.getElementById('user-info-form').classList.toggle('hidden', !(e.target.checked || document.getElementById('savoir-etre-toggle').checked));
+                    render(e.target.checked);
+                });
+                if (optionalToggle) { optionalToggle.addEventListener('change', () => render(toggle.checked)); }
+
+                generateBtn.addEventListener('click', () => {
+                    const skillsToEvaluate = optionalToggle ? skills.filter(s => !s.optional || optionalToggle.checked) : skills;
+                    let allAnswered = true;
+                    skillsToEvaluate.forEach(skill => {
+                        const wrapper = document.getElementById(`wrapper-${skill.id}`);
+                        wrapper.style.borderColor = '';
+                        if (!scores[skill.id]) { allAnswered = false; wrapper.style.borderColor = 'red'; }
+                    });
+
+                    if (!allAnswered) { document.getElementById('validation-modal').classList.remove('hidden'); return; }
+                    if (chartInstance.chart) chartInstance.chart.destroy();
+                    profile.innerHTML = `<div class="radar-chart-container"><canvas id="${config.chartId}"></canvas></div><div id="summary-${config.chartId}" class="mt-8"></div>`;
+                    profile.classList.remove('hidden');
+                    
+                    const chartCanvas = document.getElementById(config.chartId).getContext('2d');
+                    const scoredSkills = skillsToEvaluate.map(skill => ({...skill, score: scores[skill.id] || 0 }));
+                    const chartData = scoredSkills.map(s => s.score);
+                    const chartLabels = scoredSkills.map(skill => skill.name.split(' '));
+
+                    const datasets = [{ label: 'Mon évaluation actuelle', data: chartData, backgroundColor: 'rgba(20, 184, 166, 0.2)', borderColor: '#14b8a6', borderWidth: 2 }];
+                    const savedEvals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+                    const evalType = config.chartId.includes('rectec') ? 'rectec' : 'savoirEtre';
+                    const previousData = savedEvals[evalType];
+
+                    if (previousData && previousData.scores) {
+                        const previousScores = scoredSkills.map(skill => previousData.scores[skill.id] || 0);
+                        datasets.push({ label: `Référence du ${new Date(previousData.date).toLocaleDateString('fr-FR')}`, data: previousScores, backgroundColor: 'rgba(107, 114, 128, 0.2)', borderColor: '#6b7280', borderWidth: 1.5, borderDash: [5, 5] });
+                    }
+
+                    chartInstance.chart = new Chart(chartCanvas, { type: 'radar', data: { labels: chartLabels, datasets: datasets }, options: { responsive: true, maintainAspectRatio: false, scales: { r: { beginAtZero: true, max: 4, stepSize: 1, pointLabels: { font: { size: 11 } } } }, plugins: { legend: { position: 'top' } } } });
+                    
+                    const sortedSkills = [...scoredSkills].sort((a, b) => b.score - a.score);
+                    skillsAnalysis[config.chartId] = { topSkills: sortedSkills.slice(0, 3), lowSkills: sortedSkills.slice(-2).reverse() };
+
+                    let qualitiesSupportHTML = `<div class="mt-10 p-6 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg"><h4 class="text-xl font-bold text-blue-800 mb-4">💡 Vos Qualités de Soutien</h4><p class="text-blue-700 mb-4">Vos points forts sont soutenus par des qualités personnelles. Pensez à les mentionner en entretien !</p><ul class="space-y-3">`;
+                    skillsAnalysis[config.chartId].topSkills.forEach(skill => {
+                        const qualities = skillToQualitiesMap[skill.id] || [];
+                        if (qualities.length > 0) { qualitiesSupportHTML += `<li><strong class="text-gray-800">${skill.name}:</strong> <span class="text-gray-600">${qualities.slice(0, 3).join(', ')}...</span></li>`; }
+                    });
+                    qualitiesSupportHTML += `</ul></div>`;
+                    
+                    const baselineButtonHTML = previousData ? `<button class="btn btn-destructive" data-eval-type="${evalType}">🗑️ Supprimer la référence</button>` : `<button class="btn btn-secondary-outline" data-eval-type="${evalType}">📸 Enregistrer comme référence</button>`;
+                    const baselineInfoHTML = `<p class="text-sm text-gray-500 mt-2">${previousData ? `Référence enregistrée le ${new Date(previousData.date).toLocaleDateString('fr-FR')}.` : ''}</p>`;
+
+                    const summaryContainer = document.getElementById(`summary-${config.chartId}`);
+                    let summaryHTML = `<h4 class="text-xl font-bold text-center text-gray-800 mb-4">Synthèse de votre évaluation</h4><ul class="bg-white p-6 rounded-lg shadow-md space-y-2">`;
+                    scoredSkills.forEach(skill => { summaryHTML += `<li class="flex justify-between items-center border-b pb-2 last:border-b-0"><span class="text-gray-700">${skill.name}</span><span class="font-bold text-teal-600">Niveau ${skill.score || 'N/E'}</span></li>`; });
+                    summaryHTML += `</ul>
+                        <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button class="btn btn-secondary w-full" data-action="download" data-chart-id="${config.chartId}" data-title="${config.title}">📄 Télécharger en PDF</button>
+                            <button class="btn btn-secondary-outline w-full" data-action="action-plan" data-chart-id="${config.chartId}">🚀 Créer mon Plan d'Action</button>
+                        </div>
+                        <div class="text-center mt-6 border-t pt-6"> ${baselineButtonHTML} ${baselineInfoHTML} </div>
+                        ${qualitiesSupportHTML}
+                        <div id="action-plan-${config.chartId}" class="mt-10 hidden"></div>`;
+                    summaryContainer.innerHTML = summaryHTML;
+                    profile.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                });
+                render(false);
+            }
+            
+            document.body.addEventListener('click', function(e) {
+                const button = e.target.closest('button[data-action]');
+                if (button) {
+                    const action = button.dataset.action;
+                    const chartId = button.dataset.chartId;
+                    if (action === 'download') {
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF();
+                        const title = button.dataset.title;
+                        const chartCanvas = document.getElementById(chartId);
+                        const chartImage = chartCanvas.toDataURL('image/png', 1.0);
+                        const isRectec = chartId.includes('rectec');
+                        const skillsForPdf = isRectec ? rectecData.filter(s => !s.optional || document.getElementById('rectec-optional-toggle').checked) : savoirEtreSkills;
+                        const scoresForPdf = isRectec ? rectecScores : savoirEtreScores;
+                        const prenom = document.getElementById('user-prenom').value || 'N/A', nom = document.getElementById('user-nom').value || 'N/A';
+                        const position = document.getElementById('user-position').value || 'N/A';
+                        const date = document.getElementById('user-date').value ? new Date(document.getElementById('user-date').value).toLocaleDateString('fr-FR') : 'N/A';
+                        doc.setFontSize(18); doc.text("Rapport d'Auto-Évaluation des Soft Skills", 105, 22, { align: 'center' });
+                        doc.setFontSize(14); doc.text(title, 105, 30, { align: 'center' });
+                        doc.setFontSize(11); doc.text(`Prénom & Nom: ${prenom} ${nom}`, 14, 45); doc.text(`Poste / Formation: ${position}`, 14, 52); doc.text(`Date: ${date}`, 14, 59);
+                        doc.addImage(chartImage, 'PNG', 15, 70, 180, 120);
+                        const tableData = skillsForPdf.map(skill => [skill.name, scoresForPdf[skill.id] || 'N/A']);
+                        let finalY = 200;
+                        doc.autoTable({ head: [['Compétence', 'Niveau Sélectionné']], body: tableData, startY: finalY, theme: 'grid', headStyles: { fillColor: [13, 148, 136] } });
+                        finalY = doc.autoTable.previous.finalY + 15;
+                        if (skillsAnalysis[chartId] && skillsAnalysis[chartId].topSkills) {
+                            if (finalY > 260) { doc.addPage(); finalY = 20; }
+                            doc.setFontSize(14); doc.text("Vos Qualités de Soutien", 14, finalY); finalY += 8;
+                            const qualitiesBody = skillsAnalysis[chartId].topSkills.map(skill => [skill.name, (skillToQualitiesMap[skill.id] || []).slice(0, 4).join(', ') || 'N/A']);
+                            doc.autoTable({ head: [['Compétence (Point fort)', 'Qualités associées à valoriser']], body: qualitiesBody, startY: finalY, theme: 'striped', headStyles: { fillColor: [37, 99, 235] } });
+                            finalY = doc.autoTable.previous.finalY + 15;
+                        }
+                        const actionPlanContainer = document.getElementById(`action-plan-${chartId}`);
+                        if (actionPlanContainer && !actionPlanContainer.classList.contains('hidden')) {
+                            if (finalY > 260) { doc.addPage(); finalY = 20; }
+                            doc.setFontSize(14); doc.text("Mon Plan d'Action", 14, finalY); finalY += 8;
+                            const actionPlanBody = skillsAnalysis[chartId].lowSkills.map(skill => [skill.name, (actionPlanTips[skill.id] || ['Pas de conseil.']).join('\n')]);
+                            doc.autoTable({ head: [['Compétence à développer', 'Pistes de développement concrètes']], body: actionPlanBody, startY: finalY, theme: 'striped', headStyles: { fillColor: [217, 119, 6] } });
+                        }
+                        doc.save(`rapport-soft-skills-${nom.toLowerCase() || 'profil'}.pdf`);
+                    } else if (action === 'action-plan') {
+                        const actionPlanContainer = document.getElementById(`action-plan-${chartId}`);
+                        if (actionPlanContainer.classList.contains('hidden')) {
+                            let html = `<div class="p-6 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg"><h4 class="text-xl font-bold text-amber-800 mb-4">🚀 Mon Plan d'Action</h4><p class="text-amber-700 mb-6">Voici des micro-actions pour développer vos compétences prioritaires.</p><div class="space-y-6">`;
+                            skillsAnalysis[chartId].lowSkills.forEach(skill => {
+                                const tips = actionPlanTips[skill.id] || [];
+                                if (tips.length > 0) { html += `<div><h5 class="font-bold text-gray-800 mb-2">${skill.name}</h5><ul class="list-disc list-inside space-y-2 text-gray-600">${tips.map(tip => `<li>${tip}</li>`).join('')}</ul></div>`; }
+                            });
+                            html += `</div></div>`;
+                            actionPlanContainer.innerHTML = html;
+                            actionPlanContainer.classList.remove('hidden');
+                            button.innerHTML = "Masquer le Plan d'Action";
+                            actionPlanContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        } else {
+                            actionPlanContainer.classList.add('hidden');
+                            actionPlanContainer.innerHTML = '';
+                            button.innerHTML = "🚀 Créer mon Plan d'Action";
+                        }
+                    }
+                }
+                const baselineBtn = e.target.closest('button[data-eval-type]');
+                if (baselineBtn) {
+                    const evalType = baselineBtn.dataset.evalType;
+                    let savedEvals = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+                    if (baselineBtn.textContent.includes('Enregistrer')) {
+                        const currentScores = evalType === 'rectec' ? rectecScores : savoirEtreScores;
+                        savedEvals[evalType] = { scores: { ...currentScores }, date: new Date().toISOString() };
+                        alert('Votre évaluation a été enregistrée comme référence !');
+                    } else {
+                        delete savedEvals[evalType];
+                        alert('La référence a été supprimée.');
+                    }
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(savedEvals));
+                    document.getElementById(evalType === 'rectec' ? 'rectec-generate-btn' : 'savoir-etre-generate-btn').click();
+                }
+            });
+
+            setupAssessmentModule({ toggle: document.getElementById('rectec-toggle'), accordion: document.getElementById('rectec-accordion'), action: document.getElementById('rectec-action'), profile: document.getElementById('rectec-profile'), generateBtn: document.getElementById('rectec-generate-btn'), skills: rectecData, scores: rectecScores, chartInstance: { chart: rectecChart }, chartId: 'rectec-radar-chart', title: 'Profil RECTEC', optionalToggle: document.getElementById('rectec-optional-toggle'), groupBy: 'pole', introBlockId: 'rectec-legend' });
+            setupAssessmentModule({ toggle: document.getElementById('savoir-etre-toggle'), accordion: document.getElementById('savoir-etre-accordion'), action: document.getElementById('savoir-etre-action'), profile: document.getElementById('savoir-etre-profile'), generateBtn: document.getElementById('savoir-etre-generate-btn'), skills: savoirEtreSkills, scores: savoirEtreScores, chartInstance: { chart: savoirEtreChart }, chartId: 'savoir-etre-radar-chart', groupBy: 'dimension' });
+            
+            function initTopSkillsChart() { new Chart(document.getElementById('skillsChart2025').getContext('2d'), { type: 'bar', data: { labels: skills2025Data.labels, datasets: [{ label: 'Indice d\'importance perçue pour 2025', data: skills2025Data.values, backgroundColor: ['rgba(20, 184, 166, 0.7)', 'rgba(13, 148, 136, 0.7)', 'rgba(15, 118, 110, 0.7)', 'rgba(19, 78, 74, 0.7)', 'rgba(59, 130, 246, 0.7)', 'rgba(37, 99, 235, 0.7)', 'rgba(99, 102, 241, 0.7)', 'rgba(79, 70, 229, 0.7)'], borderWidth: 1 }] }, options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, scales: { x: { beginAtZero: true }, y: { grid: { display: false } } }, plugins: { legend: { display: false } } } }); }
+            function initQualites() {
+                const qualitesTabsContainer = document.getElementById('qualites-tabs'), qualitesContentContainer = document.getElementById('qualites-content');
+                function render(category) { qualitesContentContainer.innerHTML = `<ul class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">${qualitesData[category].map(q => `<li class="bg-white p-3 rounded-md shadow-sm text-center text-gray-700">${q}</li>`).join('')}</ul>`; }
+                Object.keys(qualitesData).forEach((category, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'tab-button px-4 py-2 -mb-px font-semibold text-gray-600 hover:text-teal-600';
+                    btn.textContent = category;
+                    if (index === 0) { btn.classList.add('active'); render(category); }
+                    btn.addEventListener('click', () => { document.querySelectorAll('#qualites-tabs .tab-button').forEach(b => b.classList.remove('active')); btn.classList.add('active'); render(category); });
+                    qualitesTabsContainer.appendChild(btn);
+                });
+            }
+            function initTermsTabs() {
+                const termsData = [ { name: "Qualités", content: "<strong>Le socle de la personnalité.</strong> Ce sont des traits de caractère stables (ex: rigueur, honnêteté, curiosité)." }, { name: "Aptitudes", content: "<strong>La capacité à faire.</strong> Il s'agit de la capacité à accomplir une tâche ou à apprendre rapidement (ex: aptitude logique)." }, { name: "Soft Skills", content: "<strong>Le savoir-être en action.</strong> Compétences qui mobilisent qualités et aptitudes dans un contexte (ex: adaptabilité, gestion du stress)." } ];
+                const tabsContainer = document.getElementById('terms-tabs'), contentContainer = document.getElementById('terms-content');
+                function render(index) { contentContainer.innerHTML = `<p class="text-gray-700">${termsData[index].content}</p>`; }
+                termsData.forEach((term, index) => {
+                    const btn = document.createElement('button');
+                    btn.textContent = term.name;
+                    btn.className = 'tab-button px-5 py-2 -mb-px font-semibold text-gray-600 hover:text-teal-600 focus:outline-none';
+                    if (index === 0) { btn.classList.add('active'); render(index); }
+                    btn.addEventListener('click', () => { document.querySelectorAll('#terms-tabs .tab-button').forEach(b => b.classList.remove('active')); btn.classList.add('active'); render(index); });
+                    tabsContainer.appendChild(btn);
+                });
+            }
+            function initResources() {
+                const faqContainer = document.getElementById('faq-accordion'), lexiconContainer = document.getElementById('lexique-content');
+                const faqData = [ { q: "Quelle est la différence entre soft skills et hard skills ?", a: "Les hard skills sont des compétences techniques mesurables (ex: maîtriser un logiciel). Les soft skills sont des compétences comportementales (ex: communication, esprit d'équipe)." }, { q: "Les soft skills, c'est inné ou ça s'apprend ?", a: "C'est un mélange. Certaines qualités prédisposent, mais toutes les soft skills peuvent être développées par la pratique et la formation." }, { q: "Comment prouver mes soft skills à un recruteur ?", a: "En utilisant la méthode STAR (Situation, Tâche, Action, Résultat) pour donner des exemples concrets de situations où vous les avez mobilisées." }, { q: "Pourquoi les soft skills sont-elles cruciales avec l'IA ?", a: "L'IA automatise les tâches techniques. La valeur humaine se déplace vers le jugement critique, la créativité, l'empathie, soit les soft skills." }, ];
+                const lexiconData = [ { term: "Soft Skill", def: "Compétence comportementale mise en œuvre dans un contexte. Relève du savoir-être en action." }, { term: "Qualité", def: "Trait de caractère stable (ex: rigueur, persévérance). Relève de 'l'être'." }, { term: "Aptitude", def: "Capacité à faire ou à apprendre (ex: aptitude logique)." }, { term: "Intelligence Émotionnelle", def: "Capacité à reconnaître, comprendre et maîtriser ses propres émotions et celles des autres." }, { term: "RECTEC", def: "Référentiel pour l’identification des compétences transversales, un outil d'évaluation aligné sur les cadres européens." } ];
+                faqContainer.innerHTML = faqData.map(item => `<div class="border border-gray-200 rounded-lg overflow-hidden"><button class="accordion-button w-full text-left p-4 sm:p-5 bg-white hover:bg-gray-50 flex justify-between items-center transition-colors"><span class="font-semibold text-gray-800">${item.q}</span></button><div class="accordion-content hidden p-5 pt-0 bg-white"><p class="text-gray-600">${item.a}</p></div></div>`).join('');
+                lexiconContainer.innerHTML = lexiconData.map(item => `<div class="border border-gray-200 rounded-lg overflow-hidden"><button class="accordion-button w-full text-left p-4 sm:p-5 bg-white hover:bg-gray-50 flex justify-between items-center transition-colors"><span class="font-bold text-teal-700">${item.term}</span></button><div class="accordion-content hidden p-5 pt-2 bg-white"><p class="text-gray-600">${item.def}</p></div></div>`).join('');
+                const resourceAccordions = document.querySelectorAll('#faq-accordion, #lexique-content, #evaluation-methods-accordion');
+                resourceAccordions.forEach(container => { container.addEventListener('click', e => { const btn = e.target.closest('.accordion-button'); if (btn) { btn.classList.toggle('open'); btn.nextElementSibling.classList.toggle('hidden'); } }); });
+            }
+            function initNav() {
+                const mobileMenuButton = document.getElementById('mobile-menu-button'), mobileMenu = document.getElementById('mobile-menu');
+                mobileMenuButton.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+                const navLinks = document.querySelectorAll('.nav-link'), sections = document.querySelectorAll('section[id]'), headerHeight = document.getElementById('main-header').offsetHeight;
+                window.addEventListener('scroll', () => { let current = ''; sections.forEach(section => { const sectionTop = section.offsetTop - headerHeight - 20; if (pageYOffset >= sectionTop) current = section.getAttribute('id'); }); navLinks.forEach(link => { link.classList.remove('active'); if (link.getAttribute('href').substring(1) === current) link.classList.add('active'); }); });
+                navLinks.forEach(link => link.addEventListener('click', () => { if(mobileMenu.offsetParent !== null) mobileMenu.classList.add('hidden'); }));
+            }
+
+            function initAutonomyLegend() {
+                const legendData = [ { level: 1, title: "Cercle 1 : Identifier", description: "L'activité est imposée et énoncée par un responsable. Je suis guidé et on m'aide à identifier les éléments." }, { level: 2, title: "Cercle 2 : Appliquer", description: "J'applique les consignes sous supervision, mais je peux prendre quelques initiatives dans un cadre défini." }, { level: 3, title: "Cercle 3 : Adapter", description: "Je suis autonome pour réaliser mon activité. Je prends des initiatives pour adapter mon action aux exigences de la situation." }, { level: 4, title: "Cercle 4 : Prévoir et Gérer", description: "L'organisation et la résolution des problèmes relèvent de ma responsabilité, pour mon activité et/ou celle de mon équipe." } ];
+                const legendContainer = document.getElementById('rectec-legend');
+                legendContainer.innerHTML = `
+                    <div class="bg-white rounded-lg p-6 mb-8 border-l-4 border-teal-500">
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">Qu'est-ce que le RECTEC ?</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                           Le RECTEC (Référentiel pour l’identification des compétences transversales) est un outil validé par de nombreux partenaires institutionnels et de la formation. Sa légitimité repose sur sa corrélation avec le Cadre Européen des Certifications (CEC), qui structure les compétences selon des niveaux d'<strong>autonomie</strong> et de <strong>responsabilité</strong>.
+                        </p>
+                    </div>
+                    <div class="mb-12">
+                        <div class="text-center mb-6"> <h4 class="text-xl font-bold text-gray-700">Clés de lecture du référentiel</h4> </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center" data-interactive-container="legend">
+                            <div class="relative w-full max-w-xs mx-auto h-64">
+                                 ${[...legendData].reverse().map(l => `
+                                    <div class="autonomy-circle absolute inset-0 m-auto rounded-full flex items-center justify-center" data-level="${l.level}" style="width: ${64 * l.level}px; height: ${64 * l.level}px; background-color: rgba(20, 184, 166, ${0.55 - (l.level * 0.1)}); z-index: ${5 - l.level};">
+                                         ${l.level === 1 ? '<span class="text-white font-bold text-sm">Niv.</span>' : ''}
+                                    </div>
+                                `).join('')}
+                                <div class="absolute inset-x-0 -bottom-2 text-center font-semibold text-teal-700 flex items-center justify-center gap-2">
+                                    <div class="w-16 h-1 bg-teal-500 rounded-l-full"></div>
+                                    <span>Autonomie</span>
+                                    <div class="w-16 h-1 bg-teal-500 relative"> <div class="absolute right-0 top-1/2 -translate-y-1/2 w-0 h-0 border-t-8 border-b-8 border-l-8 border-transparent border-l-teal-500"></div> </div>
+                                </div>
+                            </div>
+                            <div id="legend-display" class="bg-white p-6 rounded-lg shadow-md min-h-[16rem]">
+                                <h5 id="legend-title" class="text-xl font-bold text-teal-700 mb-2"></h5>
+                                <p id="legend-description" class="text-gray-600"></p>
+                            </div>
+                        </div>
+                    </div>`;
+                
+                function updateLegendDisplay(levelNumber) {
+                    const data = legendData.find(l => l.level == levelNumber);
+                    if(!data) return;
+                    document.getElementById('legend-title').textContent = data.title;
+                    document.getElementById('legend-description').textContent = data.description;
+                }
+                
+                legendContainer.addEventListener('click', e => {
+                    const circle = e.target.closest('.autonomy-circle');
+                    if(circle) {
+                        legendContainer.querySelectorAll('.autonomy-circle').forEach(c => c.classList.remove('active-circle'));
+                        circle.classList.add('active-circle');
+                        updateLegendDisplay(circle.dataset.level);
+                    }
+                });
+                legendContainer.addEventListener('mouseover', e => {
+                    const circle = e.target.closest('.autonomy-circle');
+                    if(circle && !legendContainer.querySelector('.active-circle')) {
+                        updateLegendDisplay(circle.dataset.level);
+                    }
+                });
+                updateLegendDisplay(1);
+            }
+
+            function initAtypicalProfileSection() {
+                const profiles = [ { id: 'autodidacte', icon: '🎓', title: 'Autodidacte', description: 'Vous apprenez par vous-même, hors des sentiers battus. Guidé(e) par la passion, vous possédez une intelligence émotionnelle riche et une forte capacité d\'engagement.' }, { id: 'multipotentiel', icon: '🧬', title: 'Multi-potentiel', description: 'Vous naviguez avec aisance entre plusieurs domaines. Votre force est de connecter des idées de différents univers, créant ainsi des solutions uniques et innovantes.' }, { id: 'reconverti', icon: '🔄', title: 'En reconversion', description: 'Vous avez eu le courage de changer de carrière. Cette expérience vous a doté d\'une adaptabilité, d\'une résilience et d\'un regard neuf exceptionnels sur les problèmes.' }, { id: 'neuroatypique', icon: '🧠', title: 'Neuroatypique', description: 'Vous possédez des facultés cognitives qui ouvrent des logiques de raisonnement différentes (pensée latérale, en arborescence...). Votre perspective unique est un moteur de créativité.' }, { id: 'hpi', icon: '💡', title: 'Haut Potentiel', description: 'Vos capacités intellectuelles élevées vous permettent de raisonner différemment, avec une pensée "en arborescence". Vous analysez les problèmes avec une profondeur et une rapidité remarquables.' }, { id: 'international', icon: '🌍', title: 'Parcours International', description: 'Vos expériences à l\'étranger vous ont apporté une ouverture d\'esprit, une adaptabilité culturelle et une capacité à communiquer avec des interlocuteurs variés qui sont de précieux atouts.' } ];
+                const strengths = [ { title: 'Innovation et créativité', content: 'Votre vision différente vous permet de proposer des solutions créatives là où d\'autres sont bloqués. Vous êtes un moteur naturel d\'innovation.' }, { title: 'Polyvalence et adaptabilité', content: 'Habitué(e) à naviguer entre différents secteurs et environnements, votre capacité d\'adaptation est un atout majeur dans un monde qui change vite.' }, { title: 'Compétences transversales (Soft Skills)', content: 'Votre parcours a naturellement renforcé votre résilience, votre capacité d\'analyse, votre intelligence émotionnelle et votre agilité d\'apprentissage.' }, { title: 'Motivation et engagement accrus', content: 'Conscient(e) de devoir prouver votre valeur, vous démontrez une motivation et un investissement exceptionnels, ce qui stimule toute l\'équipe.' } ];
+                const container = document.getElementById('atypical-profiles-container');
+                const display = document.getElementById('atypical-profile-display');
+                profiles.forEach(p => {
+                    const card = document.createElement('div');
+                    card.className = 'atypical-card p-4 rounded-lg text-center';
+                    card.innerHTML = `<div class="atypical-icon text-4xl mb-2">${p.icon}</div><h4 class="font-semibold text-gray-800">${p.title}</h4>`;
+                    card.addEventListener('click', () => {
+                        document.querySelectorAll('.atypical-card').forEach(c => c.classList.remove('active'));
+                        card.classList.add('active');
+                        display.innerHTML = `<p class="text-teal-800 font-semibold">${p.title}</p><p class="text-gray-600 mt-2">${p.description}</p>`;
+                    });
+                    container.appendChild(card);
+                });
+                const accordionContainer = document.getElementById('atypical-strengths-accordion');
+                accordionContainer.innerHTML = strengths.map(s => `<div class="border border-gray-200 rounded-lg overflow-hidden"><button class="accordion-button w-full text-left p-4 bg-white hover:bg-gray-50 flex justify-between items-center transition-colors"><span class="font-semibold text-gray-800">${s.title}</span></button><div class="accordion-content hidden p-5 pt-0 bg-white"><p class="text-gray-600">${s.content}</p></div></div>`).join('');
+                accordionContainer.addEventListener('click', e => {
+                    const btn = e.target.closest('.accordion-button');
+                    if(btn) { btn.classList.toggle('open'); btn.nextElementSibling.classList.toggle('hidden'); }
+                });
+            }
+            
+            document.getElementById('close-modal-btn').addEventListener('click', () => { document.getElementById('validation-modal').classList.add('hidden'); });
+            document.getElementById('user-date').valueAsDate = new Date();
+
+            initFamilies(); initTermsTabs(); initTopSkillsChart(); initQualites(); initResources(); initNav(); initAutonomyLegend(); initAtypicalProfileSection();
+        });
+    </script>
+</body>
+</html>

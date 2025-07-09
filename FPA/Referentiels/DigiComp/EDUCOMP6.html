@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outil d'auto-évaluation - DigCompEdu & IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <style>
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #343A40;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        .domain-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .domain-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
+        }
+        .domain-card.selected {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+            border-color: #2563eb;
+        }
+        .assessment-level-card {
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            background-color: #f9fafb;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            border-radius: 0.75rem;
+        }
+        .assessment-level-card:hover {
+            border-color: #9ca3af;
+            transform: translateY(-2px);
+        }
+        .assessment-level-card.selected {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
+        }
+        .btn-main-action {
+            background-color: #16a34a;
+            color: white;
+            font-weight: 600;
+            padding: 0.8rem 2.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s;
+            font-size: 1.125rem;
+            box-shadow: 0 4px 14px 0 rgba(22, 163, 74, 0.39);
+        }
+        .btn-main-action:hover {
+            background-color: #15803d;
+            box-shadow: 0 6px 20px 0 rgba(22, 163, 74, 0.45);
+            transform: translateY(-1px);
+        }
+        #results-section { display: none; }
+        
+        /* Tab styles */
+        .tab-button {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        .tab-button:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+        }
+        .tab-button.active {
+            font-weight: 600;
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+        }
+        .tab-content-panel {
+            display: none;
+        }
+        .tab-content-panel.active {
+            display: block;
+        }
+        .quote {
+            border-left: 4px solid #d1d5db;
+            padding-left: 1rem;
+            font-style: italic;
+            color: #4b5563;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        
+        <header class="mb-12">
+            <div class="bg-blue-600 text-white p-8 rounded-2xl shadow-lg flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
+                <div class="flex-shrink-0 bg-white/20 w-20 h-20 rounded-full flex items-center justify-center">
+                    <i class="fas fa-robot text-4xl"></i>
+                </div>
+                <div class="text-center sm:text-left">
+                    <h1 class="text-3xl md:text-5xl font-bold">DigiCompétences</h1>
+                    <p class="text-lg text-blue-100 max-w-3xl mt-2">Explorez les compétences numériques à l'ère de l'Intelligence Artificielle.</p>
+                <hr>
+                <small><i>Cette application est inspirée du référentiel du Cadre Européen pour les Compétences Numériques des Educateurs - DigCompEdu</i></small>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <!-- Quote Section -->
+            <section class="mb-12 text-center">
+                <blockquote class="quote inline-block">
+                    <p>“When the winds of change blow, some people build walls and others build windmills.”</p>
+                    <footer class="text-right text-sm mt-1">– Proverbe Chinois</footer>
+                </blockquote>
+            </section>
+
+            <!-- Exploration Section -->
+            <section id="exploration-section" class="mb-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">1. Exploration des Domaines</h2>
+                    <p class="text-md text-gray-500 mt-1">Cliquez sur un domaine pour découvrir ses enjeux et ses compétences clés.</p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        <a href="https://digitalskills.lu/wp-content/uploads/2024/06/pdf_digcomedu_a4_final-FR.pdf" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">
+                            Voir le référentiel d'origine DigCompEdu <i class="fas fa-external-link-alt ml-1"></i>
+                        </a>
+                    </p>
+                </div>
+                <div id="domain-cards-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Domain cards will be injected here -->
+                </div>
+            </section>
+
+            <!-- Deep Dive Section -->
+            <section id="deep-dive-section" class="relative bg-white p-6 md:p-8 rounded-2xl shadow-lg min-h-[300px] mb-12">
+                 <div id="deep-dive-content" class="transition-opacity duration-500"></div>
+            </section>
+
+            <!-- Self-Assessment Section -->
+            <section id="self-assessment-section" class="mt-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">2. Mon Auto-Évaluation</h2>
+                    <p class="text-md text-gray-500 mt-1">Pour chaque compétence, lisez les descriptions et cliquez sur le niveau qui vous correspond le mieux.</p>
+                </div>
+                <div class="card p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                        <div>
+                            <label for="user-lastname" class="block text-sm font-medium text-gray-700">Nom</label>
+                            <input type="text" id="user-lastname" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="user-firstname" class="block text-sm font-medium text-gray-700">Prénom</label>
+                            <input type="text" id="user-firstname" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="evaluation-date" class="block text-sm font-medium text-gray-700">Date de l'évaluation</label>
+                            <input type="date" id="evaluation-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div id="assessment-items-container" class="space-y-12"></div>
+                    <div class="text-center mt-12">
+                        <button type="button" id="submit-btn" class="btn-main-action">
+                            <i class="fas fa-chart-pie mr-2"></i>Visualiser mon profil
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section id="results-section" class="mt-12">
+                <div class="card p-6 md:p-8">
+                    <h2 class="text-2xl md:text-3xl font-semibold text-center text-gray-700 mb-6">3. Votre Profil de Compétences</h2>
+                    <div class="w-full max-w-2xl mx-auto mb-10">
+                        <canvas id="radar-chart"></canvas>
+                    </div>
+                    <div id="summary" class="mb-10 text-center text-gray-600 bg-blue-50 p-4 rounded-lg"></div>
+                    
+                    <div id="action-plan" class="mt-8">
+                        <h3 class="text-xl md:text-2xl font-semibold text-center text-gray-700 mb-4">Pistes d'action personnalisées</h3>
+                        <div id="action-plan-content" class="max-w-3xl mx-auto"></div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 mt-10">
+                        <button id="export-pdf-btn" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition flex items-center justify-center gap-2"><i class="fas fa-file-pdf"></i> Exporter en PDF</button>
+                        <button id="export-json-btn" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-600 text-white font-semibold hover:bg-gray-700 transition flex items-center justify-center gap-2"><i class="fas fa-file-code"></i> Exporter en JSON</button>
+                        <button id="restart-btn" class="w-full sm:w-auto px-6 py-3 rounded-lg bg-gray-800 text-white font-semibold hover:bg-black transition flex items-center justify-center gap-2"><i class="fas fa-redo"></i> Recommencer</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="bg-gray-800 text-white mt-16 py-6 rounded-2xl">
+            <div class="container mx-auto text-center text-gray-400">
+                <p>© d.de Amil | IRP - 2025</p>
+            </div>
+        </footer>
+    </div>
+    
+    <div id="validation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-2xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Évaluation Incomplète</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                    Veuillez sélectionner un niveau pour toutes les compétences. Les compétences non évaluées sont surlignées en rouge.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Compris
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const digCompEduData = {
+            domains: [
+                { id: "d1", name: "Engagement professionnel", icon: "fas fa-briefcase", color: "blue", description: "Utiliser les technologies pour la communication, la collaboration et le développement professionnel.", opportunities: "L'IA comme assistant pour rédiger des ébauches d'e-mails, planifier des séquences. Fluidifier la communication, développer son réseau, accéder à une formation continue illimitée.", vigilance: "Risque de perte d'authenticité et de surcharge informationnelle. Maintenir une séparation claire vie pro/perso. Confidentialité des données soumises aux IA.", inPractice: "Utiliser un blog de classe pour communiquer avec les familles. Participer à des groupes d'échange sur les réseaux sociaux. Suivre un MOOC.", aiStakes: "L'IA comme assistant personnel pour rédiger des ébauches d'e-mails, planifier des séquences ou synthétiser des articles. Questionnement : Comment déléguer sans perdre l'authenticité de ma communication ?" },
+                { id: "d2", name: "Ressources numériques", icon: "fas fa-folder-open", color: "green", description: "Rechercher, créer et partager des ressources numériques de manière efficace et responsable.", opportunities: "Génération instantanée de ressources sur-mesure (exercices, images) et différenciées. Accès à des contenus variés et multimédias.", vigilance: "Fiabilité des contenus générés par IA (hallucinations). Biais et droits d'auteur sur les contenus créés. Respecter le droit d'auteur général.", inPractice: "Créer des séries d'exercices avec 3 niveaux de difficulté via une IA. Utiliser une banque de ressources éducatives libres (REL).", aiStakes: "Génération instantanée de ressources sur-mesure (exercices, images). Questionnement : Quelle est ma responsabilité dans la validation d'un contenu généré par IA avant de le présenter aux apprenants ?" },
+                { id: "d3", name: "Enseignement et apprentissage", icon: "fas fa-chalkboard-teacher", color: "indigo", description: "Gérer et orchestrer l'utilisation des technologies dans le processus pédagogique.", opportunities: "L'IA comme tuteur personnalisé ou simulateur. Dynamiser les cours et varier les approches. Mettre en place des pédagogies actives.", vigilance: "Risque de triche de la part de l'apprenant. Nécessité de repenser les tâches (processus vs produit). La pédagogie prime sur l'outil.", inPractice: "Mettre en place un débat où les élèves évaluent la réponse d'une IA. Utiliser une IA pour simuler un dialogue en langue étrangère.", aiStakes: "L'IA comme tuteur personnalisé pour un apprenant ou simulateur. Questionnement : Comment faire de l'IA un partenaire d'apprentissage pour l'élève plutôt qu'une machine à donner des réponses ?" },
+                { id: "d4", name: "Évaluation", icon: "fas fa-tasks", color: "purple", description: "Utiliser les technologies et stratégies numériques pour améliorer et diversifier l'évaluation.", opportunities: "Génération de banques de questions variées. Aide à l'analyse de productions écrites. Feedback instantané et automatisé.", vigilance: "Biais dans la correction automatisée. Fiabilité de la détection de plagiats IA. L'évaluation doit-elle porter sur le résultat ou la démarche ?", inPractice: "Demander aux apprenants de soumettre le 'prompt' utilisé pour générer une réponse. Utiliser une IA pour proposer des pistes d'amélioration.", aiStakes: "Génération de banques de questions, aide à l'analyse de productions. Questionnement : Quelles compétences évalue-t-on réellement à l'ère de l'IA ? La mémorisation ou la capacité à critiquer et utiliser l'information ?" },
+                { id: "d5", name: "Autonomiser les apprenants", icon: "fas fa-user-graduate", color: "orange", description: "Renforcer l'inclusion, la personnalisation et l'engagement actif des apprenants.", opportunities: "Outils d'IA qui s'adaptent en temps réel au niveau de l'apprenant. L'IA comme partenaire de brainstorming pour stimuler la créativité.", vigilance: "Risque de rendre l'apprenant passif et dépendant. Effet 'boîte noire' où l'élève ne comprend pas le raisonnement de l'IA.", inPractice: "Apprendre aux élèves à utiliser une IA pour explorer différentes facettes d'un problème. Proposer des parcours adaptatifs sur une plateforme.", aiStakes: "L'IA comme partenaire de brainstorming pour l'élève, stimulant sa créativité. Questionnement : Comment accompagner l'élève pour qu'il reste maître de son apprentissage et garde un regard critique sur les suggestions de l'IA ?" },
+                { id: "d6", name: "Compétence numérique des apprenants", icon: "fas fa-laptop-code", color: "teal", description: "Permettre aux apprenants de devenir des citoyens numériques créatifs, responsables et critiques face à l'IA.", opportunities: "Enseigner une nouvelle compétence fondamentale : la 'littératie de l'IA'. Développer l'esprit critique et la créativité.", vigilance: "Ce domaine devient crucial. Nécessité d'enseigner systématiquement l'esprit critique face aux IA, les biais, le droit à l'image.", inPractice: "Mener un atelier sur l'art de 'prompter'. Comparer les réponses de 2 IA. Analyser les stéréotypes dans les images générées par IA.", aiStakes: "Enseigner la 'littératie de l'IA' devient une compétence clé. Questionnement : Quelles sont les compétences essentielles du citoyen du 21e siècle face à ces technologies (prompts, esprit critique, détection de biais) ?" }
+            ],
+            competences: [
+                { domainId: "d1", title: "Communication organisationnelle", question: "J'utilise les outils numériques, y compris l'IA, pour la communication (organisation, parents, apprenants).", id: "c1" },
+                { domainId: "d1", title: "Collaboration professionnelle", question: "Je collabore avec mes pairs en utilisant des technologies numériques.", id: "c2" },
+                { domainId: "d1", title: "Pratique réflexive", question: "J'utilise le numérique pour ma pratique réflexive (portfolio, blog).", id: "c3" },
+                { domainId: "d2", title: "Recherche et sélection", question: "Je sais rechercher, sélectionner et évaluer des ressources numériques, y compris celles générées par IA.", id: "c4" },
+                { domainId: "d2", title: "Création et modification", question: "Je crée ou modifie des ressources numériques, parfois avec l'aide d'IA.", id: "c5" },
+                { domainId: "d2", title: "Gestion et partage", question: "Je gère, protège et partage les ressources (droit d'auteur, données).", id: "c6" },
+                { domainId: "d3", title: "Scénarisation", question: "J'intègre les technologies, dont l'IA, dans mes scénarios pédagogiques.", id: "c7" },
+                { domainId: "d3", title: "Guidance", question: "Je guide les apprenants dans leur utilisation des outils numériques.", id: "c8" },
+                { domainId: "d3", title: "Apprentissage collaboratif", question: "Je mets en place des activités collaboratives avec le numérique.", id: "c9" },
+                { domainId: "d4", title: "Stratégies d'évaluation", question: "J'utilise des stratégies numériques, incluant l'IA, pour diversifier les formats d'évaluation.", id: "c10" },
+                { domainId: "d4", title: "Analyse de données", question: "J'analyse les données pour comprendre les difficultés des apprenants.", id: "c11" },
+                { domainId: "d4", title: "Feedback", question: "Je fournis des feedbacks rapides et ciblés avec des outils numériques.", id: "c12" },
+                { domainId: "d5", title: "Accessibilité et inclusion", question: "Je veille à l'accessibilité des ressources pour tous les apprenants.", id: "c13" },
+                { domainId: "d5", title: "Différenciation", question: "J'utilise le numérique pour différencier et personnaliser l'apprentissage.", id: "c14" },
+                { domainId: "d5", title: "Engagement actif", question: "Je conçois des activités numériques favorisant l'engagement actif.", id: "c15" },
+                { domainId: "d6", title: "Littératie de l'information", question: "J'aide les apprenants à développer leur littératie de l'information.", id: "c16" },
+                { domainId: "d6", title: "Communication", question: "J'enseigne les règles de la communication et collaboration en ligne.", id: "c17" },
+                { domainId: "d6", title: "Création de contenu", question: "J'accompagne les apprenants dans la création de contenus, en les sensibilisant à l'usage des IA génératives.", id: "c18" }
+            ],
+            levels: [
+                { label: "A1 Novice", value: 1, description: "Je découvre le potentiel de cette compétence." },
+                { label: "A2 Explorateur", value: 2, description: "J'expérimente et j'explore cette compétence de manière ponctuelle." },
+                { label: "B1 Intégrateur", value: 3, description: "J'intègre cette compétence dans ma pratique de manière régulière." },
+                { label: "B2 Expert", value: 4, description: "Je maîtrise cette compétence et l'adapte à différents contextes." },
+                { label: "C1 Leader", value: 5, description: "Je suis une référence, je partage et je guide mes pairs sur cette compétence." },
+                { label: "C2 Pionnier", value: 6, description: "J'innove et je développe de nouvelles approches pour cette compétence." }
+            ],
+            actionPlans: {
+                "d1": "Explorez les réseaux sociaux professionnels (ex: LinkedIn, Mastodon) pour échanger avec des pairs. Participez à un webinaire ou un MOOC sur un thème qui vous intéresse.",
+                "d2": "Essayez de créer une ressource interactive simple avec un outil comme H5P ou Genially. Explorez les banques de ressources éducatives libres (ex: BRNE).",
+                "d3": "Tentez une séance en classe inversée sur un point de cours. Mettez en place un mur collaboratif (ex: Padlet) pour une activité de brainstorming.",
+                "d4": "Utilisez un outil de quiz en ligne (ex: Kahoot!, Wooclap) pour une évaluation formative rapide. Testez la création d'un portfolio numérique avec vos apprenants.",
+                "d5": "Vérifiez l'accessibilité d'une de vos ressources numériques avec un outil en ligne. Proposez un plan de travail avec des ressources à différents niveaux de difficulté.",
+                "d6": "Menez un atelier sur l'art de 'prompter' (formuler des requêtes efficaces à une IA). Lancez un projet de création de contenu simple (ex: une courte vidéo, un podcast)."
+            }
+        };
+
+        const colorMap = { blue: 'blue-600', green: 'green-600', indigo: 'indigo-600', purple: 'purple-600', orange: 'orange-600', teal: 'teal-600' };
+
+        // --- DOM ELEMENTS ---
+        const domainCardsContainer = document.getElementById('domain-cards-container');
+        const deepDiveContent = document.getElementById('deep-dive-content');
+        const assessmentItemsContainer = document.getElementById('assessment-items-container');
+        const submitBtn = document.getElementById('submit-btn');
+        const assessmentSection = document.getElementById('self-assessment-section');
+        const resultsSection = document.getElementById('results-section');
+        const restartBtn = document.getElementById('restart-btn');
+        const exportPdfBtn = document.getElementById('export-pdf-btn');
+        const exportJsonBtn = document.getElementById('export-json-btn');
+        const summaryDiv = document.getElementById('summary');
+        const actionPlanContent = document.getElementById('action-plan-content');
+        const validationModal = document.getElementById('validation-modal');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+        
+        let radarChart = null;
+        let selectedScores = {};
+
+        // --- FUNCTIONS ---
+        function initExploration() {
+            domainCardsContainer.innerHTML = digCompEduData.domains.map(domain => `
+                <div class="domain-card card p-4 border-l-4 border-${colorMap[domain.color]}" data-domain-id="${domain.id}">
+                    <div class="flex items-center">
+                        <i class="${domain.icon} text-2xl text-${colorMap[domain.color]} w-8"></i>
+                        <h3 class="font-semibold text-lg ml-3 text-gray-800">${domain.name}</h3>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.querySelectorAll('.domain-card').forEach(card => card.addEventListener('click', handleDomainSelection));
+            document.querySelector('.domain-card').click(); // Select first one by default
+        }
+
+        function handleDomainSelection(e) {
+            const selectedCard = e.currentTarget;
+            const domainId = selectedCard.dataset.domainId;
+            
+            document.querySelectorAll('.domain-card').forEach(c => c.classList.remove('selected', 'bg-blue-50'));
+            selectedCard.classList.add('selected', 'bg-blue-50');
+
+            deepDiveContent.style.opacity = 0;
+            setTimeout(() => {
+                const domain = digCompEduData.domains.find(d => d.id === domainId);
+                const relatedCompetences = digCompEduData.competences.filter(c => c.domainId === domainId);
+                
+                let competencesList = '<ul class="list-disc list-inside text-gray-600 space-y-1 mt-4">';
+                relatedCompetences.forEach(c => {
+                    competencesList += `<li>${c.title}</li>`;
+                });
+                competencesList += '</ul>';
+
+                let content = `<h3 class="text-2xl font-bold mb-4 text-${colorMap[domain.color]} flex items-center"><i class="${domain.icon} mr-3"></i>${domain.name}</h3>`;
+                
+                // Tabs Navigation
+                content += `
+                    <div class="border-b border-gray-200 mb-4">
+                        <nav class="-mb-px flex flex-wrap" aria-label="Tabs">
+                            <button class="tab-button active" data-tab="0"><i class="fas fa-info-circle mr-2"></i>Présentation</button>
+                            <button class="tab-button" data-tab="1"><i class="fas fa-lightbulb mr-2"></i>Opportunités</button>
+                            <button class="tab-button" data-tab="2"><i class="fas fa-exclamation-triangle mr-2"></i>Points de Vigilance</button>
+                            <button class="tab-button" data-tab="3"><i class="fas fa-magic-wand-sparkles mr-2"></i>En Pratique</button>
+                            <button class="tab-button" data-tab="4"><i class="fas fa-robot mr-2"></i>Enjeux de l'IA</button>
+                        </nav>
+                    </div>
+                `;
+
+                // Tabs Content
+                content += `
+                    <div>
+                        <div class="tab-content-panel active" id="tab-panel-0">
+                            <p class="text-gray-700 mb-4">${domain.description}</p>
+                            <h4 class="font-semibold text-gray-700">Compétences associées :</h4>
+                            ${competencesList}
+                        </div>
+                        <div class="tab-content-panel" id="tab-panel-1"><p class="text-gray-700">${domain.opportunities}</p></div>
+                        <div class="tab-content-panel" id="tab-panel-2"><p class="text-gray-700">${domain.vigilance}</p></div>
+                        <div class="tab-content-panel" id="tab-panel-3"><p class="text-gray-700">${domain.inPractice}</p></div>
+                        <div class="tab-content-panel" id="tab-panel-4"><p class="text-gray-700">${domain.aiStakes}</p></div>
+                    </div>
+                `;
+
+                deepDiveContent.innerHTML = content;
+                deepDiveContent.style.opacity = 1;
+
+                // Add event listeners for the new tabs
+                const tabButtons = deepDiveContent.querySelectorAll('.tab-button');
+                const tabPanels = deepDiveContent.querySelectorAll('.tab-content-panel');
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        tabButtons.forEach(btn => btn.classList.remove('active'));
+                        button.classList.add('active');
+                        const tabId = button.dataset.tab;
+                        tabPanels.forEach(panel => {
+                            if (panel.id === `tab-panel-${tabId}`) {
+                                panel.classList.add('active');
+                            } else {
+                                panel.classList.remove('active');
+                            }
+                        });
+                    });
+                });
+
+            }, 300);
+        }
+
+        function initAssessment() {
+            let currentDomainId = '';
+            assessmentItemsContainer.innerHTML = digCompEduData.competences.map(comp => {
+                let domainHeader = '';
+                if (comp.domainId !== currentDomainId) {
+                    currentDomainId = comp.domainId;
+                    const domain = digCompEduData.domains.find(d => d.id === currentDomainId);
+                    domainHeader = `<h3 class="text-xl font-semibold text-${colorMap[domain.color]} mt-8 mb-4 border-t pt-8 flex items-center"><i class="${domain.icon} mr-3"></i>${domain.name}</h3>`;
+                }
+                
+                const levelCards = digCompEduData.levels.map(level => `
+                    <div class="assessment-level-card" data-competence-id="${comp.id}" data-level-value="${level.value}">
+                        <h5 class="font-bold text-md mb-1">${level.label}</h5>
+                        <p class="text-xs text-gray-500 flex-grow">${level.description}</p>
+                    </div>
+                `).join('');
+
+                return `
+                    ${domainHeader}
+                    <div id="assessment-comp-${comp.id}" class="assessment-item-wrapper">
+                        <div>
+                            <h4 class="text-lg font-semibold text-gray-800">${comp.title}</h4>
+                            <p class="text-sm text-gray-500 italic mt-1">${comp.question}</p>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">${levelCards}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.querySelectorAll('.assessment-level-card').forEach(card => {
+                card.addEventListener('click', e => {
+                    const target = e.currentTarget;
+                    const compId = target.dataset.competenceId;
+                    const levelValue = parseInt(target.dataset.levelValue, 10);
+                    
+                    selectedScores[compId] = levelValue;
+
+                    document.querySelectorAll(`.assessment-level-card[data-competence-id="${compId}"]`).forEach(btn => btn.classList.remove('selected'));
+                    target.classList.add('selected');
+
+                    document.getElementById(`assessment-comp-${compId}`).classList.remove('border-red-500', 'border-2', 'p-2', 'rounded-lg');
+                });
+            });
+        }
+
+        function calculateResults() {
+            const domainScores = {};
+            const domainCounts = {};
+            digCompEduData.domains.forEach(d => {
+                domainScores[d.id] = 0;
+                domainCounts[d.id] = 0;
+            });
+
+            let allAnswered = true;
+            digCompEduData.competences.forEach(comp => {
+                if (selectedScores[comp.id]) {
+                    domainScores[comp.domainId] += selectedScores[comp.id];
+                    domainCounts[comp.domainId]++;
+                } else {
+                    allAnswered = false;
+                    const wrapper = document.getElementById(`assessment-comp-${comp.id}`);
+                    if (wrapper) {
+                         wrapper.classList.add('border-red-500', 'border-2', 'p-2', 'rounded-lg');
+                    }
+                }
+            });
+
+            if (!allAnswered) {
+                validationModal.classList.remove('hidden');
+                const firstIncomplete = document.querySelector('.border-red-500');
+                if(firstIncomplete) firstIncomplete.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return null;
+            }
+
+            const finalResults = {};
+            digCompEduData.domains.forEach(d => {
+                finalResults[d.id] = domainScores[d.id] / domainCounts[d.id];
+            });
+            return finalResults;
+        }
+        
+        function getLevelFromScore(score) {
+            const level = digCompEduData.levels.find(l => score <= l.value + 0.5) || digCompEduData.levels[digCompEduData.levels.length - 1];
+            return level ? level.label : "N/A";
+        }
+
+        function generateActionPlan(results) {
+            const sortedDomains = Object.entries(results).sort(([,a],[,b]) => a-b);
+            let planHtml = '';
+            const domainsToAction = sortedDomains.slice(0, 2); 
+
+            domainsToAction.forEach(([domainId, score]) => {
+                const domain = digCompEduData.domains.find(d => d.id === domainId);
+                planHtml += `
+                    <div class="card p-4 mb-4 border-l-4 border-${colorMap[domain.color]}">
+                        <h4 class="font-semibold text-lg text-gray-800">${domain.name}</h4>
+                        <p class="text-gray-600 mt-1">${digCompEduData.actionPlans[domainId]}</p>
+                    </div>
+                `;
+            });
+            actionPlanContent.innerHTML = planHtml;
+        }
+
+        function displayResults(results) {
+            document.getElementById('exploration-section').style.display = 'none';
+            document.getElementById('deep-dive-section').style.display = 'none';
+            assessmentSection.style.display = 'none';
+            resultsSection.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const labels = digCompEduData.domains.map(d => d.name.split(' '));
+            const data = digCompEduData.domains.map(d => results[d.id]);
+
+            const ctx = document.getElementById('radar-chart').getContext('2d');
+            if(radarChart) radarChart.destroy();
+
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Mon niveau de compétence',
+                        data: data,
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    scales: { r: { suggestedMin: 0, suggestedMax: 6, ticks: { stepSize: 1 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+            
+            let summaryHtml = '<p class="text-lg font-medium">Vos niveaux estimés par domaine :</p><div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-2 mt-2">';
+            digCompEduData.domains.forEach(d => {
+                summaryHtml += `<div><strong>${d.name}:</strong> ${getLevelFromScore(results[d.id])}</div>`;
+            });
+            summaryHtml += '</div>';
+            summaryDiv.innerHTML = summaryHtml;
+            generateActionPlan(results);
+        }
+
+        // --- EVENT LISTENERS ---
+        submitBtn.addEventListener('click', () => {
+            const results = calculateResults();
+            if (results) {
+                displayResults(results);
+                exportPdfBtn.dataset.results = JSON.stringify(results);
+                exportJsonBtn.dataset.results = JSON.stringify(results);
+            }
+        });
+        
+        closeModalBtn.addEventListener('click', () => validationModal.classList.add('hidden'));
+
+        restartBtn.addEventListener('click', () => {
+            selectedScores = {};
+            document.getElementById('exploration-section').style.display = 'block';
+            document.getElementById('deep-dive-section').style.display = 'block';
+            assessmentSection.style.display = 'block';
+            resultsSection.style.display = 'none';
+            document.querySelectorAll('.assessment-level-card.selected').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.assessment-item-wrapper').forEach(w => w.classList.remove('border-red-500', 'border-2', 'p-2', 'rounded-lg'));
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        exportJsonBtn.addEventListener('click', e => {
+            const results = e.currentTarget.dataset.results;
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(results);
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `resultats_digcompedu_${new Date().toISOString().slice(0,10)}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        });
+
+        exportPdfBtn.addEventListener('click', e => {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const results = JSON.parse(e.currentTarget.dataset.results);
+            const chartCanvas = document.getElementById('radar-chart');
+            const chartImage = chartCanvas.toDataURL('image/png', 1.0);
+            const lastName = document.getElementById('user-lastname').value || 'N/A';
+            const firstName = document.getElementById('user-firstname').value || 'N/A';
+            const evalDate = document.getElementById('evaluation-date').value ? new Date(document.getElementById('evaluation-date').value).toLocaleDateString('fr-FR') : 'N/A';
+
+            doc.setFontSize(18);
+            doc.text("Rapport d'auto-évaluation DigCompEdu", 14, 22);
+            doc.setFontSize(11);
+            doc.text(`Évaluation pour : ${firstName} ${lastName}`, 14, 30);
+            doc.text(`Date : ${evalDate}`, 14, 36);
+            
+            doc.addImage(chartImage, 'PNG', 15, 45, 180, 150);
+
+            const summaryTableData = digCompEduData.domains.map(d => {
+                const score = results[d.id];
+                return [d.name, score.toFixed(2), getLevelFromScore(score)];
+            });
+
+            doc.autoTable({
+                head: [['Domaine de compétence', 'Score moyen', 'Niveau estimé']],
+                body: summaryTableData,
+                startY: 205,
+                theme: 'grid',
+                headStyles: { fillColor: [37, 99, 235] }
+            });
+            
+            doc.addPage();
+            doc.setFontSize(16);
+            doc.text("Détail de l'évaluation", 14, 22);
+            
+            const detailTableData = digCompEduData.competences.map(c => {
+                const score = selectedScores[c.id] || 'Non évalué';
+                const level = score !== 'Non évalué' ? digCompEduData.levels[score - 1].label : 'N/A';
+                const domain = digCompEduData.domains.find(d => d.id === c.domainId).name;
+                return [domain, c.title, level];
+            });
+
+            doc.autoTable({
+                head: [['Domaine', 'Compétence', 'Niveau sélectionné']],
+                body: detailTableData,
+                startY: 30,
+                theme: 'striped',
+                didParseCell: function (data) {
+                    if (data.row.index === 0) {
+                        data.cell.styles.fillColor = '#f3f4f6';
+                    }
+                },
+                didDrawCell: function (data) {
+                    // Group by domain
+                    const domain = digCompEduData.domains.find(d => d.name === data.cell.raw);
+                    if (domain && data.column.index === 0) {
+                         if (data.row.index > 0 && detailTableData[data.row.index-1][0] === data.cell.raw) {
+                             data.cell.text = '';
+                         }
+                    }
+                }
+            });
+
+            doc.save(`rapport_digcompedu_${lastName}_${firstName}.pdf`);
+        });
+
+        // --- INITIALIZATION ---
+        initExploration();
+        initAssessment();
+        document.getElementById('evaluation-date').valueAsDate = new Date();
+    </script>
+</body>
+</html>

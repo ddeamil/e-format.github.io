@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application d'Auto-Évaluation : Carte de Compétences IDF</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Professional Harmony -->
+    <!-- Application Structure Plan: The application is a dedicated tool for the "Carte de Compétences IDF". It starts with an exploration section where the 12 axes are grouped by their 3 poles. Clicking an axe reveals its 4 progression circles in a "Deep Dive" area. The core of the app is the "Self-Assessment" section, allowing users to input personal info and rate themselves on each of the 12 axes. Submitting this generates a personalized radar chart and a textual summary, both of which can be used for guidance sessions. The structure is designed to guide the user from discovery to reflective self-evaluation and finally to a shareable output. -->
+    <!-- Visualization & Content Choices: 
+        - Goal: Organize & Explore -> Presentation: Three-column layout for the 3 poles, containing interactive cards for each axe (HTML/Tailwind). Interaction: JS click events populate a detail section. Justification: Clearly presents the structure of the "Carte de Compétences".
+        - Goal: Show Progression -> Presentation: Dynamic "Deep Dive" section (HTML/Tailwind). Interaction: Populated by JS on click. Justification: Clearly displays the 4-circle progression model for any selected Axe.
+        - Goal: Enable Self-Assessment -> Presentation: An interactive form with clear instructions, benchmark questions, and selectable cards for each level (HTML/Tailwind). Justification: Provides a clear, guided way for users to perform self-evaluation.
+        - Goal: Visualize Profile -> Presentation: Radar Chart (Chart.js/Canvas). Interaction: JS updates the chart based on the user's self-assessment data. Justification: Offers a powerful, dynamic visualization of a multi-axial skill profile.
+        - All diagrams are built with structured HTML/CSS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA;
+            color: #343A40;
+        }
+        .pole-reflechir { border-left-color: #3b82f6; }
+        .pole-organiser { border-left-color: #16a34a; }
+        .pole-communiquer { border-left-color: #f97316; }
+        .item-card {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .item-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .item-card.selected {
+            background-color: #e0f2fe;
+            border-color: #0284c7 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.2), 0 4px 6px -2px rgba(2, 132, 199, 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 500px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px;
+            }
+        }
+        .circle-step {
+            position: relative;
+            padding-left: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-left: 2px solid #e5e7eb;
+        }
+        .circle-step:last-child {
+            border-left: 2px solid transparent;
+        }
+        .circle-dot {
+            position: absolute;
+            left: -0.7rem;
+            top: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 9999px;
+            background-color: #fff;
+            border: 2px solid #9ca3af;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #4b5563;
+        }
+        .assessment-card {
+            cursor: pointer;
+            border: 2px solid #e5e7eb;
+            background-color: #ffffff;
+            transition: all 0.2s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        .assessment-card:hover {
+            border-color: #9ca3af;
+            transform: translateY(-2px);
+        }
+        .assessment-card.selected {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .assessment-item-wrapper {
+            transition: all 0.3s ease-in-out;
+        }
+        #evaluation-summary {
+            transition: opacity 0.5s ease-in-out;
+        }
+        .sas-icon {
+            font-size: 2rem;
+            line-height: 1;
+        }
+        .btn {
+            transition: all 0.2s ease-in-out;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .autonomy-circle {
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .autonomy-circle:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+        .pole-card {
+            transition: all 0.3s ease-in-out;
+        }
+        .pole-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        @media print {
+            body > *:not(#print-section) {
+                display: none;
+            }
+            #print-section {
+                display: block;
+            }
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="main-container" class="container mx-auto p-4 md:p-8">
+        
+        <header class="mb-12">
+            <div class="bg-blue-600 text-white p-8 rounded-2xl shadow-lg flex items-center justify-center space-x-6">
+                <div class="flex-shrink-0 bg-white/20 w-20 h-20 rounded-full flex items-center justify-center">
+                    <span class="text-4xl">🗺️</span>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-4xl md:text-5xl font-bold">Carte de Compétences IDF</h1>
+                    <p class="text-lg text-blue-100 max-w-3xl">Une application pour explorer les 12 axes de compétences et réaliser votre auto-évaluation.</p>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section id="introduction-vis" class="mb-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-700">Clés de Lecture de la Carte</h2>
+                    <p class="text-md text-gray-500 mt-1">Comprendre la structure de la carte avant de commencer.</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center mb-12">
+                    <div class="relative w-full max-w-sm mx-auto h-72">
+                        <div class="autonomy-circle absolute inset-0 m-auto w-72 h-72 bg-blue-200 rounded-full" data-circle="4"></div>
+                        <div class="autonomy-circle absolute inset-0 m-auto w-56 h-56 bg-blue-300 rounded-full" data-circle="3"></div>
+                        <div class="autonomy-circle absolute inset-0 m-auto w-40 h-40 bg-blue-400 rounded-full" data-circle="2"></div>
+                        <div class="autonomy-circle absolute inset-0 m-auto w-24 h-24 bg-blue-500 rounded-full flex items-center justify-center" data-circle="1">
+                            <span class="text-white font-bold text-lg">Autonomie</span>
+                        </div>
+                    </div>
+                    <div id="autonomy-display" class="bg-white p-6 rounded-lg shadow-md min-h-[18rem]">
+                        <h4 id="autonomy-title" class="text-2xl font-bold text-blue-700 mb-2"></h4>
+                        <p id="autonomy-description" class="text-gray-600"></p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="pole-card bg-blue-100 p-6 rounded-lg shadow-lg text-center" data-pole="reflechir">
+                        <h4 class="text-2xl font-bold text-blue-800 mb-2">Pôle Réflexif</h4>
+                        <p class="font-semibold text-blue-700">Axes 1 à 4</p>
+                        <p class="text-blue-600 mt-4 hidden description">Comprendre son environnement, se connaître et créer les conditions de sa réussite.</p>
+                    </div>
+                    <div class="pole-card bg-green-100 p-6 rounded-lg shadow-lg text-center" data-pole="organiser">
+                        <h4 class="text-2xl font-bold text-green-800 mb-2">Pôle Organisationnel</h4>
+                        <p class="font-semibold text-green-700">Axes 5 à 8</p>
+                        <p class="text-green-600 mt-4 hidden description">Construire son projet, planifier ses actions et mobiliser les compétences nécessaires.</p>
+                    </div>
+                    <div class="pole-card bg-orange-100 p-6 rounded-lg shadow-lg text-center" data-pole="communiquer">
+                        <h4 class="text-2xl font-bold text-orange-800 mb-2">Pôle Communicationnel</h4>
+                        <p class="font-semibold text-orange-700">Axes 9 à 12</p>
+                        <p class="text-orange-600 mt-4 hidden description">Interagir efficacement à l'oral, à l'écrit et avec les outils numériques.</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <section id="dashboard" class="mb-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Exploration des 12 Axes</h2>
+                    <p class="text-md text-gray-500 mt-1">Cliquez sur un axe pour voir le détail de ses 4 cercles de progression.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-semibold text-center mb-4 text-blue-600">Pôle "Réfléchir"</h3>
+                        <div id="pole-reflechir-container" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-center mb-4 text-green-600">Pôle "Organiser"</h3>
+                        <div id="pole-organiser-container" class="space-y-3"></div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-semibold text-center mb-4 text-orange-600">Pôle "Communiquer"</h3>
+                        <div id="pole-communiquer-container" class="space-y-3"></div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="deep-dive" class="relative bg-white p-6 md:p-8 rounded-2xl shadow-lg min-h-[300px]">
+                 <div id="deep-dive-content" class="transition-opacity duration-500">
+                 </div>
+            </section>
+
+            <section id="self-assessment-section" class="mt-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Mon Auto-Évaluation</h2>
+                    <p class="text-md text-gray-500 mt-1">Pour chaque axe, lisez les 4 descriptions et cliquez sur celle qui vous correspond le mieux.</p>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        <div>
+                            <label for="user-lastname" class="block text-sm font-medium text-gray-700">Nom</label>
+                            <input type="text" id="user-lastname" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="user-firstname" class="block text-sm font-medium text-gray-700">Prénom</label>
+                            <input type="text" id="user-firstname" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="user-formation" class="block text-sm font-medium text-gray-700">Formation visée</label>
+                            <input type="text" id="user-formation" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                         <div>
+                            <label for="evaluation-stage" class="block text-sm font-medium text-gray-700">Étape d'évaluation</label>
+                            <select id="evaluation-stage" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Évaluation Initiale">Évaluation Initiale</option>
+                                <option value="Évaluation Intermédiaire">Évaluation Intermédiaire</option>
+                                <option value="Évaluation Finale">Évaluation Finale</option>
+                            </select>
+                        </div>
+                        <div class="lg:col-span-2">
+                            <label for="test-date" class="block text-sm font-medium text-gray-700">Date de l'évaluation</label>
+                            <input type="date" id="test-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div id="assessment-items-container" class="space-y-12"></div>
+                    <div class="text-center mt-8">
+                        <button id="update-radar-btn" class="btn bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 text-lg">
+                            Voir Mon Profil sur le Radar
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+             <section id="radar-chart-section" class="mt-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Visualisation du Profil</h2>
+                    <p class="text-md text-gray-500 mt-1">Le graphique radar illustre un profil de compétences. Il se met à jour avec votre auto-évaluation.</p>
+                </div>
+                <div class="bg-white p-4 md:p-8 rounded-2xl shadow-lg">
+                    <div class="chart-container">
+                        <canvas id="competenceRadarChart"></canvas>
+                    </div>
+                    <div class="text-center mt-6 flex flex-wrap justify-center gap-4">
+                        <button id="simulate-progress-btn" class="btn bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700">Voir un Profil d'Exemple</button>
+                        <button id="download-chart-btn" class="btn bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-700">Télécharger le Graphique</button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="evaluation-summary" class="mt-12 hidden">
+                 <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Récapitulatif de Votre Évaluation</h2>
+                    <p class="text-md text-gray-500 mt-1">Voici le détail des niveaux que vous avez sélectionnés pour chaque axe.</p>
+                </div>
+                <div id="summary-content-wrapper" class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <div id="summary-content"></div>
+                    <div class="text-center mt-6">
+                        <button id="print-summary-btn" class="btn bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">
+                            Imprimer le Récapitulatif
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sas-process" class="mt-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Le Processus d'Évaluation "Sas"</h2>
+                    <p class="text-md text-gray-500 mt-1">Un parcours structuré en trois étapes clés pour un accompagnement efficace.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                         <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-blue-100 mb-4">
+                            <span class="sas-icon text-blue-600">🔎</span>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2">Évaluation Initiale</h4>
+                        <p class="text-gray-600">Identifier les acquis, valider l'accès au dispositif et co-construire le contrat d'objectifs de la formation.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-yellow-100 mb-4">
+                            <span class="sas-icon text-yellow-600">↻</span>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2">Évaluation Intermédiaire</h4>
+                        <p class="text-gray-600">Mesurer les progrès accomplis, situer les nouveaux acquis et réajuster les objectifs du parcours si nécessaire.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+                            <span class="sas-icon text-green-600">🎓</span>
+                        </div>
+                        <h4 class="text-xl font-semibold mb-2">Évaluation Finale</h4>
+                        <p class="text-gray-600">Évaluer les compétences consolidées et formaliser les acquis dans une "attestation de compétences".</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="bg-gray-800 text-white mt-16 py-6">
+        <div class="container mx-auto text-center text-gray-400">
+            <p>d.de amil   | IRP - 2025</p>
+        </div>
+    </footer>
+
+    <div id="validation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Évaluation Incomplète</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                    Veuillez sélectionner un niveau pour tous les 12 axes avant de visualiser le profil. Les axes non complétés sont surlignés en rouge.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Compris
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="print-section" class="hidden"></div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const carteData = [
+                { id: 1, pole: 'reflechir', title: 'Se repérer dans son parcours et parler de ses apprentissages', question: 'Suis-je capable d\'expliquer où j\'en suis et ce que j\'apprends ?', circles: ['Nomme le dispositif et identifie quelques actions.', 'Interroge des acteurs pour mieux comprendre son parcours.', 'Explique ce qu\'il/elle fait, ce qu\'il/elle apprend.', 'Argumente et relie les objectifs entre son parcours et son projet.'] },
+                { id: 2, pole: 'reflechir', title: 'Se repérer et respecter les règlements, les codes sociaux', question: 'Est-ce que je comprends et j\'applique les règles de vie en groupe ?', circles: ['Identifie quelques règles liées à sa formation et son statut.', 'Respecte les règles et s\'interroge sur les codes implicites.', 'Se situe et s\'adapte à des cadres formels et/ou inconnus.', 'Explique à son entourage les cadres d\'un environnement professionnel.'] },
+                { id: 3, pole: 'reflechir', title: 'S\'identifier à un ou des métiers', question: 'Mon idée d\'un métier est-elle claire et réaliste pour moi ?', circles: ['Identifie ce que "travailler veut dire".', 'Se confronte au monde professionnel et aux métiers visés.', 'Se positionne dans le monde du travail en intégrant les contraintes.', 'Analyse ses premières expériences professionnelles.'] },
+                { id: 4, pole: 'reflechir', title: 'Créer les conditions favorables à la réussite de son projet', question: 'Comment est-ce que je gère les obstacles (transport, garde d\'enfant, etc.) ?', circles: ['Identifie les obstacles à surmonter.', 'Participe à une démarche de recherche de solution guidée.', 'Utilise les ressources nécessaires pour se rendre disponible et autonome.', 'Mobilise des ressources de façon autonome pour gérer les imprévus.'] },
+                { id: 5, pole: 'organiser', title: 'Construire son projet professionnel', question: 'Mon projet de métier est-il précis et ai-je un plan pour y arriver ?', circles: ['Émet une/plusieurs idées de projet professionnel.', 'Confronte un projet aux contraintes socio-économiques et à ses réalités.', 'Définit un projet réaliste et réalisable.', 'Détermine la/les étape(s) de mise en œuvre de son projet.'] },
+                { id: 6, pole: 'organiser', title: 'Mobiliser ses compétences mathématiques', question: 'Suis-je à l\'aise avec les calculs et les mesures de la vie de tous les jours ?', circles: ['Identifie les informations chiffrées, présentes ou manquantes.', 'Applique les opérations et les mesures dans des situations de calcul liées à son environnement.', 'Choisit les raisonnements et les opérations adaptées pour répondre à des situations courantes.', 'Élabore et confronte ses stratégies de résolution de problème.'] },
+                { id: 7, pole: 'organiser', title: 'Organiser et planifier son intégration professionnelle', question: 'Est-ce que je sais organiser mes déplacements pour être à l\'heure ?', circles: ['Identifie les lieux ressources, se rend seul dans des espaces connus.', 'Élargit (accompagné) sa mobilité vers de nouveaux espaces.', 'Explore seul de nouveaux espaces en mesurant le temps nécessaire.', 'Organise seul ses déplacements pour son projet en respectant les contraintes horaires.'] },
+                { id: 8, pole: 'organiser', title: 'Travailler en groupe et en équipe', question: 'Comment est-ce que je me comporte dans un projet collectif ?', circles: ['Identifie les personnes et adopte une posture pour apprendre.', 'Adopte une attitude attentive, peut aider les autres et accepte d\'être aidé.', 'Fait des propositions et accepte de les négocier.', 'Participe activement au travail collectif en variant sa place et son rôle.'] },
+                { id: 9, pole: 'communiquer', title: 'Mettre en avant ses compétences à l\'oral', question: 'Suis-je capable de parler de ce que je sais faire ?', circles: ['Parle de ses activités partiellement en réponse aux sollicitations.', 'Parle de ses activités en réponse à des sollicitations et les situe dans le temps.', 'Expose ses activités de manière structurée, chronologique.', 'Varie les façons de présenter ses activités selon l\'intention, l\'objet et l\'interlocuteur.'] },
+                { id: 10, pole: 'communiquer', title: 'Communiquer à l\'oral dans le monde professionnel', question: 'Comment se passe ma communication avec des professionnels (par téléphone, en entretien) ?', circles: ['Se présente de façon partielle dans le cadre d\'un entretien.', 'Communique avec des acteurs de l\'emploi et de la formation.', 'Communique en face à face, au téléphone et peut expliquer des choix.', 'Adapte sa manière de communiquer à tout interlocuteur et situation.'] },
+                { id: 11, pole: 'communiquer', title: 'Communiquer à l\'écrit dans le monde professionnel', question: 'Est-ce que je suis à l\'aise pour remplir un formulaire ou écrire un email simple ?', circles: ['Comprend et remplit partiellement les écrits liés à son identité.', 'Comprend et produit des écrits courts (avec aide).', 'Comprend des écrits nécessaires à son parcours et les structure.', 'Comprend des écrits variés liés à un emploi ou une qualification et les adapte.'] },
+                { id: 12, pole: 'communiquer', title: 'Utiliser les ressources informatiques et numériques', question: 'Comment est-ce que je me débrouille avec un ordinateur, internet et les emails ?', circles: ['Utilise partiellement les moyens informatiques et numériques.', 'Utilise (accompagné) les moyens informatiques et numériques en lien avec son projet.', 'Utilise en autonomie les TIC liées à sa situation.', 'Sélectionne et trie les ressources informatiques et numériques au service de son projet.'] }
+            ];
+
+            const selfAssessmentScores = {};
+
+            function initDashboard() {
+                const poleContainers = {
+                    reflechir: document.getElementById('pole-reflechir-container'),
+                    organiser: document.getElementById('pole-organiser-container'),
+                    communiquer: document.getElementById('pole-communiquer-container')
+                };
+                
+                carteData.forEach(axe => {
+                    const card = document.createElement('div');
+                    card.className = `item-card bg-white p-4 rounded-lg shadow border-l-4 pole-${axe.pole}`;
+                    card.dataset.id = axe.id;
+                    card.innerHTML = `<p class="font-semibold text-gray-800"><span class="font-bold">Axe ${axe.id}:</span> ${axe.title}</p>`;
+                    poleContainers[axe.pole].appendChild(card);
+                });
+
+                document.querySelectorAll('.item-card').forEach(card => card.addEventListener('click', handleSelection));
+                
+                // Trigger initial display
+                document.querySelector('[data-id="1"]').click();
+            }
+
+            function handleSelection(event) {
+                const selectedCard = event.currentTarget;
+                const id = selectedCard.dataset.id;
+                const deepDiveContent = document.getElementById('deep-dive-content');
+
+                document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+                selectedCard.classList.add('selected');
+                
+                deepDiveContent.style.opacity = 0;
+                setTimeout(() => {
+                    const axe = carteData.find(a => a.id == id);
+                    let content = `<h3 class="text-2xl font-bold mb-4 text-gray-800">Axe ${axe.id}: ${axe.title}</h3>`;
+                    content += '<p class="text-gray-600 mb-6">Ce diagramme illustre les quatre niveaux de progression d\'autonomie pour cet axe.</p><div>';
+                    axe.circles.forEach((circle, index) => {
+                        content += `<div class="circle-step"><div class="circle-dot">${index + 1}</div><h4 class="font-semibold text-lg mb-1 text-gray-700">Cercle ${index + 1}</h4><p class="text-gray-600">${circle}</p></div>`;
+                    });
+                    content += `</div>
+                    <button id="back-to-top-btn" title="Retour à la sélection" class="btn absolute bottom-6 right-6 bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg hover:bg-blue-700">
+                        ↑
+                    </button>`;
+                    deepDiveContent.innerHTML = content;
+                    
+                    document.getElementById('back-to-top-btn').addEventListener('click', () => {
+                        document.getElementById('dashboard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    });
+                    
+                    deepDiveContent.style.opacity = 1;
+                    
+                    const deepDiveSection = document.getElementById('deep-dive');
+                    if (deepDiveSection) {
+                        deepDiveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+
+                }, 300);
+            }
+
+            function initSelfAssessment() {
+                const container = document.getElementById('assessment-items-container');
+                carteData.forEach(axe => {
+                    selfAssessmentScores[axe.id] = null; 
+
+                    const item = document.createElement('div');
+                    item.className = 'border-t pt-8 assessment-item-wrapper';
+                    item.id = `assessment-axe-${axe.id}`;
+                    
+                    let cardsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">';
+                    axe.circles.forEach((desc, i) => {
+                        cardsHTML += `
+                            <div class="assessment-card rounded-lg p-4" data-axe-id="${axe.id}" data-level="${i + 1}">
+                                <h5 class="font-bold text-lg mb-2">Cercle ${i + 1}</h5>
+                                <p class="text-sm text-gray-600 flex-grow">${desc}</p>
+                            </div>`;
+                    });
+                    cardsHTML += '</div>';
+
+                    item.innerHTML = `
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-800">Axe ${axe.id}: ${axe.title}</h4>
+                            <p class="text-md text-gray-500 italic mt-1">Question repère : ${axe.question}</p>
+                        </div>
+                        ${cardsHTML}
+                    `;
+                    container.appendChild(item);
+                });
+
+                document.querySelectorAll('.assessment-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const target = e.currentTarget;
+                        const axeId = target.dataset.axeId;
+                        const level = parseInt(target.dataset.level, 10);
+                        
+                        selfAssessmentScores[axeId] = level;
+
+                        document.querySelectorAll(`.assessment-card[data-axe-id="${axeId}"]`).forEach(btn => btn.classList.remove('selected'));
+                        target.classList.add('selected');
+                        
+                        const wrapper = document.getElementById(`assessment-axe-${axeId}`);
+                        wrapper.classList.remove('border-red-500', 'border-2', 'p-2', 'rounded-lg');
+
+                    });
+                });
+            }
+            
+            function formatLabel(str, maxWidth) {
+                const words = str.split(' ');
+                let lines = [];
+                let currentLine = words[0];
+
+                for (let i = 1; i < words.length; i++) {
+                    if ((currentLine + " " + words[i]).length > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    } else {
+                        currentLine += " " + words[i];
+                    }
+                }
+                lines.push(currentLine);
+                return lines;
+            }
+
+            const ctx = document.getElementById('competenceRadarChart').getContext('2d');
+            
+            const radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: carteData.map(axe => formatLabel(`Axe ${axe.id}: ${axe.title}`, 25)),
+                    datasets: [{
+                        label: 'Niveau de Compétence (sur 4)',
+                        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                    },
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: { 
+                                font: { size: 11 }, 
+                                color: '#4b5563' 
+                            },
+                            ticks: { 
+                                beginAtZero: true, 
+                                max: 4, 
+                                stepSize: 1, 
+                                backdropColor: 'rgba(255, 255, 255, 0.75)', 
+                                color: '#343A40',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                },
+                                showLabelBackdrop: true
+                             }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    return '';
+                                },
+                                label: function(context) {
+                                    const dataIndex = context.dataIndex;
+                                    const axe = carteData[dataIndex];
+                                    return `Axe ${axe.id}: ${axe.title}`;
+                                },
+                                afterLabel: function(context) {
+                                    const score = context.raw;
+                                    return `Niveau: ${score}`;
+                                }
+                            }
+                        },
+                        legend: { position: 'top' }
+                    }
+                }
+            });
+            
+            function showExampleProfile() {
+                radarChart.data.datasets[0].data = [4, 3, 3, 4, 4, 3, 4, 3, 4, 3, 3, 3];
+                radarChart.data.datasets[0].label = "Profil d'Exemple (Progressé)";
+                radarChart.update();
+            }
+            
+            document.getElementById('simulate-progress-btn').addEventListener('click', showExampleProfile);
+
+            document.getElementById('update-radar-btn').addEventListener('click', () => {
+                document.querySelectorAll('.assessment-item-wrapper').forEach(item => item.classList.remove('border-red-500', 'border-2', 'p-2', 'rounded-lg'));
+
+                const incompleteAxes = carteData.filter(axe => selfAssessmentScores[axe.id] === null);
+
+                if (incompleteAxes.length > 0) {
+                    let firstIncomplete = true;
+                    incompleteAxes.forEach(axe => {
+                        const wrapper = document.getElementById(`assessment-axe-${axe.id}`);
+                        wrapper.classList.add('border-red-500', 'border-2', 'p-2', 'rounded-lg');
+                        if(firstIncomplete) {
+                            wrapper.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstIncomplete = false;
+                        }
+                    });
+                    document.getElementById('validation-modal').classList.remove('hidden');
+                    return;
+                }
+
+                const scores = carteData.map(axe => selfAssessmentScores[axe.id]);
+
+                radarChart.data.datasets[0].data = scores;
+                radarChart.data.datasets[0].label = "Mon Auto-Évaluation";
+                radarChart.update();
+
+                const summaryContainer = document.getElementById('summary-content');
+                let summaryHTML = '<ul class="space-y-4">';
+                carteData.forEach(axe => {
+                    const score = selfAssessmentScores[axe.id];
+                    summaryHTML += `<li class="flex justify-between items-center border-b pb-2">
+                                        <span class="text-gray-700">Axe ${axe.id}: ${axe.title}</span>
+                                        <span class="font-bold text-blue-600">Cercle ${score}</span>
+                                    </li>`;
+                });
+                summaryHTML += '</ul>';
+                summaryContainer.innerHTML = summaryHTML;
+                
+                const summarySection = document.getElementById('evaluation-summary');
+                summarySection.classList.remove('hidden');
+                
+                const radarSection = document.getElementById('radar-chart-section');
+                radarSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
+                setTimeout(() => {
+                    summarySection.style.opacity = 1;
+                }, 500);
+            });
+            
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                document.getElementById('validation-modal').classList.add('hidden');
+            });
+
+            document.getElementById('download-chart-btn').addEventListener('click', () => {
+                const lastName = document.getElementById('user-lastname').value || 'Non renseigné';
+                const firstName = document.getElementById('user-firstname').value || 'Non renseigné';
+                const formation = document.getElementById('user-formation').value || 'Non renseignée';
+                const stage = document.getElementById('evaluation-stage').value;
+                const testDateValue = document.getElementById('test-date').value;
+                let testDate = 'Non renseignée';
+                if (testDateValue) {
+                    const date = new Date(testDateValue);
+                    testDate = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                }
+
+
+                const canvas = document.getElementById('competenceRadarChart');
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                const topMargin = 100;
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = canvas.height + topMargin;
+
+                tempCtx.fillStyle = '#FFFFFF';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                tempCtx.font = 'bold 20px Inter';
+                tempCtx.fillStyle = '#343A40';
+                tempCtx.textAlign = 'center';
+                tempCtx.fillText(`Profil de Compétences de ${firstName} ${lastName}`, tempCanvas.width / 2, 30);
+
+                tempCtx.font = '16px Inter';
+                tempCtx.fillStyle = '#4A5568';
+                tempCtx.fillText(`Formation visée : ${formation}`, tempCanvas.width / 2, 55);
+                
+                tempCtx.font = 'bold 16px Inter';
+                tempCtx.fillStyle = '#343A40';
+                tempCtx.fillText(`Bilan : ${stage} - Date : ${testDate}`, tempCanvas.width / 2, 80);
+
+
+                tempCtx.drawImage(canvas, 0, topMargin);
+
+                const imageLink = document.createElement('a');
+                const safeFilename = `${firstName}-${lastName}`.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                imageLink.download = `profil-competences-${safeFilename}.png`;
+                imageLink.href = tempCanvas.toDataURL('image/png', 1.0);
+                document.body.appendChild(imageLink);
+                imageLink.click();
+                document.body.removeChild(imageLink);
+            });
+            
+            document.getElementById('print-summary-btn').addEventListener('click', () => {
+                const mainContainer = document.getElementById('main-container');
+                const printSection = document.getElementById('print-section');
+                
+                const lastName = document.getElementById('user-lastname').value || 'Non renseigné';
+                const firstName = document.getElementById('user-firstname').value || 'Non renseigné';
+                const formation = document.getElementById('user-formation').value || 'Non renseignée';
+                const stage = document.getElementById('evaluation-stage').value;
+                const testDateValue = document.getElementById('test-date').value;
+                let testDate = 'Non renseignée';
+                if (testDateValue) {
+                    const date = new Date(testDateValue);
+                    testDate = date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                }
+
+                const summaryContent = document.getElementById('summary-content').innerHTML;
+
+                printSection.innerHTML = `
+                    <div style="font-family: 'Inter', sans-serif; color: #343A40; padding: 2rem;">
+                        <h1 style="font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 2rem;">Récapitulatif de l'Évaluation</h1>
+                        <div style="margin-bottom: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                            <p><strong>Nom :</strong> ${lastName}</p>
+                            <p><strong>Prénom :</strong> ${firstName}</p>
+                            <p><strong>Formation visée :</strong> ${formation}</p>
+                            <p><strong>Bilan :</strong> ${stage} du ${testDate}</p>
+                        </div>
+                        ${summaryContent}
+                    </div>
+                `;
+                
+                mainContainer.style.display = 'none';
+                printSection.classList.remove('hidden');
+                window.print();
+                mainContainer.style.display = 'block';
+                printSection.classList.add('hidden');
+            });
+
+            const autonomyData = {
+                1: { title: "Cercle 1 : Identifier et s’identifier", description: "Je commence à nommer les choses, à reconnaître les situations et à agir avec un modèle ou une aide directe." },
+                2: { title: "Cercle 2 : Se confronter et s’impliquer", description: "Je participe activement, je pose des questions et j'applique les consignes dans un cadre guidé." },
+                3: { title: "Cercle 3 : Confirmer et expérimenter", description: "Je deviens autonome dans les situations que je connais. Je peux expliquer ce que je fais et faire des propositions." },
+                4: { title: "Cercle 4 : Mettre en oeuvre et gérer", description: "Je suis autonome, je sais choisir la bonne méthode, m'adapter et gérer les imprévus pour atteindre un objectif." }
+            };
+
+            const autonomyDisplay = document.getElementById('autonomy-display');
+            const autonomyTitle = document.getElementById('autonomy-title');
+            const autonomyDescription = document.getElementById('autonomy-description');
+
+            function updateAutonomyInfo(circleNumber) {
+                const data = autonomyData[circleNumber];
+                autonomyTitle.textContent = data.title;
+                autonomyDescription.textContent = data.description;
+            }
+
+            document.querySelectorAll('.autonomy-circle').forEach(circle => {
+                circle.addEventListener('mouseover', (e) => {
+                    const circleNumber = e.currentTarget.dataset.circle;
+                    updateAutonomyInfo(circleNumber);
+                });
+            });
+            
+            document.querySelectorAll('.pole-card').forEach(card => {
+                const desc = card.querySelector('.description');
+                card.addEventListener('mouseenter', () => desc.classList.remove('hidden'));
+                card.addEventListener('mouseleave', () => desc.classList.add('hidden'));
+            });
+
+            initDashboard();
+            initSelfAssessment();
+            // Remove the call to showExampleProfile() to start with a blank chart
+            // showExampleProfile(); 
+            updateAutonomyInfo(1); // Set initial state for autonomy circles display
+
+        });
+    </script>
+
+</body>
+</html>
