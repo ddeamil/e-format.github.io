@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorateur Pédagogique : Inductif vs. Déductif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral Ground with Blue/Amber Accents -->
+    <!-- Application Structure Plan: A single-page application with a top navigation bar allowing users to switch between six distinct, interactive sections: 1. Comparison. 2. Process Flowcharts. 3. Case Scenarios. 4. A choice-helper tool. 5. Hybrid Models. 6. An interactive quiz. This structure modularizes the report content into task-oriented views, promoting active exploration and self-assessment, which is more engaging for educators and trainers. -->
+    <!-- Visualization & Content Choices: 1. Comparison: Accordion (HTML/JS). Goal: Compare. 2. Process: Flowcharts (HTML/Tailwind). Goal: Organize. 3. Scenarios: Interactive modals (HTML/JS). Goal: Apply/Engage. 4. Choice Tool: Radar Chart (Chart.js). Goal: Relate/Inform. 5. Hybrids: "Pedagogical Arch" diagram (HTML/Tailwind). Goal: Organize. 6. Quiz: Interactive Q&A (HTML/JS) with hints and rationale feedback. Goal: Assess/Reinforce. All interactions support the designed structure. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F7F4;
+            color: #1a202c;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active {
+            color: #3B82F6;
+            border-bottom-color: #3B82F6;
+        }
+        .nav-link:hover {
+            color: #3B82F6;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        
+        /* Final Arch Diagram Styles v3 */
+        .arch-wrapper {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            padding: 2rem 0;
+            min-height: 280px;
+            position: relative;
+        }
+        .arch-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            width: 120px;
+            text-align: center;
+        }
+        .arch-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            transition: all 0.3s ease;
+            border: 4px solid transparent;
+            position: relative;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .arch-circle-number {
+            position: absolute;
+            top: -10px;
+            right: -5px;
+            background-color: white;
+            color: #1F2937;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            border: 2px solid #D1D5DB;
+        }
+        .arch-step:hover .arch-circle {
+            transform: scale(1.1);
+        }
+        .arch-step .arch-circle.active {
+            border-color: #3B82F6;
+            transform: scale(1.05);
+        }
+        .arch-step .arch-circle.active .arch-circle-number {
+            border-color: #3B82F6;
+            color: #3B82F6;
+        }
+        .arch-label {
+            margin-top: 12px;
+            font-weight: 600;
+        }
+        
+        /* Positioning to create the arch effect */
+        #arch-step-1 { transform: translateY(0); }
+        #arch-step-2 { transform: translateY(-70px); }
+        #arch-step-3 { transform: translateY(-110px); }
+        #arch-step-4 { transform: translateY(-70px); }
+        #arch-step-5 { transform: translateY(0); }
+        
+        /* Quiz Styles */
+        .quiz-option { transition: all 0.2s ease-in-out; }
+        .quiz-option.correct { background-color: #D1FAE5 !important; border-color: #10B981 !important; }
+        .quiz-option.incorrect { background-color: #FEE2E2 !important; border-color: #EF4444 !important; }
+        .quiz-option.disabled { cursor: not-allowed; }
+        .rationale { font-size: 0.8rem; margin-top: 4px; padding-left: 1rem; display: none; }
+        .rationale.show { display: block; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm sticky top-0 z-50">
+            <div class="container mx-auto px-4 py-4"><h1 class="text-2xl md:text-3xl font-bold text-gray-800">Explorateur Pédagogique</h1><p class="text-sm text-gray-600 mt-1">Démarche Inductive vs. Déductive : de l'opposition à la complémentarité.</p></div>
+            <!-- Navigation -->
+            <nav class="bg-gray-50 border-b border-gray-200"><div class="container mx-auto px-4"><div class="flex flex-wrap justify-center space-x-4 md:space-x-8 text-sm md:text-base font-medium text-gray-600">
+                <a id="nav-compare" class="nav-link py-3 px-2 active">Comparer</a><a id="nav-process" class="nav-link py-3 px-2">Processus</a><a id="nav-scenarios" class="nav-link py-3 px-2">Scénarios</a><a id="nav-choice" class="nav-link py-3 px-2">Le Bon Choix</a><a id="nav-hybrid" class="nav-link py-3 px-2">Modèles Hybrides</a><a id="nav-quiz" class="nav-link py-3 px-2">Testez-vous</a>
+            </div></div></nav>
+        </header>
+
+        <!-- Main Content -->
+        <main class="container mx-auto px-4 py-8 md:py-12">
+
+            <!-- Section 1: Comparison -->
+            <section id="section-compare" class="content-section active">
+                <div class="text-center mb-10"><h2 class="text-2xl md:text-3xl font-bold text-gray-800">Analyse Comparative</h2><p class="mt-2 text-gray-600 max-w-3xl mx-auto">Cliquez sur chaque critère pour découvrir comment les deux approches se positionnent. L'objectif est de fournir une vue d'ensemble rapide pour une prise de décision éclairée.</p></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200"><h3 class="text-xl font-bold text-center text-blue-600">Démarche Déductive</h3><p class="text-center text-sm text-gray-500 italic mt-1">Transmission Structurée</p></div><div class="bg-white p-6 rounded-xl shadow-lg border border-gray-200"><h3 class="text-xl font-bold text-center text-amber-600">Démarche Inductive</h3><p class="text-center text-sm text-gray-500 italic mt-1">Découverte Guidée</p></div></div>
+                <div id="accordion-container" class="mt-6 space-y-3"></div>
+            </section>
+
+            <!-- Section 2: Process -->
+            <section id="section-process" class="content-section">
+                <div class="text-center mb-12"><h2 class="text-2xl md:text-3xl font-bold text-gray-800">Visualisation des Processus</h2><p class="mt-2 text-gray-600 max-w-3xl mx-auto">Chaque démarche suit une séquence logique distincte. Explorez les étapes clés de chaque parcours d'apprentissage pour comprendre leur fonctionnement interne.</p></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12"><div><h3 class="text-2xl font-bold text-blue-600 mb-6 text-center">Processus Déductif (Top-Down)</h3><div class="space-y-4"><div class="flex items-center"><div class="bg-blue-100 text-blue-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">1</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-blue-500 flex-1"><h4 class="font-bold">Présentation Théorique</h4><p class="text-sm text-gray-600">Le formateur expose la règle, le principe ou la loi générale.</p></div></div><div class="h-8 w-px bg-gray-300 ml-5"></div><div class="flex items-center"><div class="bg-blue-100 text-blue-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">2</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-blue-500 flex-1"><h4 class="font-bold">Démonstration & Illustration</h4><p class="text-sm text-gray-600">La théorie est clarifiée avec des exemples et contre-exemples.</p></div></div><div class="h-8 w-px bg-gray-300 ml-5"></div><div class="flex items-center"><div class="bg-blue-100 text-blue-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">3</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-blue-500 flex-1"><h4 class="font-bold">Pratique Guidée</h4><p class="text-sm text-gray-600">Les apprenants appliquent la règle dans des exercices contrôlés.</p></div></div><div class="h-8 w-px bg-gray-300 ml-5"></div><div class="flex items-center"><div class="bg-blue-100 text-blue-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">4</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-blue-500 flex-1"><h4 class="font-bold">Pratique Autonome</h4><p class="text-sm text-gray-600">Consolidation des acquis par une pratique indépendante.</p></div></div></div></div>
+                <div><h3 class="text-2xl font-bold text-amber-600 mb-6 text-center">Processus Inductif (Bottom-Up)</h3><div class="space-y-4"><div class="flex items-center"><div class="bg-amber-100 text-amber-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">1</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-amber-500 flex-1"><h4 class="font-bold">Mise en Situation</h4><p class="text-sm text-gray-600">L'apprenant est plongé dans un cas concret, un problème.</p></div></div><div class="h-8 w-px bg-gray-300 ml-5"></div><div class="flex items-center"><div class="bg-amber-100 text-amber-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">2</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-amber-500 flex-1"><h4 class="font-bold">Observation & Analyse</h4><p class="text-sm text-gray-600">Recherche de régularités, de points communs dans la situation.</p></div></div><div class="h-8 w-px bg-gray-300 ml-5"></div><div class="flex items-center"><div class="bg-amber-100 text-amber-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">3</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-amber-500 flex-1"><h4 class="font-bold">Formulation d'Hypothèses</h4><p class="text-sm text-gray-600">Les apprenants formulent une règle générale pour expliquer leurs observations.</p></div></div><div class="h-8 w-px bg-gray-300 ml-5"></div><div class="flex items-center"><div class="bg-amber-100 text-amber-800 font-bold rounded-full h-10 w-10 flex items-center justify-center text-lg shadow">4</div><div class="ml-4 p-4 bg-white rounded-lg shadow-md border-l-4 border-amber-500 flex-1"><h4 class="font-bold">Consolidation & Généralisation</h4><p class="text-sm text-gray-600">La règle est testée, affinée et validée sur de nouveaux cas.</p></div></div></div></div></div>
+            </section>
+
+            <!-- Section 3: Scenarios -->
+            <section id="section-scenarios" class="content-section">
+                <div class="text-center mb-12"><h2 class="text-2xl md:text-3xl font-bold text-gray-800">Mise en Situation : À vous de jouer !</h2><p class="mt-2 text-gray-600 max-w-3xl mx-auto">Analysez chaque scénario de formation et choisissez l'approche qui vous semble la plus appropriée. Votre choix sera ensuite comparé à la recommandation du rapport.</p></div>
+                <div id="scenarios-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+            </section>
+            
+            <!-- Modal for Scenarios -->
+            <div id="scenario-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4"><div id="modal-content" class="bg-white rounded-xl shadow-2xl w-full max-w-2xl transform transition-all p-6 md:p-8"></div></div>
+
+            <!-- Section 4: Choice Tool -->
+            <section id="section-choice" class="content-section">
+                <div class="text-center mb-12"><h2 class="text-2xl md:text-3xl font-bold text-gray-800">Outil d'aide à la Décision</h2><p class="mt-2 text-gray-600 max-w-3xl mx-auto">Ajustez les curseurs en fonction de votre propre contexte de formation. Le graphique se mettra à jour dynamiquement pour vous recommander l'approche la plus pertinente.</p></div>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center"><div class="space-y-6"><div><label for="public-slider" class="font-medium">1. Public : Quel est le niveau d'expérience ?</label><div class="flex justify-between text-sm text-gray-500"><span>Novice</span><span>Expert</span></div><input type="range" id="public-slider" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"></div><div><label for="content-slider" class="font-medium">2. Contenu : Quelle est la nature du savoir ?</label><div class="flex justify-between text-sm text-gray-500"><span>Normatif / Procédural</span><span>Complexe / Exploratoire</span></div><input type="range" id="content-slider" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"></div><div><label for="objective-slider" class="font-medium">3. Objectif : Quelle compétence visez-vous ?</label><div class="flex justify-between text-sm text-gray-500"><span>Maîtrise / Conformité</span><span>Développement / Créativité</span></div><input type="range" id="objective-slider" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"></div><div><label for="time-slider" class="font-medium">4. Contraintes : Quelle est votre flexibilité temporelle ?</label><div class="flex justify-between text-sm text-gray-500"><span>Temps limité</span><span>Temps flexible</span></div><input type="range" id="time-slider" min="0" max="100" value="50" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"></div></div><div class="flex flex-col items-center"><div class="chart-container"><canvas id="choice-chart"></canvas></div><div id="recommendation-text" class="mt-6 p-4 bg-gray-100 rounded-lg text-center w-full max-w-md"><h4 class="font-bold text-lg">Recommandation</h4><p class="mt-2 text-gray-700"></p></div></div></div>
+            </section>
+
+            <!-- Section 5: Hybrid Models -->
+            <section id="section-hybrid" class="content-section">
+                <div class="text-center mb-12"><h2 class="text-2xl md:text-3xl font-bold text-gray-800">Dépasser la Dichotomie : Les Modèles Hybrides</h2><p class="mt-2 text-gray-600 max-w-3xl mx-auto">Les formateurs experts combinent souvent les deux approches. Explorez le modèle de "l'Arche Pédagogique" pour voir comment articuler induction et déduction dans une même séquence.</p></div>
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200 overflow-x-auto">
+                    <h3 class="text-2xl font-bold text-center">L'Arche Pédagogique de Rieunier</h3>
+                    <p class="text-center text-gray-500 mt-2">Cliquez sur chaque étape de l'arche pour en savoir plus.</p>
+                    <div class="arch-wrapper">
+                        <div class="arch-step" id="arch-step-1" data-arch="1">
+                            <div class="arch-circle bg-amber-500"><div class="arch-circle-number">1</div><span>🔍</span></div>
+                            <span class="arch-label">Montée<br>(Inductif)</span>
+                        </div>
+                        <div class="arch-step" id="arch-step-2" data-arch="2">
+                             <div class="arch-circle bg-amber-500"><div class="arch-circle-number">2</div><span>🧩</span></div>
+                            <span class="arch-label">Analyse</span>
+                        </div>
+                        <div class="arch-step" id="arch-step-3" data-arch="3">
+                             <div class="arch-circle bg-purple-500"><div class="arch-circle-number">3</div><span>💡</span></div>
+                            <span class="arch-label">Sommet</span>
+                        </div>
+                        <div class="arch-step" id="arch-step-4" data-arch="4">
+                             <div class="arch-circle bg-blue-500"><div class="arch-circle-number">4</div><span>🔧</span></div>
+                            <span class="arch-label">Application</span>
+                        </div>
+                        <div class="arch-step" id="arch-step-5" data-arch="5">
+                             <div class="arch-circle bg-blue-500"><div class="arch-circle-number">5</div><span>🎯</span></div>
+                            <span class="arch-label">Descente<br>(Déductif)</span>
+                        </div>
+                    </div>
+                    <div id="arch-explanation" class="mt-8 p-6 bg-gray-100 rounded-lg min-h-[100px] flex items-center justify-center transition-opacity duration-300">
+                        <p class="text-gray-700 text-center text-lg">Le parcours d'apprentissage complet intègre les deux logiques pour un ancrage maximal.</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 6: Quiz -->
+            <section id="section-quiz" class="content-section">
+                <div class="text-center mb-12"><h2 class="text-2xl md:text-3xl font-bold text-gray-800">Testez Vos Connaissances</h2><p class="mt-2 text-gray-600 max-w-3xl mx-auto">Validez votre compréhension des concepts en répondant à cette série de questions. Chaque réponse est accompagnée d'une explication pour renforcer votre apprentissage.</p></div>
+                <div id="quiz-container" class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg border border-gray-200"></div>
+            </section>
+
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.content-section');
+    const accordionContainer = document.getElementById('accordion-container');
+    const scenariosContainer = document.getElementById('scenarios-container');
+    const modal = document.getElementById('scenario-modal');
+    const modalContent = document.getElementById('modal-content');
+    const quizContainer = document.getElementById('quiz-container');
+    
+    const data = {
+        comparison: [
+            { title: "Point de Départ", deductive: "Théorie, Règle, Principe Général (Abstrait). L'apprentissage commence par l'exposé du cadre conceptuel par l'expert.", inductive: "Cas Concret, Problème, Exemple (Particulier). L'apprenant est immergé dans une situation réelle ou simulée." },
+            { title: "Logique de Raisonnement", deductive: "Du général au particulier (Top-down). La règle est présentée puis appliquée à des exemples.", inductive: "Du particulier au général (Bottom-up). L'apprenant découvre la règle à partir de cas spécifiques." },
+            { title: "Rôle du Formateur", deductive: "Transmetteur, Expert, \"Détenteur du savoir\". Il structure, expose et guide l'application.", inductive: "Facilitateur, Guide, \"Médiateur\". Il conçoit des situations, questionne et aide à la conceptualisation." },
+            { title: "Rôle de l'Apprenant", deductive: "Récepteur, Appliquant, Mémorisant. Il écoute, comprend et applique les instructions.", inductive: "Acteur, Explorateur, Co-constructeur. Il observe, analyse, émet des hypothèses et construit le savoir." },
+            { title: "Gestion du Temps", deductive: "Rapide, Efficace, Prévisible. Le formateur maîtrise le déroulement et la durée.", inductive: "Chronophage, Imprévisible. Le rythme est dicté par la dynamique et les découvertes du groupe." },
+            { title: "Engagement Cognitif", deductive: "Mémorisation, Compréhension, Application de règles. L'effort est centré sur l'assimilation.", inductive: "Analyse, Synthèse, Résolution de problèmes, Pensée critique. L'effort est centré sur la construction." },
+            { title: "Risques Principaux", deductive: "Passivité, ennui de l'apprenant, faible rétention à long terme, déconnexion du réel.", inductive: "Sensation de flou, frustration, conclusions erronées si mal guidé, difficile à planifier." },
+        ],
+        scenarios: [
+            { title: "Diagnostic de Panne", icon: "🔧", context: "Un groupe de techniciens doit améliorer sa capacité à diagnostiquer des pannes complexes et inédites sur une ligne de production.", choice: "inductive", justification: "L'approche inductive est idéale car la cause de la panne est inconnue. L'objectif est de développer une compétence de résolution de problèmes dans l'incertain, pas d'appliquer une procédure connue." },
+            { title: "Procédures de Sécurité", icon: "🔒", context: "De nouveaux opérateurs doivent être formés à la procédure de cadenassage avant toute intervention sur un équipement industriel.", choice: "deductive", justification: "L'approche déductive est impérative. La sécurité repose sur des règles absolues et non négociables. L'objectif est la conformité totale, pas la découverte." },
+            { title: "Négociation Commerciale", icon: "💬", context: "Des commerciaux expérimentés veulent perfectionner leurs compétences pour gérer des clients difficiles et des situations de blocage.", choice: "inductive", justification: "Les compétences relationnelles sont complexes et contextuelles. L'approche inductive (via des jeux de rôles) permet un ancrage émotionnel et comportemental puissant en partant de l'expérience vécue." },
+            { title: "Gestion de Projet (PRINCE2)", icon: "📊", context: "Des chefs de projet juniors doivent apprendre et être certifiés à une méthodologie formelle et codifiée comme PRINCE2.", choice: "deductive", justification: "PRINCE2 est un cadre normatif. Une approche déductive assure que tous les participants maîtrisent la structure et les règles communes avant de les appliquer à des cas pratiques." },
+        ],
+        arch: {
+            1: "<strong>1. Montée (Inductif) :</strong> La montée de l'arche représente le mouvement inductif. L'apprentissage part de situations concrètes et particulières que l'apprenant explore.",
+            2: "<strong>2. Analyse :</strong> En analysant les cas concrets, l'apprenant, guidé par le formateur, identifie des régularités, des schémas, et commence à donner du sens.",
+            3: "<strong>3. Sommet (Conceptualisation) :</strong> Au sommet de l'arche, l'apprenant formule une règle générale, un principe abstrait qui explique les phénomènes observés. C'est le moment de la conceptualisation.",
+            4: "<strong>4. Application :</strong> L'apprenant teste et valide la règle nouvellement formulée sur de nouveaux exemples pour en comprendre le champ d'application et les limites.",
+            5: "<strong>5. Descente (Déductif) :</strong> La descente de l'arche représente le mouvement déductif. Le concept est maintenant un outil qui peut être appliqué à de nouvelles situations pratiques.",
+        },
+        quiz: [
+            { question: "Un formateur doit enseigner les règles de grammaire d'une nouvelle langue à un groupe de grands débutants. Quelle approche est la plus directe ?", hint: "Pensez à la manière la plus efficace de transmettre des règles claires à un public sans connaissance préalable.", answerOptions: [ { text: "Une approche déductive, en présentant d'abord la règle.", isCorrect: true, rationale: "Cette approche fournit un cadre structuré et clair, efficace pour des novices apprenant des règles précises." }, { text: "Une approche inductive, en les laissant découvrir les règles.", isCorrect: false, rationale: "Cette méthode pourrait être frustrante pour des débutants complets qui n'ont pas de base pour analyser." } ] },
+            { question: "Pour développer la pensée critique de managers expérimentés, un formateur leur présente une étude de cas complexe sans solution évidente. À quelle démarche cela correspond-il ?", hint: "La méthode part d'un exemple spécifique pour construire une compréhension générale.", answerOptions: [ { text: "Démarche inductive.", isCorrect: true, rationale: "Le point de départ est un cas particulier (l'étude de cas) pour faire émerger des principes généraux." }, { text: "Démarche déductive.", isCorrect: false, rationale: "Une démarche déductive aurait commencé par présenter une théorie avant de l'appliquer au cas." }, { text: "Enseignement explicite.", isCorrect: false, rationale: "L'enseignement explicite est un modèle déductif où le formateur montre et verbalise la solution." } ] },
+            { question: "Quel est le principal risque si une démarche inductive est mal animée par le formateur ?", hint: "Que peut-il arriver si un groupe explore un sujet sans un guidage clair vers les concepts clés ?", answerOptions: [ { text: "Les apprenants peuvent se sentir perdus et arriver à des conclusions erronées.", isCorrect: true, rationale: "Sans un guidage expert, la phase d'exploration peut mener à la confusion et à de mauvaises conclusions." }, { text: "Les apprenants peuvent s'ennuyer et devenir passifs.", isCorrect: false, rationale: "La passivité et l'ennui sont plutôt des risques associés à la démarche déductive." }, { text: "Les apprenants mémoriseront la règle sans la comprendre.", isCorrect: false, rationale: "Ce risque est caractéristique de la démarche déductive lorsque l'application n'est pas bien vérifiée." } ] },
+            { question: "Laquelle des théories de l'apprentissage suivantes est la plus directement incarnée par la démarche inductive ?", hint: "Quelle théorie postule que l'apprentissage est un processus actif de construction plutôt qu'une réception passive ?", answerOptions: [ { text: "Le constructivisme.", isCorrect: true, rationale: "Le constructivisme voit l'apprenant comme un acteur qui construit activement ses connaissances, ce qui est l'essence de l'induction." }, { text: "Le béhaviorisme.", isCorrect: false, rationale: "Le béhaviorisme se concentre sur le couple stimulus-réponse, plus proche de la logique déductive (règle -> exercice)." } ] },
+            { question: "Comment l'erreur de l'apprenant est-elle perçue dans une démarche inductive ?", hint: "Dans un processus de découverte, le fait de se tromper est-il un obstacle ou une partie du chemin ?", answerOptions: [ { text: "Comme une étape normale et productive du processus d'apprentissage.", isCorrect: true, rationale: "L'erreur est une source d'information qui pousse l'apprenant à réviser ses conceptions." }, { text: "Comme un échec à corriger immédiatement pour se conformer au modèle.", isCorrect: false, rationale: "Cette vision de l'erreur est typique de la démarche déductive." } ] },
+            { question: "Dans une démarche inductive, quel est le rôle principal de l'apprenant ?", hint: "Contrairement à une méthode où il reçoit le savoir, que fait l'apprenant quand il part de cas concrets ?", answerOptions: [ { text: "Il est un acteur-explorateur qui analyse et co-construit la règle.", isCorrect: true, rationale: "Cette posture active est au cœur de la démarche inductive, où l'apprenant est l'artisan de sa compréhension." }, { text: "Il est un récepteur attentif qui mémorise la théorie présentée.", isCorrect: false, rationale: "Ce rôle de récepteur est caractéristique de la démarche déductive." }, { text: "Il applique de manière conforme une procédure démontrée.", isCorrect: false, rationale: "L'application conforme est l'étape finale d'une démarche déductive." } ] },
+            { question: "Pourquoi une approche déductive est-elle souvent privilégiée pour enseigner une méthodologie certifiante comme PRINCE2 ?", hint: "PRINCE2 est-il un ensemble de principes à découvrir ou un cadre structuré à appliquer ?", answerOptions: [ { text: "C'est un cadre normatif avec des processus définis qu'il faut connaître pour les appliquer.", isCorrect: true, rationale: "La nature structurée et codifiée de cette méthodologie se prête bien à une transmission du cadre général avant sa mise en pratique." }, { text: "Parce que cette approche permet aux chefs de projet de réinventer la méthodologie.", isCorrect: false, rationale: "L'objectif d'une certification est d'assurer une application correcte d'un standard, non sa réinvention." } ] },
+            { question: "Un formateur confronte des techniciens à une machine en panne pour qu'ils trouvent la cause. Quel est l'objectif pédagogique principal ?", hint: "Le but est-il d'apprendre à réparer CETTE panne, ou quelque chose de plus généralisable ?", answerOptions: [ { text: "Développer une compétence transversale de diagnostic et de résolution de problèmes.", isCorrect: true, rationale: "L'objectif est que les apprenants formalisent une méthodologie réutilisable face à des pannes futures." }, { text: "Évaluer leur capacité à suivre une procédure de réparation déjà apprise.", isCorrect: false, rationale: "S'il s'agissait de suivre une procédure, la démarche serait déductive ; ici, ils doivent découvrir." } ] }
+        ]
+    };
+    
+    function switchTab(targetId) {
+        navLinks.forEach(link => { link.classList.toggle('active', link.id === `nav-${targetId}`); });
+        sections.forEach(section => { section.classList.toggle('active', section.id === `section-${targetId}`); });
+        if (targetId === 'quiz') { startQuiz(); }
+    }
+
+    navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); const targetId = link.id.split('-')[1]; switchTab(targetId); }); });
+
+    function createComparisonAccordions() {
+        data.comparison.forEach((item) => {
+            const accordionItem = document.createElement('div');
+            accordionItem.className = 'bg-white rounded-lg shadow border border-gray-200 overflow-hidden';
+            accordionItem.innerHTML = `<button class="w-full text-left p-4 flex justify-between items-center font-medium text-gray-700 hover:bg-gray-50 transition-colors focus:outline-none"><span>${item.title}</span><span class="transform transition-transform duration-300">▼</span></button><div class="accordion-content"><div class="grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200"><div class="p-4 bg-white"><h4 class="font-semibold text-blue-600 mb-2">Déductive</h4><p class="text-sm text-gray-600">${item.deductive}</p></div><div class="p-4 bg-white"><h4 class="font-semibold text-amber-600 mb-2">Inductive</h4><p class="text-sm text-gray-600">${item.inductive}</p></div></div></div>`;
+            accordionContainer.appendChild(accordionItem);
+            const button = accordionItem.querySelector('button'), content = accordionItem.querySelector('.accordion-content'), arrow = accordionItem.querySelector('span:last-child');
+            button.addEventListener('click', () => { const isOpen = content.style.maxHeight; if(isOpen && isOpen !== "0px"){ content.style.maxHeight = "0px"; arrow.style.transform = "rotate(0deg)"; } else { content.style.maxHeight = content.scrollHeight + "px"; arrow.style.transform = "rotate(180deg)"; } });
+        });
+    }
+
+    function createScenarioCards() {
+        data.scenarios.forEach(scenario => {
+            const card = document.createElement('div');
+            card.className = 'bg-white p-6 rounded-xl shadow-lg border border-gray-200 text-center flex flex-col items-center justify-between hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer';
+            card.innerHTML = `<div><div class="text-5xl mb-4">${scenario.icon}</div><h3 class="font-bold text-lg text-gray-800">${scenario.title}</h3><p class="text-sm text-gray-600 mt-2">${scenario.context}</p></div><button class="mt-6 bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition-colors">Choisir une approche</button>`;
+            card.addEventListener('click', () => showScenarioModal(scenario));
+            scenariosContainer.appendChild(card);
+        });
+    }
+    
+    function showScenarioModal(scenario) {
+        modalContent.innerHTML = `<div id="modal-initial-view"><h3 class="text-2xl font-bold mb-2">${scenario.title} ${scenario.icon}</h3><p class="text-gray-600 mb-6">${scenario.context}</p><h4 class="font-semibold mb-4 text-center">Quelle approche choisiriez-vous ?</h4><div class="flex justify-center space-x-4"><button id="choice-deductive" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Déductive</button><button id="choice-inductive" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-lg transition-colors">Inductive</button></div></div><div id="modal-feedback-view" class="hidden"><h3 class="text-2xl font-bold mb-2">Analyse du Scénario</h3><div id="feedback-content" class="mt-4 p-4 rounded-lg"></div><button id="close-modal" class="mt-6 w-full bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-900 transition-colors">Fermer</button></div>`;
+        modal.classList.add('flex'); modal.classList.remove('hidden');
+        document.getElementById('choice-deductive').addEventListener('click', () => showFeedback('deductive', scenario));
+        document.getElementById('choice-inductive').addEventListener('click', () => showFeedback('inductive', scenario));
+    }
+    
+    function showFeedback(userChoice, scenario) {
+        const feedbackContent = document.getElementById('feedback-content');
+        const isCorrect = userChoice === scenario.choice;
+        let feedbackHTML = `<p class="mb-3">Votre choix : <span class="font-bold ${userChoice === 'deductive' ? 'text-blue-600' : 'text-amber-600'}">${userChoice === 'deductive' ? 'Déductive' : 'Inductive'}</span>.</p><p class="mb-3">Approche recommandée : <span class="font-bold ${scenario.choice === 'deductive' ? 'text-blue-600' : 'text-amber-600'}">${scenario.choice === 'deductive' ? 'Déductive' : 'Inductive'}</span>.</p>`;
+        if (isCorrect) { feedbackContent.className = 'bg-green-100 border-l-4 border-green-500 text-green-800 p-4 rounded'; feedbackHTML += `<p class="font-semibold">C'est le bon choix !</p>`; } else { feedbackContent.className = 'bg-red-100 border-l-4 border-red-500 text-red-800 p-4 rounded'; feedbackHTML += `<p class="font-semibold">Ce n'est pas l'approche la plus optimale ici.</p>`; }
+        feedbackHTML += `<p class="mt-3 text-sm text-gray-700">${scenario.justification}</p>`;
+        feedbackContent.innerHTML = feedbackHTML;
+        document.getElementById('modal-initial-view').classList.add('hidden');
+        document.getElementById('modal-feedback-view').classList.remove('hidden');
+        document.getElementById('close-modal').addEventListener('click', () => { modal.classList.add('hidden'); modal.classList.remove('flex'); });
+    }
+
+    modal.addEventListener('click', (e) => { if (e.target === modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); } });
+
+    let choiceChart;
+    const sliders = ['public-slider', 'content-slider', 'objective-slider', 'time-slider'];
+    function createOrUpdateChart() {
+        const publicVal = document.getElementById('public-slider').value, contentVal = document.getElementById('content-slider').value, objectiveVal = document.getElementById('objective-slider').value, timeVal = document.getElementById('time-slider').value;
+        const deductiveScore = (100 - publicVal) + (100 - contentVal) + (100 - objectiveVal) + (100 - timeVal);
+        const inductiveScore = parseInt(publicVal) + parseInt(contentVal) + parseInt(objectiveVal) + parseInt(timeVal);
+        const chartData = { labels: ['Public Expert', 'Contenu Complexe', 'Objectif Développement', 'Temps Flexible'], datasets: [ { label: 'Adapté à l\'Inductif', data: [publicVal, contentVal, objectiveVal, timeVal], backgroundColor: 'rgba(217, 119, 6, 0.2)', borderColor: 'rgba(217, 119, 6, 1)', borderWidth: 2, pointBackgroundColor: 'rgba(217, 119, 6, 1)' }, { label: 'Adapté au Déductif', data: [100 - publicVal, 100 - contentVal, 100 - objectiveVal, 100 - timeVal], backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, pointBackgroundColor: 'rgba(59, 130, 246, 1)' } ] };
+        const config = { type: 'radar', data: chartData, options: { maintainAspectRatio: false, scales: { r: { angleLines: { color: 'rgba(0, 0, 0, 0.1)' }, grid: { color: 'rgba(0, 0, 0, 0.1)' }, pointLabels: { font: { size: 12 } }, suggestedMin: 0, suggestedMax: 100, ticks: { backdropColor: '#F8F7F4', color: '#4B5563', } } }, plugins: { legend: { position: 'top' } } } };
+        if (choiceChart) { choiceChart.data = chartData; choiceChart.update(); } else { choiceChart = new Chart(document.getElementById('choice-chart'), config); }
+        const recommendationText = document.querySelector('#recommendation-text p');
+        if (inductiveScore > deductiveScore) { recommendationText.innerHTML = "Votre situation semble favoriser une <strong class='text-amber-600'>approche inductive</strong>. Elle sera plus engageante et efficace pour développer des compétences complexes."; } else if (deductiveScore > inductiveScore) { recommendationText.innerHTML = "Votre situation semble favoriser une <strong class='text-blue-600'>approche déductive</strong>. Elle sera plus rapide et sécurisante pour transmettre des savoirs clairs et normatifs."; } else { recommendationText.innerHTML = "Votre situation est équilibrée. C'est un cas parfait pour une <strong class='text-purple-600'>approche hybride</strong>, combinant les forces des deux modèles."; }
+    }
+    sliders.forEach(id => document.getElementById(id).addEventListener('input', createOrUpdateChart));
+    
+    // Arch logic
+    const archSteps = document.querySelectorAll('.arch-step');
+    const archExplanation = document.getElementById('arch-explanation');
+
+    archSteps.forEach(step => {
+        step.addEventListener('click', () => {
+            archSteps.forEach(s => s.querySelector('.arch-circle').classList.remove('active'));
+            step.querySelector('.arch-circle').classList.add('active');
+            const archKey = step.getAttribute('data-arch');
+            archExplanation.style.opacity = 0;
+            setTimeout(() => {
+                archExplanation.querySelector('p').innerHTML = data.arch[archKey];
+                archExplanation.style.opacity = 1;
+            }, 200);
+        });
+    });
+
+
+    // Quiz Logic
+    let currentQuestionIndex = 0; let score = 0;
+    function startQuiz() { currentQuestionIndex = 0; score = 0; loadQuizQuestion(); }
+    function loadQuizQuestion() {
+        if (currentQuestionIndex < data.quiz.length) {
+            const questionData = data.quiz[currentQuestionIndex];
+            quizContainer.innerHTML = `<div class="flex justify-between items-center mb-4"><h3 class="text-lg font-bold">Question ${currentQuestionIndex + 1}/${data.quiz.length}</h3><div id="quiz-progress" class="w-1/2 bg-gray-200 rounded-full h-2.5"><div class="bg-blue-600 h-2.5 rounded-full" style="width: ${((currentQuestionIndex) / data.quiz.length) * 100}%"></div></div></div><p class="text-xl font-semibold text-gray-800 mb-4">${questionData.question}</p><div class="flex justify-start mb-4"><button id="hint-button" class="text-sm bg-gray-200 hover:bg-gray-300 text-gray-700 font-semibold py-1 px-3 rounded-lg transition-colors">💡 Afficher l'indice</button></div><div id="hint-text" class="hidden p-3 mb-4 bg-yellow-100 border-l-4 border-yellow-400 text-yellow-800 rounded"></div><div id="quiz-options" class="space-y-3"></div><div class="mt-6 flex justify-end"><button id="next-question-button" class="hidden bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-900 transition-colors">Suivant</button></div>`;
+            const optionsContainer = document.getElementById('quiz-options');
+            questionData.answerOptions.forEach(option => {
+                const optionEl = document.createElement('div');
+                optionEl.innerHTML = `<button class="quiz-option w-full text-left p-4 bg-white border-2 border-gray-300 rounded-lg hover:bg-gray-100 hover:border-blue-500">${option.text}</button><p class="rationale text-gray-600">${option.rationale}</p>`;
+                optionsContainer.appendChild(optionEl);
+                optionEl.querySelector('button').addEventListener('click', (e) => selectAnswer(e.currentTarget, option.isCorrect));
+            });
+            document.getElementById('hint-button').addEventListener('click', () => { const hintText = document.getElementById('hint-text'); hintText.textContent = questionData.hint; hintText.classList.toggle('hidden'); });
+            document.getElementById('next-question-button').addEventListener('click', () => { currentQuestionIndex++; loadQuizQuestion(); });
+        } else { showQuizResults(); }
+    }
+    function selectAnswer(selectedButton, isCorrect) {
+        const options = document.querySelectorAll('.quiz-option'), rationales = document.querySelectorAll('.rationale');
+        options.forEach((opt, index) => { opt.classList.add('disabled'); rationales[index].classList.add('show'); if (data.quiz[currentQuestionIndex].answerOptions[index].isCorrect) { opt.classList.add('correct'); } else { opt.classList.add('incorrect'); } });
+        if (isCorrect) { score++; }
+        document.getElementById('next-question-button').classList.remove('hidden');
+        document.querySelector('#quiz-progress > div').style.width = `${((currentQuestionIndex + 1) / data.quiz.length) * 100}%`;
+    }
+    function showQuizResults() {
+        quizContainer.innerHTML = `<div class="text-center"><h3 class="text-2xl font-bold mb-4">Quiz Terminé !</h3><p class="text-xl mb-6">Votre score est de <span class="font-bold text-blue-600">${score}</span> sur <span class="font-bold">${data.quiz.length}</span>.</p><div class="w-full bg-gray-200 rounded-full h-4 mb-6"><div class="bg-green-500 h-4 rounded-full" style="width: ${(score/data.quiz.length)*100}%"></div></div><button id="restart-quiz-button" class="bg-gray-800 text-white font-semibold py-2 px-6 rounded-lg hover:bg-gray-900 transition-colors">Recommencer</button></div>`;
+        document.getElementById('restart-quiz-button').addEventListener('click', startQuiz);
+    }
+
+    // Initializations
+    createComparisonAccordions();
+    createScenarioCards();
+    createOrUpdateChart();
+});
+</script>
+</body>
+</html>
