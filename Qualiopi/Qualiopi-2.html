@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de Données Opérationnelle Qualiopi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Slate & Sky -->
+    <!-- Application Structure Plan: An interactive database designed for self-assessment. The top of the page features a comprehensive filter panel allowing users to select their specific context (typology, modality, size, etc.). A new visual dashboard with a Donut chart shows the impact of typology filters. The main content is an accordion of the 7 Qualiopi criteria. Each indicator is a card containing an expert analysis and a dynamic checklist of potential evidence. Each indicator now has a status dropdown for progress tracking. The core interaction is the filtering: selecting filters instantly hides/shows evidence items based on data-tags, personalizing the checklist. A lexicon modal is added for clarity. Export functions for filtered content are also included. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Qualiopi Criteria & Indicators -> Goal: Organize, Inform, Self-Assess -> Viz/Method: Interactive Accordion & Dynamic Checklist with Statuses -> Interaction: Filtering by context, checking items, setting status, exporting -> Justification: Breaks down complex info, personalizes content for high relevance, and provides an actionable checklist format as requested. -> Library: Vanilla JS.
+        - Report Info: Situational variables (typology, modality) -> Goal: Filter & Personalize -> Viz/Method: Checkbox-based filter panel & Donut Chart -> Interaction: Clicking checkboxes updates the main view and the chart -> Justification: Empower users to create their own view of the database, making the vast amount of information manageable and directly applicable. -> Library: Vanilla JS, Chart.js.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+        .accordion-header.open .accordion-icon { transform: rotate(180deg); }
+        .accordion-icon { transition: transform 0.3s ease; }
+        .evidence-item, .indicator-card { transition: opacity 0.3s, max-height 0.3s, padding 0.3s, margin 0.3s, background-color 0.3s; opacity: 1; max-height: 1000px; overflow: hidden; }
+        .evidence-item.hidden, .indicator-card.hidden { opacity: 0; max-height: 0; pointer-events: none; margin: 0; padding: 0; border: none; }
+        .filter-checkbox:checked + label { background-color: #0284c7; color: white; border-color: #0284c7; }
+        .modal-overlay { transition: opacity 0.3s ease; }
+        .modal-container { transition: transform 0.3s ease; }
+        .chart-container { position: relative; width: 100%; max-width: 250px; margin-left: auto; margin-right: auto; height: 250px; }
+        #back-to-top-btn { transition: opacity 0.3s, transform 0.3s; }
+        .status-select { -webkit-appearance: none; -moz-appearance: none; appearance: none; background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e"); transition: background-color 0.3s, color 0.3s; }
+        
+        .status-not-treated { background-color: #f1f5f9; border-left-color: #64748b; }
+        .status-todo { background-color: #fef2f2; border-left-color: #ef4444; }
+        .status-in-progress { background-color: #fefce8; border-left-color: #eab308; }
+        .status-done { background-color: #f0fdf4; border-left-color: #22c55e; }
+
+        .select-not-treated { background-color: #e2e8f0; color: #334155; }
+        .select-todo { background-color: #fecaca; color: #991b1b; font-weight: 500; }
+        .select-in-progress { background-color: #fde68a; color: #854d0e; font-weight: 500; }
+        .select-done { background-color: #bbf7d0; color: #166534; font-weight: 500; }
+
+        /* Styles for Toolkit Tabs */
+        .tab-button.active { border-color: #0284c7; color: #0284c7; background-color: #f0f9ff; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* Styles for KPI Cards in Audit Cycle */
+        .kpi-card { transition: all 0.3s ease-in-out; }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); }
+
+        /* Styles for Toolkit Accordion (distinct from main accordion) */
+        .toolkit-accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out; }
+        .toolkit-accordion-header .toolkit-accordion-icon { transition: transform 0.3s ease; }
+        .toolkit-accordion-header.open .toolkit-accordion-icon { transform: rotate(90deg); } /* Rotates right for triangle icon */
+
+        /* Styles for Quiz */
+        .quiz-option:disabled { cursor: not-allowed; }
+        .quiz-option.correct { background-color: #dcfce7; border-color: #22c55e; }
+        .quiz-option.incorrect { background-color: #fee2e2; border-color: #ef4444; }
+        .hint-box { display: none; }
+        
+        @media print {
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            /* Hide interactive and non-essential elements for printing */
+            header, #filters, footer, #open-lexicon-btn, .accordion-icon, input[type="checkbox"], #lexicon-modal, #visual-dashboard, #back-to-top-btn, .status-select, #podcast-section, #toolkit, #quiz-section { display: none !important; }
+            
+            main, #criteria-accordion, .accordion-content, .indicator-card, .evidence-item { display: block !important; box-shadow: none !important; border: none !important; max-height: none !important; overflow: visible !important; }
+            .accordion-header { background-color: #f1f5f9 !important; border-bottom: 1px solid #ccc !important; page-break-after: avoid; }
+            .indicator-card { page-break-inside: avoid; border-left: 4px solid; }
+            .evidence-item.hidden, .indicator-card.hidden { display: none !important; }
+            .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            .print-status::before { content: "Statut : " attr(data-print-status); font-weight: bold; display: block; margin-bottom: 0.5rem; color: black; }
+            .print-checkbox { display: inline-block; width: 1em; height: 1em; border: 1px solid #000; margin-right: 0.5em; vertical-align: middle; }
+            .print-checkbox.checked::after { content: '✔'; display: block; text-align: center; line-height: 1; }
+            .evidence-item > label::before { content: '[ ] '; font-family: monospace; }
+            .evidence-item > label > input:checked + span::before { content: '[x] '; font-family: monospace; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="text-center mb-8 relative">
+             <div class="flex justify-center items-center gap-4 mb-2">
+                <div class="flex-shrink-0 w-16 h-16 bg-sky-600 rounded-2xl flex items-center justify-center shadow-lg">
+                    <span class="text-white text-4xl font-bold">Q</span>
+                </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold text-sky-600">Base de Données Opérationnelle</h1>
+                    <p class="text-lg text-slate-600">Qualiopi</p>
+                </div>
+            </div>
+            <p class="mt-4 text-lg text-slate-600 max-w-3xl mx-auto">Un outil de brainstorming interactif pour explorer un large éventail d'exemples de preuves et préparer votre audit.</p>
+            <button id="open-lexicon-btn" class="absolute top-0 right-0 bg-sky-100 text-sky-700 font-semibold py-2 px-4 rounded-lg hover:bg-sky-200 transition-colors">Lexique</button>
+        </header>
+
+        <section id="podcast-section" class="mb-8 bg-sky-600 p-6 rounded-xl shadow-lg">
+            <div class="flex items-center gap-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+                    <div class="flex flex-col items-center">
+                        <div class="w-4 h-6 bg-white rounded-full"></div>
+                        <div class="w-1 h-2 bg-white"></div>
+                    </div>
+                </div>
+                <div>
+                    <h2 class="font-semibold text-lg text-white">Le Podcast Qualiopi</h2>
+                    <p class="text-sm text-sky-100">Comprendre l'essentiel en quelques minutes.</p>
+                </div>
+            </div>
+            <div class="mt-4">
+                <audio controls class="w-full">
+                    <source src="" type="audio/mpeg">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+                <p class="text-xs text-center text-sky-200 mt-2">Note: Intégrez ici le lien de votre fichier audio.</p>
+            </div>
+        </section>
+
+        <!-- START OF NEW SECTIONS FROM Qualiopi4.html -->
+
+        <!-- Section 2: Compliance Toolkit -->
+        <section id="toolkit" class="bg-white p-6 rounded-xl shadow-md border border-slate-200 mb-10">
+            <h2 class="text-2xl font-semibold text-slate-900 mb-1">Boîte à Outils de Conformité</h2>
+            <p class="text-slate-600 mb-6">Explorez les ressources pratiques pour préparer votre audit et maintenir votre système qualité.</p>
+
+            <div class="border-b border-slate-200 mb-6">
+                <nav id="toolkit-tabs" class="flex flex-wrap -mb-px" aria-label="Tabs">
+                    <!-- Tabs will be inserted here by JS -->
+                </nav>
+            </div>
+            
+            <div id="toolkit-content">
+                <!-- Tab content will be inserted here by JS -->
+            </div>
+
+        </section>
+        
+        <!-- Section 3: Quiz -->
+        <section id="quiz-section" class="bg-white p-6 rounded-xl shadow-md border border-slate-200 mb-8">
+            <h2 class="text-2xl font-semibold text-slate-900 mb-1">Testez vos Connaissances</h2>
+            <p class="text-slate-600 mb-6">Validez votre compréhension des points clés du référentiel Qualiopi.</p>
+
+            <div id="quiz-container" class="max-w-2xl mx-auto">
+                <div id="quiz-start-screen">
+                    <p class="text-center mb-4">Prêt à tester vos connaissances sur Qualiopi ? Le quiz comporte 15 questions.</p>
+                    <button id="start-quiz-btn" class="w-full bg-sky-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-700 transition-colors">Commencer le Quiz</button>
+                </div>
+
+                <div id="quiz-main-screen" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <div id="quiz-progress" class="text-sm font-medium text-slate-600"></div>
+                        <button id="hint-btn" class="flex items-center gap-2 text-sm text-amber-600 hover:text-amber-700 font-semibold">
+                            <span>💡</span>
+                            <span>Indice</span>
+                        </button>
+                    </div>
+                    <div id="hint-box" class="p-3 mb-4 bg-amber-100 border-l-4 border-amber-500 text-amber-800 rounded-r-lg text-sm"></div>
+                    <h3 id="question-text" class="text-lg font-semibold mb-4 text-slate-800"></h3>
+                    <div id="answer-options" class="grid grid-cols-1 gap-3"></div>
+                    <div id="feedback-area" class="mt-4"></div>
+                    <button id="next-question-btn" class="mt-6 w-full bg-sky-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-sky-700 transition-colors hidden">Question Suivante</button>
+                </div>
+
+                <div id="quiz-end-screen" class="hidden text-center">
+                    <h3 class="text-xl font-bold mb-2">Quiz Terminé !</h3>
+                    <p id="quiz-score" class="text-lg mb-4"></p>
+                    <p id="quiz-summary-text" class="text-slate-600 mb-6"></p>
+                    <button id="restart-quiz-btn" class="w-full bg-slate-800 text-white font-bold py-3 px-4 rounded-lg hover:bg-slate-900 transition-colors">Recommencer le Quiz</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- END OF NEW SECTIONS FROM Qualiopi4.html -->
+
+        <section id="filters" class="bg-white p-4 rounded-xl shadow-lg mb-8 border-b-4 border-slate-200">
+            <h2 class="text-xl font-semibold mb-4 text-slate-800">Filtrez les exemples de preuves selon votre contexte</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div>
+                    <h3 class="font-semibold text-slate-700 mb-2">1. Catégories d'Actions</h3>
+                    <div id="filter-typology" class="flex flex-col space-y-2"></div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-700 mb-2">2. Modalités Pédagogiques</h3>
+                    <div id="filter-modality" class="flex flex-col space-y-2"></div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-700 mb-2">3. Taille & Structure</h3>
+                    <div id="filter-size" class="flex flex-col space-y-2"></div>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-slate-700 mb-2">4. Contextes Spécifiques</h3>
+                    <div id="filter-context" class="flex flex-col space-y-2"></div>
+                </div>
+            </div>
+             <div class="mt-4 text-center">
+                <button id="reset-filters" class="text-sm font-semibold text-sky-600 hover:text-sky-800">Réinitialiser les filtres</button>
+            </div>
+            <div class="mt-6 pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <h3 class="font-semibold text-slate-700">Exporter la sélection :</h3>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <button id="export-csv-btn" class="bg-emerald-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors text-sm">CSV (.csv)</button>
+                    <button id="export-md-btn" class="bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-sky-700 transition-colors text-sm">Markdown (.md)</button>
+                    <button id="export-pdf-btn" class="bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-slate-700 transition-colors text-sm">PDF (via Impression)</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="visual-dashboard" class="bg-white p-6 rounded-xl shadow-md mb-8">
+             <h2 class="text-xl font-semibold mb-4 text-slate-800 text-center">Indicateurs Applicables à votre Profil</h2>
+             <div class="chart-container">
+                <canvas id="indicator-chart"></canvas>
+             </div>
+        </section>
+
+        <main id="criteria-accordion" class="space-y-4">
+            <!-- Accordion will be generated by JS -->
+        </main>
+        
+        <footer class="text-center mt-12 text-slate-200 bg-slate-800 p-6 rounded-lg">
+             <p class="text-sm text-slate-400">Cet outil est une ressource de brainstorming et ne remplace pas une analyse de conformité personnalisée.</p>
+             <p class="mt-4 text-sm text-slate-400">d.de Amil | IRP - 2025</p>
+        </footer>
+    </div>
+
+    <!-- Lexicon Modal -->
+    <div id="lexicon-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 modal-overlay hidden opacity-0">
+        <div class="modal-container bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col transform scale-95">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-xl font-bold text-slate-800">Lexique Qualiopi</h2>
+                <button id="close-lexicon-btn" class="text-2xl text-slate-500 hover:text-slate-800">&times;</button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">AF (Actions de Formation)</h3>
+                    <p class="text-sm text-slate-600">Catégorie d'action principale visant à permettre à toute personne d'acquérir et d'actualiser un socle de connaissances et de compétences favorisant son évolution professionnelle.</p>
+                </div>
+                 <div class="term">
+                    <h3 class="font-semibold text-sky-700">AFEST (Action de Formation En Situation de Travail)</h3>
+                    <p class="text-sm text-slate-600">Modalité de formation qui utilise la situation de travail comme lieu et moyen d'apprentissage, structurée par des phases réflexives.</p>
+                </div>
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">BC (Bilans de Compétences)</h3>
+                    <p class="text-sm text-slate-600">Prestation permettant d'analyser ses compétences professionnelles et personnelles ainsi ainsi que ses aptitudes et ses motivations en appui d'un projet d'évolution professionnelle.</p>
+                </div>
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">CFA (Centre de Formation d'Apprentis)</h3>
+                    <p class="text-sm text-slate-600">Établissement de formation qui dispense des enseignements en alternance dans le cadre d'un contrat d'apprentissage.</p>
+                </div>
+                 <div class="term">
+                    <h3 class="font-semibold text-sky-700">CPF (Compte Personnel de Formation)</h3>
+                    <p class="text-sm text-slate-600">Dispositif de financement public de la formation continue qui permet à toute personne active d'acquérir des droits à la formation mobilisables tout au long de sa vie professionnelle.</p>
+                </div>
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">FOAD (Formation Ouverte et/ou à Distance)</h3>
+                    <p class="text-sm text-slate-600">Modalité pédagogique qui permet de se former sans se rendre dans un lieu de formation physique, via des ressources en ligne, des classes virtuelles, etc.</p>
+                </div>
+                 <div class="term">
+                    <h3 class="font-semibold text-sky-700">Grand OF (>10)</h3>
+                    <p class="text-sm text-slate-600">Terme conventionnel désignant un Organisme de Formation (OF) d'une certaine taille, généralement avec un effectif de plus de 10 salariés en Équivalent Temps Plein (ETP).</p>
+                </div>
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">Indépendant</h3>
+                    <p class="text-sm text-slate-600">Prestataire de formation exerçant en nom propre (entreprise individuelle, micro-entrepreneur) ou en société unipersonnelle (EURL, SASU), sans salarié.</p>
+                </div>
+                 <div class="term">
+                    <h3 class="font-semibold text-sky-700">Nouvel Entrant</h3>
+                    <p class="text-sm text-slate-600">Prestataire dans sa première année d'activité ou qui débute une nouvelle catégorie d'action (AF, BC, VAE, CFA). Bénéficie de modalités d'audit initial adaptées sur certains indicateurs.</p>
+                </div>
+                 <div class="term">
+                    <h3 class="font-semibold text-sky-700">Petit OF (<10)</h3>
+                    <p class="text-sm text-slate-600">Terme conventionnel désignant un Organisme de Formation (OF) de petite taille, généralement avec un effectif de moins de 10 salariés en Équivalent Temps Plein (ETP).</p>
+                </div>
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">PSH (Public en Situation de Handicap)</h3>
+                    <p class="text-sm text-slate-600">Désigne les personnes bénéficiant d'une Reconnaissance de la Qualité de Travailleur Handicapé (RQTH) ou présentant des besoins d'adaptation spécifiques liés à un handicap.</p>
+                </div>
+                 <div class="term">
+                    <h3 class="font-semibold text-sky-700">RNCP (Répertoire National des Certifications Professionnelles)</h3>
+                    <p class="text-sm text-slate-600">Liste officielle des certifications à finalité professionnelle reconnues par l'État, classées par niveau de qualification.</p>
+                </div>
+                <div class="term">
+                    <h3 class="font-semibold text-sky-700">VAE (Validation des Acquis de l'Expérience)</h3>
+                    <p class="text-sm text-slate-600">Démarche qui permet de faire reconnaître son expérience professionnelle afin d'obtenir tout ou partie d'une certification (diplôme, titre, etc.).</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <button id="back-to-top-btn" class="hidden fixed bottom-8 right-8 bg-sky-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-sky-700 focus:outline-none focus:ring-2 focus:ring-sky-500 focus:ring-opacity-50 transform hover:scale-110">
+        <span class="text-2xl">↑</span>
+    </button>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const db = [
+        {
+            criterionId: 1,
+            criterionTitle: "Information du public",
+            indicators: [
+                { id: 1, title: "Information détaillée, vérifiable et accessible", analysis: "L'auditeur vérifie la présence des 9 items obligatoires sur au moins un support accessible avant contractualisation, et la cohérence entre tous les supports.", evidence: [ { text: "Page de formation détaillée sur le site web", tags: ['all'] }, { text: "Plaquette commerciale / Flyer par formation", tags: ['all'] }, { text: "Fiche programme détaillée (PDF téléchargeable)", tags: ['all'] }, { text: "Catalogue de formation (papier ou numérique)", tags: ['all'] }, { text: "Devis / Proposition commerciale claire et complète", tags: ['all'] }, { text: "Conditions Générales de Vente (CGV) à jour", tags: ['all'] }, { text: "Règlement intérieur de l'organisme", tags: ['all'] }, { text: "Page dédiée à la politique handicap sur le site", tags: ['psh'] }, { text: "Mention explicite du contact du Référent Handicap", tags: ['psh'] }, { text: "Publication des 9 items sur le portail EDOF (pour CPF)", tags: ['cpf'] }, { text: "Mention explicite de l'absence de prérequis si applicable", tags: ['all'] }, { text: "Processus d'inscription et délais moyens d'accès clairement décrits", tags: ['all'] }, { text: "Tarifs ou méthode de calcul du prix (ex: taux horaire)", tags: ['all'] }, { text: "Fiche France Compétences pour les formations certifiantes", tags: ['certif'] }, { text: "Modalités d'évaluation (formative, sommative) décrites", tags: ['all'] }, ] },
+                { id: 2, title: "Indicateurs de résultats", analysis: "L'auditeur cherche des données chiffrées, pertinentes et à jour, diffusées publiquement. Pour les nouveaux entrants, la formalisation du choix des indicateurs suffit.", evidence: [ { text: "Page web 'Nos chiffres clés' ou 'Nos résultats'", tags: ['all'] }, { text: "Taux de satisfaction global des stagiaires (chiffré)", tags: ['all'] }, { text: "Taux d'abandon et analyse des causes (si pertinent)", tags: ['all'] }, { text: "Taux de réussite aux évaluations finales", tags: ['all'] }, { text: "Taux d'insertion dans l'emploi post-formation (pour formations métiers)", tags: ['af', 'cfa'] }, { text: "Taux de poursuite d'études", tags: ['af', 'cfa'] }, { text: "Taux de rupture des contrats (pour CFA)", tags: ['cfa'] }, { text: "Taux de réalisation des entretiens de suivi à 6 mois (pour BC)", tags: ['bc'] }, { text: "Tableau de bord de suivi des indicateurs (vierge pour 'nouveau')", tags: ['nouveau'] }, { text: "Publication des indicateurs obligatoires sur InserJeunes (pour CFA)", tags: ['cfa'] }, ] },
+                { id: 3, title: "Informations sur les certifications (RNCP)", analysis: "Pour les formations RNCP, l'auditeur vérifie la communication sur le taux d'obtention, les blocs de compétences, les passerelles et débouchés, en se basant sur la fiche France Compétences.", evidence: [ { text: "Taux d'obtention de la certification communiqué publiquement", tags: ['certif'] }, { text: "Description des blocs de compétences validables sur la fiche programme", tags: ['certif'] }, { text: "Lien vers la fiche France Compétences sur la page de la formation", tags: ['certif'] }, { text: "Information claire sur les équivalences et passerelles possibles", tags: ['certif'] }, { text: "Description des suites de parcours et des débouchés métiers", tags: ['certif'] }, ] }
+            ]
+        },
+        {
+            criterionId: 2,
+            criterionTitle: "Identification des objectifs et adaptation",
+            indicators: [
+                { id: 4, title: "Analyse du besoin", analysis: "NC Majeure si manquement. L'auditeur veut la preuve d'un diagnostic réel et tracé, mené avant la contractualisation et liant bénéficiaire, entreprise et/ou financeur.", evidence: [ { text: "Grille d'analyse du besoin remplie et archivée par bénéficiaire", tags: ['all'] }, { text: "Compte-rendu d'entretien de découverte (téléphonique ou physique)", tags: ['all'] }, { text: "Échanges de mails formalisant l'analyse du besoin avec le client", tags: ['all'] }, { text: "Section 'Analyse du besoin' dans la proposition commerciale personnalisée", tags: ['all'] }, { text: "Questionnaire de besoins en ligne (pré-inscription)", tags: ['all'] }, { text: "Analyse des besoins spécifiques en compensation du handicap", tags: ['psh'] }, { text: "Vérification de l'adéquation missions/référentiel (pour alternance)", tags: ['cfa', 'alternance'] }, { text: "CR d'échange avec le financeur (ex: Pôle Emploi) sur le projet du bénéficiaire", tags: ['all'] }, ] },
+                { id: 5, title: "Définition des objectifs opérationnels et évaluables", analysis: "NC Majeure si manquement. Les objectifs doivent découler du besoin (Ind. 4) et être formulés en termes de compétences observables ('être capable de...') pour être évaluables (Ind. 11).", evidence: [ { text: "Fiche programme listant les objectifs en verbes d'action", tags: ['all'] }, { text: "Convention de formation détaillant les objectifs visés", tags: ['all'] }, { text: "Référentiel de compétences interne à la formation", tags: ['grand_of'] }, { text: "Objectifs conformes au référentiel de la certification (pour RNCP/RS)", tags: ['certif'] }, { text: "Objectifs co-construits avec le bénéficiaire (pour BC)", tags: ['bc'] }, { text: "Tableau de correspondance Objectifs Pédagogiques / Compétences du référentiel", tags: ['certif', 'grand_of'] }, ] },
+                { id: 6, title: "Établissement des contenus et modalités", analysis: "NC Majeure si manquement. L'auditeur veut voir un parcours pédagogique cohérent qui aligne contenus, modalités et objectifs. La justification des choix pédagogiques est clé.", evidence: [ { text: "Déroulé / Scénario pédagogique détaillé par séquence", tags: ['all'] }, { text: "Supports de cours (diaporamas, manuels, etc.)", tags: ['presentiel', 'distanciel'] }, { text: "Vidéos, modules e-learning, quiz interactifs (pour FOAD)", tags: ['distanciel'] }, { text: "Tableau de correspondance Contenus / Objectifs / Évaluations", tags: ['grand_of'] }, { text: "Guide de l'apprenant pour les parcours à distance", tags: ['distanciel'] }, { text: "Modalités pédagogiques adaptées pour PSH (supports en FALC, etc.)", tags: ['psh'] }, ] },
+                { id: 7, title: "Adéquation contenus/exigences de la certification (RNCP)", analysis: "NC Majeure si manquement. Spécifique AF/CFA pour RNCP. Le tableau croisé est la preuve reine démontrant que 100% du référentiel est couvert.", evidence: [ { text: "Tableau de correspondance (croisé) Référentiel certificateur / Contenus de formation / Modalités d'évaluation", tags: ['certif', 'af', 'cfa'] }, { text: "Convention de partenariat ou habilitation de l'organisme certificateur", tags: ['certif', 'af', 'cfa'] }, ] },
+                { id: 8, title: "Positionnement à l'entrée", analysis: "Spécifique AF/CFA. L'auditeur vérifie l'existence et l'application d'une procédure pour évaluer le niveau de départ et adapter le parcours si besoin.", evidence: [ { text: "Procédure formalisée de positionnement", tags: ['af', 'cfa'] }, { text: "Test de connaissances / QCM en ligne ou papier", tags: ['af', 'cfa'] }, { text: "Grille d'entretien de positionnement", tags: ['af', 'cfa'] }, { text: "Outil d'auto-positionnement (grille à remplir par le bénéficiaire)", tags: ['af', 'cfa'] }, { text: "Mise en situation ou étude de cas à l'entrée", tags: ['af', 'cfa'] }, { text: "Résultats des tests archivés dans les dossiers des bénéficiaires", tags: ['af', 'cfa'] }, { text: "Preuve de l'adaptation du parcours suite au positionnement (ex: module de remise à niveau)", tags: ['af', 'cfa'] }, ] }
+            ]
+        },
+        {
+            criterionId: 3,
+            criterionTitle: "Mise en œuvre des prestations",
+            indicators: [
+                { id: 9, title: "Conditions de déroulement de la prestation", analysis: "L'auditeur vérifie que les informations opérationnelles (règles, contacts, déroulé) sont bien communiquées au bénéficiaire une fois qu'il est engagé dans la prestation.", evidence: [ { text: "Livret d'accueil", tags: ['all'] }, { text: "Règlement intérieur communiqué et émargé", tags: ['all'] }, { text: "Convocation détaillée", tags: ['all'] }, { text: "Contacts des référents (pédagogique, administratif, handicap)", tags: ['all'] }, ] },
+                { id: 10, title: "Adaptation de la prestation, du suivi et de l'accompagnement", analysis: "L'auditeur vérifie que la personnalisation n'est pas qu'un concept mais une réalité, avec des preuves d'adaptation du rythme, des contenus ou de l'accompagnement.", evidence: [ { text: "Dossier de suivi pédagogique individualisé", tags: ['all'] }, { text: "Comptes-rendus d'entretiens de suivi", tags: ['all'] }, { text: "Exemples de contenus ou d'exercices adaptés", tags: ['all'] }, { text: "Plans individuels de compensation (pour PSH)", tags: ['psh'] }, ] },
+                { id: 11, title: "Évaluation de l'atteinte des objectifs", analysis: "NC Majeure si manquement. L'auditeur vérifie l'existence d'un processus d'évaluation des acquis (et non de la satisfaction), cohérent avec les objectifs (Ind. 5), et dont les résultats sont tracés.", evidence: [ { text: "Grilles d'évaluation formative (en cours de parcours)", tags: ['all'] }, { text: "Évaluation sommative finale (QCM, étude de cas, projet)", tags: ['all'] }, { text: "Productions des apprenants, corrigées et commentées", tags: ['all'] }, { text: "Procès-verbal de jury ou de délibération", tags: ['certif'] }, { text: "Livret de compétences ou portefeuille de preuves", tags: ['all'] }, { text: "Attestation de fin de formation mentionnant l'atteinte des objectifs", tags: ['all'] }, ] },
+                { id: 12, title: "Prévention des ruptures de parcours", analysis: "L'organisme doit prouver une démarche proactive pour maintenir l'engagement et prévenir les abandons, via des outils et des procédures de relance.", evidence: [ { text: "Procédure de gestion des absences et des abandons", tags: ['all'] }, { text: "Outils pédagogiques favorisant l'interactivité", tags: ['all'] }, { text: "Listing de relances (mails, appels)", tags: ['all'] }, { text: "Entretiens de remédiation tracés", tags: ['all'] }, ] },
+                { id: 13, title: "Coordination pour les formations en alternance", analysis: "L'auditeur cherche la preuve d'un dialogue structuré entre le centre, l'entreprise et l'apprenant, via un outil de liaison.", evidence: [ { text: "Livret d'apprentissage / Carnet de suivi (rempli et signé)", tags: ['alternance', 'cfa'] }, { text: "Comptes-rendus de visites en entreprise", tags: ['alternance', 'cfa'] }, { text: "Preuves d'échanges avec le tuteur/maître d'apprentissage", tags: ['alternance', 'cfa'] }, ] },
+                { id: 14, title: "Accompagnement à l'exercice de la citoyenneté", analysis: "Spécifique aux CFA. L'auditeur attend des actions concrètes et planifiées qui touchent au développement personnel, à la culture, à la santé, à la citoyenneté.", evidence: [ { text: "Programme d'ateliers thématiques (laïcité, mixité, etc.)", tags: ['cfa'] }, { text: "Supports d'information sur les aides financières", tags: ['cfa'] }, { text: "Photos ou CR d'événements culturels ou sportifs", tags: ['cfa'] }, ] },
+                { id: 15, title: "Droits et devoirs des apprentis", analysis: "Spécifique aux CFA. Il faut prouver que l'apprenti est bien informé de son double statut (apprenant/salarié) et des règles associées.", evidence: [ { text: "Section dédiée dans le livret d'accueil", tags: ['cfa'] }, { text: "Compte-rendu émargé de la réunion d'information de rentrée", tags: ['cfa'] }, { text: "Supports de présentation sur le droit du travail et la santé/sécurité", tags: ['cfa'] }, ] },
+                { id: 16, title: "Présentation à la certification", analysis: "L'organisme doit prouver qu'il connaît et applique scrupuleusement les règles de l'examen fixées par l'autorité de certification.", evidence: [ { text: "Document de référence du certificateur (modalités d'évaluation)", tags: ['certif'] }, { text: "Preuves d'inscription des candidats à l'examen", tags: ['certif'] }, { text: "Convocation des candidats mentionnant les règles", tags: ['certif'] }, { text: "Preuves d'aménagement des examens pour les PSH", tags: ['certif', 'psh'] }, ] }
+            ]
+        },
+        {
+            criterionId: 4,
+            criterionTitle: "L'adéquation des moyens pédagogiques, techniques et d'encadrement",
+            indicators: [
+                { id: 17, title: "Mise à disposition de moyens humains et techniques adaptés", analysis: "L'auditeur s'assure que les moyens (locaux, équipements, formateurs) sont cohérents avec la prestation vendue. Il ne s'agit pas d'exiger le luxe, mais l'adéquation et la sécurité. Pour les formations à distance, cela inclut la plateforme et l'assistance technique.", evidence: [ { text: "Bail de location ou titre de propriété des locaux", tags: ['presentiel'] }, { text: "Photos datées des salles et plateaux techniques", tags: ['presentiel'] }, { text: "Liste des équipements et matériels pédagogiques", tags: ['all'] }, { text: "Contrat de location ou mise à disposition de matériel/locaux", tags: ['presentiel'] }, { text: "Présentation de la plateforme LMS et de ses fonctionnalités", tags: ['distanciel'] }, { text: "Procédure et contacts de l'assistance technique (pour FOAD)", tags: ['distanciel'] }, { text: "Document Unique d'Évaluation des Risques Professionnels (DUERP)", tags: ['all'] }, { text: "CV et contrats des formateurs et du personnel d'encadrement", tags: ['all'] }, { text: "Convention de formation précisant les moyens mis à disposition (pour intra-entreprise)", tags: ['all'] }, { text: "Environnement garantissant la confidentialité des échanges (pour BC)", tags: ['bc'] } ] },
+                { id: 18, title: "Coordination des différents intervenants", analysis: "L'auditeur évalue la fluidité de l'organisation. 'Qui fait quoi ?' doit être clair pour éviter les 'silos' et garantir une expérience sans couture pour le client, qu'il s'agisse d'intervenants internes ou externes.", evidence: [ { text: "Organigramme fonctionnel et nominatif", tags: ['all'] }, { text: "Fiches de poste ou descriptifs de fonction détaillés", tags: ['grand_of'] }, { text: "Comptes-rendus de réunions de coordination pédagogique ou administrative", tags: ['all'] }, { text: "Planning partagé des interventions", tags: ['grand_of'] }, { text: "Procédure de transmission des informations entre les services (commercial, administratif, pédagogique)", tags: ['grand_of'] }, { text: "Échanges de mails ou captures d'écran d'outils collaboratifs (ex: Trello, Slack)", tags: ['all'] } ] },
+                { id: 19, title: "Mise à disposition et appropriation des ressources pédagogiques", analysis: "Au-delà de la simple fourniture de supports, l'auditeur vérifie comment l'organisme aide l'apprenant à utiliser les ressources (tutoriels, guides, activités dédiées). L'existence d'un processus de mise à jour de ces ressources est un plus.", evidence: [ { text: "Supports de cours (PDF, diaporamas, etc.)", tags: ['all'] }, { text: "Accès à un centre de ressources en ligne ou une plateforme LMS", tags: ['distanciel', 'blended'] }, { text: "Bibliographie, webographie, liste d'outils", tags: ['all'] }, { text: "Guide d'utilisation des ressources ou de la plateforme", tags: ['distanciel'] }, { text: "Tutoriel vidéo de prise en main des outils", tags: ['distanciel'] }, { text: "Séquence d'accueil dédiée à la présentation des ressources", tags: ['all'] }, { text: "Preuves de l'actualisation des ressources (lien avec veille Ind. 25)", tags: ['all'] }, { text: "Supports adaptés pour les PSH", tags: ['psh'] } ] },
+                { id: 20, title: "Personnel dédié (mobilité, handicap, conseil de perfectionnement)", analysis: "Spécifique aux CFA. L'auditeur attend des preuves formelles de nomination de ces trois fonctions clés, mais aussi et surtout des preuves de leur activité réelle (comptes-rendus de réunion, exemples d'actions menées).", evidence: [ { text: "Acte de nomination ou PV de réunion nommant le référent handicap", tags: ['cfa'] }, { text: "Acte de nomination ou fiche de poste du référent mobilité", tags: ['cfa'] }, { text: "Statuts ou acte de création du conseil de perfectionnement", tags: ['cfa'] }, { text: "Liste des membres du conseil de perfectionnement", tags: ['cfa'] }, { text: "Comptes-rendus des réunions du conseil de perfectionnement", tags: ['cfa'] }, { text: "Exemples d'actions menées par le référent handicap ou mobilité", tags: ['cfa'] } ] }
+            ]
+        },
+        {
+            criterionId: 5,
+            criterionTitle: "Qualification et développement des compétences des personnels",
+            indicators: [
+                { id: 21, title: "Évaluation des compétences des intervenants", analysis: "NC Majeure si manquement. Le CV ne suffit pas. L'organisme doit prouver qu'il évalue activement les compétences de ses intervenants (internes et externes) par un processus structuré (grilles, entretiens) avant et pendant leur collaboration.", evidence: [ { text: "Processus de recrutement et de sélection des intervenants", tags: ['all'] }, { text: "Fiches de poste précisant les compétences requises", tags: ['grand_of'] }, { text: "Dossiers des intervenants (CV, diplômes, certifications)", tags: ['all'] }, { text: "Grilles d'évaluation remplies lors des recrutements", tags: ['all'] }, { text: "Comptes-rendus d'entretiens annuels ou professionnels", tags: ['grand_of'] }, { text: "Grilles d'observation en salle ou à distance", tags: ['all'] }, { text: "Analyse des retours des bénéficiaires sur la qualité des intervenants", tags: ['all'] }, { text: "Preuves de la sensibilisation des personnels à l'accueil des PSH", tags: ['psh'] }, { text: "Preuve de la formation des accompagnateurs à la méthodologie VAE", tags: ['vae'] } ] },
+                { id: 22, title: "Développement des compétences des salariés", analysis: "NC Majeure si manquement. L'auditeur veut voir une politique active de formation continue pour tout le personnel (pas seulement les formateurs). L'indépendant doit prouver qu'il se forme lui-même. La démarche doit être planifiée et tracée.", evidence: [ { text: "Plan de développement des compétences formalisé", tags: ['grand_of', 'petit_of'] }, { text: "Comptes-rendus des entretiens professionnels mentionnant les besoins en formation", tags: ['grand_of', 'petit_of'] }, { text: "Attestations de formation suivies par le personnel", tags: ['all'] }, { text: "Preuves de participation à des colloques, conférences, webinaires", tags: ['all'] }, { text: "Preuves de participation à des groupes d'analyse de pratiques", tags: ['all'] }, { text: "Pour un indépendant : son propre plan de formation et les preuves associées", tags: ['independant'] }, { text: "Pour un nouvel entrant : la formalisation du processus d'entretien et de plan de formation", tags: ['nouveau'] } ] }
+            ]
+        },
+        {
+            criterionId: 6,
+            criterionTitle: "Environnement professionnel",
+            indicators: [
+                { id: 23, title: "Veille légale et réglementaire", analysis: "La simple collecte ne suffit pas. L'auditeur veut la preuve de l'EXPLOITATION de la veille : comment une information a-t-elle conduit à une action concrète ?", evidence: [ { text: "Tableau de suivi de la veille (source, date, info, action)", tags: ['all'] }, { text: "Abonnement à des newsletters spécialisées (ex: Centre Inffo)", tags: ['all'] }, { text: "Compte-rendu de réunion d'équipe présentant une évolution légale", tags: ['grand_of'] }, { text: "Exemple de mise à jour des CGV suite à une nouvelle loi (avec dates)", tags: ['all'] }, ] },
+                { id: 24, title: "Veille sur les évolutions des compétences, des métiers et des emplois", analysis: "L'organisme doit prouver qu'il analyse les évolutions du marché du travail pour adapter ses formations et garantir leur pertinence.", evidence: [ { text: "Tableau de suivi de la veille métier", tags: ['all'] }, { text: "Participation à des conférences de branche", tags: ['all'] }, { text: "Mise à jour d'un programme suite à une évolution métier", tags: ['all'] }, ] },
+                { id: 25, title: "Veille sur les innovations pédagogiques et technologiques", analysis: "L'organisme doit démontrer sa curiosité et sa capacité à faire évoluer ses méthodes et outils pédagogiques.", evidence: [ { text: "Tableau de suivi de la veille pédagogique", tags: ['all'] }, { text: "Expérimentation d'un nouvel outil ou d'une nouvelle méthode", tags: ['all'] }, { text: "Abonnements à des revues ou blogs spécialisés", tags: ['all'] }, ] },
+                { id: 26, title: "Accueil des publics en situation de handicap", analysis: "NC Majeure si manquement. L'organisme doit avoir un réseau de partenaires spécialisés mobilisable, AVANT même d'accueillir un PSH. Le référent handicap doit être identifié et ses contacts diffusés.", evidence: [ { text: "Liste de partenaires (Agefiph, Cap Emploi, MDPH, associations) avec contacts", tags: ['psh'] }, { text: "Preuves de contacts réguliers avec ce réseau (mails, CR de réunion)", tags: ['psh'] }, { text: "Procédure interne d'accueil et d'orientation des PSH", tags: ['psh'] }, { text: "Preuve de la formation ou de la montée en compétence du référent handicap", tags: ['psh'] }, ] },
+                { id: 27, title: "Maîtrise de la sous-traitance", analysis: "NC Majeure si manquement. Le donneur d'ordres est responsable. Il doit prouver un processus de sélection, de contractualisation et de contrôle du sous-traitant.", evidence: [ { text: "Procédure de sélection et d'évaluation des sous-traitants", tags: ['soustraitance'] }, { text: "Contrat de sous-traitance détaillé et signé", tags: ['soustraitance'] }, { text: "Grille d'évaluation remplie pour un sous-traitant", tags: ['soustraitance'] }, { text: "Preuves de contrôle de la prestation (observation, analyse des retours)", tags: ['soustraitance'] }, { text: "Vérification de la certification Qualiopi du sous-traitant (pour CPF)", tags: ['soustraitance', 'cpf'] }, ] },
+                { id: 28, title: "Partenariats pour la formation en situation de travail", analysis: "L'organisme doit prouver qu'il s'appuie sur un réseau d'entreprises partenaires pour concevoir et mettre en œuvre les périodes de formation pratique (alternance, stages, AFEST).", evidence: [ { text: "Liste des entreprises partenaires", tags: ['alternance', 'cfa'] }, { text: "Conventions de partenariat", tags: ['alternance', 'cfa'] }, { text: "Comptes-rendus de réunions avec les partenaires", tags: ['alternance', 'cfa'] }, ] },
+                { id: 29, title: "Aide à l'insertion professionnelle", analysis: "Spécifique aux CFA. L'organisme doit prouver qu'il accompagne activement ses apprentis vers l'emploi ou la poursuite d'études à l'issue de leur parcours.", evidence: [ { text: "Organisation d'ateliers CV / préparation aux entretiens", tags: ['cfa'] }, { text: "Mise en place d'un réseau d'anciens élèves", tags: ['cfa'] }, { text: "Diffusion d'offres d'emploi", tags: ['cfa'] }, ] }
+            ]
+        },
+        {
+            criterionId: 7,
+            criterionTitle: "Amélioration continue",
+            indicators: [
+                 { id: 30, title: "Recueil des appréciations des parties prenantes", analysis: "L'auditeur vérifie la collecte auprès des 4 types de parties prenantes : bénéficiaires, financeurs, entreprises, équipes pédagogiques.", evidence: [ { text: "Questionnaires de satisfaction à chaud et à froid (bénéficiaires)", tags: ['all'] }, { text: "Comptes-rendus d'entretiens de bilan (bénéficiaires)", tags: ['all'] }, { text: "Enquêtes de satisfaction dédiées (entreprises/financeurs)", tags: ['grand_of'] }, { text: "Comptes-rendus de réunions de bilan pédagogique (équipes)", tags: ['all'] }, { text: "Preuves de sollicitation des financeurs pour leur appréciation", tags: ['all'] }, ] },
+                { id: 31, title: "Traitement des réclamations et aléas", analysis: "NC Majeure si manquement. Avoir une procédure ne suffit pas, il faut un registre qui trace chaque réclamation (même s'il est vide) et des preuves de traitement si des cas se sont présentés.", evidence: [ { text: "Procédure formalisée de traitement des réclamations", tags: ['all'] }, { text: "Registre / Tableau de suivi des réclamations, difficultés et aléas", tags: ['all'] }, { text: "Preuves de traitement d'une réclamation (mail initial, accusé de réception, analyse, réponse finale)", tags: ['all'] }, ] },
+                { id: 32, title: "Mise en œuvre de l'amélioration continue", analysis: "NC Majeure si manquement. C'est la synthèse du critère 7. L'auditeur veut voir la boucle : une analyse des données (Ind. 30 & 31) qui conduit à un plan d'actions concrètes et suivies.", evidence: [ { text: "Plan d'amélioration continue formalisé", tags: ['all'] }, { text: "Tableau de suivi des actions correctives et préventives", tags: ['all'] }, { text: "Comptes-rendus de revues qualité ou de comités de pilotage", tags: ['grand_of'] }, { text: "Exemple concret : 'Suite aux retours de satisfaction sur le module X (analyse), nous avons mis à jour le support Y (action) le JJ/MM/AA (traçabilité)'", tags: ['all'] }, ] }
+            ]
+        }
+    ];
+
+    const indicatorApplicability = {
+        1: ['af', 'bc', 'vae', 'cfa'], 2: ['af', 'bc', 'vae', 'cfa'], 3: ['af', 'vae', 'cfa', 'certif'],
+        4: ['af', 'bc', 'vae', 'cfa'], 5: ['af', 'bc', 'vae', 'cfa'], 6: ['af', 'bc', 'vae', 'cfa'],
+        7: ['af', 'cfa', 'certif'], 8: ['af', 'cfa'], 9: ['af', 'bc', 'vae', 'cfa'], 10: ['af', 'bc', 'vae', 'cfa'],
+        11: ['af', 'bc', 'vae', 'cfa'], 12: ['af', 'bc', 'vae', 'cfa'], 13: ['af', 'cfa', 'alternance'], 14: ['cfa'],
+        15: ['cfa'], 16: ['af', 'vae', 'cfa', 'certif'], 17: ['af', 'bc', 'vae', 'cfa'], 18: ['af', 'bc', 'vae', 'cfa'],
+        19: ['af', 'bc', 'vae', 'cfa'], 20: ['cfa'], 21: ['af', 'bc', 'vae', 'cfa'], 22: ['af', 'bc', 'vae', 'cfa'],
+        23: ['af', 'bc', 'vae', 'cfa'], 24: ['af', 'bc', 'vae', 'cfa'], 25: ['af', 'bc', 'vae', 'cfa'],
+        26: ['af', 'bc', 'vae', 'cfa'], 27: ['af', 'bc', 'vae', 'cfa'], 28: ['af', 'cfa', 'alternance'], 29: ['cfa'],
+        30: ['af', 'bc', 'vae', 'cfa'], 31: ['af', 'bc', 'vae', 'cfa'], 32: ['af', 'bc', 'vae', 'cfa']
+    };
+
+    const filters = {
+        typology: [
+            { id: 'af', label: 'Actions de Formation' },
+            { id: 'bc', label: 'Bilans de Compétences' },
+            { id: 'vae', label: 'VAE' },
+            { id: 'cfa', label: 'Apprentissage (CFA)' }
+        ],
+        modality: [
+            { id: 'presentiel', label: 'Présentiel' },
+            { id: 'distanciel', label: 'Distanciel (FOAD)' },
+            { id: 'blended', label: 'Blended Learning' }
+        ],
+        size: [
+            { id: 'independant', label: 'Indépendant' },
+            { id: 'petit_of', label: 'Petit OF (<10)' },
+            { id: 'grand_of', label: 'Grand OF (>10)' }
+        ],
+        context: [
+            { id: 'certif', label: 'Formations Certifiantes' },
+            { id: 'psh', label: 'Accueil PSH' },
+            { id: 'soustraitance', label: 'Sous-traitance' },
+            { id: 'cpf', label: 'Financement CPF' },
+            { id: 'nouveau', label: 'Nouvel Entrant' },
+            { id: 'alternance', label: 'Alternance / AFEST' }
+        ]
+    };
+    
+    let indicatorChart;
+    let indicatorStates = {};
+
+    // --- New Data for Toolkit and Quiz ---
+    const toolkitContent = {
+        checklist: {
+            title: "Check-list des Preuves",
+            content: `
+                <p class="mb-4 text-slate-600">Explorez les exemples de preuves pour chaque critère. Cliquez sur un critère pour déplier la liste des indicateurs correspondants.</p>
+                <div class="space-y-2" id="checklist-accordion">
+                    <!-- Critère 1 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 1 : Information du public</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 1:</strong> Site web, plaquettes, fiches programmes, CGV, règlement intérieur, accessibilité.</li>
+                                <li><strong>Ind. 2:</strong> Tableaux de bord de résultats (satisfaction, insertion, etc.), publication sur le site.</li>
+                                <li><strong>Ind. 3:</strong> Communication sur les taux d'obtention, comparaison programme/référentiel.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Critère 2 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 2 : Identification des objectifs et adaptation</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 4:</strong> Grilles d'analyse de besoins, CR d'entretiens.</li>
+                                <li><strong>Ind. 5:</strong> Programmes avec objectifs opérationnels et évaluables.</li>
+                                <li><strong>Ind. 6:</strong> Déroulés pédagogiques, description des méthodes.</li>
+                                <li><strong>Ind. 7:</strong> Tableau de correspondance contenus/compétences du référentiel.</li>
+                                <li><strong>Ind. 8:</strong> Tests de positionnement, grilles d'auto-évaluation à l'entrée.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Critère 3 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 3 : Accueil, accompagnement, suivi et évaluation</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 9:</strong> Livret d'accueil, convocation, contacts des référents.</li>
+                                <li><strong>Ind. 10:</strong> Procédure d'adaptation, plans individuels de compensation.</li>
+                                <li><strong>Ind. 11:</strong> Grilles d'évaluation (formative, sommative), études de cas, QCM.</li>
+                                <li><strong>Ind. 12:</strong> Procédure de suivi des absences/abandons, relances.</li>
+                                <li><strong>Ind. 13:</strong> Livret de suivi alternant, CR de visites en entreprise.</li>
+                                <li><strong>Ind. 14:</strong> Programme d'actions citoyennes, charte de la laïcité.</li>
+                                <li><strong>Ind. 15:</strong> Supports d'info sur les droits/devoirs, santé/sécurité.</li>
+                                <li><strong>Ind. 16:</strong> Procédure d'inscription à l'examen, convocations.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Critère 4 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 4 : Adéquation des moyens</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 17:</strong> Liste des équipements, CV des formateurs, baux des locaux.</li>
+                                <li><strong>Ind. 18:</strong> Organigramme, fiches de poste, CR de réunions pédagogiques.</li>
+                                <li><strong>Ind. 19:</strong> Catalogue de ressources, supports de cours, accès plateforme.</li>
+                                <li><strong>Ind. 20:</strong> Actes de nomination des référents, PV du conseil de perfectionnement.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Critère 5 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 5 : Qualification des personnels</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 21:</strong> Grilles d'évaluation des compétences, CV, diplômes, CR d'entretiens.</li>
+                                <li><strong>Ind. 22:</strong> Plan de développement des compétences, attestations de formation.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Critère 6 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 6 : Inscription dans l'environnement professionnel</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 23:</strong> Procédure et tableau de suivi de la veille légale.</li>
+                                <li><strong>Ind. 24:</strong> Procédure et tableau de suivi de la veille métiers.</li>
+                                <li><strong>Ind. 25:</strong> Procédure et tableau de suivi de la veille pédagogique.</li>
+                                <li><strong>Ind. 26:</strong> Liste des partenaires handicap, procédure d'accueil.</li>
+                                <li><strong>Ind. 27:</strong> Contrat de sous-traitance, procédure de sélection/contrôle.</li>
+                                <li><strong>Ind. 28:</strong> Convention AFEST, livret de suivi, grille d'évaluation.</li>
+                                <li><strong>Ind. 29:</strong> Programme d'actions d'insertion, partenariats entreprises.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Critère 7 -->
+                    <div>
+                        <button class="toolkit-accordion-header w-full flex justify-between items-center p-4 bg-slate-100 hover:bg-slate-200 rounded-lg text-left font-semibold">
+                            <span>Critère 7 : Amélioration continue</span>
+                            <span class="toolkit-accordion-icon transform">&#9654;</span>
+                        </button>
+                        <div class="toolkit-accordion-content">
+                            <ul class="list-disc pl-5 space-y-2 py-4 px-6 bg-white border border-t-0 rounded-b-lg">
+                                <li><strong>Ind. 30:</strong> Modèles de questionnaires (à chaud, à froid), CR d'entretiens.</li>
+                                <li><strong>Ind. 31:</strong> Procédure et tableau de suivi des réclamations.</li>
+                                <li><strong>Ind. 32:</strong> Plan d'amélioration continue, tableau de suivi des actions.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                </div>`
+        },
+        pitfalls: {
+            title: "Pièges à Éviter",
+            content: `
+                <p class="mb-6 text-slate-600">Anticipez les non-conformités les plus fréquentes pour sécuriser votre audit. Cette section est essentielle pour une préparation sereine.</p>
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="text-lg font-semibold text-slate-800 mb-2">1. Préparation et Documentation</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="p-4 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg">
+                                <h5 class="font-semibold">Préparation de dernière minute</h5>
+                                <p class="text-sm text-slate-600">Attendre la veille de l'audit pour rassembler les documents conduit à des oublis, des incohérences et un stress inutile.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg">
+                                <h5 class="font-semibold">Modèles non personnalisés</h5>
+                                <p class="text-sm text-slate-600">Utiliser des modèles standards sans les adapter à votre activité et votre logique interne est facilement détectable.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg">
+                                <h5 class="font-semibold">Documentation mal organisée</h5>
+                                <p class="text-sm text-slate-600">Une arborescence de fichiers confuse fait perdre du temps à l'auditeur et donne une impression de manque de rigueur.</p>
+                            </div>
+                             <div class="p-4 border-l-4 border-amber-500 bg-amber-50 rounded-r-lg">
+                                <h5 class="font-semibold">Absence de procédures formalisées</h5>
+                                <p class="text-sm text-slate-600">Les processus clés (accueil, réclamations, etc.) doivent être écrits, datés et versionnés. L'oral ne suffit pas.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-slate-800 mb-2">2. Processus et Suivi</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div class="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
+                                <h5 class="font-semibold">Suivi et évaluation des acquis insuffisants</h5>
+                                <p class="text-sm text-slate-600">L'évaluation doit être traçable et couvrir tout le parcours (avant, pendant, après). Une simple évaluation finale est une NC majeure.</p>
+                            </div>
+                             <div class="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
+                                <h5 class="font-semibold">Manque de transparence envers les stagiaires</h5>
+                                <p class="text-sm text-slate-600">Les informations communiquées (objectifs, prérequis, etc.) doivent être complètes et prouvables (fiches programmes, site web).</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
+                                <h5 class="font-semibold">Gestion des compétences du personnel négligée</h5>
+                                <p class="text-sm text-slate-600">Les CV ne suffisent pas. Il faut des preuves d'évaluation et de maintien des compétences du personnel (entretiens, plan de formation).</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-red-500 bg-red-50 rounded-r-lg">
+                                <h5 class="font-semibold">Adaptation au handicap non démontrée</h5>
+                                <p class="text-sm text-slate-600">Il faut un référent handicap formé et des preuves de partenariats ou de solutions mobilisables (pas seulement une intention).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                         <h4 class="text-lg font-semibold text-slate-800 mb-2">3. Pilotage et Amélioration Continue</h4>
+                        <div class="grid md:grid-cols-2 gap-4">
+                           <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-r-lg">
+                                <h5 class="font-semibold">Veille non exploitée</h5>
+                                <p class="text-sm text-slate-600">Il faut prouver que la veille (légale, métier, pédagogique) a un impact concret sur vos pratiques et vos contenus.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-r-lg">
+                                <h5 class="font-semibold">Amélioration continue non prouvée</h5>
+                                <p class="text-sm text-slate-600">Collecter la satisfaction ne suffit pas. L'auditeur veut voir l'analyse des données et le plan d'action qui en découle.</p>
+                            </div>
+                             <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-r-lg">
+                                <h5 class="font-semibold">Oublier l'audit de surveillance</h5>
+                                <p class="text-sm text-slate-600">L'audit de surveillance n'est pas une formalité. Les NC mineures non corrigées y deviennent majeures et bloquantes.</p>
+                            </div>
+                            <div class="p-4 border-l-4 border-purple-500 bg-purple-50 rounded-r-lg">
+                                <h5 class="font-semibold">Mauvaise utilisation de la marque Qualiopi</h5>
+                                <p class="text-sm text-slate-600">Le logo ne doit jamais figurer sur un support de formation (programme, attestation), mais sur des supports institutionnels.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                `
+        },
+        cycle: {
+            title: "Le Cycle d'Audit",
+            content: `
+                <p class="mb-6 text-slate-600">La certification Qualiopi est un cycle de 3 ans, jalonné par 3 audits clés.</p>
+                <div class="flex flex-col md:flex-row justify-between space-y-6 md:space-y-0 md:space-x-4">
+                    <div class="flex-1 text-center p-4 border rounded-lg kpi-card">
+                        <div class="text-2xl font-bold text-sky-600">1</div>
+                        <h4 class="font-semibold mt-2">Audit Initial</h4>
+                        <p class="text-sm text-slate-500 mt-1">Vérifie la conception et la formalisation du système. Peut être réalisé à distance (sous conditions).</p>
+                    </div>
+                    <div class="flex items-center justify-center text-slate-400 text-2xl font-mono hidden md:flex">&rarr;</div>
+                    <div class="flex-1 text-center p-4 border rounded-lg kpi-card">
+                         <div class="text-2xl font-bold text-sky-600">2</div>
+                        <h4 class="font-semibold mt-2">Audit de Surveillance</h4>
+                        <p class="text-sm text-slate-500 mt-1">Entre le 14e et 22e mois. Vérifie le maintien et l'amélioration du système. Obligatoirement sur site si l'initial était à distance.</p>
+                    </div>
+                     <div class="flex items-center justify-center text-slate-400 text-2xl font-mono hidden md:flex">&rarr;</div>
+                    <div class="flex-1 text-center p-4 border rounded-lg kpi-card">
+                         <div class="text-2xl font-bold text-sky-600">3</div>
+                        <h4 class="font-semibold mt-2">Audit de Renouvellement</h4>
+                        <p class="text-sm text-slate-500 mt-1">Avant la fin de la 3e année. Remet en jeu la certification. Audit complet et obligatoirement sur site.</p>
+                    </div>
+                </div>`
+        },
+        pdca: {
+            title: "La Démarche PDCA",
+            content: `
+                <p class="mb-6 text-slate-600">Le référentiel est structuré autour de la roue de Deming, un cycle d'amélioration continue.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-blue-100 rounded-lg">
+                        <h4 class="font-semibold text-blue-800">PLAN (Planifier)</h4>
+                        <p class="text-sm text-blue-700">Concevoir la prestation : analyse des besoins, définition des objectifs, communication (Critères 1, 2, 6).</p>
+                    </div>
+                    <div class="p-4 bg-green-100 rounded-lg">
+                        <h4 class="font-semibold text-green-800">DO (Faire)</h4>
+                        <p class="text-sm text-green-700">Réaliser la prestation : mobiliser les moyens, adapter l'accompagnement (Critères 3, 4, 5).</p>
+                    </div>
+                    <div class="p-4 bg-yellow-100 rounded-lg">
+                        <h4 class="font-semibold text-yellow-800">CHECK (Vérifier)</h4>
+                        <p class="text-sm text-yellow-700">Évaluer et contrôler : évaluation des acquis, recueil des appréciations et réclamations (Critères 3, 7).</p>
+                    </div>
+                    <div class="p-4 bg-purple-100 rounded-lg">
+                        <h4 class="font-semibold text-purple-800">ACT (Agir)</h4>
+                        <p class="text-sm text-purple-700">Améliorer : analyser les données collectées et mettre en œuvre des actions correctives (Critère 7).</p>
+                    </div>
+                </div>`
+        }
+    };
+
+    const quizQuestions = [
+        {
+            question: "Quelle est la conséquence directe de l'accumulation de 5 non-conformités mineures lors d'un audit ?",
+            options: [
+                { text: "L'organisme doit passer un nouvel audit complet.", isCorrect: false, rationale: "La requalification en majeure impose un plan d'action rapide, mais pas un audit complet immédiat." },
+                { text: "L'audit est simplement prolongé d'une journée.", isCorrect: false, rationale: "La durée de l'audit n'est pas modifiée, mais la nature du résultat et ses conséquences le sont." },
+                { text: "Elles sont requalifiées en une non-conformité majeure.", isCorrect: true, rationale: "C'est la règle précise du référentiel : 5 NC mineures = 1 NC majeure, ce qui bloque la certification en attendant la levée des actions correctives sous 3 mois." },
+                { text: "L'organisme reçoit un simple avertissement sans suite.", isCorrect: false, rationale: "Loin d'être un simple avertissement, cette situation bloque le processus de certification." }
+            ],
+            hint: "Pensez à l'effet de seuil. Plusieurs petits problèmes peuvent former un grand."
+        },
+        {
+            question: "Pour un organisme qui ne fait que des Bilans de Compétences, quel indicateur suivant N'EST PAS applicable ?",
+            options: [
+                { text: "Indicateur 11 : Évaluation de l'atteinte des objectifs.", isCorrect: false, rationale: "L'évaluation est au cœur du bilan de compétences et est donc applicable." },
+                { text: "Indicateur 8 : Positionnement à l'entrée.", isCorrect: true, rationale: "Le positionnement à l'entrée, tel que défini dans le RNQ, est spécifique aux Actions de Formation et à l'Apprentissage, mais pas aux Bilans de Compétences." },
+                { text: "Indicateur 26 : Accueil des publics en situation de handicap.", isCorrect: false, rationale: "L'accessibilité et l'accueil des personnes en situation de handicap est une exigence transversale applicable à toutes les catégories." },
+                { text: "Indicateur 32 : Démarche d'amélioration continue.", isCorrect: false, rationale: "L'amélioration continue est le pilier du critère 7 et s'applique à tous les organismes." }
+            ],
+            hint: "Certains indicateurs sont très spécifiques au parcours d'une formation 'classique'."
+        },
+        {
+            question: "Lors d'un audit de surveillance, quel est le principal point de vigilance de l'auditeur ?",
+            options: [
+                { text: "La levée des non-conformités de l'audit initial et l'application réelle des processus.", isCorrect: true, rationale: "L'audit de surveillance vise à vérifier que l'organisme a corrigé ses écarts et que son système qualité est réellement opérationnel au quotidien." },
+                { text: "Uniquement la situation administrative et financière de l'organisme.", isCorrect: false, rationale: "Bien que la situation administrative soit vérifiée, le focus principal reste la mise en œuvre de la qualité." },
+                { text: "La conception de nouveaux processus non présentés en initial.", isCorrect: false, rationale: "L'audit vérifie l'application des processus existants, pas la création de nouveaux (sauf s'ils répondent à une NC)." },
+                { text: "La satisfaction des 3 derniers clients uniquement.", isCorrect: false, rationale: "L'auditeur regarde un échantillon représentatif de l'activité depuis l'audit précédent, pas seulement quelques clients." }
+            ],
+            hint: "Cet audit n'est pas une répétition de l'initial ; il vérifie la dynamique et la correction."
+        },
+        {
+            question: "Quelle preuve est indispensable pour démontrer l'efficacité de la veille (Ind. 23, 24, 25) ?",
+            options: [
+                { text: "Une liste de sites web consultés.", isCorrect: false, rationale: "Avoir des sources est la première étape, mais ne prouve pas que l'information est utilisée." },
+                { text: "Un abonnement à une revue professionnelle.", isCorrect: false, rationale: "L'abonnement prouve l'accès à l'information, mais pas son exploitation." },
+                { text: "La traçabilité de l'impact de la veille sur une pratique ou un document.", isCorrect: true, rationale: "L'auditeur attend une preuve tangible, comme un programme de formation mis à jour suite à une veille métier, avec la date et la raison de la modification." },
+                { text: "Le CV du responsable de la veille.", isCorrect: false, rationale: "La compétence de la personne est un moyen, mais la preuve attendue est le résultat de son travail." }
+            ],
+            hint: "L'auditeur ne veut pas savoir ce que vous lisez, mais ce que vous en faites."
+        },
+        {
+            question: "Un organisme 'nouvel entrant' passe son audit initial. Sur quel aspect de l'indicateur 32 (amélioration continue) sera-t-il principalement évalué ?",
+            options: [
+                { text: "Sur la base des 10 dernières actions d'amélioration menées.", isCorrect: false, rationale: "En tant que nouvel entrant, l'organisme n'a pas encore l'historique nécessaire pour présenter un grand nombre d'actions." },
+                { text: "Sur la formalisation du processus d'amélioration continue.", isCorrect: true, rationale: "Pour un nouvel entrant, l'auditeur vérifie que la procédure est bien conçue ('comment vous allez faire'), car la mise en œuvre effective sera vérifiée à l'audit de surveillance." },
+                { text: "Sur le budget alloué à l'amélioration continue.", isCorrect: false, rationale: "Le budget est un moyen, mais l'exigence porte sur le processus et sa mise en œuvre, pas sur le montant financier." },
+                { text: "L'indicateur 32 n'est pas applicable aux nouveaux entrants.", isCorrect: false, rationale: "L'indicateur est bien applicable, mais son évaluation est adaptée à la situation de l'organisme." }
+            ],
+            hint: "Comment auditer quelque chose qui n'a pas encore eu le temps de se produire ?"
+        },
+        {
+            question: "Où est-il formellement interdit d'apposer le logo Qualiopi ?",
+            options: [
+                { text: "Sur le site internet de l'organisme.", isCorrect: false, rationale: "Le site internet est un support de communication institutionnel où le logo est autorisé, à condition de respecter la charte." },
+                { text: "Sur une brochure présentant l'ensemble des formations.", isCorrect: false, rationale: "Une brochure institutionnelle est un support autorisé." },
+                { text: "Sur une attestation de fin de formation.", isCorrect: true, rationale: "Il est interdit d'apposer le logo sur un produit de formation. Cela laisserait croire que la formation est 'certifiée', alors que c'est l'organisme qui l'est." },
+                { text: "Dans la signature de mail du dirigeant.", isCorrect: false, rationale: "La signature de mail est considérée comme un support de communication de l'organisme, l'usage y est donc permis." }
+            ],
+            hint: "La certification porte sur l'organisme, pas sur un produit ou service spécifique."
+        },
+        {
+            question: "Quelle action correspond à la phase 'Act' du cycle PDCA dans le contexte Qualiopi ?",
+            options: [
+                { text: "Envoyer un questionnaire de satisfaction aux apprenants.", isCorrect: false, rationale: "L'envoi et la collecte des questionnaires relèvent de la phase 'Check' (Vérifier)." },
+                { text: "Mettre à jour un programme de formation suite à des retours négatifs.", isCorrect: true, rationale: "La phase 'Act' (Agir/Améliorer) consiste à mettre en œuvre des actions correctives basées sur l'analyse des données collectées." },
+                { text: "Définir les objectifs pédagogiques d'une nouvelle formation.", isCorrect: false, rationale: "La définition des objectifs fait partie de la phase 'Plan' (Planifier)." },
+                { text: "Animer une session de formation.", isCorrect: false, rationale: "L'animation de la formation est le cœur de la phase 'Do' (Faire)." }
+            ],
+            hint: "Cette phase est celle où l'on corrige le tir après avoir analysé la situation."
+        },
+        {
+            question: "Quelle est une exigence spécifique à un CFA pour l'indicateur 20 ?",
+            options: [
+                { text: "Avoir un formateur expert pour chaque matière.", isCorrect: false, rationale: "Avoir des formateurs experts relève de l'indicateur 21, commun à tous." },
+                { text: "Mettre en place un conseil de perfectionnement.", isCorrect: true, rationale: "L'indicateur 20 impose spécifiquement aux CFA (et par extension aux OFA) de nommer des personnels dédiés, dont le conseil de perfectionnement, et de prouver son activité." },
+                { text: "Disposer de salles de cours équipées de vidéoprojecteurs.", isCorrect: false, rationale: "Les moyens techniques relèvent de l'indicateur 17, commun à tous." },
+                { text: "Organiser des réunions pédagogiques mensuelles.", isCorrect: false, rationale: "La coordination du personnel (Ind. 18) est commune à tous, même si la fréquence n'est pas imposée." }
+            ],
+            hint: "Les CFA ont des obligations de gouvernance spécifiques pour piloter leur activité."
+        },
+        {
+            question: "Pour l'indicateur 27 (Sous-traitance), qui porte la responsabilité finale de la qualité de la prestation ?",
+            options: [
+                { text: "Le sous-traitant, car il réalise la prestation.", isCorrect: false, rationale: "Le sous-traitant a une responsabilité contractuelle, mais face à l'auditeur Qualiopi, le responsable est celui qui porte la certification." },
+                { text: "Le donneur d'ordres, qui est le certifié.", isCorrect: true, rationale: "Le donneur d'ordres est le seul responsable aux yeux de l'auditeur. Il doit prouver qu'il sélectionne, pilote et contrôle son sous-traitant." },
+                { text: "Le financeur (OPCO, Pôle Emploi...).", isCorrect: false, rationale: "Le financeur exige la certification mais n'est pas responsable de la qualité de la prestation délivrée." },
+                { text: "L'apprenant, qui doit se renseigner.", isCorrect: false, rationale: "L'apprenant est le bénéficiaire ; la responsabilité de la qualité ne peut lui être imputée." }
+            ],
+            hint: "Pensez à qui a signé le contrat de certification avec l'organisme certificateur."
+        },
+         {
+            question: "Un audit de renouvellement doit obligatoirement se dérouler :",
+            options: [
+                { text: "À distance si l'organisme n'a qu'un seul site.", isCorrect: false, rationale: "La modalité à distance n'est pas une option pour cet audit, quel que soit le nombre de sites." },
+                { text: "Sur un échantillon de 50% des indicateurs.", isCorrect: false, rationale: "L'audit de renouvellement est complet et couvre tous les indicateurs applicables, comme l'audit initial." },
+                { text: "Sur site, même pour un organisme sans locaux dédiés.", isCorrect: true, rationale: "C'est une règle impérative. L'audit se déroule sur le lieu d'activité, qui peut être le domicile du dirigeant si nécessaire." },
+                { text: "Dans les 6 mois suivant l'expiration du certificat.", isCorrect: false, rationale: "Il doit impérativement avoir lieu AVANT l'expiration du certificat pour éviter toute rupture de certification." }
+            ],
+            hint: "Cet audit est le plus exigeant du cycle et nécessite un contrôle physique."
+        },
+         {
+            question: "Pour un accompagnement VAE, quel est un point de vigilance majeur pour l'indicateur 21 (compétences des personnels) ?",
+            options: [
+                { text: "La ponctualité des accompagnateurs.", isCorrect: false, rationale: "La ponctualité relève du savoir-être général mais n'est pas l'attendu spécifique de cet indicateur." },
+                { text: "La maîtrise des outils bureautiques par les accompagnateurs.", isCorrect: false, rationale: "C'est une compétence utile, mais pas le cœur de l'exigence pour un accompagnateur VAE." },
+                { text: "La preuve de leur expertise de la méthodologie VAE.", isCorrect: true, rationale: "L'auditeur attend des preuves que les accompagnateurs sont spécifiquement formés et compétents sur l'ingénierie de la VAE et l'analyse des référentiels." },
+                { text: "Le nombre d'années d'expérience générale des accompagnateurs.", isCorrect: false, rationale: "L'expérience générale est un plus, mais l'expertise spécifique à la VAE est l'élément clé à démontrer." }
+            ],
+            hint: "L'accompagnement VAE est un métier avec une méthodologie très spécifique."
+        },
+        {
+            question: "Que se passe-t-il si une non-conformité mineure détectée à l'audit initial n'est pas corrigée lors de l'audit de surveillance ?",
+            options: [
+                { text: "Elle est simplement notée de nouveau comme mineure.", isCorrect: false, rationale: "Le référentiel prévoit une sanction en cas de non-correction d'un écart constaté." },
+                { text: "Elle est requalifiée en non-conformité majeure.", isCorrect: true, rationale: "C'est une règle de gestion stricte : une NC mineure non soldée se transforme en NC majeure, avec des conséquences bien plus graves (suspension possible)." },
+                { text: "L'organisme dispose d'un nouveau délai de 6 mois.", isCorrect: false, rationale: "Le délai n'est pas reconduit ; l'absence d'action est sanctionnée par une requalification." },
+                { text: "L'auditeur l'ignore si d'autres points ont été améliorés.", isCorrect: false, rationale: "L'auditeur ne peut ignorer un écart constaté et non corrigé ; il doit appliquer les règles de gestion de la certification." }
+            ],
+            hint: "La persistance dans l'erreur est plus sévèrement jugée."
+        },
+        {
+            question: "Pour un bilan de compétences, quel élément est crucial pour prouver le respect de la méthodologie (Ind. 10) ?",
+            options: [
+                { text: "Un questionnaire de satisfaction final.", isCorrect: false, rationale: "Le questionnaire de satisfaction relève de l'indicateur 30, pas de la méthodologie du bilan elle-même." },
+                { text: "La preuve du respect des trois phases (préliminaire, investigation, conclusions).", isCorrect: true, rationale: "Le Code du travail impose cette structuration en 3 phases. L'organisme doit le prouver via les documents remis au bénéficiaire (ex: document de synthèse)." },
+                { text: "Le CV de la personne qui a mené le bilan.", isCorrect: false, rationale: "Le CV relève de l'indicateur 21 (compétences), pas de la preuve du déroulement méthodologique pour un bénéficiaire donné." },
+                { text: "Une facture détaillée de la prestation.", isCorrect: false, rationale: "La facture est un document comptable, pas une preuve de la mise en œuvre méthodologique." }
+            ],
+            hint: "Le Code du Travail définit un cadre très précis pour cette prestation."
+        },
+        {
+            question: "L'indicateur 1 'Information détaillée, vérifiable et accessible' concerne :",
+            options: [
+                { text: "Uniquement les informations tarifaires.", isCorrect: false, rationale: "Les tarifs sont une partie de l'information, mais l'indicateur est bien plus large." },
+                { text: "Uniquement les informations accessibles aux personnes handicapées.", isCorrect: false, rationale: "L'accessibilité est un des points, mais pas le seul. L'information doit aussi être claire, complète et à jour pour tous." },
+                { text: "L'ensemble des informations précontractuelles (objectifs, prérequis, durée, modalités, tarifs, etc.).", isCorrect: true, rationale: "Cet indicateur couvre toute l'information qui doit être mise à disposition du public avant toute contractualisation, pour permettre une décision éclairée." },
+                { text: "Uniquement le contenu détaillé du programme de formation.", isCorrect: false, rationale: "Le programme est un élément clé, mais l'indicateur couvre aussi les aspects pratiques, logistiques et financiers." }
+            ],
+            hint: "Que doit savoir un client potentiel AVANT de s'engager ?"
+        },
+        {
+            question: "L'absence totale de procédure formalisée pour le traitement des réclamations (Ind. 31) est susceptible d'être qualifiée de :",
+            options: [
+                { text: "Point de vigilance sans conséquence.", isCorrect: false, rationale: "La gestion des réclamations est un point fondamental de la relation client et de la démarche qualité." },
+                { text: "Non-conformité mineure si aucune réclamation n'a été reçue.", isCorrect: false, rationale: "Même sans réclamation, l'absence de processus pour les gérer en cas de besoin est une défaillance majeure du système." },
+                { text: "Non-conformité majeure.", isCorrect: true, rationale: "Ne pas avoir de processus pour traiter les difficultés et les réclamations est considéré comme une défaillance critique du système qualité, car cela prive l'organisme d'une source essentielle d'amélioration." },
+                { text: "Recommandation d'amélioration.", isCorrect: false, rationale: "L'exigence de formalisation est explicite dans le guide de lecture ; son absence est un écart (une non-conformité), pas une simple suggestion." }
+            ],
+            hint: "Comment une entreprise peut-elle s'améliorer si elle n'a pas de système pour écouter ses clients mécontents ?"
+        }
+    ];
+
+    function createFilterGroup(groupId, groupData) {
+        const container = document.getElementById(groupId);
+        groupData.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'flex items-center';
+            div.innerHTML = `
+                <input type="checkbox" id="filter-${item.id}" name="${groupId}" value="${item.id}" class="filter-checkbox hidden">
+                <label for="filter-${item.id}" class="w-full cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 shadow-sm hover:bg-slate-50 transition-colors">${item.label}</label>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    function generateAccordion() {
+        const accordionContainer = document.getElementById('criteria-accordion');
+        accordionContainer.innerHTML = ''; // Clear existing
+        db.forEach(criterion => {
+            const criterionDiv = document.createElement('div');
+            criterionDiv.className = 'bg-white rounded-xl shadow-md';
+            criterionDiv.innerHTML = `
+                <div class="accordion-header cursor-pointer p-4 flex justify-between items-center border-b border-slate-200">
+                    <h3 class="text-lg font-semibold text-slate-800">Critère ${criterion.criterionId}: ${criterion.criterionTitle}</h3>
+                    <span class="accordion-icon text-sky-600 text-2xl font-light transform">&#9660;</span>
+                </div>
+                <div class="accordion-content">
+                    <div class="p-4 space-y-6">
+                        ${criterion.indicators.map(indicator => `
+                            <div class="indicator-card p-4 rounded-lg border-l-4 status-not-treated" data-indicator-id="${indicator.id}">
+                                <div class="flex justify-between items-start mb-2">
+                                    <h4 class="font-bold text-md text-sky-700 pr-4">Indicateur ${indicator.id}: ${indicator.title}</h4>
+                                    <select class="status-select select-not-treated text-sm rounded-md border-slate-300" data-indicator-id="${indicator.id}">
+                                        <option value="not-treated">Non traité</option>
+                                        <option value="todo">À faire</option>
+                                        <option value="in-progress">En cours</option>
+                                        <option value="done">Conforme</option>
+                                    </select>
+                                </div>
+                                <p class="text-sm text-slate-600 mt-1 mb-3 italic"><strong>Attendu :</strong> ${indicator.analysis}</p>
+                                <div class="space-y-2">
+                                    ${indicator.evidence.map((evi, index) => `
+                                        <div class="evidence-item flex items-start" data-tags="${evi.tags.join(',')}" data-evidence-id="${indicator.id}-${index}">
+                                            <label class="flex items-start text-sm text-slate-800 cursor-pointer">
+                                                <input type="checkbox" class="evidence-checkbox h-4 w-4 rounded border-slate-300 text-sky-600 focus:ring-sky-500 mt-0.5 mr-3 flex-shrink-0" data-evidence-id="${indicator.id}-${index}">
+                                                <span>${evi.text}</span>
+                                            </label>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            accordionContainer.appendChild(criterionDiv);
+        });
+    }
+    
+    function addEventListeners() {
+        const accordionContainer = document.getElementById('criteria-accordion');
+        accordionContainer.addEventListener('click', function(e) {
+            const header = e.target.closest('.accordion-header');
+            if (header) {
+                header.classList.toggle('open');
+                const content = header.nextElementSibling;
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
+            }
+        });
+        
+        const filterSection = document.getElementById('filters');
+        filterSection.addEventListener('change', applyFilters);
+
+        document.getElementById('reset-filters').addEventListener('click', () => {
+             filterSection.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+             applyFilters();
+        });
+
+        // Lexicon Modal Listeners
+        const openBtn = document.getElementById('open-lexicon-btn');
+        const closeBtn = document.getElementById('close-lexicon-btn');
+        const modal = document.getElementById('lexicon-modal');
+        const modalContainer = modal.querySelector('.modal-container');
+
+        openBtn.addEventListener('click', () => {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modalContainer.classList.remove('scale-95');
+            }, 10);
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modalContainer.classList.add('scale-95');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        });
+        
+        // Export listeners
+        document.getElementById('export-csv-btn').addEventListener('click', exportToCsv);
+        document.getElementById('export-md-btn').addEventListener('click', exportToMarkdown);
+        document.getElementById('export-pdf-btn').addEventListener('click', () => window.print());
+
+        // Back to top button listener
+        const backToTopBtn = document.getElementById('back-to-top-btn');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 200) {
+                backToTopBtn.classList.remove('hidden');
+            } else {
+                backToTopBtn.classList.add('hidden');
+            }
+        });
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // State management listeners
+        accordionContainer.addEventListener('change', e => {
+            if (e.target.classList.contains('status-select')) {
+                const selectElement = e.target;
+                const indicatorId = selectElement.dataset.indicatorId;
+                const status = selectElement.value;
+                if (!indicatorStates[indicatorId]) indicatorStates[indicatorId] = {};
+                indicatorStates[indicatorId].status = status;
+                
+                // Update card style
+                const card = selectElement.closest('.indicator-card');
+                card.classList.remove('status-not-treated', 'status-todo', 'status-in-progress', 'status-done');
+                card.classList.add(`status-${status}`);
+                card.dataset.printStatus = selectElement.options[selectElement.selectedIndex].text;
+
+                // Update select style
+                selectElement.classList.remove('select-not-treated', 'select-todo', 'select-in-progress', 'select-done');
+                selectElement.classList.add(`select-${status}`);
+            }
+            if (e.target.classList.contains('evidence-checkbox')) {
+                const evidenceId = e.target.dataset.evidenceId;
+                if (!indicatorStates[evidenceId]) indicatorStates[evidenceId] = {};
+                indicatorStates[evidenceId].checked = e.target.checked;
+            }
+        });
+    }
+
+    function getApplicableIndicatorIds() {
+        const selectedTypologies = Array.from(document.querySelectorAll('#filter-typology input:checked')).map(cb => cb.value);
+        const selectedContexts = Array.from(document.querySelectorAll('#filter-context input:checked')).map(cb => cb.value);
+        
+        let applicableIndicators = new Set();
+
+        // If no typology is selected, show all indicators
+        if (selectedTypologies.length === 0) {
+            Object.keys(indicatorApplicability).forEach(id => applicableIndicators.add(id));
+        } else {
+             for (const [id, typologies] of Object.entries(indicatorApplicability)) {
+                if (selectedTypologies.some(selected => typologies.includes(selected))) {
+                    applicableIndicators.add(id);
+                }
+            }
+        }
+        
+        // Add indicators based on context, which can add to any typology
+        selectedContexts.forEach(context => {
+            for (const [id, typologies] of Object.entries(indicatorApplicability)) {
+                 if (typologies.includes(context)) {
+                    applicableIndicators.add(id);
+                }
+            }
+        });
+
+        return applicableIndicators;
+    }
+
+    function applyFilters() {
+        const applicableIndicatorIds = getApplicableIndicatorIds();
+        
+        // Show/hide indicator cards
+        document.querySelectorAll('.indicator-card').forEach(card => {
+            const indicatorId = card.dataset.indicatorId;
+            if (applicableIndicatorIds.has(indicatorId)) {
+                card.classList.remove('hidden');
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+
+        // Filter evidence items within visible cards
+        const activeFilters = Array.from(document.querySelectorAll('#filters input:checked')).map(cb => cb.value);
+        document.querySelectorAll('.evidence-item').forEach(item => {
+            const tags = item.dataset.tags.split(',');
+            if (activeFilters.length === 0 || tags.includes('all') || activeFilters.some(filter => tags.includes(filter))) {
+                item.classList.remove('hidden');
+            } else {
+                item.classList.add('hidden');
+            }
+        });
+
+        // Re-calculate accordion heights
+        document.querySelectorAll('.accordion-content').forEach(content => {
+            if(content.style.maxHeight && content.style.maxHeight !== '0px'){
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+        });
+
+        updateIndicatorChart(applicableIndicatorIds.size);
+    }
+
+    function escapeCsvField(field) {
+        if (field === null || field === undefined) {
+            return '';
+        }
+        const stringField = String(field);
+        if (stringField.includes(';') || stringField.includes('"') || stringField.includes('\n')) {
+            return `"${stringField.replace(/"/g, '""')}"`;
+        }
+        return stringField;
+    }
+
+    function exportToCsv() {
+        const applicableIndicatorIds = getApplicableIndicatorIds();
+        let csvContent = "Critere_ID;Critere_Titre;Indicateur_ID;Indicateur_Titre;Statut_Indicateur;Exemple_Preuve;Preuve_Cochee\n";
+        
+        db.forEach(criterion => {
+            const relevantIndicators = criterion.indicators.filter(ind => applicableIndicatorIds.has(ind.id.toString()));
+            
+            if (relevantIndicators.length > 0) {
+                relevantIndicators.forEach(indicator => {
+                    const indicatorStatus = indicatorStates[indicator.id]?.status || 'not-treated';
+                    const statusText = document.querySelector(`.status-select[data-indicator-id="${indicator.id}"] option[value="${indicatorStatus}"]`).textContent;
+
+                     indicator.evidence.forEach((evi, index) => {
+                         const evidenceId = `${indicator.id}-${index}`;
+                         const evidenceItem = document.querySelector(`[data-evidence-id="${evidenceId}"]`);
+                         if (evidenceItem && !evidenceItem.classList.contains('hidden')) {
+                             const isChecked = indicatorStates[evidenceId]?.checked || false;
+                             const row = [
+                                 criterion.criterionId,
+                                 criterion.criterionTitle,
+                                 indicator.id,
+                                 indicator.title,
+                                 statusText,
+                                 evi.text,
+                                 isChecked ? 'Oui' : 'Non'
+                             ].map(escapeCsvField).join(';');
+                             csvContent += row + '\n';
+                         }
+                     });
+                });
+            }
+        });
+
+        const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'export-qualiopi.csv';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function exportToMarkdown() {
+        let markdownContent = `# Base de Données Opérationnelle Qualiopi\n\n`;
+        const activeFilters = Array.from(document.querySelectorAll('#filters input:checked')).map(cb => cb.labels[0].textContent);
+        const applicableIndicatorIds = getApplicableIndicatorIds();
+
+        if (activeFilters.length > 0) {
+            markdownContent += `**Filtres actifs :** ${activeFilters.join(', ')}\n\n`;
+        }
+
+        db.forEach(criterion => {
+            const relevantIndicators = criterion.indicators.filter(ind => applicableIndicatorIds.has(ind.id.toString()));
+            
+            if (relevantIndicators.length > 0) {
+                markdownContent += `## Critère ${criterion.criterionId}: ${criterion.criterionTitle}\n\n`;
+                relevantIndicators.forEach(indicator => {
+                     const indicatorStatus = indicatorStates[indicator.id]?.status || 'not-treated';
+                     const statusText = document.querySelector(`.status-select[data-indicator-id="${indicator.id}"] option[value="${indicatorStatus}"]`).textContent;
+
+                     markdownContent += `### Indicateur ${indicator.id}: ${indicator.title}\n`;
+                     markdownContent += `**Statut :** ${statusText}\n`;
+                     markdownContent += `**Attendu :** ${indicator.analysis}\n\n`;
+                     indicator.evidence.forEach((evi, index) => {
+                         const evidenceId = `${indicator.id}-${index}`;
+                         const evidenceItem = document.querySelector(`[data-evidence-id="${evidenceId}"]`);
+                         if (evidenceItem && !evidenceItem.classList.contains('hidden')) {
+                             const isChecked = indicatorStates[evidenceId]?.checked || false;
+                             markdownContent += `* [${isChecked ? 'x' : ' '}] ${evi.text}\n`;
+                         }
+                     });
+                     markdownContent += `\n`;
+                });
+            }
+        });
+        
+        const blob = new Blob([markdownContent], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'export-qualiopi.md';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    const centerTextPlugin = {
+        id: 'centerText',
+        afterDraw: function(chart) {
+            if (chart.options.plugins.centerText && chart.options.plugins.centerText.text) {
+                let ctx = chart.ctx;
+                ctx.save();
+                let text = chart.options.plugins.centerText.text;
+                let x = (chart.chartArea.left + chart.chartArea.right) / 2;
+                let y = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                
+                ctx.font = 'bold 32px Inter';
+                ctx.fillStyle = '#1e293b';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x, y);
+                ctx.restore();
+            }
+        }
+    };
+    
+    Chart.register(centerTextPlugin);
+
+    function initIndicatorChart() {
+        const ctx = document.getElementById('indicator-chart').getContext('2d');
+        indicatorChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Applicables', 'Non applicables'],
+                datasets: [{
+                    data: [32, 0], // Start with all shown
+                    backgroundColor: ['#0ea5e9', '#e2e8f0'],
+                    borderColor: '#ffffff',
+                    borderWidth: 4,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { enabled: true },
+                    centerText: { text: '32 / 32' }
+                }
+            }
+        });
+    }
+
+    function updateIndicatorChart(applicableCount) {
+        const totalCount = 32;
+        indicatorChart.data.datasets[0].data = [applicableCount, totalCount - applicableCount];
+        indicatorChart.options.plugins.centerText.text = `${applicableCount} / ${totalCount}`;
+        indicatorChart.update();
+    }
+
+    // --- New Functions for Toolkit Tabs ---
+    function setupTabs() {
+        const tabsContainer = document.getElementById('toolkit-tabs');
+        const contentContainer = document.getElementById('toolkit-content');
+        
+        Object.entries(toolkitContent).forEach(([key, value], index) => {
+            const button = document.createElement('a');
+            button.href = '#';
+            button.dataset.tab = key;
+            button.className = `tab-button whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${index === 0 ? 'active' : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'}`;
+            button.textContent = value.title;
+            tabsContainer.appendChild(button);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.id = `tab-content-${key}`;
+            contentDiv.className = `tab-content p-2 ${index === 0 ? 'active' : ''}`;
+            contentDiv.innerHTML = value.content;
+            contentContainer.appendChild(contentDiv);
+        });
+
+        tabsContainer.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (e.target.classList.contains('tab-button')) {
+                const tabId = e.target.dataset.tab;
+                
+                tabsContainer.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                contentContainer.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                const activeContent = document.getElementById(`tab-content-${tabId}`);
+                activeContent.classList.add('active');
+                
+                if (tabId === 'checklist') {
+                    setupToolkitAccordion(); 
+                }
+            }
+        });
+        
+        setupToolkitAccordion(); // Initial call for the first tab
+    }
+
+    // New function for Toolkit Accordion (distinct from main accordion)
+    function setupToolkitAccordion() {
+        const accordionContainer = document.getElementById('checklist-accordion');
+        if (accordionContainer) {
+            accordionContainer.addEventListener('click', (e) => {
+                const header = e.target.closest('.toolkit-accordion-header');
+                if (!header) return;
+
+                const content = header.nextElementSibling;
+                
+                header.classList.toggle('open'); 
+                
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null; // Close
+                } else {
+                    content.style.maxHeight = content.scrollHeight + "px"; // Open
+                }
+            });
+        }
+    }
+
+    // --- New Functions for Quiz ---
+    const quizContainer = document.getElementById('quiz-container');
+    const startScreen = document.getElementById('quiz-start-screen');
+    const mainScreen = document.getElementById('quiz-main-screen');
+    const endScreen = document.getElementById('quiz-end-screen');
+    const startBtn = document.getElementById('start-quiz-btn');
+    const restartBtn = document.getElementById('restart-quiz-btn');
+    const nextBtn = document.getElementById('next-question-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let questions = [];
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        questions = shuffleArray([...quizQuestions]); // Use the new quizQuestions constant
+        startScreen.classList.add('hidden');
+        endScreen.classList.add('hidden');
+        mainScreen.classList.remove('hidden');
+        nextBtn.classList.add('hidden');
+        displayQuestion();
+    }
+
+    function displayQuestion() {
+        const question = questions[currentQuestionIndex];
+        document.getElementById('quiz-progress').textContent = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
+        document.getElementById('question-text').textContent = question.question;
+
+        const answerOptionsContainer = document.getElementById('answer-options');
+        answerOptionsContainer.innerHTML = '';
+        shuffleArray(question.options).forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'quiz-option w-full p-3 text-left bg-white border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors';
+            button.textContent = option.text;
+            button.onclick = () => selectAnswer(button, option, question.options);
+            answerOptionsContainer.appendChild(button);
+        });
+
+        const hintBox = document.getElementById('hint-box');
+        hintBox.textContent = question.hint;
+        hintBox.style.display = 'none';
+
+        document.getElementById('feedback-area').innerHTML = '';
+        nextBtn.classList.add('hidden');
+    }
+
+    function selectAnswer(selectedButton, selectedOption, allOptions) {
+        document.querySelectorAll('.quiz-option').forEach(btn => {
+            btn.disabled = true;
+        });
+
+        const feedbackArea = document.getElementById('feedback-area');
+        feedbackArea.innerHTML = '';
+        
+        if (selectedOption.isCorrect) {
+            score++;
+            selectedButton.classList.add('correct');
+        } else {
+            selectedButton.classList.add('incorrect');
+        }
+
+        allOptions.forEach(opt => {
+            const feedback = document.createElement('div');
+            feedback.className = `p-3 mt-2 text-sm rounded-lg border-l-4 ${opt.isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`;
+            feedback.innerHTML = `<strong>${opt.text}:</strong> ${opt.rationale}`;
+            feedbackArea.appendChild(feedback);
+
+            if(opt.isCorrect && !selectedOption.isCorrect){
+                 document.querySelectorAll('.quiz-option').forEach(btn => {
+                     if(btn.textContent === opt.text) {
+                         btn.classList.add('correct');
+                     }
+                 });
+            }
+        });
+
+        nextBtn.classList.remove('hidden');
+    }
+
+    function showNextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < questions.length) {
+            displayQuestion();
+        } else {
+            showEndScreen();
+        }
+    }
+
+    function showEndScreen() {
+        mainScreen.classList.add('hidden');
+        endScreen.classList.remove('hidden');
+        document.getElementById('quiz-score').textContent = `Votre score : ${score} / ${questions.length}`;
+
+        const percentage = (score / questions.length) * 100;
+        let summaryText = "Continuez à explorer l'application pour renforcer vos connaissances !";
+        if (percentage >= 80) {
+            summaryText = "Excellent ! Vous maîtrisez les points clés de Qualiopi.";
+        } else if (percentage >= 50) {
+            summaryText = "Bon score ! Quelques points sont encore à approfondir.";
+        }
+        document.getElementById('quiz-summary-text').textContent = summaryText;
+    }
+
+
+    // Initialisation
+    createFilterGroup('filter-typology', filters.typology);
+    createFilterGroup('filter-modality', filters.modality);
+    createFilterGroup('filter-size', filters.size);
+    createFilterGroup('filter-context', filters.context);
+    generateAccordion();
+    addEventListeners();
+    initIndicatorChart();
+    applyFilters(); // Apply initial filter state
+
+    // Call new setup functions after existing ones
+    setupTabs();
+    startBtn.addEventListener('click', startQuiz);
+    restartBtn.addEventListener('click', startQuiz);
+    nextBtn.addEventListener('click', showNextQuestion);
+    hintBtn.addEventListener('click', () => {
+        const hintBox = document.getElementById('hint-box');
+        hintBox.style.display = hintBox.style.display === 'none' ? 'block' : 'none';
+    });
+});
+</script>
+
+</body>
+</html>
