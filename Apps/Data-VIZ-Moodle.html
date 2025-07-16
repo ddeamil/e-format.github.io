@@ -7,6 +7,9 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <style>
         :root {
             --bg-color: #f9fafb; --text-color: #1f2937; --card-bg: white; --border-color: #e5e7eb;
@@ -27,7 +30,8 @@
             --details-border: #4b5563; 
         }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-color); background-color: var(--bg-color); line-height: 1.6; transition: background-color 0.3s, color 0.3s; }
-        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 24px; padding: 24px; transition: background-color 0.3s, border-color 0.3s; }
+        .card { background-color: var(--card-bg); border: 1px solid var(--border-color); box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 24px; padding: 24px; transition: background-color 0.3s, border-color 0.3s; opacity: 0; animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
         .chart-container { position: relative; height: 350px; width: 100%; margin-bottom: 30px; }
         .metric-card { background-color: var(--table-row-even-bg); border-left: 4px solid var(--primary-color); padding: 15px; margin-bottom: 15px; border-radius: 6px; transition: background-color 0.3s, border-left-color 0.3s; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -35,7 +39,6 @@
         th { background-color: var(--table-header-bg); font-weight: 600; transition: background-color 0.3s; }
         tr:nth-child(even) { background-color: var(--table-row-even-bg); transition: background-color 0.3s; }
         .filter-input, .filter-select { padding: 8px 12px; border-radius: 4px; border: 1px solid var(--input-border); margin-right: 10px; background-color: var(--input-bg); color: var(--input-text); transition: background-color 0.3s, color 0.3s, border-color 0.3s; }
-        .filter-select { min-width: 150px; } /* Appliqué uniquement au select original s'il en reste */
         .btn { padding: 10px 15px; border-radius: 6px; border: none; cursor: pointer; transition: background-color 0.2s, color 0.2s, transform 0.1s; font-weight: 500;}
         .btn:active { transform: translateY(1px); }
         .btn-primary { background-color: var(--primary-color); color: white; }
@@ -44,9 +47,6 @@
         html.dark .btn-secondary { background-color: #4b5563; }
         .btn-secondary:hover { background-color: #5a6268; }
         html.dark .btn-secondary:hover { background-color: #374151; }
-        .report-title { font-size: 1.1em; font-weight: bold; margin-bottom: 10px; color: var(--text-color); }
-        .filter-checkbox-container { max-height: 120px; overflow-y: auto; border: 1px solid var(--input-border); padding: 10px; border-radius: 4px; background-color: var(--input-bg); transition: background-color 0.3s, border-color 0.3s; }
-        .filter-checkbox-container label { cursor: pointer; }
         .hidden { display: none; }
         #loadingIndicator { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: rgba(0,0,0,0.8); color: white; padding: 25px 30px; border-radius: 8px; z-index: 1000; font-size: 1.2em; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         .notification {
@@ -59,14 +59,10 @@
         }
         @keyframes slideInNotification { to { opacity: 1; transform: translateX(0); } }
         .notification-close { background: none; border: none; color: inherit; font-size: 1.5em; font-weight: bold; cursor: pointer; padding: 0 0 0 15px; line-height: 0.8; }
-        html.dark .notification.warning .notification-close { color: #212529; }
         .notification.success { background-color: #28a745; }
         .notification.error { background-color: #dc3545; }
         .notification.warning { background-color: #ffc107; color: #212529; }
-        html.dark .filter-checkbox-container::-webkit-scrollbar { width: 8px; }
-        html.dark .filter-checkbox-container::-webkit-scrollbar-track { background: var(--card-bg); }
-        html.dark .filter-checkbox-container::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 4px; }
-        html.dark .filter-checkbox-container::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        .notification.warning .notification-close { color: #212529; }
         #scrollToTopBtn {
             position: fixed; bottom: 30px; right: 30px; width: 50px; height: 50px; border-radius: 50%;
             background-color: var(--primary-color); color: white; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -79,15 +75,31 @@
         .hero-banner svg { width: 48px; height: 48px; margin: 0 auto 10px auto; fill: currentColor; }
         details > summary { list-style: none; } 
         details > summary::-webkit-details-marker { display: none; } 
-        details > summary::before { 
-            content: '▶'; margin-right: 0.5em; display: inline-block;
-            transition: transform 0.2s; font-size: 0.8em; color: var(--text-color);
-        }
-        html.dark details > summary::before { color: var(--text-color); }
+        details > summary::before { content: '▶'; margin-right: 0.5em; display: inline-block; transition: transform 0.2s; font-size: 0.8em; color: var(--text-color); }
         details[open] > summary::before { transform: rotate(90deg); }
+        
+        /* Drag and Drop Area */
+        #dropZone {
+            border: 2px dashed var(--input-border);
+            border-radius: 8px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.3s, background-color 0.3s;
+            background-color: var(--card-bg);
+        }
+        #dropZone.dragover {
+            border-color: var(--primary-color);
+            background-color: var(--hero-bg);
+        }
+        #dropZone p {
+            color: var(--text-color);
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
-<body class="bg-gray-50 p-5">
+<body class="p-5">
     <div id="loadingIndicator" class="hidden">Analyse en cours...</div>
     <div id="notificationArea"></div>
 
@@ -96,359 +108,289 @@
             <div class="flex justify-end mb-4 px-4 md:px-0">
                 <button id="themeToggleBtn" class="btn btn-secondary text-sm py-1 px-3">Mode Sombre/Clair</button>
             </div>
-            <h1 class="text-4xl font-bold mb-2 text-gray-900 dark:text-gray-100">Analyse Avancée des Activités LMS Moodle</h1>
+            <h1 class="text-4xl font-bold mb-2">Analyse Avancée des Activités LMS Moodle</h1>
             <p class="text-gray-500 dark:text-gray-300" id="reportPeriod">Chargez un fichier CSV pour commencer l'analyse.</p>
         </header>
 
         <section class="hero-banner">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 mx-auto mb-2">
-                <path fill-rule="evenodd" d="M2.25 2.25a.75.75 0 000 1.5H3v10.5a3 3 0 003 3h1.21l-1.172 3.513a.75.75 0 001.424.475L8.998 18h6.004l1.501 4.504a.75.75 0 001.424-.475L16.79 18h1.21a3 3 0 003-3V3.75h.75a.75.75 0 000-1.5H2.25zM6 6a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 6zm0 3.75A.75.75 0 016.75 9h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 9.75zm0 3.75A.75.75 0 016.75 13.5h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 13.5z" clip-rule="evenodd" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-12 h-12 mx-auto mb-2"><path fill-rule="evenodd" d="M2.25 2.25a.75.75 0 000 1.5H3v10.5a3 3 0 003 3h1.21l-1.172 3.513a.75.75 0 001.424.475L8.998 18h6.004l1.501 4.504a.75.75 0 001.424-.475L16.79 18h1.21a3 3 0 003-3V3.75h.75a.75.75 0 000-1.5H2.25zM6 6a.75.75 0 01.75-.75h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 6zm0 3.75A.75.75 0 016.75 9h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 9.75zm0 3.75A.75.75 0 016.75 13.5h10.5a.75.75 0 010 1.5H6.75A.75.75 0 016 13.5z" clip-rule="evenodd" /></svg>
             <h2 class="text-2xl font-semibold">Un suivi pour mieux accompagner vos apprenants !</h2>
         </section>
 
         <section class="card mb-8">
-            <h2 class="text-2xl font-bold mb-4">Charger et filtrer les données</h2>
-            <div class="mb-6">
-                <label for="csvFile" class="block text-sm font-medium mb-1">Charger un fichier CSV Moodle :</label>
-                <div class="flex items-center">
-                    <input type="file" id="csvFile" accept=".csv" class="p-2 border rounded-md flex-grow filter-input">
-                    <button id="analyseCsvButton" class="btn btn-primary ml-2">Analyser</button>
+            <h2 class="text-2xl font-bold mb-4">1. Charger les données</h2>
+            <div id="dropZone">
+                <p>Glissez-déposez votre fichier CSV ici</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">ou</p>
+                <button type="button" onclick="document.getElementById('csvFile').click()" class="btn btn-primary mt-2">Sélectionner un fichier</button>
+                <input type="file" id="csvFile" accept=".csv" class="hidden">
+            </div>
+        </section>
+
+        <section id="filterSection" class="card mb-8 hidden">
+             <div class="flex justify-between items-center mb-4">
+                 <h2 class="text-2xl font-bold">2. Filtrer les données</h2>
+                 <div class="flex items-center space-x-2">
+                    <button id="exportPdfButton" class="btn btn-secondary text-sm py-1 px-3">Exporter en PDF</button>
+                    <button id="exportJsonButton" class="btn btn-secondary text-sm py-1 px-3">Exporter en JSON</button>
+                    <button id="resetFiltersButton" class="btn btn-secondary text-sm py-1 px-3">Réinitialiser</button>
                 </div>
             </div>
-            <div id="filterSection" class="hidden">
-                 <h3 class="text-xl font-semibold mb-3">Filtres :</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Mois :</label>
-                        <input type="text" id="monthSearch" class="filter-input w-full mb-1 text-sm" placeholder="Rechercher un mois...">
-                        <div id="monthFilterContainer" class="mt-1 filter-checkbox-container">
-                            <div class="mb-1"><input type="checkbox" id="monthFilterAll" checked class="mr-1 month-filter-all"><label for="monthFilterAll" class="cursor-pointer">Tous les mois</label></div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Apprenant :</label>
-                        <input type="text" id="learnerSearch" class="filter-input w-full mb-1 text-sm" placeholder="Rechercher un apprenant...">
-                        <div id="learnerFilterContainer" class="mt-1 filter-checkbox-container">
-                             <div class="mb-1"><input type="checkbox" id="learnerFilterAll" checked class="mr-1 learner-filter-all"><label for="learnerFilterAll" class="cursor-pointer">Tous les apprenants</label></div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium mb-1">Cours :</label> 
-                        <input type="text" id="courseSearch" class="filter-input w-full mb-1 text-sm" placeholder="Rechercher un cours..."> 
-                        <div id="courseFilterContainer" class="mt-1 filter-checkbox-container"> 
-                             <div class="mb-1">
-                                <input type="checkbox" id="courseFilterAll" checked class="mr-1 course-filter-all"> 
-                                <label for="courseFilterAll" class="cursor-pointer">Tous les cours</label> 
-                            </div>
-                        </div>
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Mois :</label>
+                    <div id="monthFilterContainer" class="mt-1 filter-checkbox-container"></div>
                 </div>
-                <div class="flex items-center mt-4">
-                    <button id="applyFiltersButton" class="btn btn-primary">Appliquer les filtres</button>
-                    <button id="resetFiltersButton" class="btn btn-secondary ml-2">Réinitialiser les filtres</button>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Cours :</label> 
+                    <div id="courseFilterContainer" class="mt-1 filter-checkbox-container"></div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Apprenant :</label>
+                    <div id="learnerFilterContainer" class="mt-1 filter-checkbox-container"></div>
                 </div>
             </div>
-             <div id="currentReportInfo" class="report-title mt-6"></div>
         </section>
 
         <div id="reportContent" class="hidden">
             <section class="card mb-8">
                 <h2 class="text-2xl font-bold mb-4">Résumé exécutif</h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div class="metric-card"><h3 class="text-lg font-semibold">Nb. total d'événements</h3><p class="text-3xl font-bold" id="totalEvents">0</p><p class="text-sm text-gray-600 dark:text-gray-400">Activités enregistrées</p></div>
-                    <div class="metric-card"><h3 class="text-lg font-semibold">Utilisateurs actifs</h3><p class="text-3xl font-bold" id="activeUsers">0</p><p class="text-sm text-gray-600 dark:text-gray-400">Utilisateurs uniques</p></div>
-                    <div class="metric-card"><h3 class="text-lg font-semibold">Durée moy. session</h3><p class="text-3xl font-bold" id="avgSessionDuration">0 min</p><p class="text-sm text-gray-600 dark:text-gray-400" id="medianSessionDuration">Médiane: 0 min</p></div>
+                    <div class="metric-card"><h3 class="text-lg font-semibold">Nb. total d'événements</h3><p class="text-3xl font-bold" id="totalEvents">0</p></div>
+                    <div class="metric-card"><h3 class="text-lg font-semibold">Utilisateurs actifs</h3><p class="text-3xl font-bold" id="activeUsers">0</p></div>
+                    <div class="metric-card"><h3 class="text-lg font-semibold">Durée moy. session</h3><p class="text-3xl font-bold" id="avgSessionDuration">0 min</p></div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="metric-card"><h3 class="text-lg font-semibold">Heure de pointe</h3><p class="text-3xl font-bold" id="peakHour">N/A</p><p class="text-sm text-gray-600 dark:text-gray-400" id="peakHourEvents">0 événements</p></div>
-                    <div class="metric-card"><h3 class="text-lg font-semibold">Jour le plus actif</h3><p class="text-3xl font-bold" id="peakDay">N/A</p><p class="text-sm text-gray-600 dark:text-gray-400" id="peakDayEvents">0 événements</p></div>
-                    <div class="metric-card"><h3 class="text-lg font-semibold">Cours le plus actif</h3><p class="text-2xl font-bold" id="mostActiveCourse">N/A</p><p class="text-sm text-gray-600 dark:text-gray-400" id="mostActiveCourseEvents">0 événements</p></div>
+                    <div class="metric-card"><h3 class="text-lg font-semibold">Heure de pointe</h3><p class="text-3xl font-bold" id="peakHour">N/A</p></div>
+                    <div class="metric-card"><h3 class="text-lg font-semibold">Jour le plus actif</h3><p class="text-3xl font-bold" id="peakDay">N/A</p></div>
+                    <div class="metric-card"><h3 class="text-lg font-semibold">Cours le plus actif</h3><p class="text-2xl font-bold" id="mostActiveCourse">N/A</p></div>
                 </div>
             </section>
             <section class="card">
                 <h2 class="text-2xl font-bold mb-6">Analyse de l'activité par utilisateur</h2>
-                <div class="mb-8"><h3 class="text-xl font-semibold mb-4">Nombre d'événements par utilisateur</h3><div class="chart-container"><canvas id="userActivityChart"></canvas></div><div class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="userActivityObservation"></div></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div><h3 class="text-xl font-semibold mb-4">Nombre d'événements par utilisateur</h3><div class="chart-container"><canvas id="userActivityChart"></canvas></div></div>
                     <div><h3 class="text-xl font-semibold mb-4">Temps total passé (min)</h3><div class="chart-container"><canvas id="totalTimeChart"></canvas></div></div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                     <div>
                         <h3 class="text-xl font-semibold mb-4">Score d'engagement par utilisateur</h3>
-                        <div class="chart-container">
-                            <canvas id="engagementScoreChart"></canvas>
-                        </div>
-                        <details class="mt-2 text-sm bg-gray-50 dark:bg-gray-800 p-3 rounded-md shadow-sm border border-gray-200 dark:border-gray-600">
-                            <summary class="font-semibold cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 text-gray-700 dark:text-gray-300">
-                                Comment est calculé le score d'engagement ?
-                            </summary>
-                            <div class="mt-2 pl-4 pt-2 border-l-2 border-gray-300 dark:border-gray-500 text-gray-600 dark:text-gray-400">
-                                <p>Ce score (de 0 à 1, 1 étant le plus élevé) est une mesure composite visant à évaluer l'implication globale d'un utilisateur. Il prend en compte :</p>
-                                <ul class="list-disc pl-5 mt-1 text-xs space-y-1">
-                                    <li><strong>Volume d'activité :</strong> Nombre total d'événements générés (transformé logarithmiquement pour équilibrer).</li>
-                                    <li><strong>Régularité :</strong> Nombre de jours uniques d'activité sur la période.</li>
-                                    <li><strong>Temps passé :</strong> Durée totale cumulée des sessions.</li>
-                                    <li><strong>Diversité des actions :</strong> Nombre de types d'événements distincts.</li>
-                                </ul>
-                                <p class="mt-2 text-xs">Une valeur plus élevée indique un engagement plus fort. Le score est normalisé.</p>
-                            </div>
-                        </details>
+                        <div class="chart-container"><canvas id="engagementScoreChart"></canvas></div>
+                        <details class="mt-2 text-sm p-3 rounded-md shadow-sm border"><summary class="font-semibold cursor-pointer">Comment est calculé le score ?</summary><div class="mt-2 pl-4 pt-2 border-l-2"><p>Ce score (0-1) évalue l'implication d'un utilisateur via :</p><ul class="list-disc pl-5 mt-1 text-xs space-y-1"><li>Volume d'activité</li><li>Régularité (jours uniques)</li><li>Temps passé</li><li>Diversité des actions</li></ul></div></details>
                     </div>
+                    <div><h3 class="text-xl font-semibold mb-4">Distribution des durées de session (Médiane)</h3><div class="chart-container"><canvas id="sessionDurationChart"></canvas></div></div>
                 </div>
                 <h3 class="text-xl font-semibold mb-4">Statistiques des sessions par utilisateur</h3>
                 <div class="overflow-x-auto"><table id="userSessionStatsTable"><thead><tr><th>Utilisateur</th><th>Nb Sessions</th><th>Moy. (min)</th><th>Méd. (min)</th><th>Total (min)</th><th>Total (heures)</th><th>Min (min)</th><th>Max (min)</th></tr></thead><tbody></tbody></table></div>
-                <div class="mb-8"><h3 class="text-xl font-semibold mb-4">Distribution des durées de session (Médiane)</h3><div class="chart-container"><canvas id="sessionDurationChart"></canvas></div><div class="text-sm text-gray-600 dark:text-gray-400 mt-2"><p><strong>Note:</strong> Sessions = activités consécutives < 30 min d'intervalle.</p></div></div>
             </section>
             <section class="card mt-8">
-                <h2 class="text-2xl font-bold mb-6">Analyse de l'activité par cours</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div><h3 class="text-xl font-semibold mb-4">Nombre d'événements par cours</h3><div class="chart-container"><canvas id="courseActivityChart"></canvas></div></div>
-                    <div><h3 class="text-xl font-semibold mb-4">Temps total passé par cours (min)</h3><div class="chart-container"><canvas id="courseTimeChart"></canvas></div></div>
+                <h2 class="text-2xl font-bold mb-6">Analyse des Composants et Contenus</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div><h3 class="text-xl font-semibold mb-4">Événements par type de composant</h3><div class="chart-container"><canvas id="componentChart"></canvas></div></div>
+                    <div><h3 class="text-xl font-semibold mb-4">Événements par cours</h3><div class="chart-container"><canvas id="courseActivityChart"></canvas></div></div>
                 </div>
-                <div class="mb-8"><h3 class="text-xl font-semibold mb-4">Durée moyenne des sessions par cours</h3><div class="chart-container"><canvas id="courseAvgSessionChart"></canvas></div><div class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="courseAvgSessionObservation"></div></div>
-                <h3 class="text-xl font-semibold mb-4">Statistiques des sessions par cours</h3>
-                <div class="overflow-x-auto"><table id="courseSessionStatsTable"><thead><tr><th>Cours</th><th>Nb Sessions</th><th>Moy. (min)</th><th>Total (min)</th><th>Util. Uniques</th></tr></thead><tbody></tbody></table></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div><h3 class="text-xl font-semibold mb-4">Temps total passé par cours (min)</h3><div class="chart-container"><canvas id="courseTimeChart"></canvas></div></div>
+                    <div><h3 class="text-xl font-semibold mb-4">Durée moyenne des sessions par cours</h3><div class="chart-container"><canvas id="courseAvgSessionChart"></canvas></div></div>
+                </div>
             </section>
             <section class="card mt-8">
                 <h2 class="text-2xl font-bold mb-6">Analyse des tendances temporelles</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div><h3 class="text-xl font-semibold mb-4">Activité par jour de la semaine</h3><div class="chart-container"><canvas id="weekdayActivityChart"></canvas></div><div class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="weekdayActivityObservation"></div></div>
-                    <div><h3 class="text-xl font-semibold mb-4">Activité par heure de la journée</h3><div class="chart-container"><canvas id="hourlyActivityChart"></canvas></div><div class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="hourlyActivityObservation"></div></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                    <div><h3 class="text-xl font-semibold mb-4">Activité par jour de la semaine</h3><div class="chart-container"><canvas id="weekdayActivityChart"></canvas></div></div>
+                    <div><h3 class="text-xl font-semibold mb-4">Activité par heure de la journée</h3><div class="chart-container"><canvas id="hourlyActivityChart"></canvas></div></div>
                 </div>
-                <div class="mb-8">
-                    <h3 class="text-xl font-semibold mb-4">Heatmap d'activité par jour et heure</h3>
-                    <div class="chart-container h-96" id="heatmapContainer"><canvas id="heatmapChart"></canvas></div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="heatmapObservation"></div>
-                </div>
-                <div class="mb-8">
-                    <h3 class="text-xl font-semibold mb-4">Évolution de l'activité sur la période d'analyse</h3>
-                    <div class="chart-container" id="dailyActivityContainer"><canvas id="dailyActivityChart"></canvas></div>
-                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-2" id="dailyActivityObservation"></div>
+                <div id="monthlyTimeChartContainer" class="hidden">
+                    <h3 class="text-xl font-semibold mb-4">Évolution du Temps de Connexion par Mois</h3>
+                    <div class="chart-container"><canvas id="monthlyTimeChart"></canvas></div>
                 </div>
             </section>
             <section class="card mt-8" id="insightsSection">
                 <h2 class="text-2xl font-bold mb-6">Insights et recommandations</h2>
-                <div class="mb-6">
-                    <h3 class="text-xl font-semibold mb-3">Principaux constats</h3>
-                    <div id="unparsableDatesWarningArea" class="mb-3 text-sm"></div>
-                    <ul class="list-disc pl-5 space-y-2" id="mainInsightsList"></ul>
-                </div>
-                <div>
-                    <h3 class="text-xl font-semibold mb-3">Recommandations</h3>
-                    <ul class="list-disc pl-5 space-y-2" id="recommendationsList"></ul>
+                <div id="unparsableDatesWarningArea" class="mb-4"></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div><h3 class="text-xl font-semibold mb-3">Principaux constats</h3><ul class="list-disc pl-5 space-y-2" id="mainInsightsList"></ul></div>
+                    <div><h3 class="text-xl font-semibold mb-3">Recommandations</h3><ul class="list-disc pl-5 space-y-2" id="recommendationsList"></ul></div>
                 </div>
             </section>
         </div> 
 
         <button id="scrollToTopBtn" title="Retour en haut">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" /></svg>
         </button>
 
-        <footer class="text-center py-8 mt-10 border-t border-gray-200 dark:border-gray-700">
-            <p class="text-sm text-gray-500 dark:text-gray-400" id="reportGeneratedDate">Prêt à analyser.</p>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Desmond de Amil - IRP 2025</p>
+        <footer class="text-center py-8 mt-10 border-t">
+            <p class="text-sm text-gray-500" id="reportGeneratedDate">Prêt à analyser.</p>
+            <p class="text-sm text-gray-500 mt-1">Desmond de Amil - IRP 2025</p>
         </footer>
     </div>
 
     <script>
-        // --- CHART INSTANCES & GLOBAL VARS (Identiques) ---
-        // ... (le reste du JS est identique à la version précédente qui incluait déjà les modifications pour le score d'engagement et le filtre des cours en cases à cocher) ...
+        // --- CHART INSTANCES & GLOBAL VARS ---
         let userActivityChartInstance, totalTimeChartInstance, engagementScoreChartInstance, sessionDurationChartInstance;
-        let courseActivityChartInstance, courseTimeChartInstance, courseAvgSessionChartInstance;
-        let weekdayActivityChartInstance, hourlyActivityChartInstance, heatmapChartInstance, dailyActivityChartInstance;
+        let courseActivityChartInstance, courseTimeChartInstance, courseAvgSessionChartInstance, componentChartInstance;
+        let weekdayActivityChartInstance, hourlyActivityChartInstance, monthlyTimeChartInstance;
         let allUploadedData = []; 
         let currentFilteredData = [];
         let currentFileName = "";
         const frenchMonths = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
 
         // --- UTILITY FUNCTIONS ---
-        function getColors(n) { 
-            const baseColors = ['rgba(54, 162, 235, 0.7)', 'rgba(255, 99, 132, 0.7)', 'rgba(75, 192, 192, 0.7)', 'rgba(255, 159, 64, 0.7)', 'rgba(153, 102, 255, 0.7)', 'rgba(255, 205, 86, 0.7)', 'rgba(201, 203, 207, 0.7)', 'rgba(255, 159, 243, 0.7)', 'rgba(75, 122, 102, 0.7)', 'rgba(159, 64, 255, 0.7)'];
-            let colors = []; for (let i = 0; i < n; i++) colors.push(baseColors[i % baseColors.length]); return colors;
+        function getColors(n, opacity = 0.7) { 
+            const baseColors = ['54, 162, 235', '255, 99, 132', '75, 192, 192', '255, 159, 64', '153, 102, 255', '255, 205, 86', '201, 203, 207'];
+            let colors = []; for (let i = 0; i < n; i++) colors.push(`rgba(${baseColors[i % baseColors.length]}, ${opacity})`); return colors;
+        }
+
+        function getEngagementColor(score) {
+            const r = Math.round(255 * (1 - score));
+            const g = Math.round(255 * score);
+            return `rgba(${r}, ${g}, 0, 0.7)`;
         }
         
         function parseFrenchDate(dateString) { 
             if (!dateString || typeof dateString !== 'string') return null;
             const monthMap = {
-                'janv':0,  'janvier':0,  'janv.':0,
-                'févr':1,  'fev':1,    'février':1, 'fév.':1,
-                'mars':2,  
-                'avr':3,   'avril':3,   'avr.':3,
-                'mai':4,   
-                'juin':5,
-                'juill':6, 'juillet':6, 'juill.':6,
-                'août':7,  'aout':7,    'août.':7, 
-                'sept':8,  'septembre':8,'sept.':8,
-                'oct':9,   'octobre':9, 'oct.':9,
-                'nov':10,  'novembre':10,'nov.':10,
-                'déc':11,  'décembre':11,'déc.':11
+                'janv':0,  'janvier':0,  'janv.':0, 'févr':1,  'fev':1,    'février':1, 'fév.':1, 'mars':2, 'avr':3,   'avril':3,   'avr.':3, 'mai':4, 'juin':5, 'juil':6,  'juill':6, 'juillet':6, 'juill.':6, 'août':7,  'aout':7,    'août.':7, 'sept':8,  'septembre':8,'sept.':8, 'oct':9,   'octobre':9, 'oct.':9, 'nov':10,  'novembre':10,'nov.':10, 'déc':11,  'décembre':11,'déc.':11
             };
             const parts = dateString.match(/(\d{1,2})\s([a-zA-Zûéàâêîôäëïöüçÿ]+)(\.?)\s(\d{2}),\s(\d{2}):(\d{2}):(\d{2})/i);
-            if (!parts) { return null; }
-            const day = parseInt(parts[1],10);
-            let monthStrFromRegex = parts[2].toLowerCase(); 
-            const month = monthMap[monthStrFromRegex]; 
-            const year = parseInt(parts[4],10)+2000; 
-            const hours = parseInt(parts[5],10);
-            const minutes = parseInt(parts[6],10);
-            const seconds = parseInt(parts[7],10);
-            if (month === undefined) { /* console.warn(`parseFrenchDate: Mois non trouvé. Original: "${dateString}", monthStrFromRegex: "${monthStrFromRegex}"`); */ }
-            if ([day,month,year,hours,minutes,seconds].some(isNaN)) { return null;}
+            if (!parts) return null;
+            const day = parseInt(parts[1],10), monthStr = parts[2].toLowerCase(), month = monthMap[monthStr], year = parseInt(parts[4],10)+2000, hours = parseInt(parts[5],10), minutes = parseInt(parts[6],10), seconds = parseInt(parts[7],10);
+            if (month === undefined || [day,month,year,hours,minutes,seconds].some(isNaN)) return null;
             return new Date(year,month,day,hours,minutes,seconds);
         }
 
-        function destroyChart(instance) { if (instance) instance.destroy(); }
         function destroyAllCharts() {
-            [userActivityChartInstance, totalTimeChartInstance, engagementScoreChartInstance, sessionDurationChartInstance, courseActivityChartInstance, courseTimeChartInstance, courseAvgSessionChartInstance, weekdayActivityChartInstance, hourlyActivityChartInstance, heatmapChartInstance, dailyActivityChartInstance].forEach(destroyChart);
+            [userActivityChartInstance, totalTimeChartInstance, engagementScoreChartInstance, sessionDurationChartInstance, courseActivityChartInstance, courseTimeChartInstance, courseAvgSessionChartInstance, componentChartInstance, weekdayActivityChartInstance, hourlyActivityChartInstance, monthlyTimeChartInstance].forEach(instance => {
+                if(instance) instance.destroy();
+            });
         }
         
         function showNotification(message, type = 'success', autoDismiss = true) {
             const notificationArea = document.getElementById('notificationArea');
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
-            
-            const messageSpan = document.createElement('span');
-            messageSpan.innerHTML = message; 
-            notification.appendChild(messageSpan);
-
-            const closeButton = document.createElement('button');
-            closeButton.innerHTML = '×';
-            closeButton.className = 'notification-close';
-            closeButton.setAttribute('aria-label', 'Fermer la notification');
-            closeButton.onclick = () => {
-                notification.style.opacity = '0';
-                notification.style.transform = 'translateX(100%)';
-                notification.style.transition = 'opacity 0.3s ease-out, transform 0.3s ease-out'; 
-                setTimeout(() => notification.remove(), 300);
-            };
-            notification.appendChild(closeButton);
-
+            notification.innerHTML = `<span>${message}</span><button class="notification-close">&times;</button>`;
             notificationArea.appendChild(notification);
-            void notification.offsetWidth; 
-            notification.style.opacity = '1';
-            notification.style.transform = 'translateX(0)';
+            notification.querySelector('.notification-close').onclick = () => notification.remove();
+            if (autoDismiss) setTimeout(() => notification.remove(), 7000);
+        }
 
-            if (autoDismiss) { 
-                setTimeout(() => {
-                    if (notification.parentElement) { 
-                         closeButton.click();
-                    }
-                }, 7000); 
+        function truncateLabel(label, maxLength = 25) {
+            if (label.length > maxLength) {
+                return label.substring(0, maxLength) + '...';
             }
+            return label;
         }
 
         function renderReport(reportData) { 
             destroyAllCharts();
             document.getElementById('reportContent').classList.remove('hidden');
 
-            const summaryIds = ['totalEvents', 'activeUsers', 'avgSessionDuration', 'medianSessionDuration', 'peakHour', 'peakHourEvents', 'peakDay', 'peakDayEvents', 'mostActiveCourse', 'mostActiveCourseEvents', 'reportPeriod'];
-            summaryIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) element.textContent = reportData.summary?.[id] || (id.includes('Duration') || id.includes('Events') ? '0' : 'N/A');
-            });
-             if(reportData.summary?.medianSessionDuration) document.getElementById('medianSessionDuration').textContent = reportData.summary.medianSessionDuration; 
-
-            const observationIds = ['userActivityObservation', 'courseAvgSessionObservation', 'weekdayActivityObservation', 'hourlyActivityObservation', 'heatmapObservation', 'dailyActivityObservation'];
-            observationIds.forEach(id => {
-                document.getElementById(id).innerHTML = reportData.summary?.[id] || 'Aucune observation disponible.';
-            });
+            const summaryIds = { totalEvents: '0', activeUsers: '0', avgSessionDuration: '0 min', peakHour: 'N/A', peakDay: 'N/A', mostActiveCourse: 'N/A' };
+            Object.keys(summaryIds).forEach(id => { document.getElementById(id).textContent = reportData.summary?.[id] || summaryIds[id]; });
             
             const unparsableWarningArea = document.getElementById('unparsableDatesWarningArea');
-            if (reportData.summary?.unparsableDatesWarning && reportData.summary.unparsableDatesWarning !== "") {
-                unparsableWarningArea.innerHTML = `<p class="p-3 bg-yellow-100 dark:bg-yellow-800 border-l-4 border-yellow-500 dark:border-yellow-400 text-yellow-800 dark:text-yellow-200 rounded">${reportData.summary.unparsableDatesWarning}</p>`;
+            if (reportData.summary?.unparsableDatesWarning) {
+                unparsableWarningArea.innerHTML = `<p class="p-3 bg-yellow-100 dark:bg-yellow-800 border-l-4 border-yellow-500 text-yellow-800 dark:text-yellow-200 rounded">${reportData.summary.unparsableDatesWarning}</p>`;
                 unparsableWarningArea.classList.remove('hidden');
             } else {
-                unparsableWarningArea.innerHTML = '';
                 unparsableWarningArea.classList.add('hidden');
             }
 
-            const insightsLists = { main: 'mainInsightsList', recommendations: 'recommendationsList' };
+            const insightsLists = { mainInsights: 'mainInsightsList', recommendations: 'recommendationsList' };
             for (const key in insightsLists) {
                 const listElem = document.getElementById(insightsLists[key]);
                 listElem.innerHTML = ''; 
-                (reportData.insights?.[key] || [`Aucun(e) ${key} pertinent(e) pour ces données.`]).forEach(item => {
-                    const li = document.createElement('li'); li.innerHTML = item; listElem.appendChild(li);
+                (reportData.insights?.[key] || []).forEach(item => {
+                    const li = document.createElement('li');
+                    li.innerHTML = item;
+                    listElem.appendChild(li);
                 });
             }
 
-            const userColors = getColors(reportData.userNames?.length || 0);
-            if(reportData.userNames?.length > 0 && document.getElementById('userActivityChart')) {
-                userActivityChartInstance = new Chart(document.getElementById('userActivityChart'), {type:'bar',data:{labels:reportData.userNames, datasets:[{label:'Événements',data:reportData.eventCounts,backgroundColor:userColors}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?(v/1000).toFixed(0)+'k':v}}}}});
-                totalTimeChartInstance = new Chart(document.getElementById('totalTimeChart'), {type:'bar',data:{labels:reportData.userNames, datasets:[{label:'Temps (min)',data:reportData.totalTimes,backgroundColor:userColors}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}}}}});
-                engagementScoreChartInstance = new Chart(document.getElementById('engagementScoreChart'), {type:'bar',data:{labels:reportData.userNames, datasets:[{label:'Score',data:reportData.engagementScores,backgroundColor:userColors}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:Math.max(1.0,...(reportData.engagementScores || [1.0])),ticks:{callback:v=>v.toFixed(1)}}}}});
-                sessionDurationChartInstance = new Chart(document.getElementById('sessionDurationChart'), {type:'bar',data:{labels:Object.keys(reportData.sessionData),datasets:[{label:'Médiane (min)',data:Object.values(reportData.sessionData).map(d=>d.median),backgroundColor:userColors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{afterLabel:ctx=>{const u=ctx.label;const d=reportData.sessionData[u];return d?[`Min: ${d.min.toFixed(2)}`,`Q1: ${d.q1.toFixed(2)}`,`Méd: ${d.median.toFixed(2)}`,`Q3: ${d.q3.toFixed(2)}`,`Max: ${d.max.toFixed(2)}`]:'';}}}},scales:{y:{beginAtZero:true,title:{display:true,text:'Durée (minutes)'}}}}});
+            if(reportData.userNames?.length > 0) {
+                userActivityChartInstance = new Chart(document.getElementById('userActivityChart'), {type:'bar',data:{labels:reportData.userNames, datasets:[{label:'Événements',data:reportData.eventCounts,backgroundColor:getColors(reportData.userNames.length)}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+                totalTimeChartInstance = new Chart(document.getElementById('totalTimeChart'), {type:'bar',data:{labels:reportData.userNames, datasets:[{label:'Temps (min)',data:reportData.totalTimes,backgroundColor:getColors(reportData.userNames.length)}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+                engagementScoreChartInstance = new Chart(document.getElementById('engagementScoreChart'), {type:'bar',data:{labels:reportData.userNames, datasets:[{label:'Score',data:reportData.engagementScores,backgroundColor:reportData.engagementScores.map(score => getEngagementColor(score))}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,max:1}}}});
+                sessionDurationChartInstance = new Chart(document.getElementById('sessionDurationChart'), {type:'bar',data:{labels:Object.keys(reportData.sessionData),datasets:[{label:'Médiane (min)',data:Object.values(reportData.sessionData).map(d=>d.median),backgroundColor:getColors(Object.keys(reportData.sessionData).length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{
+                    afterLabel: ctx => {
+                        const u = ctx.label;
+                        const d = reportData.sessionData[u];
+                        if (!d) return '';
+                        const format = (val) => (typeof val === 'number' && isFinite(val)) ? val.toFixed(2) : '0.00';
+                        return [
+                            `Min: ${format(d.min)}`,
+                            `Q1: ${format(d.q1)}`,
+                            `Méd: ${format(d.median)}`,
+                            `Q3: ${format(d.q3)}`,
+                            `Max: ${format(d.max)}`
+                        ];
+                    }
+                }}},scales:{y:{beginAtZero:true,title:{display:true,text:'Durée (minutes)'}}}}});
             }
             
             const userSessionTableBody = document.getElementById('userSessionStatsTable').tBodies[0];
             userSessionTableBody.innerHTML = ''; 
             (reportData.userSessionStats || []).forEach(s=>{
                 const r=userSessionTableBody.insertRow();
-                r.insertCell().textContent=s.user;
-                r.insertCell().textContent=s.sessions;
-                r.insertCell().textContent=s.avg.toFixed(2);
-                r.insertCell().textContent=s.median.toFixed(2);
-                r.insertCell().textContent=s.total.toFixed(2);
-                const totalHours = s.total > 0 ? (s.total / 60).toFixed(2) : "0.00"; 
-                r.insertCell().textContent = totalHours; 
-                r.insertCell().textContent=s.min.toFixed(2);
-                r.insertCell().textContent=s.max.toFixed(2);
+                r.innerHTML = `<td>${s.user}</td><td>${s.sessions}</td><td>${s.avg.toFixed(2)}</td><td>${s.median.toFixed(2)}</td><td>${s.total.toFixed(2)}</td><td>${(s.total / 60).toFixed(2)}</td><td>${s.min.toFixed(2)}</td><td>${s.max.toFixed(2)}</td>`;
             });
-            if (userSessionTableBody.rows.length === 0) userSessionTableBody.innerHTML = '<tr><td colspan="8" class="text-center">Aucune donnée utilisateur pour les sessions.</td></tr>';
 
-            const courseColors = getColors(reportData.courseNames?.length || 0);
-            if(reportData.courseNames?.length > 0 && document.getElementById('courseActivityChart')){
-                courseActivityChartInstance = new Chart(document.getElementById('courseActivityChart'),{type:'bar',data:{labels:reportData.courseNames,datasets:[{label:'Événements',data:reportData.courseEvents,backgroundColor:courseColors}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-                courseTimeChartInstance = new Chart(document.getElementById('courseTimeChart'),{type:'bar',data:{labels:reportData.courseNames,datasets:[{label:'Temps (min)',data:reportData.courseTimes,backgroundColor:courseColors}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
-                courseAvgSessionChartInstance = new Chart(document.getElementById('courseAvgSessionChart'),{type:'bar',data:{labels:reportData.courseNames,datasets:[{label:'Moy. Session (min)',data:reportData.courseAvgDurations,backgroundColor:courseColors}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+            if(reportData.courseNames?.length > 0){
+                courseActivityChartInstance = new Chart(document.getElementById('courseActivityChart'),{type:'bar',data:{labels:reportData.truncatedCourseNames,datasets:[{label:'Événements',data:reportData.courseEvents,backgroundColor:getColors(reportData.courseNames.length)}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}, tooltip:{callbacks:{title: (tooltipItems) => reportData.courseNames[tooltipItems[0].dataIndex]}}},scales:{x:{beginAtZero:true}}}});
+                courseTimeChartInstance = new Chart(document.getElementById('courseTimeChart'),{type:'bar',data:{labels:reportData.truncatedCourseNames,datasets:[{label:'Temps (min)',data:reportData.courseTimes,backgroundColor:getColors(reportData.courseNames.length)}]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}, tooltip:{callbacks:{title: (tooltipItems) => reportData.courseNames[tooltipItems[0].dataIndex]}}},scales:{x:{beginAtZero:true}}}});
+                courseAvgSessionChartInstance = new Chart(document.getElementById('courseAvgSessionChart'),{type:'bar',data:{labels:reportData.truncatedCourseNames,datasets:[{label:'Moy. Session (min)',data:reportData.courseAvgDurations,backgroundColor:getColors(reportData.courseNames.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}, tooltip:{callbacks:{title: (tooltipItems) => reportData.courseNames[tooltipItems[0].dataIndex]}}},scales:{y:{beginAtZero:true}}}});
             }
-            const courseSessionTableBody = document.getElementById('courseSessionStatsTable').tBodies[0];
-            courseSessionTableBody.innerHTML = '';
-            (reportData.courseSessionStats || []).forEach(s=>{const r=courseSessionTableBody.insertRow();r.insertCell().textContent=s.course;r.insertCell().textContent=s.sessions;r.insertCell().textContent=s.avg.toFixed(2);r.insertCell().textContent=s.total.toFixed(2);r.insertCell().textContent=s.users;});
-            if (courseSessionTableBody.rows.length === 0) courseSessionTableBody.innerHTML = '<tr><td colspan="5" class="text-center">Aucune donnée de cours pour les sessions.</td></tr>';
+            if(reportData.componentNames?.length > 0){
+                componentChartInstance = new Chart(document.getElementById('componentChart'),{type:'pie',data:{labels:reportData.componentNames,datasets:[{data:reportData.componentCounts,backgroundColor:getColors(reportData.componentNames.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right'}}}});
+            }
 
-            const heatmapContainer = document.getElementById('heatmapContainer');
-            const dailyActivityContainer = document.getElementById('dailyActivityContainer');
-            
-            heatmapContainer.innerHTML = '<canvas id="heatmapChart"></canvas>'; 
-            dailyActivityContainer.innerHTML = '<canvas id="dailyActivityChart"></canvas>';
-
-            if(reportData.weekdays?.length > 0 && document.getElementById('weekdayActivityChart')) {
+            if(reportData.weekdays?.length > 0) {
                 weekdayActivityChartInstance = new Chart(document.getElementById('weekdayActivityChart'),{type:'bar',data:{labels:reportData.weekdays,datasets:[{label:'Événements',data:reportData.weekdayCounts,backgroundColor:getColors(reportData.weekdays.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
             }
-            if(reportData.hours?.length > 0 && document.getElementById('hourlyActivityChart')) {
-                 hourlyActivityChartInstance = new Chart(document.getElementById('hourlyActivityChart'),{type:'bar',data:{labels:reportData.hours,datasets:[{label:'Événements',data:reportData.hourlyCounts,backgroundColor:getColors(reportData.hours.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true},x:{display:true,ticks:{autoSkip:true,maxRotation:0,minRotation:0}}}}});
+            if(reportData.hours?.length > 0) {
+                 hourlyActivityChartInstance = new Chart(document.getElementById('hourlyActivityChart'),{type:'bar',data:{labels:reportData.hours,datasets:[{label:'Événements',data:reportData.hourlyCounts,backgroundColor:getColors(reportData.hours.length)}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+            }
+            
+            const monthlyTimeChartContainer = document.getElementById('monthlyTimeChartContainer');
+            if(reportData.monthlyTimeLabels?.length > 1) {
+                monthlyTimeChartContainer.classList.remove('hidden');
+                monthlyTimeChartInstance = new Chart(document.getElementById('monthlyTimeChart'), {type:'line', data:{labels:reportData.monthlyTimeLabels, datasets:[{label:'Heures de connexion', data:reportData.monthlyTimeData, fill:true, borderColor: 'rgb(75, 192, 192)', tension:0.1}]}, options:{responsive:true, maintainAspectRatio:false, scales:{y:{beginAtZero:true, title:{display:true, text:'Heures'}}}}});
+            } else {
+                monthlyTimeChartContainer.classList.add('hidden');
             }
 
-            if (reportData.heatmapData?.length > 0 && reportData.weekdays?.length > 0 && reportData.hours?.length > 0 && document.getElementById('heatmapChart')) {
-                heatmapChartInstance = new Chart(document.getElementById('heatmapChart'),{type:'scatter',data:{datasets:[{label:'Activité',data:reportData.heatmapData.map(p=>({x:reportData.weekdays.indexOf(p.x),y:reportData.hours.indexOf(p.y),v:p.v})),pointRadius:ctx=>Math.sqrt(ctx.raw.v)*0.8,backgroundColor:ctx=>`rgba(255,${Math.floor(255*(1-(ctx.raw.v/(Math.max(...reportData.heatmapData.map(pt=>pt.v),1)))))},0,0.7)`}]},options:{responsive:true,maintainAspectRatio:false,scales:{x:{type:'linear',position:'bottom',min:-0.5,max:reportData.weekdays.length-0.5,ticks:{callback:v=>reportData.weekdays[v],stepSize:1},grid:{display:true}},y:{reverse:true,min:-0.5,max:reportData.hours.length-0.5,ticks:{callback:v=>reportData.hours[v],stepSize:1},grid:{display:true}}},plugins:{tooltip:{callbacks:{label:ctx=>`${reportData.weekdays[Math.round(ctx.parsed.x)]} à ${reportData.hours[Math.round(ctx.parsed.y)]} : ${ctx.raw.v} événements`}},legend:{display:false}}}});
-            } else {
-                heatmapContainer.innerHTML = '<p class="text-center text-gray-500 py-10">Données insuffisantes pour afficher le heatmap.</p>';
-            }
-            
-            if(reportData.dailyActivityDates?.length > 0 && document.getElementById('dailyActivityChart')) {
-                dailyActivityChartInstance = new Chart(document.getElementById('dailyActivityChart'),{type:'line',data:{labels:reportData.dailyActivityDates,datasets:[{label:'Événements',data:reportData.dailyActivityValues,fill:false,borderColor:'rgba(54,162,235,1)',tension:0.1,pointRadius:4}]},options:{responsive:true,maintainAspectRatio:false,scales:{y:{beginAtZero:true},x:{ticks:{maxRotation:45,minRotation:45}}}}});
-            } else {
-                dailyActivityContainer.innerHTML = '<p class="text-center text-gray-500 py-10">Données insuffisantes pour afficher l\'évolution quotidienne.</p>';
-            }
-            
-            document.getElementById('currentReportInfo').textContent = `Rapport pour : ${currentFileName} ${currentFilteredData.length !== allUploadedData.length ? '(Filtres Appliqués)' : ''}`;
             const genDate = new Date();
             document.getElementById('reportGeneratedDate').textContent = `Rapport généré le ${genDate.toLocaleDateString('fr-FR')} à ${genDate.toLocaleTimeString('fr-FR')} | ${reportData.summary?.reportPeriod || ''}`;
         }
         
+        function applyAndProcessData() {
+            const getSelected = (type) => Array.from(document.querySelectorAll(`#${type}FilterContainer input[type=checkbox]:checked:not(#${type}FilterAll)`)).map(cb => cb.value);
+            const selectedMonths = getSelected('month');
+            const selectedLearners = getSelected('learner');
+            const selectedCourses = getSelected('course');
+
+            currentFilteredData = allUploadedData.filter(item => {
+                const monthMatch = document.getElementById('monthFilterAll').checked || (item.parsedDate && selectedMonths.includes(`${frenchMonths[item.parsedDate.getMonth()]} ${item.parsedDate.getFullYear()}`));
+                const learnerMatch = document.getElementById('learnerFilterAll').checked || selectedLearners.includes(item["Nom complet de l’utilisateur"]);
+                const courseName = item["Contexte de l’événement"]?.startsWith("Cours: ") ? item["Contexte de l’événement"].substring(7).trim() : null;
+                const courseMatch = document.getElementById('courseFilterAll').checked || (courseName && selectedCourses.includes(courseName));
+                return monthMatch && learnerMatch && courseMatch;
+            });
+            processAndAnalyzeData(currentFilteredData);
+        }
+
         function processAndAnalyzeData(dataToProcess) { 
-            currentFilteredData = dataToProcess;
             if (dataToProcess.length === 0) {
-                console.warn("processAndAnalyzeData: Aucune donnée à traiter.");
-                document.getElementById('reportContent').classList.add('hidden');
-                document.getElementById('filterSection').classList.remove('hidden'); 
-                document.getElementById('currentReportInfo').textContent = `Rapport pour : ${currentFileName} (Aucune donnée ne correspond aux filtres).`;
-                document.getElementById('reportPeriod').textContent = `Fichier: ${currentFileName} (Aucune donnée à afficher)`;
+                showNotification("Aucune donnée ne correspond aux filtres actuels.", "warning");
+                destroyAllCharts();
+                const summaryIds = { totalEvents: '0', activeUsers: '0', avgSessionDuration: '0 min', peakHour: 'N/A', peakDay: 'N/A', mostActiveCourse: 'N/A' };
+                Object.keys(summaryIds).forEach(id => { document.getElementById(id).textContent = summaryIds[id]; });
                 return;
             }
 
-            const users = [...new Set(dataToProcess.map(item => item["Nom complet de l’utilisateur"]))].filter(user => user && user.trim() !== "" && user !== "Nom complet de l’utilisateur");
-            const courses = [...new Set(dataToProcess.map(item => (item["Contexte de l’événement"]?.startsWith("Cours: ") ? item["Contexte de l’événement"].substring(7).trim() : null)))].filter(course => course && course.trim() !== "" && course !== "Contexte de l’événement");
+            const users = [...new Set(dataToProcess.map(item => item["Nom complet de l’utilisateur"]))].filter(Boolean);
+            const courses = [...new Set(dataToProcess.map(item => (item["Contexte de l’événement"]?.startsWith("Cours: ") ? item["Contexte de l’événement"].substring(7).trim() : null)))].filter(Boolean);
 
             const eventCountsByUser = users.map(user => ({user, count: dataToProcess.filter(i=>i["Nom complet de l’utilisateur"]===user).length})).sort((a,b)=>b.count-a.count);
             const sessionStatsByUser = calculateSessionStats(dataToProcess, 'Nom complet de l’utilisateur');
@@ -462,20 +404,27 @@
                 return Math.min(1, Math.max(0, rawScore)); 
             });
             const totalTimesOrdered = userNamesForCharts.map(u => sessionStatsByUser[u]?.totalDuration || 0);
-
-            const sessionDataForChart = {};
-            userNamesForCharts.forEach(user => {
-                const s = sessionStatsByUser[user];
-                sessionDataForChart[user] = s ? {median:s.medianDuration,q1:s.q1Duration,q3:s.q3Duration,min:s.minDuration,max:s.maxDuration} : {median:0,q1:0,q3:0,min:0,max:0};
-            });
             const userSessionStatsForTable = userNamesForCharts.map(user => {
                 const s=sessionStatsByUser[user];
                 return {user,sessions:s?.count||0,avg:s?.avgDuration||0,median:s?.medianDuration||0,total:s?.totalDuration||0,min:s?.minDuration||0,max:s?.maxDuration||0};
             }).sort((a,b)=>b.total-a.total);
+            
+            const sessionDataForChart = {};
+            userNamesForCharts.forEach(user => {
+                const s = sessionStatsByUser[user];
+                sessionDataForChart[user] = s ? {
+                    median: s.medianDuration,
+                    q1: s.q1Duration,
+                    q3: s.q3Duration,
+                    min: s.minDuration,
+                    max: s.maxDuration
+                } : { median: 0, q1: 0, q3: 0, min: 0, max: 0 };
+            });
 
             const eventCountsByCourse = courses.map(c=>({course:c,count:dataToProcess.filter(i=>i["Contexte de l’événement"]?.includes(c)).length})).sort((a,b)=>b.count-a.count);
             const courseNamesForCharts = eventCountsByCourse.map(d => d.course);
-
+            const truncatedCourseNames = courseNamesForCharts.map(name => truncateLabel(name, 35));
+            
             const courseSessionBreakdown = {};
             courseNamesForCharts.forEach(cN => {
                 const cE = dataToProcess.filter(i=>i["Contexte de l’événement"]?.includes(cN));
@@ -489,138 +438,157 @@
                 const totalSessions = statsForCourse.reduce((sum,st)=>sum+st.count,0);
                 return totalSessions>0 ? totalDuration/totalSessions : 0;
             });
-            const courseSessionStatsForTable = courseNamesForCharts.map(cN => {
+             const courseSessionStatsForTable = courseNamesForCharts.map(cN => {
                 const statsForCourse = Object.values(courseSessionBreakdown[cN]||{});
                 return {course:cN,sessions:statsForCourse.reduce((sum,st)=>sum+st.count,0),avg:courseAvgDurations[courseNamesForCharts.indexOf(cN)],total:courseTimes[courseNamesForCharts.indexOf(cN)],users:new Set(statsForCourse.map(st=>st.name)).size};
             }).sort((a,b)=>b.total-a.total);
 
+            const componentCounts = dataToProcess.reduce((acc, item) => {
+                const comp = item['Composant'] || 'Non défini';
+                acc[comp] = (acc[comp] || 0) + 1;
+                return acc;
+            }, {});
+            const sortedComponents = Object.entries(componentCounts).sort(([,a],[,b]) => b-a);
+            const topComponents = sortedComponents.slice(0, 7);
+            const otherCount = sortedComponents.slice(7).reduce((acc, [, count]) => acc + count, 0);
+            if (otherCount > 0) topComponents.push(['Autres', otherCount]);
+
             const weekdayLabels = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
             const weekdayCounts = Array(7).fill(0);
             dataToProcess.forEach(i=>{if(i.parsedDate)weekdayCounts[i.parsedDate.getDay()===0?6:i.parsedDate.getDay()-1]++;});
-            const hourlyLabels = Array.from({length:24},(_,i)=>`${i}:00`);
+            const hourlyLabels = Array.from({length:24},(_,i)=>`${i}h`);
             const hourlyCounts = Array(24).fill(0);
             dataToProcess.forEach(i=>{if(i.parsedDate)hourlyCounts[i.parsedDate.getHours()]++;});
             
-            const heatmapCounts = {}; 
-            weekdayLabels.forEach(d=>hourlyLabels.forEach(h=>{heatmapCounts[`${d}-${h}`]=0;}));
-            dataToProcess.forEach(i=>{if(i.parsedDate){const d=weekdayLabels[i.parsedDate.getDay()===0?6:i.parsedDate.getDay()-1];const h=`${i.parsedDate.getHours()}:00`;if(heatmapCounts.hasOwnProperty(`${d}-${h}`))heatmapCounts[`${d}-${h}`]++;}});
-            const heatmapDataForChart = Object.entries(heatmapCounts).map(([k,v])=>({x:k.split('-')[0],y:k.split('-')[1],v})).filter(d=>d.v>0);
-            // console.log("processAndAnalyzeData - Calculated heatmapDataForChart:", heatmapDataForChart);
-
-            const dailyActivityMap = {};
-            dataToProcess.forEach(i=>{if(i.parsedDate){const dS=i.parsedDate.toLocaleDateString('fr-FR',{day:'2-digit',month:'2-digit',year:'numeric'});dailyActivityMap[dS]=(dailyActivityMap[dS]||0)+1;}});
-            const sortedDailyDates = Object.keys(dailyActivityMap).sort((a,b)=>new Date(a.split('/').reverse().join('-'))-new Date(b.split('/').reverse().join('-')));
-            const dailyActivityValues = sortedDailyDates.map(d=>dailyActivityMap[d]);
-            // console.log("processAndAnalyzeData - Calculated dailyActivityDates:", sortedDailyDates, "Values:", dailyActivityValues);
-            
-            let unparsableDateStringsForSummary = [];
-            dataToProcess.forEach(item => { 
-                if (item["Heure"] && item["Heure"].trim() !== "" && !(item.parsedDate instanceof Date && !isNaN(item.parsedDate))) {
-                    unparsableDateStringsForSummary.push(item["Heure"]);
-                }
-            });
-            const MAX_UNPARSABLE_DATES_TO_SHOW = 5; 
-            let displayedUnparsableDates = [...unparsableDateStringsForSummary]; 
-            if (unparsableDateStringsForSummary.length > MAX_UNPARSABLE_DATES_TO_SHOW) {
-                displayedUnparsableDates = unparsableDateStringsForSummary.slice(0, MAX_UNPARSABLE_DATES_TO_SHOW);
-                displayedUnparsableDates.push(`... et ${unparsableDateStringsForSummary.length - MAX_UNPARSABLE_DATES_TO_SHOW} autres dates non interprétables.`);
+            const monthlyTime = {};
+            const uniqueMonthsInSelection = [...new Set(dataToProcess.map(d => d.parsedDate ? `${frenchMonths[d.parsedDate.getMonth()]} ${d.parsedDate.getFullYear()}` : null).filter(Boolean))];
+            if (uniqueMonthsInSelection.length > 1) {
+                dataToProcess.forEach(item => {
+                    if(!item.parsedDate) return;
+                    const monthKey = `${frenchMonths[item.parsedDate.getMonth()]} ${item.parsedDate.getFullYear()}`;
+                    if(!monthlyTime[monthKey]) monthlyTime[monthKey] = 0;
+                }); // init all selected months
+                Object.values(sessionStatsByUser).forEach(userStats => {
+                    userStats.allDurationsWithTime.forEach(session => {
+                        const monthKey = `${frenchMonths[session.date.getMonth()]} ${session.date.getFullYear()}`;
+                        if(monthlyTime.hasOwnProperty(monthKey)) {
+                            monthlyTime[monthKey] += session.duration;
+                        }
+                    });
+                });
             }
+            const sortedMonthlyTime = Object.entries(monthlyTime).sort((a,b) => new Date(a[0].split(' ')[1], frenchMonths.indexOf(a[0].split(' ')[0])) - new Date(b[0].split(' ')[1], frenchMonths.indexOf(b[0].split(' ')[0])));
+
+            const unparsableDates = allUploadedData.filter(item => item["Heure"] && !item.parsedDate).map(item => item["Heure"]);
 
             renderReport({
                 userNames: userNamesForCharts, eventCounts: eventCountsByUser.map(d => d.count), totalTimes: totalTimesOrdered, engagementScores: engagementScoresOrdered,
                 sessionData: sessionDataForChart, userSessionStats: userSessionStatsForTable,
-                courseNames: courseNamesForCharts, courseEvents: eventCountsByCourse.map(d=>d.count), courseTimes, courseAvgDurations, courseSessionStats: courseSessionStatsForTable,
-                weekdays: weekdayLabels, weekdayCounts, hours: hourlyLabels, hourlyCounts, heatmapData: heatmapDataForChart,
-                dailyActivityDates: sortedDailyDates, dailyActivityValues,
-                summary: generateSummary(dataToProcess, eventCountsByUser, sessionStatsByUser, weekdayCounts, weekdayLabels, hourlyCounts, hourlyLabels, eventCountsByCourse, heatmapDataForChart, sortedDailyDates, displayedUnparsableDates),
-                insights: generateDynamicInsights(eventCountsByUser, sessionStatsByUser, courseAvgDurations, courses, courseNamesForCharts)
+                courseNames: courseNamesForCharts, truncatedCourseNames, courseEvents: eventCountsByCourse.map(d=>d.count), courseTimes, courseAvgDurations,
+                componentNames: topComponents.map(d => d[0]), componentCounts: topComponents.map(d => d[1]),
+                weekdays: weekdayLabels, weekdayCounts, hours: hourlyLabels, hourlyCounts,
+                monthlyTimeLabels: sortedMonthlyTime.map(d => d[0]), monthlyTimeData: sortedMonthlyTime.map(d => (d[1]/60).toFixed(2)),
+                summary: generateSummary(dataToProcess, eventCountsByUser, sessionStatsByUser, weekdayCounts, weekdayLabels, hourlyCounts, hourlyLabels, eventCountsByCourse, unparsableDates),
+                insights: generateDynamicInsights(dataToProcess, eventCountsByUser, sessionStatsByUser, courseSessionStatsForTable, weekdayCounts, hourlyCounts)
             });
         }
 
-        function generateSummary(data, eventCountsByUser, sessionStatsByUser, weekdayCounts, weekdayLabels, hourlyCounts, hourlyLabels, eventCountsByCourse, heatmapData, dailyActivityDates, unparsableDates) { 
+        function generateSummary(data, eventCountsByUser, sessionStatsByUser, weekdayCounts, weekdayLabels, hourlyCounts, hourlyLabels, eventCountsByCourse, unparsableDates) { 
             const summary = {};
             summary.totalEvents = data.length.toLocaleString('fr-FR');
             summary.activeUsers = eventCountsByUser.length.toLocaleString('fr-FR');
             const allSessDurs = Object.values(sessionStatsByUser).flatMap(uS=>uS.allDurations);
             if(allSessDurs.length>0){
-                const avgD = allSessDurs.reduce((a,b)=>a+b,0)/allSessDurs.length;
-                const srtD = [...allSessDurs].sort((a,b)=>a-b);
-                summary.avgSessionDuration=`${avgD.toFixed(2)} min`;
-                summary.medianSessionDuration=`Médiane: ${srtD[Math.floor(srtD.length/2)].toFixed(2)} min`;
-            } else {summary.avgSessionDuration='0 min'; summary.medianSessionDuration='Médiane: 0 min';}
-            const pkHrIdx=hourlyCounts.indexOf(Math.max(...hourlyCounts)); summary.peakHour=hourlyLabels[pkHrIdx]||'N/A'; summary.peakHourEvents=`${hourlyCounts[pkHrIdx]||0} événements`;
-            const pkDayIdx=weekdayCounts.indexOf(Math.max(...weekdayCounts)); summary.peakDay=weekdayLabels[pkDayIdx]||'N/A'; summary.peakDayEvents=`${weekdayCounts[pkDayIdx]||0} événements`;
-            
-            if(eventCountsByCourse.length>0 && eventCountsByCourse[0].course){summary.mostActiveCourse=eventCountsByCourse[0].course.substring(0,30)+(eventCountsByCourse[0].course.length>30?"...":""); summary.mostActiveCourseEvents=`${eventCountsByCourse[0].count} événements`;}
-            else{summary.mostActiveCourse='N/A';summary.mostActiveCourseEvents='0 événements';}
+                summary.avgSessionDuration=`${(allSessDurs.reduce((a,b)=>a+b,0)/allSessDurs.length).toFixed(1)} min`;
+            }
+            const pkHrIdx=hourlyCounts.indexOf(Math.max(...hourlyCounts)); summary.peakHour=hourlyLabels[pkHrIdx]||'N/A';
+            const pkDayIdx=weekdayCounts.indexOf(Math.max(...weekdayCounts)); summary.peakDay=weekdayLabels[pkDayIdx]||'N/A';
+            if(eventCountsByCourse.length>0) summary.mostActiveCourse=eventCountsByCourse[0].course.substring(0,30)+(eventCountsByCourse[0].course.length>30?"...":"");
             
             const dates=data.map(d=>d.parsedDate).filter(Boolean);
-            if(dates.length>0){const minD=new Date(Math.min(...dates));const maxD=new Date(Math.max(...dates));summary.reportPeriod=`Période: ${minD.toLocaleDateString('fr-FR')} - ${maxD.toLocaleDateString('fr-FR')} (${currentFileName})`;}
-            else{summary.reportPeriod=`Fichier: ${currentFileName} (Période non déterminée)`;}
+            if(dates.length>0){const minD=new Date(Math.min(...dates));const maxD=new Date(Math.max(...dates));summary.reportPeriod=`Période: ${minD.toLocaleDateString('fr-FR')} - ${maxD.toLocaleDateString('fr-FR')}`;}
             
-            summary.userActivityObservation = data.length > 0 ? "Répartition des événements par utilisateur." : "Aucune donnée à afficher.";
-            summary.courseAvgSessionObservation = data.length > 0 ? "Analyse de la durée moyenne des sessions pour chaque cours." : "Aucune donnée à afficher.";
-            summary.weekdayActivityObservation = data.length > 0 ? "Répartition de l'activité sur les jours de la semaine." : "Aucune donnée à afficher.";
-            summary.hourlyActivityObservation = data.length > 0 ? "Répartition de l'activité au fil des heures." : "Aucune donnée à afficher.";
-            summary.heatmapObservation = (heatmapData?.length > 0) ? "Concentration de l'activité par jour et heure." : "Données insuffisantes pour le heatmap.";
-            summary.dailyActivityObservation = (dailyActivityDates?.length > 0) ? "Évolution quotidienne des événements." : "Données insuffisantes pour l'évolution quotidienne.";
-
-            if (unparsableDates && unparsableDates.length > 0) {
-                let totalUnparsableActualCount = 0;
-                let isTruncatedSummary = false;
-                const lastEntry = unparsableDates[unparsableDates.length - 1];
-                if (typeof lastEntry === 'string' && lastEntry.includes("autres dates non interprétables")) {
-                    const match = lastEntry.match(/(\d+)/);
-                    if (match && match[0]) {
-                        totalUnparsableActualCount = parseInt(match[0]) + (unparsableDates.length - 1) ;
-                    } else { 
-                        totalUnparsableActualCount = unparsableDates.length; 
-                    }
-                    isTruncatedSummary = true;
-                } else {
-                    totalUnparsableActualCount = unparsableDates.length;
-                }
-                summary.unparsableDatesWarning = `<span class="font-medium text-red-600 dark:text-red-400">Avertissement :</span> ${totalUnparsableActualCount} date(s) n'ont pas pu être interprétée(s) et ont été exclues de l'analyse temporelle. Exemples : <ul class="list-disc pl-5 text-xs mt-1">${unparsableDates.slice(0, isTruncatedSummary ? -1 : undefined).map(d => `<li>${d}</li>`).join('')}${isTruncatedSummary ? `<li>${unparsableDates[unparsableDates.length-1]}</li>` : ''}</ul>`;
-            } else {
-                summary.unparsableDatesWarning = "";
+            if (unparsableDates.length > 0) {
+                summary.unparsableDatesWarning = `<span class="font-medium">Avertissement :</span> ${unparsableDates.length} date(s) n'ont pas pu être interprétée(s).`;
             }
             return summary;
         }
 
-        function generateDynamicInsights(eventCountsByUser, sessionStatsByUser, courseAvgDurations, courses, courseNamesForCharts) { /* ... (Identique) ... */ 
-            const insights = { main: [], recommendations: [] };
-            if (!eventCountsByUser || eventCountsByUser.length === 0) {
-                insights.main.push("Aucune donnée utilisateur à analyser."); return insights;
+        function generateDynamicInsights(data, eventCountsByUser, sessionStatsByUser, courseSessionStats, weekdayCounts, hourlyCounts) {
+            const insights = { mainInsights: [], recommendations: [] };
+            if (!data || data.length === 0) {
+                insights.mainInsights.push("Aucune donnée à analyser pour les filtres actuels.");
+                return insights;
             }
-            const totalEventsAllUsers = eventCountsByUser.reduce((s,u)=>s+u.count,0);
-            if (totalEventsAllUsers > 0 && eventCountsByUser[0] && eventCountsByUser[0].user) { 
-                insights.main.push(`<span class="font-medium">Activité principale :</span> ${eventCountsByUser[0].user} (${((eventCountsByUser[0].count/totalEventsAllUsers)*100).toFixed(0)}%).`);
+
+            // --- Principaux Constats ---
+            if (eventCountsByUser.length > 0) {
+                const totalEvents = data.length;
+                const topUser = eventCountsByUser[0];
+                const topUserPercentage = ((topUser.count / totalEvents) * 100).toFixed(0);
+                insights.mainInsights.push(`<span class="font-medium">Utilisateur le plus actif :</span> ${topUser.user} a généré ${topUserPercentage}% de l'activité totale.`);
             }
+
             const allSessionDurs = Object.values(sessionStatsByUser).flatMap(uS => uS.allDurations);
             if (allSessionDurs.length > 0) {
-                const globalMedSess = [...allSessionDurs].sort((a,b)=>a-b)[Math.floor(allSessionDurs.length/2)];
-                insights.main.push(`<span class="font-medium">Sessions :</span> Médiane globale de ${globalMedSess.toFixed(2)} min.`);
-                if (globalMedSess < 15) insights.recommendations.push("<span class=\"font-medium\">Contenu modulaire :</span> Pour les sessions courtes, proposer des modules concis.");
+                const globalMedSess = [...allSessionDurs].sort((a, b) => a - b)[Math.floor(allSessionDurs.length / 2)];
+                insights.mainInsights.push(`<span class="font-medium">Durée des sessions :</span> La durée médiane d'une session est de <strong>${globalMedSess.toFixed(1)} min</strong>.`);
+                if (globalMedSess < 15) {
+                    insights.recommendations.push("Les sessions sont courtes. Envisagez de créer des micro-contenus ou des activités plus brèves pour maintenir l'engagement.");
+                } else if (globalMedSess > 45) {
+                    insights.recommendations.push("Les sessions sont longues, ce qui indique un fort engagement. Assurez-vous que les contenus longs sont bien structurés pour faciliter la navigation.");
+                }
             }
-            const courseEng = (courseNamesForCharts || courses || []).map((n,i)=>({n, avgD: courseAvgDurations[i]||0})).sort((a,b)=>b.avgD-a.avgD);
-            if (courseEng.length>0 && courseEng[0].avgD>0 && courseEng[0].n) { 
-                const topCourseName = courseEng[0].n;
-                insights.main.push(`<span class="font-medium">Cours engageant :</span> "${topCourseName.substring(0,30)+(topCourseName.length>30?'...':'')}" (${courseEng[0].avgD.toFixed(2)} min/session).`);
-                insights.recommendations.push(`<span class=\"font-medium\">Analyser succès :</span> Identifier les facteurs d'engagement du cours "${topCourseName.substring(0,30)+(topCourseName.length>30?'...':'')}".`);
+
+            const weekdayLabels = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche'];
+            const pkDayIdx = weekdayCounts.indexOf(Math.max(...weekdayCounts));
+            const peakDay = weekdayLabels[pkDayIdx];
+            const pkHrIdx = hourlyCounts.indexOf(Math.max(...hourlyCounts));
+            const peakHour = `${pkHrIdx}h - ${pkHrIdx + 1}h`;
+            insights.mainInsights.push(`<span class="font-medium">Pic d'activité :</span> L'engagement est le plus fort le <strong>${peakDay}</strong>, particulièrement entre <strong>${peakHour}</strong>.`);
+            insights.recommendations.push(`Planifiez les communications et les nouvelles activités autour du pic d'activité (le ${peakDay} vers ${peakHour}) pour maximiser la visibilité.`);
+
+            if (courseSessionStats.length > 0) {
+                const topCourseByTime = [...courseSessionStats].sort((a,b) => b.total - a.total)[0];
+                if (topCourseByTime) {
+                    insights.mainInsights.push(`<span class="font-medium">Contenu le plus consulté :</span> Le cours "<strong>${truncateLabel(topCourseByTime.course, 30)}</strong>" est celui où les apprenants passent le plus de temps.`);
+                    insights.recommendations.push(`Analysez les éléments pédagogiques du cours "<strong>${truncateLabel(topCourseByTime.course, 20)}</strong>" pour identifier les facteurs de succès et les répliquer.`);
+                }
             }
-            insights.recommendations.push("<span class=\"font-medium\">Engagement :</span> Stimuler la participation des utilisateurs moins actifs.");
-            insights.recommendations.push("<span class=\"font-medium\">Maintenance :</span> Planifier durant les heures creuses identifiées.");
+
+            const engagementScores = eventCountsByUser.map(u => {
+                const d = allUploadedData.filter(i => i["Nom complet de l’utilisateur"] === u.user);
+                const uD = new Set(d.map(i => i.parsedDate?.toDateString())).size;
+                const divF = new Set(d.map(i => i["Nom de l’événement"])).size;
+                const rawScore = (Math.log10(u.count + 1) * (uD + 1) * (sessionStatsByUser[u.user]?.totalDuration || 0.1) * (divF / 5)) / 5000;
+                return { user: u.user, score: Math.min(1, Math.max(0, rawScore)) };
+            });
+
+            const lowEngagementUsers = engagementScores.filter(u => u.score < 0.1);
+            if (lowEngagementUsers.length > 1) {
+                insights.mainInsights.push(`<span class="font-medium">Engagement faible :</span> <strong>${lowEngagementUsers.length} utilisateurs</strong> ont un score d'engagement très bas.`);
+                insights.recommendations.push("Identifiez les utilisateurs avec une faible activité pour leur proposer un soutien personnalisé et comprendre leurs freins.");
+            }
+
+            if (insights.mainInsights.length === 0) {
+                 insights.mainInsights.push("Aucun constat majeur pour cette sélection de données.");
+            }
+             if (insights.recommendations.length === 0) {
+                insights.recommendations.push("L'activité semble équilibrée. Continuez à suivre l'engagement pour détecter de nouvelles tendances.");
+            }
+
             return insights;
         }
 
-        function calculateSessionStats(data, groupByField, isCourseContext = false) { /* ... (Identique) ... */ 
-             const grouped = {};
-            data.forEach(item => {
+
+        function calculateSessionStats(data, groupByField) {
+            const grouped = data.reduce((acc, item) => {
                 const key = item[groupByField];
-                if (!key || !(item.parsedDate instanceof Date && !isNaN(item.parsedDate))) return;
-                if (!grouped[key]) grouped[key] = [];
-                grouped[key].push(item.parsedDate.getTime());
-            });
+                if (!key || !item.parsedDate) return acc;
+                if (!acc[key]) acc[key] = [];
+                acc[key].push(item.parsedDate);
+                return acc;
+            }, {});
 
             const sessionStats = {};
             for (const key in grouped) {
@@ -628,302 +596,269 @@
                 if (events.length === 0) continue;
                 const sessions = []; let start = events[0];
                 for (let i=1; i<events.length; i++) {
-                    if ((events[i]-events[i-1]) > 30*60*1000) {
-                        sessions.push((events[i-1]-start)/(60*1000)); start=events[i];
+                    if ((events[i].getTime()-events[i-1].getTime()) > 30*60*1000) {
+                        sessions.push({duration: (events[i-1].getTime()-start.getTime())/(60*1000), date: start}); 
+                        start=events[i];
                     }
                 }
-                sessions.push((events[events.length-1]-start)/(60*1000));
-                const valid = sessions.filter(d=>d>=0); if(valid.length === 0) continue;
-                const total=valid.reduce((a,v)=>a+v,0); const avg=total/valid.length;
-                const srt=valid.sort((a,b)=>a-b); const med=srt[Math.floor(srt.length/2)];
-                const q1=srt[Math.floor(srt.length/4)], q3=srt[Math.floor((3*srt.length)/4)];
-                
-                const statsData = {name:key,count:valid.length,totalDuration:total,avgDuration:avg,medianDuration:med||0,q1Duration:q1||0,q3Duration:q3||0,minDuration:srt[0] || 0,maxDuration:srt[srt.length-1] || 0,allDurations:srt};
-                sessionStats[key] = statsData; 
+                sessions.push({duration: (events[events.length-1].getTime()-start.getTime())/(60*1000), date: start});
+                const valid = sessions.filter(d=>d.duration>=0); if(valid.length === 0) continue;
+                const durations = valid.map(s => s.duration);
+                const total=durations.reduce((a,v)=>a+v,0);
+                const srt=durations.sort((a,b)=>a-b);
+                sessionStats[key] = {name:key,count:valid.length,totalDuration:total,avgDuration:total/valid.length,medianDuration:srt[Math.floor(srt.length/2)]||0, q1Duration: srt[Math.floor(srt.length/4)]||0, q3Duration: srt[Math.floor((3*srt.length)/4)]||0, minDuration:srt[0]||0,maxDuration:srt[srt.length-1]||0,allDurations:srt, allDurationsWithTime: valid};
             }
             return sessionStats;
         }
         
-        function populateFilters(data) { /* ... (Version avec les logs de débogage pour les mois et la correction pour l'ID des checkboxes) ... */ 
+        function populateFilters(data) {
             const monthFilterCont = document.getElementById('monthFilterContainer');
             const learnerFilterCont = document.getElementById('learnerFilterContainer');
-            const courseFilterCont = document.getElementById('courseFilterContainer'); // MODIFIÉ
+            const courseFilterCont = document.getElementById('courseFilterContainer');
+            
+            [monthFilterCont, learnerFilterCont, courseFilterCont].forEach(cont => {
+                const type = cont.id.replace('FilterContainer', '');
+                const label = cont.previousElementSibling.textContent.replace(':', '');
+                cont.innerHTML = `<div class="mb-1"><input type="checkbox" id="${type}FilterAll" checked class="mr-1"><label for="${type}FilterAll" class="cursor-pointer">Tous</label></div>`;
+            });
 
-            Array.from(monthFilterCont.querySelectorAll('.month-checkbox-item')).forEach(el => el.remove());
-            Array.from(learnerFilterCont.querySelectorAll('.learner-checkbox-item')).forEach(el => el.remove());
-            Array.from(courseFilterCont.querySelectorAll('.course-checkbox-item')).forEach(el => el.remove()); // NOUVEAU
-
-            const monthsSet = new Set(); 
-            const learnersSet = new Set(); 
-            const coursesSet = new Set();
-            let unparsableDateCount = 0;
-
-            data.forEach((item, index) => {
-                const originalDateString = item["Heure"];
-                if (originalDateString) { 
-                    if (item.parsedDate instanceof Date && !isNaN(item.parsedDate)) {
-                        const monthYearString = `${frenchMonths[item.parsedDate.getMonth()]} ${item.parsedDate.getFullYear()}`;
-                        monthsSet.add(monthYearString);
-                    } else { unparsableDateCount++; }
-                }
-                const userName = item["Nom complet de l’utilisateur"];
-                if (userName && userName.trim() !== "" && userName !== "Nom complet de l’utilisateur") {
-                    learnersSet.add(userName);
-                }
+            const monthsSet = new Set(), learnersSet = new Set(), coursesSet = new Set();
+            data.forEach(item => {
+                if (item.parsedDate) monthsSet.add(`${frenchMonths[item.parsedDate.getMonth()]} ${item.parsedDate.getFullYear()}`);
+                if (item["Nom complet de l’utilisateur"]) learnersSet.add(item["Nom complet de l’utilisateur"]);
                 const ctx = item["Contexte de l’événement"];
-                if (ctx && ctx.startsWith("Cours: ")) {
-                    const courseName = ctx.substring(7).trim();
-                    if (courseName && courseName !== "Contexte de l’événement") {
-                         coursesSet.add(courseName);
-                    }
-                }
+                if (ctx?.startsWith("Cours: ")) coursesSet.add(ctx.substring(7).trim());
             });
             
-            if (unparsableDateCount > 0) console.warn(`populateFilters: ${unparsableDateCount} dates non parsées sur ${data.length}.`);
-            // console.log("populateFilters - Mois uniques avant tri:", Array.from(monthsSet));
-
-            const sortedMonths = Array.from(monthsSet).sort((a,b) => {
-                const [mAStr, yA] = a.split(" "); const [mBStr, yB] = b.split(" ");
-                const mAIdx = frenchMonths.indexOf(mAStr.toLowerCase()); const mBIdx = frenchMonths.indexOf(mBStr.toLowerCase());
-                if (mAIdx === -1 || mBIdx === -1) { console.error("Mois non trouvé (tri):", mAStr, mBStr); return 0; }
-                return new Date(parseInt(yA), mAIdx, 1) - new Date(parseInt(yB), mBIdx, 1);
-            });
-            
-            // console.log("populateFilters - Mois uniques triés:", sortedMonths);
-
-            ['monthFilterAll', 'learnerFilterAll', 'courseFilterAll'].forEach(id => { // MODIFIÉ
-                const cb = document.getElementById(id); 
-                if (cb) { cb.checked = true; cb.indeterminate = false; }
-            });
-
-            sortedMonths.forEach(m => addCheckboxOption(monthFilterCont, m, `month-${m.replace(/\s+/g,'-').replace(/[^\w-]/g, '')}`, 'month-checkbox-item', 'month-filter-option', 'monthFilterAll'));
-            Array.from(learnersSet).sort().forEach(l => addCheckboxOption(learnerFilterCont, l, `learner-${l.replace(/\s+/g,'-').replace(/[^\w-]/g, '')}`, 'learner-checkbox-item', 'learner-filter-option', 'learnerFilterAll'));
-            Array.from(coursesSet).sort().forEach(c => addCheckboxOption(courseFilterCont, c, `course-${c.replace(/\s+/g,'-').replace(/[^\w-]/g, '')}`, 'course-checkbox-item', 'course-filter-option', 'courseFilterAll')); // MODIFIÉ
+            const sortedMonths = Array.from(monthsSet).sort((a,b) => new Date(a.split(' ')[1], frenchMonths.indexOf(a.split(' ')[0])) - new Date(b.split(' ')[1], frenchMonths.indexOf(b.split(' ')[0])));
+            sortedMonths.forEach(m => addCheckboxOption(monthFilterCont, m));
+            Array.from(learnersSet).sort().forEach(l => addCheckboxOption(learnerFilterCont, l));
+            Array.from(coursesSet).sort().forEach(c => addCheckboxOption(courseFilterCont, c));
             
             document.getElementById('filterSection').classList.remove('hidden');
-
-            ['month', 'learner', 'course'].forEach(type => { // MODIFIÉ
-                const searchInput = document.getElementById(`${type}Search`);
-                const container = document.getElementById(`${type}FilterContainer`);
-                if (searchInput && container) { 
-                    searchInput.addEventListener('input', function() {
-                        const searchTerm = this.value.toLowerCase();
-                        container.querySelectorAll(`.${type}-checkbox-item`).forEach(itemDiv => {
-                            const label = itemDiv.querySelector('label');
-                            if (label) {
-                                itemDiv.style.display = label.textContent.toLowerCase().includes(searchTerm) ? '' : 'none';
-                            }
-                        });
-                    });
-                } else {
-                    console.warn(`populateFilters: Élément de recherche ou conteneur non trouvé pour le type "${type}"`);
-                }
-            });
         }
 
-        function addCheckboxOption(container, value, id, itemClass, optionClass, allCheckboxId) { /* ... (Identique) ... */
-            const div = document.createElement('div'); div.classList.add(itemClass, 'mb-1');
-            const cb = document.createElement('input'); cb.type='checkbox'; cb.id=id; cb.value=value; cb.classList.add('mr-1', optionClass);
-            cb.checked = document.getElementById(allCheckboxId).checked; 
-            const lbl = document.createElement('label'); lbl.htmlFor=id; lbl.textContent=value; lbl.classList.add('cursor-pointer');
-            div.appendChild(cb); div.appendChild(lbl); container.appendChild(div);
+        function addCheckboxOption(container, value) {
+            const type = container.id.replace('FilterContainer','');
+            const id = `${type}-${value.replace(/\s+/g,'-').replace(/[^\w-]/g, '')}`;
+            const div = document.createElement('div');
+            div.innerHTML = `<input type="checkbox" id="${id}" value="${value}" checked class="mr-1"><label for="${id}" class="cursor-pointer">${value}</label>`;
+            container.appendChild(div);
         }
-        
-        function filterData() { /* ... (Version avec le filtre cours modifié) ... */
-            // console.log("filterData: Application des filtres...");
+
+        function updateDependentFilters() {
+            const getSelected = (type) => Array.from(document.querySelectorAll(`#${type}FilterContainer input[type=checkbox]:checked:not(#${type}FilterAll)`)).map(cb => cb.value);
+            
             const allMonthsChecked = document.getElementById('monthFilterAll').checked;
-            const selectedMonthCheckboxes = Array.from(document.querySelectorAll('#monthFilterContainer .month-filter-option:checked'));
-            const selectedMonthsValues = selectedMonthCheckboxes.map(cb => cb.value);
-
-            const allLearnersChecked = document.getElementById('learnerFilterAll').checked;
-            const selectedLearnerCheckboxes = Array.from(document.querySelectorAll('#learnerFilterContainer .learner-filter-option:checked'));
-            const selectedLearnersValues = selectedLearnerCheckboxes.map(cb => cb.value);
+            const selectedMonths = getSelected('month');
             
-            const allCoursesChecked = document.getElementById('courseFilterAll').checked; // NOUVEAU
-            const selectedCourseCheckboxes = Array.from(document.querySelectorAll('#courseFilterContainer .course-filter-option:checked')); // NOUVEAU
-            const selectedCoursesValues = selectedCourseCheckboxes.map(cb => cb.value); // NOUVEAU
+            const allCoursesChecked = document.getElementById('courseFilterAll').checked;
+            const selectedCourses = getSelected('course');
 
-
-            if (allUploadedData.length === 0) {
-                showNotification("Veuillez d'abord charger un fichier CSV.", "warning");
-                return;
-            }
-
-            currentFilteredData = allUploadedData.filter(item => {
-                let monthMatch = allMonthsChecked; 
-                if (!allMonthsChecked && selectedMonthsValues.length > 0) { 
-                    if (item.parsedDate instanceof Date && !isNaN(item.parsedDate)) {
-                        const itemMonthYear = `${frenchMonths[item.parsedDate.getMonth()]} ${item.parsedDate.getFullYear()}`;
-                        monthMatch = selectedMonthsValues.includes(itemMonthYear);
-                    } else { monthMatch = false; }
-                } else if (!allMonthsChecked && selectedMonthsValues.length === 0) { monthMatch = false; }
-
-                let learnerMatch = allLearnersChecked;
-                if (!allLearnersChecked && selectedLearnersValues.length > 0) {
-                    learnerMatch = selectedLearnersValues.includes(item["Nom complet de l’utilisateur"]);
-                } else if (!allLearnersChecked && selectedLearnersValues.length === 0) { learnerMatch = false; }
-                
-                let courseMatch = allCoursesChecked; 
-                if (!allCoursesChecked && selectedCoursesValues.length > 0) { 
-                     const context = item["Contexte de l’événement"];
-                     const itemCourseName = (context && context.startsWith("Cours: ")) ? context.substring(7).trim() : null;
-                     courseMatch = itemCourseName ? selectedCoursesValues.includes(itemCourseName) : false;
-                } else if (!allCoursesChecked && selectedCoursesValues.length === 0) { 
-                    courseMatch = false;
-                }
-                return monthMatch && learnerMatch && courseMatch;
+            const relevantData = allUploadedData.filter(item => {
+                const monthMatch = allMonthsChecked || (item.parsedDate && selectedMonths.includes(`${frenchMonths[item.parsedDate.getMonth()]} ${item.parsedDate.getFullYear()}`));
+                const courseName = item["Contexte de l’événement"]?.startsWith("Cours: ") ? item["Contexte de l’événement"].substring(7).trim() : null;
+                const courseMatch = allCoursesChecked || (courseName && selectedCourses.includes(courseName));
+                return monthMatch && courseMatch;
             });
 
-            if (currentFilteredData.length === 0) {
-                showNotification("Aucune donnée ne correspond aux filtres appliqués.", "warning", false); 
-                document.getElementById('currentReportInfo').textContent = `Rapport pour : ${currentFileName} (Aucune donnée ne correspond aux filtres appliqués)`;
-                document.getElementById('reportContent').classList.add('hidden'); 
-                return;
-            }
-            processAndAnalyzeData(currentFilteredData);
+            const relevantLearners = [...new Set(relevantData.map(item => item["Nom complet de l’utilisateur"]).filter(Boolean))].sort();
+            
+            const learnerContainer = document.getElementById('learnerFilterContainer');
+            const allLearnerCheckbox = learnerContainer.querySelector('input[type=checkbox][id$=FilterAll]');
+            const wasAllChecked = allLearnerCheckbox.checked;
+            
+            const allLearnerCheckboxHTML = learnerContainer.firstElementChild.outerHTML;
+            learnerContainer.innerHTML = allLearnerCheckboxHTML;
+            
+            relevantLearners.forEach(learner => addCheckboxOption(learnerContainer, learner));
+            
+            learnerContainer.querySelector('input[type=checkbox][id$=FilterAll]').checked = wasAllChecked;
         }
         
-        // --- EVENT LISTENERS ---
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('reportGeneratedDate').textContent = `Prêt à analyser. Veuillez charger un fichier CSV.`;
-            document.getElementById('reportContent').classList.add('hidden');
-
-            const themeToggleBtn = document.getElementById('themeToggleBtn');
-            if (themeToggleBtn) { 
-                if (localStorage.getItem('theme') === 'dark') {
-                    document.documentElement.classList.add('dark');
-                }
-                themeToggleBtn.addEventListener('click', () => {
-                    document.documentElement.classList.toggle('dark');
-                    localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-                });
+        function handleFile(file) {
+            if (!file || !file.type.match('text/csv')) {
+                showNotification("Veuillez sélectionner un fichier CSV valide.", "warning"); return;
             }
-
-            ['month', 'learner', 'course'].forEach(type => { // Ajout de 'course'
-                const allCb = document.getElementById(`${type}FilterAll`);
-                const container = document.getElementById(`${type}FilterContainer`);
-                if (allCb && container) {
-                    allCb.addEventListener('change', function() {
-                        container.querySelectorAll(`.${type}-filter-option`).forEach(cb => { cb.checked = this.checked; });
-                    });
-                    container.addEventListener('change', function(e) {
-                        if (e.target.classList.contains(`${type}-filter-option`)) {
-                            const opts = container.querySelectorAll(`.${type}-filter-option`);
-                            const allChecked = Array.from(opts).every(cb => cb.checked);
-                            const noneChecked = Array.from(opts).every(cb => !cb.checked);
-                            allCb.checked = allChecked;
-                            allCb.indeterminate = !allChecked && !noneChecked;
-                        }
-                    });
-                }
-            });
-
-            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
-            if (scrollToTopBtn) { 
-                window.onscroll = function() {
-                    if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) { 
-                        scrollToTopBtn.classList.add('show');
-                    } else {
-                        scrollToTopBtn.classList.remove('show');
-                    }
-                };
-                scrollToTopBtn.addEventListener('click', () => {
-                    window.scrollTo({top: 0, behavior: 'smooth'});
-                });
-            }
-        });
-        
-        document.getElementById('analyseCsvButton').addEventListener('click', () => {
-            const fileInput = document.getElementById('csvFile');
-            if (fileInput.files.length === 0) { showNotification("Veuillez sélectionner un fichier CSV.", "warning"); return; }
-            const file = fileInput.files[0]; currentFileName = file.name;
-            
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            loadingIndicator.classList.remove('hidden');
-            document.getElementById('currentReportInfo').textContent = `Analyse de "${file.name}" en cours...`;
+            currentFileName = file.name;
+            document.getElementById('loadingIndicator').classList.remove('hidden');
             document.getElementById('reportContent').classList.add('hidden'); 
             destroyAllCharts(); 
 
             Papa.parse(file, {
                 header: true, skipEmptyLines: true, encoding: "UTF-8",
                 complete: results => {
-                    loadingIndicator.classList.add('hidden');
-                    // console.log("PapaParse complete. Lignes brutes:", results.data.length, "Erreurs PapaParse:", results.errors);
-                    if (results.errors.length > 0 && results.errors.some(e => e.code !== "TooFewFields" && e.code !== "TooManyFields" && e.code !== "MissmatchedQuotes") ) { 
-                        let criticalError = results.errors.find(e => e.code !== "TooFewFields" && e.code !== "TooManyFields" && e.code !== "MissmatchedQuotes");
-                        if (criticalError){
-                            console.error("Erreurs critiques de parsing CSV:", results.errors);
-                            showNotification(`Erreur CSV: ${criticalError.message}. Vérifiez le format.`, "error", false);
-                            document.getElementById('currentReportInfo').textContent = `Erreur lors de l'analyse de "${file.name}".`;
-                            return;
-                        }
-                    }
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    if (results.errors.length > 0) console.warn("Erreurs de parsing CSV:", results.errors);
                     
-                    const rawDataRows = results.data;
-                    const validDataRowsOnly = rawDataRows.filter(row => {
-                        const isHeader = row["Heure"] === "Heure"; 
-                        const isEmptyRow = Object.values(row).every(val => val === null || (typeof val === 'string' && val.trim() === ""));
-                        return !isHeader && !isEmptyRow;
-                    });
+                    allUploadedData = results.data.filter(row => row["Heure"]).map(row => ({...row, parsedDate: parseFrenchDate(row["Heure"]) }));
                     
-                    // console.log("Nombre de lignes après filtrage des en-têtes et lignes vides:", validDataRowsOnly.length);
-
-                    if (validDataRowsOnly.length === 0) {
-                        showNotification(`Le fichier CSV "${file.name}" ne contient pas de données exploitables après filtrage des en-têtes.`, "error", false);
-                        document.getElementById('currentReportInfo').textContent = `Le fichier "${file.name}" ne contient pas de données exploitables.`;
-                        document.getElementById('reportContent').classList.add('hidden');
-                        return;
-                    }
-
-                    allUploadedData = validDataRowsOnly.map(row => ({...row, parsedDate: parseFrenchDate(row["Heure"]) }));
-                    
-                    let badDatesCount = 0;
-                    let sampleBadDateStrings = [];
-                    allUploadedData.forEach(item => { 
-                        if (item["Heure"] && item["Heure"].trim() !== "" && !(item.parsedDate instanceof Date && !isNaN(item.parsedDate))) {
-                            badDatesCount++;
-                            if (sampleBadDateStrings.length < 5) { 
-                                sampleBadDateStrings.push(item["Heure"]);
-                            }
-                        }
-                    });
-
-                    if (badDatesCount > 0){
-                         let warnMsg = `Avertissement: ${badDatesCount} date(s) présentes dans les données n'ont pas pu être correctement interprétée(s) (après exclusion des en-têtes). L'analyse pour ces entrées peut être imprécise. Exemples : ${sampleBadDateStrings.join('; ')}. Format attendu (ex: "17 mai 25, 10:47:35").`;
-                        showNotification(warnMsg, "warning", false); 
+                    if (allUploadedData.length === 0) {
+                        showNotification(`Le fichier CSV "${file.name}" ne contient pas de données exploitables.`, "error", false); return;
                     }
                     
                     populateFilters(allUploadedData); 
-                    processAndAnalyzeData(allUploadedData); 
-                    
-                    if(allUploadedData.length > 0 ) { 
-                        showNotification(`Fichier "${currentFileName}" analysé avec succès (${allUploadedData.length} lignes de données traitées).`, "success");
-                    }
+                    applyAndProcessData(); 
+                    showNotification(`Fichier "${currentFileName}" analysé (${allUploadedData.length} lignes traitées).`, "success");
                 },
                 error: e => { 
-                    loadingIndicator.classList.add('hidden');
-                    console.error("Erreur PapaParse (callback error):", e); 
-                    showNotification("Erreur de lecture CSV. Vérifiez le fichier et la console pour plus de détails.", "error", false);
-                    document.getElementById('currentReportInfo').textContent = `Erreur lors de l'analyse de "${file.name}".`;
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    showNotification("Erreur de lecture du fichier CSV.", "error", false);
                 }
             });
-        });
-        document.getElementById('applyFiltersButton').addEventListener('click', filterData);
-        document.getElementById('resetFiltersButton').addEventListener('click', () => {
-            document.getElementById('monthFilterAll').click(); document.getElementById('monthFilterAll').click(); 
-            document.getElementById('learnerFilterAll').click(); document.getElementById('learnerFilterAll').click();
-            document.getElementById('courseFilterAll').click(); document.getElementById('courseFilterAll').click(); // MODIFIÉ
+        }
 
-            ['monthSearch', 'learnerSearch', 'courseSearch'].forEach(id => { // MODIFIÉ
-                const searchInput = document.getElementById(id);
-                if (searchInput) searchInput.value = '';
-            });
-            document.querySelectorAll('#monthFilterContainer .month-checkbox-item, #learnerFilterContainer .learner-checkbox-item, #courseFilterContainer .course-checkbox-item').forEach(item => item.style.display = ''); // MODIFIÉ
+        async function exportPdf() {
+            const reportContent = document.getElementById('reportContent');
+            if (reportContent.classList.contains('hidden') || currentFilteredData.length === 0) {
+                showNotification("Aucun rapport à exporter.", "warning"); return;
+            }
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            loadingIndicator.textContent = 'Génération du PDF...';
+            loadingIndicator.classList.remove('hidden');
+
+            const isDarkMode = document.documentElement.classList.contains('dark');
             
-            filterData(); 
-            showNotification("Filtres réinitialisés.", "success");
-        });
+            try {
+                if (isDarkMode) {
+                    document.documentElement.classList.remove('dark');
+                    await new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve, 50)));
+                }
 
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' });
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const margin = 10;
+                let y = margin;
+
+                const sections = reportContent.querySelectorAll('section.card');
+                for (const section of sections) {
+                     if (section.offsetParent === null) continue; // Skip hidden sections
+                    const canvas = await html2canvas(section, {
+                        scale: 2, 
+                        backgroundColor: '#ffffff',
+                        useCORS: true,
+                        logging: false
+                    });
+                    const imgData = canvas.toDataURL('image/png', 1.0);
+                    const imgWidth = pdfWidth - (margin * 2);
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+                    if (y + imgHeight > pdf.internal.pageSize.getHeight() - margin) {
+                        pdf.addPage();
+                        y = margin;
+                    }
+                    pdf.addImage(imgData, 'PNG', margin, y, imgWidth, imgHeight);
+                    y += imgHeight + 5;
+                }
+
+                pdf.save(`rapport_moodle_${new Date().toISOString().slice(0,10)}.pdf`);
+
+            } catch (error) {
+                console.error("Erreur lors de la génération du PDF:", error);
+                showNotification("Une erreur est survenue lors de la génération du PDF.", "error");
+            } finally {
+                if (isDarkMode) {
+                    document.documentElement.classList.add('dark');
+                }
+                loadingIndicator.classList.add('hidden');
+                loadingIndicator.textContent = 'Analyse en cours...';
+            }
+        }
+
+        // --- EVENT LISTENERS ---
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('reportGeneratedDate').textContent = `Prêt à analyser.`;
+            
+            const themeToggleBtn = document.getElementById('themeToggleBtn');
+            if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark');
+            themeToggleBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            });
+
+            // Drag and Drop listeners
+            const dropZone = document.getElementById('dropZone');
+            dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', e => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+            dropZone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+            document.getElementById('csvFile').addEventListener('change', e => handleFile(e.target.files[0]));
+            
+            // Filter listeners
+            const filterSection = document.getElementById('filterSection');
+            filterSection.addEventListener('change', (e) => {
+                const targetCheckbox = e.target;
+                if (targetCheckbox.type !== 'checkbox') return;
+
+                const container = targetCheckbox.closest('.filter-checkbox-container');
+                if (!container) return;
+
+                const type = container.id.replace('FilterContainer', '');
+                const allCheckbox = document.getElementById(`${type}FilterAll`);
+                const itemCheckboxes = container.querySelectorAll(`input[type=checkbox]:not(#${type}FilterAll)`);
+
+                if (targetCheckbox.id.endsWith('FilterAll')) {
+                    itemCheckboxes.forEach(cb => {
+                        cb.checked = allCheckbox.checked;
+                    });
+                } 
+                else {
+                    const checkedCount = Array.from(itemCheckboxes).filter(cb => cb.checked).length;
+                    if (checkedCount === itemCheckboxes.length) {
+                        allCheckbox.checked = true;
+                        allCheckbox.indeterminate = false;
+                    } else if (checkedCount === 0) {
+                        allCheckbox.checked = false;
+                        allCheckbox.indeterminate = false;
+                    } else {
+                        allCheckbox.checked = false;
+                        allCheckbox.indeterminate = true;
+                    }
+                }
+
+                if (type === 'month' || type === 'course') {
+                    updateDependentFilters();
+                }
+                
+                applyAndProcessData();
+            });
+            
+            document.getElementById('resetFiltersButton').addEventListener('click', () => {
+                populateFilters(allUploadedData);
+                applyAndProcessData();
+                showNotification("Filtres réinitialisés.", "success");
+            });
+
+            // Export listeners
+            document.getElementById('exportJsonButton').addEventListener('click', () => {
+                if(currentFilteredData.length === 0) {
+                    showNotification("Aucune donnée à exporter.", "warning");
+                    return;
+                }
+                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentFilteredData, (key, value) => key === 'parsedDate' ? undefined : value, 2));
+                const downloadAnchorNode = document.createElement('a');
+                downloadAnchorNode.setAttribute("href", dataStr);
+                downloadAnchorNode.setAttribute("download", `export_moodle_${new Date().toISOString().slice(0,10)}.json`);
+                document.body.appendChild(downloadAnchorNode);
+                downloadAnchorNode.click();
+                downloadAnchorNode.remove();
+                showNotification("Données JSON exportées.", "success");
+            });
+
+            document.getElementById('exportPdfButton').addEventListener('click', exportPdf);
+
+            // Scroll to top button
+            const scrollToTopBtn = document.getElementById('scrollToTopBtn');
+            window.onscroll = () => {
+                if (document.body.scrollTop > 200 || document.documentElement.scrollTop > 200) scrollToTopBtn.classList.add('show');
+                else scrollToTopBtn.classList.remove('show');
+            };
+            scrollToTopBtn.addEventListener('click', () => window.scrollTo({top: 0, behavior: 'smooth'}));
+        });
     </script>
 </body>
 </html>
