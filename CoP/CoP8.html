@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Communautés de Pratique (CoP)</title>
+    
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Lucide Icons for icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        .section {
+            padding-top: 4rem;
+            padding-bottom: 4rem;
+        }
+        .section-title {
+            font-size: 2.25rem; /* 36px */
+            font-weight: 700;
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem; /* 12px */
+            padding: 1.5rem; /* 24px */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            height: 100%;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .tab-button.active {
+            border-color: #ea580c; /* orange-600 */
+            color: #ea580c;
+            background-color: #ffedd5; /* orange-100 */
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        /* Accordion styles */
+        .accordion-item-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f9fafb; /* gray-50 */
+            border: 1px solid #e5e7eb; /* gray-200 */
+            border-radius: 0.5rem;
+        }
+        .accordion-item-header:hover {
+            background-color: #f3f4f6; /* gray-100 */
+        }
+        .accordion-item-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 1rem;
+            border: 1px solid #e5e7eb;
+            border-top: 0;
+            border-radius: 0 0 0.5rem 0.5rem;
+        }
+        .accordion-item.active .accordion-item-content {
+           padding-top: 1rem;
+           padding-bottom: 1rem;
+        }
+        .accordion-item.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease-out;
+        }
+        
+        /* Interactive Graph Styles */
+        .stage-point-interactive {
+            cursor: pointer;
+            fill: #F97316; /* orange-500 */
+            transition: all 0.2s ease-in-out;
+        }
+        .stage-point-interactive:hover {
+            fill: #c2410c; /* orange-700 */
+        }
+        .tooltip-bubble {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out;
+            pointer-events: none;
+        }
+        .interactive-stage-group:hover .tooltip-bubble {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip-text tspan {
+            font-family: 'Inter', sans-serif;
+        }
+
+        #participation-chart .level-group { 
+            transition: opacity 0.3s ease-in-out; 
+            cursor: pointer; 
+        }
+        #participation-chart:hover .level-group { 
+            opacity: 0.5; 
+        }
+        #participation-chart .level-group:hover { 
+            opacity: 1; 
+        }
+
+        /* New SVG styles from provided code */
+        .axis-line {
+            stroke: #333;
+            stroke-width: 2;
+        }
+        .axis-arrow {
+            fill: #333;
+        }
+        .axis-label {
+            font-family: 'Segoe UI', Arial, sans-serif; /* Modern font */
+            font-size: 28px; /* Slightly smaller for better fit */
+            fill: #444;
+            font-weight: 600;
+        }
+
+        .main-path {
+            fill: none;
+            stroke: #F78F1E;
+            stroke-width: 8; /* Slightly thicker */
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .data-point {
+            fill: #F78F1E;
+            stroke: white;
+            stroke-width: 3;
+            cursor: pointer;
+            transition: all 0.2s ease-out; /* Smooth transition for hover effect */
+        }
+        .data-point:hover {
+            r: 12; /* Enlarge on hover */
+            fill: #FF5722; /* Change color on hover */
+        }
+
+        .tooltip {
+            opacity: 0;
+            pointer-events: none; /* Allows clicks through when hidden */
+            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+            transform: translateY(10px); /* Initial slight offset for animation */
+            filter: url(#shadow); /* Apply shadow filter */
+        }
+        .tooltip.visible {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
+        }
+
+        .tooltip-bg {
+            fill: #ffffff; /* White background for the card */
+            stroke: #cccccc; /* Light border */
+            stroke-width: 1;
+            rx: 8; /* Rounded corners */
+            ry: 8;
+        }
+        .tooltip-arrow {
+            fill: #ffffff;
+            stroke: #cccccc;
+            stroke-width: 1;
+        }
+        .tooltip-title {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 20px;
+            font-weight: bold;
+            fill: #333;
+        }
+        .tooltip-description {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 14px;
+            fill: #555;
+        }
+
+        .dashed-line {
+            stroke: #888; /* Softer black */
+            stroke-width: 2; /* Slightly thinner */
+            stroke-dasharray: 6 6;
+        }
+
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Header & Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="font-bold text-xl text-orange-600">
+                <span>CoP</span>
+            </div>
+            <div class="hidden md:flex space-x-4 lg:space-x-6 text-sm lg:text-base">
+                <a href="#definition" class="text-gray-600 hover:text-orange-600">Définition</a>
+                <a href="#typologie" class="text-gray-600 hover:text-orange-600">Typologie</a>
+                <a href="#benefices" class="text-gray-600 hover:text-orange-600">Bénéfices</a>
+                <a href="#fonctionnement" class="text-gray-600 hover:text-orange-600">Fonctionnement</a>
+                <a href="#acteurs" class="text-gray-600 hover:text-orange-600">Acteurs</a>
+                <a href="#succes" class="text-gray-600 hover:text-orange-600">Succès</a>
+                <a href="#etapes" class="text-gray-600 hover:text-orange-600">Étapes</a>
+                <a href="#cas-usages" class="text-gray-600 hover:text-orange-600">Cas d'Usage</a>
+                <a href="#ressources-complementaires" class="text-gray-600 hover:text-orange-600">Ressources</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="bg-white">
+            <div class="container mx-auto px-6 py-20 text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4">La Communauté de Pratique</h1>
+                <p class="text-lg text-gray-600 max-w-3xl mx-auto">Un levier pour l'intelligence collective et l'apprentissage continu.</p>
+                <!-- Podcast Block -->
+                <div class="mt-8 p-6 bg-gray-100 rounded-lg shadow-md max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-center">
+                        <i data-lucide="podcast" class="w-8 h-8 mr-3 text-orange-600"></i>
+                        Écoutez notre Podcast sur les CoP
+                    </h3>
+                    <p class="text-gray-700 mb-4">Découvrez en profondeur les concepts et les avantages des Communautés de Pratique.</p>
+                    <div class="bg-white p-4 rounded-md border border-gray-300">
+                        <p class="text-gray-600 italic">Lien audio du podcast à venir...</p>
+                        <!-- Placeholder for audio player: <audio controls src="your-podcast-audio.mp3" class="w-full"></audio> -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Messages-clés Section -->
+        <section class="container mx-auto px-6 section">
+            <div class="bg-orange-100/50 border border-orange-200 rounded-lg p-8 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="flex items-start space-x-4">
+                    <i data-lucide="lightbulb" class="w-8 h-8 text-orange-600 flex-shrink-0 mt-1"></i>
+                    <p class="text-orange-900">Au cœur du concept, il y a l'idée d'<strong>apprentissage en interaction</strong> avec les autres.</p>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <i data-lucide="megaphone" class="w-8 h-8 text-orange-600 flex-shrink-0 mt-1"></i>
+                    <p class="text-orange-900">Une communauté de pratique <strong>ne se dirige pas, elle s'anime</strong> !</p>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <i data-lucide="target" class="w-8 h-8 text-orange-600 flex-shrink-0 mt-1"></i>
+                    <p class="text-orange-900">L'efficacité est liée à l'<strong>activité, l'engagement et la satisfaction</strong> des membres.</p>
+                </div>
+                <div class="flex items-start space-x-4">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-orange-600 flex-shrink-0 mt-1"></i>
+                    <p class="text-orange-900">Une CoP efficace bénéficie d'un <strong>environnement facilitant</strong>.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Définition & Piliers Section -->
+        <section id="definition" class="container mx-auto px-6 section">
+            <h2 class="section-title">Qu'est-ce qu'une CoP ?</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white p-8 rounded-lg shadow-md mb-12">
+                    <i data-lucide="quote" class="w-10 h-10 text-orange-300 mb-4"></i>
+                    <blockquote class="text-lg italic text-gray-600">
+                        « Les communautés de pratique sont des groupes de personnes qui se rassemblent afin de partager et d'apprendre les uns des autres [...]. Ils sont tenus ensemble par un intérêt commun dans un champ de savoir et sont conduits par un désir et un besoin de partager des problèmes, des expériences, des modèles, des outils et les meilleures pratiques. »
+                    </blockquote>
+                    <p class="text-right mt-4 font-semibold text-gray-700">- Wenger, McDermott & Snyder, 2002</p>
+                </div>
+
+                <h3 class="text-2xl font-bold text-center mb-12">Les 3 Piliers Fondamentaux</h3>
+                <div class="relative w-full max-w-2xl mx-auto mb-12">
+                    <!-- SVG Integration for Pillars (CLEANED) -->
+                    <svg class="w-full h-auto" version="1.1" viewBox="0 0 900 700" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                        <defs>
+                            <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+                                <feOffset dx="2" dy="2" result="offsetblur"/>
+                                <feComponentTransfer>
+                                    <feFuncA type="linear" slope="0.5"/>
+                                </feComponentTransfer>
+                                <feMerge> 
+                                    <feMergeNode/>
+                                    <feMergeNode in="SourceGraphic"/> 
+                                </feMerge>
+                            </filter>
+                        </defs>
+                        <g id="Layer_2">
+                            <circle cx="457.9" cy="413.8" r="260.7" style="fill:#FF9933;stroke:#FFFFFF;stroke-width:32.452;stroke-miterlimit:10"/>
+                            <g>
+                                <g>
+                                    <g>
+                                        <path d="M458.1,258.1c-31.1,0-60.4-12.1-82.4-34.1c-45.4-45.4-45.4-119.4,0-164.8c22-22,51.3-34.1,82.4-34.1      c31.1,0,60.4,12.1,82.4,34.1c45.4,45.4,45.4,119.4,0,164.8C518.5,246,489.2,258.1,458.1,258.1z" style="fill:#FF6633"/>
+                                        <path d="M458.1,30.1c29.8,0,57.8,11.6,78.8,32.7s32.7,49.1,32.7,78.8s-11.6,57.8-32.7,78.8      c-21.1,21.1-49.1,32.7-78.8,32.7c-29.8,0-57.8-11.6-78.8-32.7c-43.5-43.5-43.5-114.2,0-157.7C400.3,41.7,428.3,30.1,458.1,30.1       M458.1,20c-31.1,0-62.3,11.9-86,35.6c-47.5,47.5-47.5,124.5,0,172c23.7,23.7,54.9,35.6,86,35.6s62.3-11.9,86-35.6      c47.5-47.5,47.5-124.5,0-172C520.3,31.8,489.2,20,458.1,20L458.1,20z" style="fill:#FFFFFF"/>
+                                    </g>
+                                </g>
+                                <g>
+                                    <g>
+                                        <path d="M598.2,500.8c15.6-27,40.7-46.2,70.8-54.3c62.1-16.6,126.1,20.3,142.7,82.4c8.1,30.1,3.9,61.5-11.6,88.4      c-15.6,27-40.7,46.2-70.8,54.3c-62.1,16.6-126.1-20.3-142.7-82.4C578.5,559.2,582.6,527.8,598.2,500.8z" style="fill:#FF6633"/>
+                                        <path d="M795.7,614.8c-14.9,25.8-38.9,44.2-67.7,51.9c-28.8,7.7-58.8,3.8-84.6-11.1c-25.8-14.9-44.2-38.9-51.9-67.7      c-7.7-28.8-3.8-58.8,11.1-84.6c14.9-25.8,38.9-44.2,67.7-51.9c59.4-15.9,120.6,19.5,136.5,78.8C814.5,559,810.6,589,795.7,614.8       M804.5,619.9c15.6-27,20.8-59.8,12.1-92.3c-17.4-64.9-84.1-103.4-149-86c-32.4,8.7-58.3,29.7-73.8,56.7      c-15.6,27-20.8,59.8-12.1,92.3c17.4,64.9,84.1,103.4,149,86C763.1,667.9,788.9,646.9,804.5,619.9L804.5,619.9z" style="fill:#FFFFFF"/>
+                                    </g>
+                                </g>
+                                <g>
+                                    <g>
+                                        <path d="M318,500.8c15.6,27,19.7,58.4,11.6,88.4c-16.6,62.1-80.7,99-142.7,82.4c-30.1-8.1-55.2-27.3-70.8-54.3      c-15.6-27-19.7-58.4-11.6-88.4c16.6-62.1,80.7-99,142.7-82.4C277.3,454.6,302.4,473.9,318,500.8z" style="fill:#FF6633"/>
+                                        <path d="M120.5,614.8c-14.9-25.8-18.8-55.8-11.1-84.6c7.7-28.8,26.2-52.8,51.9-67.7s55.8-18.8,84.6-11.1      c28.8,7.7,52.8,26.2,67.7,51.9c14.9,25.8,18.8,55.8,11.1,84.6c-15.9,59.4-77.2,94.7-136.5,78.8      C159.4,659.1,135.4,640.6,120.5,614.8 M111.7,619.9c15.6,27,41.4,48,73.8,56.7c64.9,17.4,131.6-21.1,149-86      c8.7-32.4,3.4-65.3-12.1-92.3c-15.6-27-41.4-48-73.8-56.7c-64.9-17.4-131.6,21.1-149,86C90.9,560.1,96.2,592.9,111.7,619.9      L111.7,619.9z" style="fill:#FFFFFF"/>
+                                    </g>
+                                </g>
+                                <!-- Removed overlapping text paths for Domaine, Communauté, Pratique, and CoP -->
+                                <!-- The following groups contained paths that drew the text, which are now replaced by <text> elements for better control -->
+                                <!-- Original path groups for text were here and have been removed -->
+                            </g>
+                            <!-- Text Labels (Re-added for visibility and corrected positions) -->
+                            <text x="458" y="145" font-family="Inter, sans-serif" font-size="38" font-weight="bold" fill="white" text-anchor="middle">Domaine</text>
+                            <text x="215" y="575" font-family="Inter, sans-serif" font-size="32" font-weight="bold" fill="white" text-anchor="middle">Communauté</text>
+                            <text x="685" y="570" font-family="Inter, sans-serif" font-size="38" font-weight="bold" fill="white" text-anchor="middle">Pratique</text>
+                            <text x="458" y="425" font-family="Inter, sans-serif" font-size="90" font-weight="bold" fill="white" text-anchor="middle">CoP</text>
+                        </g>
+                    </svg>
+                </div>
+                
+                <!-- Pillar Descriptions -->
+                <div class="grid md:grid-cols-3 gap-8 text-left">
+                    <div class="card">
+                        <h4 class="text-xl font-semibold mb-2 flex items-center"><i data-lucide="compass" class="w-6 h-6 mr-3 text-orange-500"></i>Un domaine d'activité commun</h4>
+                        <p class="text-gray-600">Constitue le domaine d’activité stratégique ou champ de savoir qui suscite un intérêt commun chez un groupe de personnes. Ce domaine définit ce que ces personnes veulent faire ensemble. C’est la raison d’être de la communauté.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="text-xl font-semibold mb-2 flex items-center"><i data-lucide="users" class="w-6 h-6 mr-3 text-orange-500"></i>Une communauté</h4>
+                        <p class="text-gray-600">La structure sociale qui s’établit au fil des interactions des personnes sur une base régulière et qui conduit à la création d’un sentiment d’appartenance. Elle repose sur l’engagement mutuel des membres et requiert confiance et ouverture.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="text-xl font-semibold mb-2 flex items-center"><i data-lucide="library" class="w-6 h-6 mr-3 text-orange-500"></i>Une pratique partagée</h4>
+                        <p class="text-gray-600">Réfère aux savoirs, aux outils et aux connaissances que les personnes sont intéressées à partager ainsi qu'aux connaissances qu’elles construisent ensemble. Ce répertoire soutient les membres dans la résolution de problèmes et le développement de leurs compétences.</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 bg-gray-100 p-6 rounded-lg border-l-4 border-orange-500">
+                    <p class="text-gray-700">Au départ, les communautés de pratique de pratique émergeaient spontanément des intérêts, passions et problèmes rencontrés par des personnes impliquées dans une pratique spécifique. Peu à peu, les organisations ont reproduit cette stratégie porteuse en mettant en place « intentionnellement » des communautés de pratique pour répondre à des besoins précis. Cela pose toutefois des défis particuliers comme laisser à la communauté la possibilité de s’autogérer et se structurer tout en la soutenant par l’octroi de ressources et outils requis.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typologie Section -->
+        <section id="typologie" class="bg-gray-100 section">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">Les Différentes Formes de CoP</h2>
+                <p class="text-center text-gray-600 max-w-2xl mx-auto mb-12">Une CoP n'a pas de format unique. Ses caractéristiques varient selon ses objectifs et ses membres.</p>
+                <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="card">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="sparkles" class="w-5 h-5 mr-2 text-orange-500"></i>Mode de création</h4>
+                        <p class="text-gray-600"><strong>Spontanée :</strong> naît naturellement des besoins des membres.<br><strong>Intentionnelle :</strong> initiée par une organisation.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="user-check" class="w-5 h-5 mr-2 text-orange-500"></i>Composition</h4>
+                        <p class="text-gray-600"><strong>Ouverte :</strong> accessible à tous.<br><strong>Fermée :</strong> participation sur critères.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="building-2" class="w-5 h-5 mr-2 text-orange-500"></i>Organisation</h4>
+                         <p class="text-gray-600"><strong>Intra-organisationnelle :</strong> au sein d'une seule entité.<br><strong>Inter-organisationnelle :</strong> entre plusieurs entités.</p>
+                    </div>
+                     <div class="card">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="globe" class="w-5 h-5 mr-2 text-orange-500"></i>Étendue</h4>
+                        <p class="text-gray-600"><strong>Locale :</strong> membres proches.<br><strong>Dispersée :</strong> membres à distance.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="columns-2" class="w-5 h-5 mr-2 text-orange-500"></i>Diversité</h4>
+                        <p class="text-gray-600"><strong>Homogène :</strong> profils similaires.<br><strong>Hétérogène :</strong> profils variés.</p>
+                    </div>
+                    <div class="card">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="monitor-smartphone" class="w-5 h-5 mr-2 text-orange-500"></i>Mode d'échange</h4>
+                        <p class="text-gray-600"><strong>Virtuelle, Présentiel ou Hybride.</strong></p>
+                    </div>
+                    <div class="card lg:col-span-2">
+                        <h4 class="font-semibold text-lg mb-2 flex items-center"><i data-lucide="users-2" class="w-5 h-5 mr-2 text-orange-500"></i>Taille</h4>
+                        <p class="text-gray-600"><strong>Petite, moyenne ou grande.</strong> Une communauté peut compter de quelques-uns à plusieurs centaines de membres selon le domaine et les caractéristiques de la communauté.</p>
+                    </div>
+                </div>
+                <div class="max-w-4xl mx-auto mt-12 space-y-6">
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
+                         <p class="text-gray-700"><sup>1</sup> Il semble toutefois que plus la communauté est de grande taille, plus les défis sont grands. Certains suggèrent <strong>une taille idéale entre 20 et 50 membres</strong> pour assurer des échanges productifs et une animation efficace ou la mise en place de sous-groupes d’intérêt. Un minimum d’une dizaine de membres est souhaitable pour assurer un volume et une diversité d’échanges.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-sm border-l-4 border-orange-500">
+                        <p class="text-gray-700"><sup>2</sup> Les communautés de pratique sont de plus en plus souvent virtuelles offrant l’avantage de réunir des intervenants pour qui il serait difficile autrement de collaborer. Selon la littérature, il est préférable de tenir <strong>au moins une rencontre en présence par année</strong> pour favoriser l’établissement de liens et la création du sentiment d’appartenance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bénéfices Section -->
+        <section id="benefices" class="container mx-auto px-6 section">
+            <h2 class="section-title">Pourquoi une CoP ? Les Bénéfices</h2>
+            <div class="max-w-4xl mx-auto">
+                <!-- Tabs -->
+                <div id="tabs" class="flex flex-wrap justify-center border-b mb-8">
+                    <button data-tab="membres" class="tab-button text-lg font-medium py-2 px-6 border-b-2 border-transparent hover:text-orange-600 hover:border-orange-300 transition active">Pour les Membres</button>
+                    <button data-tab="organisations" class="tab-button text-lg font-medium py-2 px-6 border-b-2 border-transparent hover:text-orange-600 hover:border-orange-300 transition">Pour les Organisations</button>
+                    <button data-tab="communaute" class="tab-button text-lg font-medium py-2 px-6 border-b-2 border-transparent hover:text-orange-600 hover:border-orange-300 transition">Pour la Communauté</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div id="tab-content" class="p-4">
+                    <div id="membres-content" class="tab-content active">
+                        <ul class="space-y-3 list-disc list-inside text-gray-700">
+                            <li>Augmentation du sentiment d'identité professionnelle.</li>
+                            <li>Acquisition et mise à jour des connaissances.</li>
+                            <li>Amélioration des compétences et de la confiance.</li>
+                            <li>Gain de temps dans la recherche d'informations.</li>
+                            <li>Satisfaction de contribuer et de faire partie d'un groupe.</li>
+                        </ul>
+                    </div>
+                    <div id="organisations-content" class="tab-content">
+                         <ul class="space-y-3 list-disc list-inside text-gray-700">
+                            <li>Transmission plus rapide des meilleures pratiques.</li>
+                            <li>Gains de productivité, moins de duplication.</li>
+                            <li>Capacité accrue de résolution de problèmes.</li>
+                            <li>Intégration facilitée des nouveaux employés.</li>
+                            <li>Mutualisation des ressources et des expertises.</li>
+                        </ul>
+                    </div>
+                    <div id="communaute-content" class="tab-content">
+                        <ul class="space-y-3 list-disc list-inside text-gray-700">
+                            <li>Regroupement des expertises dispersées.</li>
+                            <li>Réduction du sentiment d'isolement des professionnels.</li>
+                            <li>Création de consensus sur des sujets complexes.</li>
+                            <li>Mise en synergie des savoirs pour créer une intelligence collective.</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Additional Benefits -->
+                <div class="mt-12 space-y-6">
+                    <h3 class="text-2xl font-bold text-center text-gray-800">Autres Utilités Clés</h3>
+                    <div class="bg-gray-100 p-6 rounded-lg border-l-4 border-orange-500">
+                        <p class="text-gray-700 mb-4">La communauté de pratique se révèle utile pour s’approprier de nouvelles lignes directrices, clarifier des notions, harmoniser des façons de faire, se donner une compréhension commune d’un sujet donné, améliorer une situation.</p>
+                        <p class="text-gray-700 font-semibold">Elle offre la possibilité de regrouper l’expertise de ses acteurs qui autrement :</p>
+                        <ul class="list-disc list-inside text-gray-700 mt-2 space-y-1">
+                            <li>Refont les mêmes réflexions dans les différentes établissements ou formations.</li>
+                            <li>Dupliquent outils et procédures servant les mêmes objectifs.</li>
+                            <li>Se sentent isolés.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-100 p-6 rounded-lg border-l-4 border-orange-500">
+                         <p class="text-gray-700">Dans certains champs d’exercice, l’expertise est détenue par un nombre limité d’acteurs. La communauté de pratique permet de mettre cette expertise en synergie et de créer une <strong>intelligence collective</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fonctionnement & Évolution Section -->
+        <section id="fonctionnement" class="bg-white section">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">Fonctionnement et Évolution</h2>
+                <div class="w-full max-w-4xl mx-auto"> <!-- Changed max-w-5xl to max-w-4xl for alignment -->
+                    <h3 class="text-2xl font-bold mb-6 text-center">Les 5 Stades de l'Évolution d'une CoP</h3>
+                    <!-- Updated SVG for Evolution Graph -->
+                    <svg viewBox="0 0 1000 600" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" class="w-full h-auto">
+                        <defs>
+                            <!-- Filter for subtle drop shadow on tooltips -->
+                            <filter id="shadow" x="-50%" y="-50%" width="200%" height="200%">
+                                <feDropShadow dx="2" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.3"/>
+                            </filter>
+                        </defs>
+
+                        <style>
+                            /* General styles */
+                            .axis-line {
+                                stroke: #333;
+                                stroke-width: 2;
+                            }
+                            .axis-arrow {
+                                fill: #333;
+                            }
+                            .axis-label {
+                                font-family: 'Segoe UI', Arial, sans-serif; /* Modern font */
+                                font-size: 28px; /* Slightly smaller for better fit */
+                                fill: #444;
+                                font-weight: 600;
+                            }
+
+                            /* Path styles */
+                            .main-path {
+                                fill: none;
+                                stroke: #F78F1E;
+                                stroke-width: 8; /* Slightly thicker */
+                                stroke-linecap: round;
+                                stroke-linejoin: round;
+                            }
+
+                            /* Interactive points */
+                            .data-point {
+                                fill: #F78F1E;
+                                stroke: white;
+                                stroke-width: 3;
+                                cursor: pointer;
+                                transition: all 0.2s ease-out; /* Smooth transition for hover effect */
+                            }
+                            .data-point:hover {
+                                r: 12; /* Enlarge on hover */
+                                fill: #FF5722; /* Change color on hover */
+                            }
+
+                            /* Tooltip styles */
+                            .tooltip {
+                                opacity: 0;
+                                pointer-events: none; /* Allows clicks through when hidden */
+                                transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+                                transform: translateY(10px); /* Initial slight offset for animation */
+                                filter: url(#shadow); /* Apply shadow filter */
+                            }
+                            .tooltip.visible {
+                                opacity: 1;
+                                pointer-events: auto;
+                                transform: translateY(0);
+                            }
+
+                            .tooltip-bg {
+                                fill: #ffffff; /* White background for the card */
+                                stroke: #cccccc; /* Light border */
+                                stroke-width: 1;
+                                rx: 8; /* Rounded corners */
+                                ry: 8;
+                            }
+                            .tooltip-arrow {
+                                fill: #ffffff;
+                                stroke: #cccccc;
+                                stroke-width: 1;
+                            }
+                            .tooltip-title {
+                                font-family: 'Segoe UI', Arial, sans-serif;
+                                font-size: 20px;
+                                font-weight: bold;
+                                fill: #333;
+                            }
+                            .tooltip-description {
+                                font-family: 'Segoe UI', Arial, sans-serif;
+                                font-size: 14px;
+                                fill: #555;
+                            }
+
+                            .dashed-line {
+                                stroke: #888; /* Softer black */
+                                stroke-width: 2; /* Slightly thinner */
+                                stroke-dasharray: 6 6;
+                            }
+                        </style>
+
+                        <!-- Background -->
+                        <rect width="100%" height="100%" fill="#F8F8F8"/> <!-- Light grey background -->
+
+                        <!-- Axes -->
+                        <!-- Y-axis line -->
+                        <line x1="100" y1="550" x2="100" y2="50" class="axis-line"/>
+                        <!-- Y-axis arrowhead -->
+                        <polygon points="95,50 105,50 100,40" class="axis-arrow"/>
+
+                        <!-- X-axis line -->
+                        <line x1="100" y1="550" x2="950" y2="550" class="axis-line"/>
+                        <!-- X-axis arrowhead -->
+                        <polygon points="950,545 950,555 960,550" class="axis-arrow"/>
+
+                        <!-- Orange Path -->
+                        <polyline points="
+                            120,500
+                            250,380
+                            300,330
+                            320,360
+                            380,360
+                            450,250
+                            580,150
+                            620,250
+                            650,100
+                            680,280
+                            710,150
+                            740,250
+                            780,200
+                            840,200
+                            860,250
+                            900,220
+                        " class="main-path"/>
+
+                        <!-- Dashed Lines -->
+                        <line x1="815" y1="150" x2="815" y2="250" class="dashed-line"/>
+                        <line x1="835" y1="150" x2="835" y2="250" class="dashed-line"/>
+
+                        <!-- Text Labels -->
+                        <!-- Y-axis label: "Stade de développement" -->
+                        <text x="50" y="300" class="axis-label" text-anchor="middle" transform="rotate(-90 50 300)">Stade de développement</text>
+                        <!-- X-axis label: "Temps" -->
+                        <text x="850" y="580" class="axis-label" text-anchor="middle">Temps</text>
+
+                        <!-- Interactive Points and Tooltips -->
+
+                        <!-- Point 1: Potentiel -->
+                        <circle cx="180" cy="440" r="8" class="data-point" data-tooltip-id="tooltip-potentiel"/>
+                        <g id="tooltip-potentiel" class="tooltip" transform="translate(180, 440)">
+                            <rect x="-70" y="-140" width="140" height="90" class="tooltip-bg"/>
+                            <polygon points="-10,-50 10,-50 0,-40" class="tooltip-arrow" transform="translate(0, -5)"/>
+                            <text x="0" y="-115" text-anchor="middle" class="tooltip-title">Potentiel</text>
+                            <text x="0" y="-90" text-anchor="middle" class="tooltip-description">Phase initiale de croissance.</text>
+                            <text x="0" y="-70" text-anchor="middle" class="tooltip-description">Beaucoup à découvrir.</text>
+                        </g>
+                        <!-- Static label for Point 1 -->
+                        <text x="180" y="470" class="axis-label" font-size="16px" fill="#444" text-anchor="middle">Potentiel</text>
+
+                        <!-- Point 2: Unification -->
+                        <circle cx="340" cy="345" r="8" class="data-point" data-tooltip-id="tooltip-unification"/>
+                        <g id="tooltip-unification" class="tooltip" transform="translate(340, 345)">
+                            <rect x="-70" y="-140" width="140" height="90" class="tooltip-bg"/>
+                            <polygon points="-10,-50 10,-50 0,-40" class="tooltip-arrow" transform="translate(0, -5)"/>
+                            <text x="0" y="-115" text-anchor="middle" class="tooltip-title">Unification</text>
+                            <text x="0" y="-90" text-anchor="middle" class="tooltip-description">Cohésion et harmonie.</text>
+                            <text x="0" y="-70" text-anchor="middle" class="tooltip-description">Forces convergentes.</text>
+                        </g>
+                        <!-- Static label for Point 2 -->
+                        <text x="340" y="375" class="axis-label" font-size="16px" fill="#444" text-anchor="middle">Unification</text>
+
+                        <!-- Point 3: Maturité -->
+                        <circle cx="515" cy="200" r="8" class="data-point" data-tooltip-id="tooltip-maturite"/>
+                        <g id="tooltip-maturite" class="tooltip" transform="translate(515, 200)">
+                            <rect x="-70" y="-140" width="140" height="90" class="tooltip-bg"/>
+                            <polygon points="-10,-50 10,-50 0,-40" class="tooltip-arrow" transform="translate(0, -5)"/>
+                            <text x="0" y="-115" text-anchor="middle" class="tooltip-title">Maturité</text>
+                            <text x="0" y="-90" text-anchor="middle" class="tooltip-description">Pleine réalisation des capacités.</text>
+                            <text x="0" y="-70" text-anchor="middle" class="tooltip-description">Stabilité et efficacité.</text>
+                        </g>
+                        <!-- Static label for Point 3 -->
+                        <text x="515" y="230" class="axis-label" font-size="16px" fill="#444" text-anchor="middle">Maturité</text>
+
+                        <!-- Point 4: Momentum -->
+                        <circle cx="650" cy="180" r="8" class="data-point" data-tooltip-id="tooltip-momentum"/>
+                        <g id="tooltip-momentum" class="tooltip" transform="translate(650, 180)">
+                            <rect x="-70" y="-140" width="140" height="90" class="tooltip-bg"/>
+                            <polygon points="-10,-50 10,-50 0,-40" class="tooltip-arrow" transform="translate(0, -5)"/>
+                            <text x="0" y="-115" text-anchor="middle" class="tooltip-title">Momentum</text>
+                            <text x="0" y="-90" text-anchor="middle" class="tooltip-description">Accélération et innovation.</text>
+                            <text x="0" y="-70" text-anchor="middle" class="tooltip-description">Dynamisme soutenu.</text>
+                        </g>
+                        <!-- Static label for Point 4 -->
+                        <text x="650" y="210" class="axis-label" font-size="16px" fill="#444" text-anchor="middle">Momentum</text>
+
+                        <!-- Point 5: Transformation -->
+                        <circle cx="880" cy="235" r="8" class="data-point" data-tooltip-id="tooltip-transformation"/>
+                        <g id="tooltip-transformation" class="tooltip" transform="translate(880, 235)">
+                            <rect x="-70" y="-140" width="140" height="90" class="tooltip-bg"/>
+                            <polygon points="-10,-50 10,-50 0,-40" class="tooltip-arrow" transform="translate(0, -5)"/>
+                            <text x="0" y="-115" text-anchor="middle" class="tooltip-title">Transformation</text>
+                            <text x="0" y="-90" text-anchor="middle" class="tooltip-description">Changement profond et renouveau.</text>
+                            <text x="0" y="-70" text-anchor="middle" class="tooltip-description">Nouvelle direction.</text>
+                        </g>
+                        <!-- Static label for Point 5 -->
+                        <text x="880" y="265" class="axis-label" font-size="16px" fill="#444" text-anchor="middle">Transformation</text>
+
+                    </svg>
+                    <p class="text-center text-sm text-gray-500 mt-4">
+                        inspiration : Tirée de CEFRIO (2005). Travailler, apprendre et collaborer en réseau, p.22 (Adaptation Richard McDermott, 2002).
+                    </p>
+                </div>
+                <!-- New Accordion for Evolution Stages Details -->
+                <div id="evolution-stages-accordion" class="max-w-4xl mx-auto space-y-2 mt-8">
+                    <!-- Potentiel -->
+                    <div class="accordion-item card">
+                        <div class="accordion-item-header">
+                            <h3 class="font-semibold text-xl flex items-center"><i data-lucide="info" class="w-6 h-6 mr-3 text-orange-500"></i>Potentiel</h3>
+                            <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                        </div>
+                        <div class="accordion-item-content">
+                            <p class="text-gray-600">Les gens se découvrent les uns et les autres, imaginent diverses possibilités.</p>
+                        </div>
+                    </div>
+                    <!-- Unification -->
+                    <div class="accordion-item card">
+                        <div class="accordion-item-header">
+                            <h3 class="font-semibold text-xl flex items-center"><i data-lucide="info" class="w-6 h-6 mr-3 text-orange-500"></i>Unification</h3>
+                            <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                        </div>
+                        <div class="accordion-item-content">
+                            <p class="text-gray-600">Adhésion d’une masse critique de personnes engagées dans la communauté de pratique. Augmentation des connaissances partagées.</p>
+                        </div>
+                    </div>
+                    <!-- Maturité -->
+                    <div class="accordion-item card">
+                        <div class="accordion-item-header">
+                            <h3 class="font-semibold text-xl flex items-center"><i data-lucide="info" class="w-6 h-6 mr-3 text-orange-500"></i>Maturité</h3>
+                            <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                        </div>
+                        <div class="accordion-item-content">
+                            <p class="text-gray-600">La communauté de pratique développe sa vitalité, les activités pas nécessairement nombreuses sont intenses.</p>
+                        </div>
+                    </div>
+                    <!-- Momentum -->
+                    <div class="accordion-item card">
+                        <div class="accordion-item-header">
+                            <h3 class="font-semibold text-xl flex items-center"><i data-lucide="info" class="w-6 h-6 mr-3 text-orange-500"></i>Momentum</h3>
+                            <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                        </div>
+                        <div class="accordion-item-content">
+                            <p class="text-gray-600">Correspond à la période de productivité : échanges féconds, activités, productions.</p>
+                        </div>
+                    </div>
+                    <!-- Transformation -->
+                    <div class="accordion-item card">
+                        <div class="accordion-item-header">
+                            <h3 class="font-semibold text-xl flex items-center"><i data-lucide="info" class="w-6 h-6 mr-3 text-orange-500"></i>Transformation</h3>
+                            <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                        </div>
+                        <div class="accordion-item-content">
+                            <p class="text-gray-600">Point tournant : poursuivre? changer?</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Acteurs Section -->
+        <section id="acteurs" class="container mx-auto px-6 section">
+             <h2 class="section-title">Les Acteurs de la CoP</h2>
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="order-2 lg:order-1">
+                    <h3 class="text-2xl font-bold text-center lg:text-left mb-6">Les Rôles et Responsabilités</h3>
+                    <div id="accordion" class="space-y-2">
+                        <!-- Animateur -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Animateur</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Assure le leadership, organise, soutient les relations interpersonnelles, stimule les échanges, motive, relance, fait le lien avec les collaborateurs externes. Peut déléguer certaines de ces tâches…et en assumer d’autres également (ex. : administrateur).</p></div>
+                        </div>
+                        <!-- Membre -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Membre</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Adhère à la communauté et participe aux activités qui y sont organisées. Doit s’impliquer et participer au bon fonctionnement.</p></div>
+                        </div>
+                        <!-- Fondateur -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Fondateur</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Initie la communauté. Participe à l’élaboration de la mission et des objectifs.</p></div>
+                        </div>
+                        <!-- Expert de contenu -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Expert de contenu</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Détient une expertise spécifique d’intérêt pour la communauté. Aide, enrichit, valide.</p></div>
+                        </div>
+                        <!-- Veilleur -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Veilleur</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Détecte et analyse le contenu thématique.</p></div>
+                        </div>
+                        <!-- Administrateur -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Administrateur</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Organise et coordonne les événements et activités de la communauté.</p></div>
+                        </div>
+                        <!-- Personne-ressource en TI -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Personne-ressource en TI</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Surveille et entretient les outils de collaboration. Adapte les outils selon les besoins : paramétrage; gestion des droits et accès; sécurité.</p></div>
+                        </div>
+                        <!-- Mentor -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Mentor</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Membre expérimenté chargé de l’intégration des nouveaux membres; explique les normes et politiques de la communauté.</p></div>
+                        </div>
+                        <!-- Rapporteur -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Rapporteur</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Identifie et publie sous forme de documents, les présentations, rapports, savoirs pertinents, meilleures pratiques, nouvelles approches ou leçons tirées de la communauté.</p></div>
+                        </div>
+                        <!-- Parrain -->
+                        <div class="accordion-item">
+                            <div class="accordion-item-header">
+                                <span class="font-semibold">Parrain</span>
+                                <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                            </div>
+                            <div class="accordion-item-content"><p>Veille à la visibilité de la communauté, ses ressources et son importance stratégique. Protecteur de la communauté lui offrant une reconnaissance.</p></div>
+                        </div>
+                    </div>
+                    <p class="text-gray-700 mt-6 text-sm">Il est important que l’attribution des rôles et responsabilités soit vue comme une forme de reconnaissance et non comme une charge supplémentaire (Harvey, 2011).</p>
+                </div>
+                <div class="order-1 lg:order-2">
+                    <h3 class="text-2xl font-bold text-center mb-6">Niveaux de Participation</h3>
+                    <div id="participation-chart" class="w-full max-w-sm mx-auto">
+                        <svg viewBox="0 0 400 400" class="w-full h-auto">
+                            <g class="level-group">
+                                <circle cx="200" cy="200" r="190" fill="#ffedd5" />
+                                <text x="200" y="60" text-anchor="middle" font-size="20" font-weight="600" fill="#c2410c" pointer-events="none">
+                                    Observateurs légitimes (~70%)
+                                </text>
+                            </g>
+                            <g class="level-group">
+                                <circle cx="200" cy="200" r="130" fill="#fed7aa" />
+                                <text x="200" y="105" text-anchor="middle" font-size="20" font-weight="600" fill="#9a3412" pointer-events="none">
+                                    Noyau actif (~20%)
+                                </text>
+                            </g>
+                            <g class="level-group">
+                                <circle cx="200" cy="200" r="70" fill="#fb923c" />
+                                <text x="200" y="195" text-anchor="middle" font-size="16" font-weight="700" fill="white" pointer-events="none">
+                                    <tspan x="200" dy="0">Noyau très</tspan>
+                                    <tspan x="200" dy="1.2em">actif (~10%)</tspan>
+                                </text>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Facteurs de Succès Section -->
+        <section id="succes" class="container mx-auto px-6 section">
+            <h2 class="section-title">Facteurs de Succès et de Participation</h2>
+            <div class="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-6">
+                        <h3 class="text-xl font-semibold text-green-800 flex items-center mb-4">
+                            <i data-lucide="thumbs-up" class="w-6 h-6 mr-2"></i>
+                            Ce qui favorise la participation
+                        </h3>
+                        <ul class="space-y-2 list-disc list-inside text-green-700">
+                            <li>Confiance mutuelle et espace sécurisant</li>
+                            <li>Pertinence des discussions pour la pratique</li>
+                            <li>Fiabilité des connaissances partagées</li>
+                            <li>Infrastructure technologique simple à utiliser</li>
+                            <li>Reconnaissance et valorisation des contributions</li>
+                        </ul>
+                    </div>
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                        <h3 class="text-xl font-semibold text-red-800 flex items-center mb-4">
+                            <i data-lucide="thumbs-down" class="w-6 h-6 mr-2"></i>
+                            Ce qui freine la participation
+                        </h3>
+                        <ul class="space-y-2 list-disc list-inside text-red-700">
+                            <li>Crainte du jugement ou de ne pas être pertinent</li>
+                            <li>Manque de temps ou perception de surcharge</li>
+                            <li>Culture ne favorisant pas le partage</li>
+                            <li>Manque de réactivité aux questions posées</li>
+                            <li>Impression de recevoir plus que l'on ne donne</li>
+                        </ul>
+                    </div>
+                </div>
+        </section>
+
+        <!-- Étapes de mise en oeuvre Section -->
+        <section id="etapes" class="container mx-auto px-6 section">
+            <h2 class="section-title">Les Étapes de Mise en Œuvre</h2>
+            <div id="etapes-accordion" class="max-w-4xl mx-auto space-y-2">
+                <!-- Constitution d’un groupe noyau et préparation -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="users" class="w-6 h-6 mr-3 text-orange-500"></i>1. Constitution d’un groupe noyau et préparation</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">Que la communauté de pratique soit spontanée ou intentionnelle, il est judicieux de former un groupe « noyau » pour préparer le projet de communauté.</p>
+                        <p class="text-gray-600">Ce groupe devrait regrouper des individus motivés : initiateur/fondateur, parrain, expert de contenu, spécialiste des TIC, etc. Il peut parfois être bénéfique d’adjoindre un conseiller expérimenté.</p>
+                    </div>
+                </div>
+                <!-- Analyse des besoins -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="clipboard-list" class="w-6 h-6 mr-3 text-orange-500"></i>2. Analyse des besoins</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">Il faut identifier les besoins précis qui conduisent à choisir ce mode de travail collaboratif et déterminer à quel (s) groupe (s) de professionnels la communauté sera utile.</p>
+                        <p class="text-gray-600">Diverses modalités sont possibles, le sondage en ligne s’avérant le plus souvent utilisé.</p>
+                    </div>
+                </div>
+                <!-- Recrutement -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="user-plus" class="w-6 h-6 mr-3 text-orange-500"></i>3. Recrutement</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">C’est souvent le domaine d’intérêt qui influence le recrutement des membres. Dans le cas d’une communauté de pratique intentionnelle, les attentes détermineront parfois qui recruter. Un réseau existant peut s’avérer un bon point de départ.</p>
+                        <p class="text-gray-600 mb-2">La diversité culturelle (ex : divers secteurs d’activités, champs d’exercice ou régions) favorise des échanges riches tout en posant un défi pour établir la confiance et la poursuite d’objectifs communs.</p>
+                        <p class="text-gray-600">Selon une étude du CEFRIO, les volontaires sont plus susceptibles de participer activement que les personnes qui ont été forcées d’intégrer la communauté de pratique, ce qui a été corroboré auprès des personnes interrogées.</p>
+                    </div>
+                </div>
+                <!-- Configuration de la communauté -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="settings" class="w-6 h-6 mr-3 text-orange-500"></i>4. Configuration de la communauté</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">La configuration signifie définir les paramètres de la communauté de pratique de façon à répondre aux besoins des membres ainsi qu’aux attentes de l’organisation dans le cas d’une communauté de pratique intentionnelle.</p>
+                        <p class="text-gray-600 mb-2">La communauté de pratique s’organise selon ses besoins et son contexte.</p>
+                        <p class="text-gray-600 font-semibold mb-1">Voici les actions proposées :</p>
+                        <ul class="list-disc list-inside text-gray-600 ml-4 mb-2">
+                            <li>Attribuer des rôles et responsabilités.</li>
+                            <li>Une même personne peut jouer plusieurs rôles ou plusieurs personnes peuvent se partager un même rôle (ex. : animation « tournante » entre quelques personnes).</li>
+                        </ul>
+                        <p class="text-gray-600 italic">Outil possible : MATRICE des responsabilités - RACI</p>
+                    </div>
+                </div>
+                <!-- Obtention des ressources -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="package" class="w-6 h-6 mr-3 text-orange-500"></i>5. Obtention des ressources</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">Les ressources requises varient d’une communauté de pratique à l’autre. Il n’est pas nécessaire de disposer d’un important budget, il faut surtout du temps.</p>
+                        <p class="text-gray-600 font-semibold mb-1">Principaux investissements :</p>
+                        <ul class="list-disc list-inside text-gray-600 ml-4 space-y-1">
+                            <li>Ressources humaines : participation des animateurs, groupe noyau, membres; formation animateurs, formation membres sur le travail en communauté de pratique;</li>
+                            <li>Ressources technologiques : plateforme collaborative, développement informatique, licences, hébergement, formation à l’utilisation;</li>
+                            <li>Frais de déplacement et de communication.</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Outillage technologique -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="monitor" class="w-6 h-6 mr-3 text-orange-500"></i>6. Outillage technologique</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">Il existe une panoplie d’outils technologiques permettant de décupler la portée d’une communauté de pratique en éliminant les contraintes de temps, de distance et d’espace. Diverses technologies permettent de maintenir les interactions que ce soit pour discuter, échanger ou collaborer.</p>
+                        <p class="text-gray-600 mb-2">Toutefois, il ne faut pas perdre de vue que la technologie est en soutien à l’engagement et l’implication des membres.</p>
+                        <p class="text-gray-600 italic mb-2">« La technologie doit être au service de la communauté et non son essence. Toutefois elle ne doit pas non plus devenir un obstacle à son bon fonctionnement. »</p>
+                        <p class="text-gray-600 font-semibold mb-1">Les outils disponibles permettent les types d’interactions suivants :</p>
+                        <ul class="list-disc list-inside text-gray-600 ml-4 mb-2">
+                            <li>Synchrones : même moment/même endroit ou endroits différents;</li>
+                            <li>Asynchrones : moments différents/même endroit ou endroits différents</li>
+                        </ul>
+                        <p class="text-gray-600 mb-2">Il faut s’assurer de la compatibilité avec l’environnement technologique des membres. L’accessibilité sur divers supports (ordinateur, cellulaire, tablette) constitue un atout.</p>
+                        <p class="text-gray-600 italic">Outil possible : MATRICE de décision</p>
+                    </div>
+                </div>
+                <!-- Évaluation | suivi -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="bar-chart-2" class="w-6 h-6 mr-3 text-orange-500"></i>7. Évaluation | suivi</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-2">Comment suivre une communauté et en mesurer l’efficacité?</p>
+                        <p class="text-gray-600 mb-2">Les retombées potentielles d’une communauté de pratique peuvent être d’ordre individuel (membre), organisationnel ou collectif (communauté). Ces retombées sont liées à un fonctionnement efficace et dynamique de la communauté de pratique qui à son tour, repose sur un environnement facilitant. Il peut donc s’avérer pertinent de documenter la mise en œuvre avant de se prononcer sur les impacts.</p>
+                        <p class="text-gray-600 mb-2">Comme les communautés de pratique prennent du temps à évoluer et devenir productives, les activités doivent être soutenues au fil du temps.</p>
+                        <p class="text-gray-600 mb-2">L’évaluation doit être dynamique, réalisée à intervalles réguliers et se pencher sur différents éléments adaptés au stade de développement de la communauté.</p>
+                        <p class="text-gray-600 mb-2">Il est recommandé d’avoir recours à des indicateurs tant quantitatifs que qualitatifs afin de pouvoir rattacher l’action de la communauté à des résultats opérationnels.</p>
+                        <p class="text-gray-600 font-semibold mb-1">- Mesurer la « santé » de la communauté de pratique</p>
+                        <p class="text-gray-600 mb-2">La « santé » de la communauté de pratique est associée aux processus et activités au sein de la communauté et inclut la :</p>
+                        <ul class="list-disc list-inside text-gray-600 ml-4 mb-2">
+                            <li>vitalité : niveau d’activité et d’interaction,</li>
+                            <li>satisfaction des membres.</li>
+                        </ul>
+                        <p class="text-gray-600 mb-2">L’analyse des statistiques de fréquentation permet de documenter le niveau d’activité (ex : nombre de visites sur la plate-forme, sections visitées, nombres d’échanges, etc.</p>
+                        <p class="text-gray-600 mb-2">Pour ce qui est de la satisfaction des membres on aura plutôt recours à des sondages en ligne, focus group ou entrevue. Des aspects comme la réponse aux besoins des membres, les activités les plus pertinentes, les difficultés rencontrées peuvent être documentées, etc.</p>
+                        <p class="text-gray-600 font-semibold mb-1">- Mesurer l’efficacité de la communauté de pratique</p>
+                        <p class="text-gray-600 mb-2">L’efficacité d’une communauté de pratique réfère à son impact (Jacob et Paquet, 2013) et inclut :</p>
+                        <ul class="list-disc list-inside text-gray-600 ml-4 mb-2">
+                            <li>L’atteinte d’objectifs fixés ou attentes signifiées;</li>
+                            <li>Les apprentissages réalisés par les membres;</li>
+                            <li>La valeur créée pour l’organisation (par exemple la réduction du temps de recherche d’informations par les intervenants).</li>
+                        </ul>
+                        <p class="text-gray-600">Des sondages pré/post sur les compétences professionnelles et les collaborations, focus group et entrevue s’avèrent de bons moyens pour aller documenter des éléments comme ce que les membres ont adapté dans leur pratique, ce qui leur a permis de résoudre certains problèmes, etc.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nouvelle Section: Cas d'Usage Concrets -->
+        <section id="cas-usages" class="container mx-auto px-6 section">
+            <h2 class="section-title">Cas d'Usage Concrets</h2>
+            <div id="cas-usages-accordion" class="max-w-4xl mx-auto space-y-4">
+                <!-- Cas d'Usage 1: CoP "Bonnes pratiques Pédagogiques" -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="book-open" class="w-6 h-6 mr-3 text-orange-500"></i>CoP "Bonnes pratiques Pédagogiques"</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-4"><strong>Objectif principal :</strong> Partager, évaluer et développer les meilleures pratiques en matière de pédagogie pour optimiser l'efficacité de la formation.</p>
+                        <h4 class="font-semibold text-lg mb-2">Plan d'Action :</h4>
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="users" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 1 : Constitution d'un groupe noyau et préparation</h5>
+                                <p class="text-gray-600 mb-1">Identifier un petit groupe de formateurs et de responsables pédagogiques très motivés et reconnus pour leur expertise et leur volonté de partager. Inclure un initiateur/fondateur, un ou plusieurs experts de contenu pédagogique, et potentiellement un parrain (manager ou directeur de la formation) pour apporter un soutien institutionnel.</p>
+                                <p class="text-gray-600 text-sm italic">Ce groupe définira les objectifs initiaux de la CoP (ex: standardiser certaines approches, explorer de nouvelles méthodes d'évaluation, optimiser l'engagement des apprenants) et le profil des membres à recruter.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="clipboard-list" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 2 : Analyse des besoins</h5>
+                                <p class="text-gray-600 mb-1">Réaliser un sondage en ligne auprès de l'ensemble des formateurs et concepteurs pédagogiques pour identifier leurs besoins spécifiques en termes de défis pédagogiques, de sujets d'intérêt, de lacunes en connaissances ou compétences, et de problèmes récurrents dans leur pratique quotidienne.</p>
+                                <p class="text-gray-600 text-sm italic">Les résultats permettront d'affiner les thématiques prioritaires de la CoP, par exemple, la gamification, l'enseignement hybride, l'évaluation par compétences, la gestion de classes hétérogènes. La CoP doit être proche du quotidien des membres pour fonctionner au mieux.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="user-plus" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 3 : Recrutement des membres</h5>
+                                <p class="text-gray-600 mb-1">Cibler le recrutement sur les professionnels ayant une implication directe ou un intérêt marqué pour la plateforme Moodle : administrateurs LMS, formateurs "référents Moodle", support technique, concepteurs de modules e-learning, voire quelques utilisateurs expérimentés.</p>
+                                <p class="text-gray-600 text-sm italic">Les <strong>volontaires</strong> seront privilégiés pour garantir un engagement actif. La CoP peut être "fermée" avec une sélection de membres selon des critères précis (rôle, expertise).</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="settings" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 4 : Configuration de la communauté</h5>
+                                <p class="text-gray-600 mb-1">Définir les rôles spécifiques (animateur, expert technique Moodle, veilleur technologique, rapporteur des solutions techniques). L'animateur devra être proactif pour soutenir la participation.</p>
+                                <p class="text-gray-600 text-sm italic">Établir une <strong>charte de participation</strong> axée sur la résolution collaborative de problèmes techniques, le partage d'astuces de configuration, la documentation des solutions et l'expérimentation de nouvelles fonctionnalités Moodle. La confiance est essentielle pour partager les problèmes et les solutions.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="package" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 5 : Obtention des ressources</h5>
+                                <p class="text-gray-600 mb-1">Assurer l'<strong>allocation de temps reconnu dans la tâche des membres et de l'animateur</strong>. C'est l'investissement le plus crucial. Des sessions régulières, par exemple 1 à 3 heures par semaine ou 0,5 à 1,5 jour par mois, doivent être intentionnellement intégrées dans l'emploi du temps.</p>
+                                <p class="text-gray-600 text-sm italic">Allouer les ressources humaines (temps de l'animateur dédié, formations des membres sur le partage des connaissances), technologiques (plateforme collaborative) et budgétaires (frais de communication, éventuels déplacements pour les rencontres présentielles). Le leadership de l'organisme doit soutenir et valoriser la participation.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="monitor" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 6 : Outillage technologique</h5>
+                                <p class="text-gray-600 mb-1">Choisir une plateforme collaborative conviviale, sécurisée et accessible (compatible multi-support). Elle devra inclure des fonctionnalités comme un forum de discussion, une bibliothèque de documents (modèles, outils, études de cas), un moteur de recherche, un système de notification, et des options de visioconférence pour les échanges à distance.</p>
+                                <p class="text-gray-600 text-sm italic">La technologie doit être un <strong>soutien à l'engagement</strong>, non une fin en soi. S'assurer qu'elle est adaptée aux besoins des membres et simple d'utilisation.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="rocket" class="w-5 h-5 mr-2 text-gray-600"></i>Lancement de la CoP "Bonnes pratiques Pédagogiques"</h5>
+                                <p class="text-gray-600 mb-1">Organiser une <strong>première rencontre</strong> (idéalement en présentiel ou hybride pour les aspects techniques qui peuvent être plus complexes à distance) pour lancer officiellement la CoP.</p>
+                                <p class="text-gray-600 text-sm italic">Lors de ce lancement, présenter la charte, les rôles, les objectifs affinés et les premières activités (ex: atelier thématique, session de partage d'expériences).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cas d'Usage 2: CoP "LMS Moodle" -->
+                <div class="accordion-item card">
+                    <div class="accordion-item-header">
+                        <h3 class="font-semibold text-xl flex items-center"><i data-lucide="graduation-cap" class="w-6 h-6 mr-3 text-orange-500"></i>CoP "LMS Moodle"</h3>
+                        <i data-lucide="chevron-down" class="accordion-icon w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-item-content">
+                        <p class="text-gray-600 mb-4"><strong>Objectif principal :</strong> Optimiser l'utilisation de la plateforme Moodle, résoudre les problèmes techniques et fonctionnels, partager les astuces et innovations, et mutualiser les connaissances sur son administration et son évolution.</p>
+                        <h4 class="font-semibold text-lg mb-2">Plan d'Action :</h4>
+                        <div class="space-y-4">
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="users" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 1 : Constitution d'un groupe noyau et préparation</h5>
+                                <p class="text-gray-600 mb-1">Identifier des administrateurs Moodle, des formateurs utilisateurs avancés, et des membres du support technique ou de l'équipe informatique concernés par le LMS. Inclure un initiateur/fondateur, un expert technique Moodle, et un parrain (manager ou directeur des systèmes d'information).</p>
+                                <p class="text-gray-600 text-sm italic">Ce groupe définira les défis techniques et fonctionnels majeurs liés à Moodle (ex: optimisation des plugins, gestion des mises à jour, développement de modules spécifiques, résolution de bugs récurrents).</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="clipboard-list" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 2 : Analyse des besoins</h5>
+                                <p class="text-gray-600 mb-1">Mener des entretiens ou un sondage ciblé auprès des utilisateurs de Moodle (formateurs, apprenants, administrateurs) pour recueillir les problèmes rencontrés, les fonctionnalités souhaitées, les besoins de formation ou de documentation, et les opportunités d'amélioration de la plateforme.</p>
+                                <p class="text-gray-600 text-sm italic">L'analyse identifiera des besoins spécifiques comme l'intégration de nouveaux outils, l'optimisation de l'interface utilisateur, la résolution de problèmes techniques fréquents, ou le partage de bonnes pratiques de création de cours sur Moodle.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="user-plus" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 3 : Recrutement des membres</h5>
+                                <p class="text-gray-600 mb-1">Cibler le recrutement sur les professionnels ayant une implication directe ou un intérêt marqué pour la plateforme Moodle : administrateurs LMS, formateurs "référents Moodle", support technique, concepteurs de modules e-learning, voire quelques utilisateurs expérimentés.</p>
+                                <p class="text-gray-600 text-sm italic">Les <strong>volontaires</strong> seront privilégiés pour garantir un engagement actif. La CoP peut être "fermée" avec une sélection de membres selon des critères précis (rôle, expertise).</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="settings" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 4 : Configuration de la communauté</h5>
+                                <p class="text-gray-600 mb-1">Définir les rôles spécifiques (animateur, expert technique Moodle, veilleur technologique, rapporteur des solutions techniques). L'animateur devra être proactif pour soutenir la participation.</p>
+                                <p class="text-gray-600 text-sm italic">Établir une <strong>charte de participation</strong> axée sur la résolution collaborative de problèmes techniques, le partage d'astuces de configuration, la documentation des solutions et l'expérimentation de nouvelles fonctionnalités Moodle. La confiance est essentielle pour partager les problèmes et les solutions.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="package" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 5 : Obtention des ressources</h5>
+                                <p class="text-gray-600 mb-1">Obtenir un accord formel de la direction pour l'allocation de temps des membres et de l'animateur. Les défis liés à l'administration d'un LMS peuvent être récurrents, justifiant un temps de participation régulier.</p>
+                                <p class="text-gray-600 text-sm italic">S'assurer de la disponibilité des ressources technologiques (un espace dédié sur Moodle pour la CoP, ou une plateforme collaborative externe pour les discussions et partages de fichiers, licences Moodle, environnements de test).</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="monitor" class="w-5 h-5 mr-2 text-gray-600"></i>Étape 6 : Outillage technologique</h5>
+                                <p class="text-gray-600 mb-1">Utiliser Moodle lui-même comme plateforme de la CoP si ses fonctionnalités (forums, wikis, bases de données) sont suffisantes et si la CoP se limite à l'optimisation de l'outil. Sinon, choisir une plateforme collaborative externe répondant aux critères de simplicité, accessibilité, convivialité et sécurité.</p>
+                                <p class="text-gray-600 text-sm italic">Les interactions synchrones (visioconférences pour démonstrations techniques) et asynchrones (forums pour les questions-réponses et la documentation) sont cruciales. Un répertoire bien organisé des solutions et astuces Moodle est essentiel pour gagner la confiance des participants.</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-md border border-gray-200">
+                                <h5 class="font-semibold text-base flex items-center mb-2"><i data-lucide="rocket" class="w-5 h-5 mr-2 text-gray-600"></i>Lancement de la CoP "LMS Moodle"</h5>
+                                <p class="text-gray-600 mb-1">Organiser une <strong>première rencontre</strong> (idéalement en présentiel ou hybride pour les aspects techniques qui peuvent être plus complexes à distance) pour lancer officiellement la CoP.</p>
+                                <p class="text-gray-600 text-sm italic">Lors de ce lancement, présenter la charte, les rôles, les premiers "problèmes" à résoudre ou "astuces" à partager, et valider un programme d'activités initial (ex: tutoriels collaboratifs, sessions de troubleshooting, veille sur les nouveautés Moodle).</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Nouvelle Section: Ressources Complémentaires -->
+        <section id="ressources-complementaires" class="container mx-auto px-6 section">
+            <h2 class="section-title">Ressources Complémentaires</h2>
+            <div class="max-w-2xl mx-auto p-6 bg-gray-100 rounded-lg shadow-md">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4 flex items-center justify-center">
+                    <i data-lucide="link" class="w-8 h-8 mr-3 text-orange-600"></i>
+                    Explorez notre Carte Mentale CoP
+                </h3>
+                <p class="text-gray-700 mb-4 text-center">Découvrez un résumé visuel des étapes clés et des concepts des Communautés de Pratique.</p>
+                <div class="text-center">
+                    <a href="https://xmind.app/m/S8UfPk" target="_blank" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200">
+                        Accéder à la Carte Mentale
+                        <i data-lucide="external-link" class="ml-2 w-5 h-5"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <p>Présentation sur les Communautés de Pratique.</p>
+            <p class="text-sm text-gray-400 mt-2">Contenu inspiré des documents de l'INSPQ.</p>
+            <p class="text-sm text-gray-400 mt-2">© d.de AMIL | IRP - 2025</p>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Tabs functionality
+        const tabsContainer = document.getElementById('tabs');
+        if (tabsContainer) {
+            const tabButtons = tabsContainer.querySelectorAll('.tab-button');
+            const contentContainer = document.getElementById('tab-content');
+            const tabContents = contentContainer.querySelectorAll('.tab-content');
+
+            tabsContainer.addEventListener('click', (e) => {
+                const clickedButton = e.target.closest('.tab-button');
+                if (!clickedButton) return;
+
+                tabButtons.forEach(button => button.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                clickedButton.classList.add('active');
+                const tabId = clickedButton.dataset.tab;
+                const activeContent = document.getElementById(`${tabId}-content`);
+                if (activeContent) {
+                    activeContent.classList.add('active');
+                }
+            });
+        }
+        
+        // Accordion functionality for "Les Rôles et Responsabilités"
+        const rolesAccordion = document.getElementById('accordion');
+        if(rolesAccordion) {
+            const items = rolesAccordion.querySelectorAll('.accordion-item');
+            items.forEach(item => {
+                const header = item.querySelector('.accordion-item-header');
+                const content = item.querySelector('.accordion-item-content');
+                header.addEventListener('click', () => {
+                    // Close other items
+                    items.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('active')) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('.accordion-item-content').style.maxHeight = '0px';
+                        }
+                    });
+
+                    // Toggle current item
+                    item.classList.toggle('active');
+                    if (item.classList.contains('active')) {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = "0px";
+                    }
+                });
+            });
+        }
+
+        // Accordion functionality for "Les Étapes de Mise en Œuvre"
+        const etapesAccordion = document.getElementById('etapes-accordion');
+        if(etapesAccordion) {
+            const items = etapesAccordion.querySelectorAll('.accordion-item');
+            items.forEach(item => {
+                const header = item.querySelector('.accordion-item-header');
+                const content = item.querySelector('.accordion-item-content');
+                header.addEventListener('click', () => {
+                    // Close other items (optional, depending on desired behavior)
+                    // If you want only one item open at a time in this section:
+                    items.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('active')) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('.accordion-item-content').style.maxHeight = '0px';
+                        }
+                    });
+
+                    // Toggle current item
+                    item.classList.toggle('active');
+                    if (item.classList.contains('active')) {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = "0px";
+                    }
+                });
+            });
+        }
+
+        // Accordion functionality for "Cas d'Usage Concrets"
+        const useCasesAccordion = document.getElementById('cas-usages-accordion');
+        if(useCasesAccordion) {
+            const items = useCasesAccordion.querySelectorAll('.accordion-item');
+            items.forEach(item => {
+                const header = item.querySelector('.accordion-item-header');
+                const content = item.querySelector('.accordion-item-content');
+                header.addEventListener('click', () => {
+                    // Close other items (optional, depending on desired behavior)
+                    items.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('active')) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('.accordion-item-content').style.maxHeight = '0px';
+                        }
+                    });
+
+                    // Toggle current item
+                    item.classList.toggle('active');
+                    if (item.classList.contains('active')) {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = "0px";
+                    }
+                });
+            });
+        }
+
+        // Accordion functionality for "Evolution Stages Details"
+        const evolutionStagesAccordion = document.getElementById('evolution-stages-accordion');
+        if(evolutionStagesAccordion) {
+            const items = evolutionStagesAccordion.querySelectorAll('.accordion-item');
+            items.forEach(item => {
+                const header = item.querySelector('.accordion-item-header');
+                const content = item.querySelector('.accordion-item-content');
+                header.addEventListener('click', () => {
+                    // Close other items (optional, depending on desired behavior)
+                    items.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('active')) {
+                            otherItem.classList.remove('active');
+                            otherItem.querySelector('.accordion-item-content').style.maxHeight = '0px';
+                        }
+                    });
+
+                    // Toggle current item
+                    item.classList.toggle('active');
+                    if (item.classList.contains('active')) {
+                        content.style.maxHeight = content.scrollHeight + "px";
+                    } else {
+                        content.style.maxHeight = "0px";
+                    }
+                });
+            });
+        }
+
+        // Interactive Evolution Graph with Tooltips
+        const largeGraph = document.getElementById('evolution-graph-large');
+        if (largeGraph) {
+            // Function to show tooltip
+            function showTooltip(event) {
+                const tooltipId = event.target.dataset.tooltipId;
+                const tooltip = document.getElementById(tooltipId);
+                if (tooltip) {
+                    tooltip.classList.add('visible');
+                }
+            }
+
+            // Function to hide tooltip
+            function hideTooltip(event) {
+                const tooltipId = event.target.dataset.tooltipId;
+                const tooltip = document.getElementById(tooltipId);
+                if (tooltip) {
+                    tooltip.classList.remove('visible');
+                }
+            }
+
+            // Attach new event listeners to data points
+            const dataPoints = largeGraph.querySelectorAll('.data-point');
+            dataPoints.forEach(point => {
+                point.addEventListener('mouseenter', showTooltip);
+                point.addEventListener('mouseleave', hideTooltip);
+            });
+        }
+
+    </script>
+</body>
+</html>
