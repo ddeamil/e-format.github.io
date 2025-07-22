@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approche par Compétences - Le Guide Interactif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Professional (Warm neutrals with sky blue accents) -->
+    <!-- Application Structure Plan: Conception d'une SPA (Single Page Application) thématique avec une navigation fixe pour un accès aisé aux sections. La structure vise à transformer un rapport dense en une expérience explorable et didactique. Au lieu d'un long défilement de texte, les concepts clés comme les 4 référentiels sont présentés dans un format d'onglets interactifs pour réduire la charge cognitive. Le processus de création est visualisé sous forme d'un organigramme interactif, guidant l'utilisateur pas à pas. Les comparaisons clés (RNCP/RS) et les données (avantages) sont présentées visuellement via des tableaux et un graphique radar pour une compréhension rapide. Une nouvelle section "Confusions Fréquentes" a été ajoutée pour adresser spécifiquement les malentendus courants autour des blocs de compétences. Une section "Ressources Complémentaires" a été ajoutée pour inclure des liens utiles, désormais divisée en "Mind Map" et "Ressources Officielles" sous forme de mini-cartes. Des améliorations pédagogiques incluent un glossaire interactif, des scénarios pratiques via modale, une FAQ dynamique, et une fonctionnalité de recherche. Une nouvelle section "Objectifs Pédagogiques de l'Application" a été ajoutée pour formaliser la finalité et les objectifs d'apprentissage de l'outil. Une section "Podcast" a été ajoutée pour intégrer du contenu audio. Cette architecture a été choisie pour favoriser l'engagement, la clarté et une navigation intuitive, ce qui est plus efficace qu'une simple réplication de la structure linéaire du rapport source. -->
+    <!-- Visualization & Content Choices: 
+        - Introduction: But=Informer -> Présentation=Cartes avec chiffres clés -> Interaction=Aucune -> Justification=Synthèse visuelle et impactante des principes fondamentaux de l'APC.
+        - Podcast: But=Informer/Engager -> Présentation=Bloc audio avec icône -> Interaction=Lecture audio -> Justification=Offre un format de contenu alternatif pour une présentation introductive ou thématique.
+        - Objectifs Pédagogiques de l'Application: But=Définir la finalité et les objectifs d'apprentissage de l'outil -> Présentation=Texte structuré avec liste à puces -> Interaction=Aucune -> Justification=Formalise clairement ce que l'utilisateur pourra faire après avoir exploré l'application.
+        - Les 4 Référentiels (RA, RC, BC, RE): But=Organiser/Informer -> Présentation=Système d'onglets interactifs avec contenu détaillé des fiches techniques et POS -> Interaction=Clic pour afficher le contenu étendu, Boutons "Mini-cas pratique" pour modale -> Justification=Décompose une information complexe et très détaillée en segments gérables, évitant de submerger l'utilisateur et encourageant l'exploration approfondie et l'application.
+        - Processus de Création: But=Montrer un processus -> Présentation=Organigramme horizontal en HTML/CSS -> Interaction=Survol pour mise en évidence, Boutons "Mini-cas pratique" pour modale -> Justification=Rend un processus séquentiel facile à suivre et à comprendre, transformant une liste en un guide visuel et permettant des exercices d'application.
+        - Comparaison RNCP/RS: But=Comparer -> Présentation=Tableau à deux colonnes -> Interaction=Aucune -> Justification=Permet une comparaison directe et claire des caractéristiques des deux répertoires.
+        - Avantages par Acteur: But=Comparer/Informer -> Visualisation=Graphique Radar (Chart.js) -> Interaction=Info-bulles au survol, Clic sur légende/points pour détails textuels -> Justification=Moyen visuellement attractif de présenter les avantages multidimensionnels pour différents groupes d'acteurs, avec une exploration approfondie des détails.
+        - Défis: But=Informer -> Présentation=Cartes avec icônes -> Interaction=Bouton "En savoir plus" pour afficher/masquer détails -> Justification=Structure l'information de manière aérée et visuellement agréable, offrant des solutions aux problèmes soulevés.
+        - Confusions Fréquentes: But=Clarifier/Éduquer -> Présentation=Cartes détaillées avec icônes -> Interaction=Aucune -> Justification=Adresse des points de douleur spécifiques identifiés dans le rapport, offrant une clarification directe et structurée pour améliorer la compréhension des formateurs.
+        - FAQ Dynamique: But=Répondre aux questions courantes -> Présentation=Structure accordéon -> Interaction=Clic pour dérouler/enrouler la réponse -> Justification=Fournit un format interactif pour les questions fréquentes, facilitant l'accès à l'information ciblée.
+        - Ressources Complémentaires: But=Fournir des outils supplémentaires -> Présentation=Mind Map (carte avec lien, seule en haut) + Ressources Officielles (mini-cartes avec liens, distribuées sur 2 colonnes) -> Interaction=Clic sur le lien -> Justification=Offre des ressources pratiques pour approfondir la compréhension des concepts, organisées de manière visuelle et facile d'accès, optimisant l'espace et la lisibilité.
+        - Glossaire Interactif: But=Clarifier le jargon -> Présentation=Termes surlignés dans le texte -> Interaction=Survol pour afficher la définition en info-bulle -> Justification=Améliore la lisibilité et la compréhension du vocabulaire technique sans interrompre la lecture.
+        - Fonctionnalité de Recherche: But=Accès rapide à l'information -> Présentation=Barre de recherche en en-tête -> Interaction=Saisie pour surligner le texte -> Justification=Améliore la navigabilité et l'efficacité pour trouver des informations spécifiques dans un document riche.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* bg-slate-50 */
+        }
+        .tab-active {
+            border-color: #0284c7; /* border-sky-600 */
+            color: #0284c7; /* text-sky-600 */
+            background-color: #f0f9ff; /* bg-sky-50 */
+        }
+        .process-step {
+            transition: all 0.3s ease;
+        }
+        .process-step:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .glossary-term {
+            cursor: help;
+            border-bottom: 1px dotted #0284c7;
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip {
+            visibility: hidden;
+            background-color: #334155;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 8px 12px;
+            position: absolute;
+            z-index: 1000;
+            bottom: 125%; /* Position above the text */
+            left: 50%;
+            margin-left: -75px; /* Half the width */
+            opacity: 0;
+            transition: opacity 0.3s;
+            width: 150px;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .tooltip::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #334155 transparent transparent transparent;
+        }
+        .glossary-term:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+        .highlight {
+            background-color: #fcd34d; /* bg-amber-200 */
+            color: #1f2937; /* text-gray-900 */
+        }
+        .accordion-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background-color: #f0f9ff; /* bg-sky-50 */
+            border-bottom: 1px solid #e0f2fe; /* border-sky-100 */
+            font-weight: 600;
+            color: #0369a1; /* text-sky-700 */
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+        .accordion-header:hover {
+            background-color: #e0f2fe; /* bg-sky-100 */
+        }
+        .accordion-content {
+            padding: 1rem;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0f2fe;
+            border-radius: 0.5rem;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+        }
+        .accordion-header.active .accordion-icon {
+            transform: rotate(90deg);
+        }
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1001; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="text-slate-700">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-sky-700">Guide Interactif de l'APC</h1>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#introduction" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Introduction</a>
+                        <a href="#podcast" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Podcast</a>
+                        <a href="#objectifs-pedagogiques" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Objectifs</a>
+                        <a href="#referentiels" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Les 4 Référentiels</a>
+                        <a href="#processus" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Processus</a>
+                        <a href="#acteurs" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Acteurs & Cadre</a>
+                        <a href="#impact" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Impacts</a>
+                        <a href="#confusions" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Confusions fréquentes</a>
+                        <a href="#ressources" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">Ressources</a>
+                        <a href="#faq" class="text-slate-600 hover:text-sky-600 px-3 py-2 rounded-md text-sm font-medium">FAQ</a>
+                    </div>
+                </nav>
+                <div class="flex items-center ml-4">
+                    <input type="text" id="searchInput" placeholder="Rechercher..." class="px-3 py-1 rounded-md border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+
+        <section id="introduction" class="text-center mb-16 md:mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">L'Approche par Compétences (APC)</h2>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mb-8">
+                Une transformation de la formation professionnelle axée sur l'acquisition de compétences concrètes et observables, favorisant l'employabilité et l'apprentissage tout au long de la vie.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-sky-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Apprentissage par l'Action</h3>
+                    <p>L'apprenant est au centre, développant ses savoir-faire et savoir-être en situation réelle ou simulée.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-sky-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Flexibilité des Parcours</h3>
+                    <p>Des parcours modulaires et personnalisés qui s'adaptent aux besoins de chacun et du marché du travail.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-sky-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800">Reconnaissance des Acquis</h3>
+                    <p>Validation de compétences capitalisables, issues de la formation ou de l'expérience (VAE).</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="podcast" class="mb-16 md:mb-24 bg-white p-6 md:p-8 rounded-lg shadow-lg">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Podcast : Introduction à l'APC</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    Écoutez une présentation concise de l'Approche par Compétences et de ses enjeux pour la formation professionnelle.
+                </p>
+            </div>
+            <div class="max-w-2xl mx-auto flex flex-col items-center">
+                <span class="text-6xl text-sky-600 mb-4">&#127911;</span> <!-- Unicode podcast icon -->
+                <h3 class="font-bold text-xl mb-3 text-slate-800">Présentation audio de l'APC</h3>
+                <audio controls class="w-full mt-4 rounded-lg shadow-md">
+                    <source src="placeholder.mp3" type="audio/mpeg">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+                <p class="text-sm text-slate-500 mt-2">Fichier audio de présentation de l'Approche par Compétences (Placeholder)</p>
+            </div>
+        </section>
+
+        <section id="objectifs-pedagogiques" class="mb-16 md:mb-24 bg-white p-6 md:p-8 rounded-lg shadow-lg">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Objectifs Pédagogiques de l'Application</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    Cette application a été conçue comme un outil d'accompagnement pour les responsables de formation et les formateurs.
+                </p>
+            </div>
+            <div class="max-w-3xl mx-auto">
+                <h3 class="text-2xl font-bold text-sky-700 mb-3">Finalité de l'Application</h3>
+                <p class="mb-6 text-slate-700">
+                    Accompagner les responsables de formation et les formateurs dans la maîtrise des concepts et l'application pratique de l'Approche par Compétences (APC) et de l'ingénierie de certification dans leur pratique professionnelle.
+                </p>
+
+                <h3 class="text-2xl font-bold text-sky-700 mb-3">Objectifs Pédagogiques (À la fin de l'exploration de cette application, les utilisateurs seront en mesure de...)</h3>
+                <ul class="list-disc list-inside space-y-2 text-slate-700">
+                    <li>Comprendre et définir clairement les concepts clés de l'APC et de l'ingénierie de certification (RA, RC, BC, RE, RNCP, RS, VAE, CPF).</li>
+                    <li>Distinguer la logique de certification (ce qui est validé officiellement) de la logique de parcours pédagogique (comment la formation est organisée).</li>
+                    <li>Identifier les confusions courantes autour des blocs de compétences RNCP et leurs clarifications associées.</li>
+                    
+                    <li>Appréhender les avantages et les défis de la mise en œuvre de l'APC pour l'ensemble des acteurs de la formation professionnelle.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="referentiels" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Le Cœur du Système : Les 4 Référentiels</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    L'ingénierie de certification repose sur quatre piliers interconnectés qui assurent la cohérence et la pertinence de chaque qualification. Explorez chaque référentiel pour comprendre son rôle.
+                </p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <div class="mb-4 flex flex-wrap justify-center border-b border-slate-200">
+                    <button class="tab-btn tab-active text-lg font-semibold py-3 px-6 border-b-2" data-tab="ra">Référentiel d'Activités (RA)</button>
+                    <button class="tab-btn text-lg font-semibold py-3 px-6 border-b-2 border-transparent" data-tab="rc">Référentiel de Compétences (RC)</button>
+                    <button class="tab-btn text-lg font-semibold py-3 px-6 border-b-2 border-transparent" data-tab="bc">Blocs de Compétences (BC)</button>
+                    <button class="tab-btn text-lg font-semibold py-3 px-6 border-b-2 border-transparent" data-tab="re">Référentiel d'Évaluation (RE)</button>
+                </div>
+                <div id="tab-content" class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                    <div class="tab-pane active" id="ra">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-4">1. Référentiel d'Activités (RA) : La Fondation de la Certification</h3>
+                        <p class="mb-4">Le RA est la <strong>pierre angulaire</strong> de toute démarche de certification professionnelle. Il constitue la <strong>fondation de la certification</strong> en décrivant méticuleusement les missions, les tâches et les situations de travail typiques associées à une profession spécifique. Son objectif principal est d'<strong>ancrer l'ensemble du dispositif de formation et de certification dans la réalité professionnelle du marché du travail</strong>.</p>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Rôle et Finalité du RA</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li><strong>Fondation de la cohérence :</strong> Il est la source directe et logique à partir de laquelle sont identifiées les compétences du Référentiel de Compétences (RC). Construire un RC sans un RA préalable reviendrait à "poser un édifice sur du sable".</li>
+                            <li><strong>Compréhension du métier :</strong> Permet de comprendre le contenu et le périmètre des responsabilités visées, d'identifier les tâches à accomplir, et de faciliter la compréhension des enjeux liés au métier.</li>
+                            <li><strong>Guide pour la formation :</strong> Indispensable pour concevoir des séquences de formation pertinentes et cibler précisément les compétences spécifiques à acquérir.</li>
+                            <li><strong>Garant de la pertinence :</strong> Agit comme un garde-fou contre la création de programmes de formation trop théoriques ou non pertinents, en assurant l'ancrage dans les exigences réelles du monde professionnel.</li>
+                            <li><strong>Anticipation des besoins :</strong> Son élaboration nécessite une collaboration étroite avec les professionnels de l'industrie pour refléter les pratiques actuelles et anticiper les besoins émergents.</li>
+                            <li><strong>Chaînage logique :</strong> Première étape d'une logique séquentielle rigoureuse menant au RC, aux Blocs de Compétences (BC), et au Référentiel d'Évaluation (RE).</li>
+                            <li><strong>Délimitation du périmètre :</strong> Une bonne analyse des situations de travail permet de bien délimiter le périmètre et les objectifs de la certification.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Construction et Contenu du RA</h4>
+                        <p class="mb-2">La méthodologie de construction d'un RA est structurée autour d'une analyse robuste et prospective du travail :</p>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li><strong>Identification des métiers/emplois :</strong> Pour les certifications RNCP, la question est "quel métier" est visé (peut inclure plusieurs emplois types cohérents). L'organisme ne doit pas "réinventer un métier", mais observer les fiches de postes et référentiels existants.</li>
+                            <li><strong>Description des activités :</strong> Définir les grandes séquences logiques ou chronologiques de travail, décrites sous forme de substantifs (ex: "l'élaboration et la conception de cours", "gestion de la production"). Une activité représente un ensemble de tâches. Viser une dizaine à une quinzaine d'activités macro pour une certification RNCP.</li>
+                            <li><strong>Validation par les partenaires socio-économiques :</strong> Essentielle pour assurer la proximité avec les réalités de l'emploi et l'adéquation du vocabulaire utilisé.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Ressources Nécessaires à l'Élaboration du RA</h4>
+                        <p class="mb-2">L'élaboration du RA mobilise des ressources humaines et documentaires spécifiques :</p>
+                        <h5 class="font-semibold text-slate-700 mb-1">Ressources Humaines et Expertise :</h5>
+                        <ul class="list-disc list-inside space-y-1 mb-2">
+                            <li><strong>Professionnels du Métier :</strong> Essentiel de consulter directement ceux qui exercent le métier, dans différents environnements, pour décrire les activités.</li>
+                            <li><strong>Partenaires Socio-Économiques :</strong> Branches professionnelles, ordres professionnels, groupements d'entreprises, OPCO, organismes consulaires (CCI, CMA, Chambres d'agriculture), acteurs de l'emploi (Pôle Emploi, APEC, APECITA). Cruciaux pour la validation du RA.</li>
+                            <li><strong>Équipes Pédagogiques et Services d'Appui Internes :</strong> Référents compétences, ingénieurs FTLV, ingénieurs pédagogiques, chargés d'orientation et d'insertion professionnelle, référents RNCP.</li>
+                            <li><strong>Conseils de Perfectionnement :</strong> Instances d'échange associant professionnels et formateurs, utiles pour valider les activités.</li>
+                        </ul>
+                        <h5 class="font-semibold text-slate-700 mb-1">Ressources Documentaires et Données Existantes :</h5>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Fiches Métiers Officielles :</strong> ROME, APEC, APECITA, CIDJ, ONISEP, RIME.</li>
+                            <li><strong>Référentiels Métiers et Qualifications des Branches Professionnelles :</strong> Observatoires paritaires.</li>
+                            <li><strong>Offres d'Emploi et Offres de Stage :</strong> Pour identifier les profils recherchés et les activités demandées, surtout pour les métiers émergents.</li>
+                            <li><strong>Fiches RNCP Existantes :</strong> Pour identifier les codes ROME associés et assurer la cohérence.</li>
+                            <li><strong>Enquêtes d'Insertion Professionnelle :</strong> Données concrètes sur les débouchés et missions.</li>
+                            <li><strong>Études, Publications et Diagnostics Sectoriels :</strong> Analyses d'opportunité, diagnostics de branche.</li>
+                            <li><strong>Connaissances Internes :</strong> Activités confiées aux étudiants et diplômés de l'établissement.</li>
+                        </ul>
+                        <button class="mt-4 bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg text-sm modal-trigger" data-modal-content="ra-scenario">Mini-cas pratique RA</button>
+                    </div>
+                    <div class="tab-pane hidden" id="rc">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-4">2. Référentiel de Compétences (RC) : Le Pont entre Activité et Capacité à Agir</h3>
+                        <p class="mb-4">Le <strong>Référentiel de Compétences (RC)</strong> est un document structuré qui <strong>inventorie l'ensemble complet des compétences requises</strong> pour exercer efficacement un emploi ou une fonction spécifique au sein d'une organisation. Il sert de guide essentiel pour la définition des compétences nécessaires à l'exercice d'un métier "dans les règles de l'art". Une compétence y est définie comme la <strong>mobilisation pertinente de ses ressources</strong> (savoirs, savoir-faire techniques, savoir-être relationnels) et de celles de son environnement dans des situations diverses pour <strong>exercer une activité en fonction d'objectifs à finalité professionnelle</strong>.</p>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Rôle et Finalité du RC</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li><strong>Traduction des activités professionnelles :</strong> C'est un "pont crucial qui traduit le 'quoi' (activités du RA) en 'comment' (compétences spécifiques requises)".</li>
+                            <li><strong>Conception des programmes de formation :</strong> Essentiel pour aligner les programmes pédagogiques sur les besoins réels des entreprises.</li>
+                            <li><strong>Évaluation standardisée :</strong> Fournit une base pour l'évaluation des compétences acquises par les apprenants.</li>
+                            <li><strong>Guide pour les individus :</strong> Aide les apprenants à identifier leurs forces, leurs domaines de développement et à planifier leur carrière.</li>
+                            <li><strong>Outil de gestion des ressources humaines :</strong> Facilite le recrutement, l'élaboration de plans de formation ciblés, la planification de carrière et l'évaluation des performances.</li>
+                            <li><strong>Repère social fondamental :</strong> Contribue à la sécurisation des parcours professionnels et à la lisibilité de l'offre de formation.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Contenu et Structure d'une Compétence</h4>
+                        <p class="mb-2">Chaque compétence est élaborée en incluant ses sous-compétences, les savoirs (connaissances théoriques), les savoir-faire (techniques) et les savoir-être (comportementaux).</p>
+                        <p class="mb-2">La description d'une compétence s'appuie sur des descripteurs (autonomie, responsabilité, finalité, ressources mobilisées, résultats attendus) et doit être formulée précisément :</p>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li>Un <strong>verbe d'action à l'infinitif</strong>.</li>
+                            <li>Le "<strong>quoi</strong>" (sujet de l'action).</li>
+                            <li>Le "<strong>pourquoi</strong>" ou la "<strong>finalité</strong>" (objectif ou résultat à atteindre).</li>
+                            <li>Éventuellement, le "<strong>comment</strong>" (moyens mis à disposition, mode opératoire).</li>
+                            <li>Exemple : "Délivrer (verbe d’action) des conseils (quoi) aux organismes (à qui) dans le cadre de l’élaboration de dossier (le pourquoi) afin de permettre l'enregistrement du projet au Répertoire spécifique (la finalité) en utilisant le guide d’aide à la rédaction de France compétences (le comment)".</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Procédure Étape par Étape (POS) pour la Conception du RC</h4>
+                        <p class="mb-2">La conception du RC suit une logique séquentielle rigoureuse, assurant cohérence et alignement avec les autres référentiels :</p>
+                        <ol class="list-decimal list-inside space-y-2 mb-4">
+                            <li>
+                                <strong>Analyse Préliminaire et Délimitation du Périmètre :</strong>
+                                <ul class="list-disc list-inside ml-4 space-y-1">
+                                    <li>Choisir le métier/fonction à certifier (RNCP : "quel métier" ; RS : "quel public", "quelle finalité").</li>
+                                    <li>Identifier et associer les professionnels et spécialistes.</li>
+                                    <li>Évaluer l'adéquation aux besoins du marché du travail (études, offres d'emploi).</li>
+                                    <li>Rappeler le sens des termes clés et consulter les référentiels existants (RNCP/RS, ROME).</li>
+                                    <li>Préciser la "grammaire" d'écriture des référentiels.</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Élaboration du Référentiel d'Activités (RA) :</strong>
+                                <ul class="list-disc list-inside ml-4 space-y-1">
+                                    <li>Décrire les "grandes séquences logiques ou chronologiques de travail" sous forme de substantifs.</li>
+                                    <li>Limiter le nombre d'activités (dizaine/quinzaine pour RNCP).</li>
+                                    <li>Impliquer les spécialistes et valider le RA par les partenaires socio-économiques.</li>
+                                </ul>
+                            </li>
+                            <li>
+                                <strong>Dégagement et Rédaction des Compétences Professionnelles (RC) :</strong>
+                                <ul class="list-disc list-inside ml-4 space-y-1">
+                                    <li>Déduire les compétences directement des activités du RA. "Sans un RA bien formalisé, le RC serait 'un édifice sur du sable'".</li>
+                                    <li>Structurer chaque compétence (sous-compétences, savoirs, savoir-faire, savoir-être).</li>
+                                    <li>Rédiger chaque compétence de manière précise (verbe d'action, quoi, pourquoi, comment).</li>
+                                    <li>Utiliser des descripteurs de compétence (autonomie, responsabilité, finalité).</li>
+                                    <li>Identifier et formuler les compétences transversales pour qu'elles soient évaluables dans un cadre contextualisé.</li>
+                                    <li>Harmoniser la formulation au niveau du diplôme et assurer la validation par l'équipe pédagogique et les "regards extérieurs".</li>
+                                    <li>Vérifier la cohérence : toutes les activités sont couvertes par des compétences et toutes les compétences sont évaluables.</li>
+                                </ul>
+                            </li>
+                        </ol>
+                        <button class="mt-4 bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg text-sm modal-trigger" data-modal-content="rc-scenario">Mini-cas pratique RC</button>
+                    </div>
+                    <div class="tab-pane hidden" id="bc">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-4">3. Blocs de Compétences (BC) : La Modularité et la Flexibilité</h3>
+                        <p class="mb-4">Les <strong>Blocs de Compétences (BC)</strong> sont des <strong>ensembles homogènes et cohérents de compétences</strong> qui contribuent à l'exercice autonome d'une activité professionnelle et peuvent être <strong>évalués et validés de manière indépendante</strong>. Ils représentent une <strong>composante certifiée</strong> d'un diplôme ou d'une certification professionnelle plus large. Un bloc de compétences n'est <strong>pas un simple module de formation</strong> et ne se confond pas avec un contenu de formation. Il s'agit d'un <strong>agrégat d'éléments identifiables, solidaires et non détachables</strong>.</p>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Cadre Légal et Réglementaire</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li>Le concept de blocs de compétences a été introduit en France par la <strong>Loi du 5 mars 2014</strong> relative à la formation professionnelle, à l'emploi et à la démocratie sociale.</li>
+                            <li>Son rôle a été <strong>consolidé et rendu obligatoire</strong> pour les certifications professionnelles enregistrées au Répertoire National des Certifications Professionnelles (RNCP) par la <strong>Loi du 5 septembre 2018</strong> ("Pour la liberté de choisir son avenir professionnel").</li>
+                            <li>Depuis le <strong>1er janvier 2019</strong>, toutes les certifications professionnelles inscrites au RNCP doivent être structurées en blocs de compétences.</li>
+                            <li>Le <strong>Décret n° 2018-1172 du 18 décembre 2018</strong> détaille les conditions et procédures d'enregistrement des certifications, impactant directement la structure et les processus de validation des blocs.</li>
+                            <li>La <strong>cohérence des blocs de compétences</strong> est un critère d'enregistrement au RNCP.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Rôle et Finalité des Blocs de Compétences</h4>
+                        <p class="mb-2">Les blocs de compétences introduisent une <strong>modularité et une flexibilité considérables</strong> dans les parcours de formation. Leurs principaux avantages sont :</p>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li><strong>Acquisition Progressive :</strong> Ils permettent aux individus d'acquérir des compétences par étapes.</li>
+                            <li><strong>Reconnaissance Partielle et Capitalisation :</strong> Une fois qu'un bloc est validé, il est **définitivement acquis et peut être crédité** pour l'obtention d'un diplôme complet. Cette validation est acquise **à vie** pour l'individu.</li>
+                            <li><strong>Employabilité Accrue :</strong> Ils améliorent l'employabilité en permettant aux individus de valoriser des compétences spécifiques même sans obtenir la certification complète. Un bloc doit être suffisamment consistant pour qu'un employeur puisse recruter quelqu'un sur la base de ce seul bloc.</li>
+                            <li><strong>Fluidification des Parcours :</strong> Ils facilitent la construction de <strong>passerelles</strong> et d'équivalences entre différentes certifications, rendant les parcours plus fluides.</li>
+                            <li><strong>Individualisation des Parcours :</strong> Ils permettent d'optimiser l'individualisation des parcours de formation.</li>
+                            <li><strong>Repères Sociaux :</strong> Les blocs de compétences représentent des **repères sociaux et des signaux lisibles** sur le marché du travail.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Principes de Construction des Blocs de Compétences</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li><strong>Déduction des Activités :</strong> La structuration en blocs doit partir du référentiel d'activités, non du référentiel de formation. On pense d'abord la cohérence des activités, puis les compétences associées, et enfin on les regroupe en blocs.</li>
+                            <li><strong>Cohérence et Homogénéité :</strong> Un bloc doit être un **assemblage cohérent de plusieurs compétences** pour répondre à une activité professionnelle. Il **ne peut pas être composé d'une seule compétence**.</li>
+                            <li><strong>Autonomie de l'Activité :</strong> Le bloc doit permettre l'exercice **autonome d'une activité professionnelle** réelle, c'est-à-dire qu'un employeur pourrait recruter quelqu'un sur la base de ce bloc.</li>
+                            <li><strong>Intitulé du Bloc :</strong> L'intitulé doit être précis et se faire par un <strong>substantif dérivé d'un verbe d'action</strong> (ex: "Élaborer un parcours de formation"). Il ne doit **pas être un nom de métier** pour éviter toute confusion avec une qualification complète.</li>
+                            <li><strong>Compétences Transversales :</strong> Si une compétence transversale est nécessaire à plusieurs blocs, elle peut être identifiée dans ces différents blocs. Si elle est suffisamment autonome (ex: bureautique, langues), elle peut faire l'objet d'un **bloc spécifique**. Leur dimension professionnelle doit être établie et leur évaluation contextualisée.</li>
+                            <li><strong>Nombre de Blocs :</strong> Il n'y a pas de chiffre parfait, mais viser une "dizaine, une quinzaine d'activités" pour une certification RNCP peut être un bon point de départ, ces activités pouvant souvent faire le lien avec un bon découpage en blocs de compétences. Un découpage trop fin peut rendre le bloc non significatif pour l'employabilité.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Évaluation des Blocs de Compétences</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li>Chaque bloc de compétences doit pouvoir être **évalué et faire l'objet de la délivrance d'un certificat**.</li>
+                            <li>Des **modalités d'évaluation spécifiques** doivent être prévues pour chaque bloc. L'évaluation doit être **individuelle**.</li>
+                            <li>Les modalités d'évaluation doivent **s'approcher le plus possible de la situation de travail** (ex: simulations, études de cas, projets) et être cohérentes avec le niveau de maîtrise attendu.</li>
+                            <li>Les **critères d'évaluation** doivent être précis et mesurables, explicitant la nature des informations, gestes ou comportements à restituer par l'individu, et le niveau d'exigence attendu.</li>
+                            <li>Le certificateur est responsable de l'établissement des modalités et critères.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Périmètre : RNCP vs Répertoire Spécifique (RS)</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li>Les blocs de compétences sont **obligatoires pour les certifications enregistrées au RNCP**.</li>
+                            <li>Les certifications du **Répertoire Spécifique (RS)** **ne sont pas obligatoirement structurées en blocs de compétences**. Le RS concerne les habilitations légales, les compétences transversales (ex: bureautique, langues) ou complémentaires à un métier.</li>
+                            <li>Cependant, une **correspondance peut être établie** entre une certification enregistrée au RS et des blocs de compétences du RNCP.</li>
+                        </ul>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Éligibilité au Compte Personnel de Formation (CPF) et Rôle de France Compétences</h4>
+                        <ul class="list-disc list-inside space-y-1 mb-4">
+                            <li>Pour qu'un bloc de compétences soit éligible au CPF, la certification professionnelle dans son ensemble doit être **enregistrée au RNCP** et être **structurée en blocs de compétences** conformément aux attendus de France Compétences.</li>
+                            <li><strong>France Compétences</strong> est l'institution publique nationale pivot créée en 2019, chargée de la régulation et du financement de la formation professionnelle et de l'apprentissage. Elle est notamment responsable de l'instruction des demandes d'enregistrement aux répertoires (RNCP et RS) et garantit la **pertinence et la qualité des certifications**. Elle audite la structuration en blocs pour l'enregistrement des certifications.</li>
+                        </ul>
+                        <button class="mt-4 bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg text-sm modal-trigger" data-modal-content="bc-scenario">Mini-cas pratique BC</button>
+                    </div>
+                    <div class="tab-pane hidden" id="re">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-4">4. Référentiel d'Évaluation (RE) : La Garantie de la Qualité et de la Crédibilité</h3>
+                        <p class="mb-4">Le RE est le garant de la crédibilité de la certification. Il définit précisément comment les compétences seront évaluées, avec quels critères et dans quelles conditions. Il assure que les compétences déclarées sont réellement maîtrisées par le candidat, renforçant la confiance dans la valeur de la certification.</p>
+
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Objectif et Contenu du RE</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li><strong>Objectif :</strong> Assurer une évaluation fiable, objective et juste des compétences acquises par le candidat. Il inventorie "ce qui est évalué et par quels moyens".</li>
+                            <li><strong>Modalités d'évaluation :</strong> Elles doivent s'approcher le plus possible de l'action et de la situation de travail réelle ou simulée. Cela inclut des études de cas complexes, des projets tutorés, des mises en situation professionnelles (simulées ou réelles en stage/alternance), des démonstrations pratiques, des présentations orales, ou l'analyse de portfolios de preuves. L'évaluation doit être individuelle par bloc pour permettre une validation et une capitalisation autonome.</li>
+                            <li><strong>Critères de réussite :</strong> Doivent être précis, mesurables et observables. Ces critères explicitent la nature des informations, gestes ou comportements à restituer par l'individu, et le niveau d'exigence attendu. Ils permettent au jury d'évaluer objectivement la maîtrise de la compétence et de fournir un feedback constructif.</li>
+                        </ul>
+                        
+                        <h4 class="text-xl font-semibold text-slate-800 mb-3">Principes Clés et Procédures de Contrôle</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li><strong>Responsabilité du certificateur :</strong> Le certificateur est entièrement responsable de l'établissement des modalités et critères d'évaluation, ainsi que de leur mise en œuvre équitable et transparente.</li>
+                            <li><strong>Indépendance du jury :</strong> La composition du jury doit garantir son indépendance et prévenir tout conflit d'intérêts. Un minimum de 50% de ses membres doit être extérieur à l'organisme certificateur et à celui qui a assuré la formation, incluant idéalement des professionnels du secteur.</li>
+                            <li><strong>Distinction certificative/formative :</strong> Il est crucial de différencier l'évaluation certificative (sommative, pour la validation formelle et la délivrance du titre) de l'évaluation formative (pédagogique, continue, visant à suivre les progrès de l'apprenant et à l'aider à s'améliorer).</li>
+                            <li><strong>Prise en compte des contraintes légales :</strong> Intégrer les exigences de sécurité ou les prérequis réglementaires dans le RE et le RC, si l'activité concernée par la certification est réglementée.</li>
+                            <li><strong>Procédures de contrôle :</strong> Le certificateur doit décrire comment il garantit la fiabilité et le respect du RE (composition du jury, procédures d'habilitation, gestion des dysfonctionnements, communication des résultats, voies de recours).</li>
+                        </ul>
+                        <button class="mt-4 bg-sky-500 hover:bg-sky-600 text-white font-bold py-2 px-4 rounded-lg text-sm modal-trigger" data-modal-content="re-scenario">Mini-cas pratique RE</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="processus" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Le Processus Logique de Création</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    La construction d'une certification suit une démarche séquentielle rigoureuse, où chaque étape s'appuie sur la précédente pour garantir la cohérence de l'ensemble.
+                </p>
+            </div>
+            <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-4 overflow-x-auto pb-4">
+                <div class="process-step bg-white p-4 rounded-lg shadow-lg text-center w-64 h-32 flex flex-col justify-center">
+                    <div class="text-sky-600 font-bold text-xl">Étape 1</div>
+                    <div class="font-semibold mt-1">Analyse du travail & Définition des Activités (RA)</div>
+                    <button class="mt-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-1 px-2 rounded-lg text-xs modal-trigger" data-modal-content="process-step1-scenario">Mini-cas pratique</button>
+                </div>
+                <div class="text-2xl text-slate-400 font-sans mx-2">&#10140;</div>
+                <div class="process-step bg-white p-4 rounded-lg shadow-lg text-center w-64 h-32 flex flex-col justify-center">
+                    <div class="text-sky-600 font-bold text-xl">Étape 2</div>
+                    <div class="font-semibold mt-1">Dérivation des Compétences (RC)</div>
+                    <button class="mt-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-1 px-2 rounded-lg text-xs modal-trigger" data-modal-content="process-step2-scenario">Mini-cas pratique</button>
+                </div>
+                <div class="text-2xl text-slate-400 font-sans mx-2">&#10140;</div>
+                 <div class="process-step bg-white p-4 rounded-lg shadow-lg text-center w-64 h-32 flex flex-col justify-center">
+                    <div class="text-sky-600 font-bold text-xl">Étape 3</div>
+                    <div class="font-semibold mt-1">Structuration en Blocs (BC)</div>
+                    <button class="mt-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-1 px-2 rounded-lg text-xs modal-trigger" data-modal-content="process-step3-scenario">Mini-cas pratique</button>
+                </div>
+                <div class="text-2xl text-slate-400 font-sans mx-2">&#10140;</div>
+                <div class="process-step bg-white p-4 rounded-lg shadow-lg text-center w-64 h-32 flex flex-col justify-center">
+                    <div class="text-sky-600 font-bold text-xl">Étape 4</div>
+                    <div class="font-semibold mt-1">Définition de l'Évaluation (RE)</div>
+                    <button class="mt-2 bg-sky-500 hover:bg-sky-600 text-white font-bold py-1 px-2 rounded-lg text-xs modal-trigger" data-modal-content="process-step4-scenario">Mini-cas pratique</button>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="acteurs" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Acteurs Clés et Cadre Réglementaire</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    Le système est régulé par France Compétences et s'organise autour de deux grands répertoires nationaux : le RNCP et le RS.
+                </p>
+            </div>
+            <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 border-b lg:border-b-0 lg:border-r border-slate-200 pb-6 lg:pb-0 lg:pr-8">
+                        <h3 class="text-2xl font-bold text-sky-700 mb-3">France Compétences</h3>
+                        <p>L'institution nationale qui régule et finance la formation professionnelle. Elle est garante de la qualité et de la pertinence des certifications inscrites aux répertoires nationaux.</p>
+                    </div>
+                    <div class="lg:col-span-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-bold text-xl mb-2">RNCP</h4>
+                                <p class="font-semibold text-slate-800">Répertoire National des Certifications Professionnelles</p>
+                                <ul class="mt-2 list-disc list-inside text-sm space-y-1">
+                                    <li>Vise un <strong>métier entier</strong></li>
+                                    <li>Structuration en <strong>blocs obligatoire</strong></li>
+                                    <li>Classé par niveau de qualification</li>
+                                    <li>Révision tous les 5 ans</li>
+                                </ul>
+                            </div>
+                             <div>
+                                <h4 class="font-bold text-xl mb-2">RS</h4>
+                                <p class="font-semibold text-slate-800">Répertoire Spécifique</p>
+                                <ul class="mt-2 list-disc list-inside text-sm space-y-1">
+                                    <li>Vise une <strong>compétence complémentaire</strong> ou transversale</li>
+                                    <li>Structuration en blocs <strong>non obligatoire</strong></li>
+                                    <li>Pas de niveau de qualification associé</li>
+                                    <li>Ex: Habilitations, certifications linguistiques...</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="impact" class="mb-16 md:mb-24">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Impacts : Avantages et Défis</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    L'Approche par Compétences transforme en profondeur l'écosystème de la formation, offrant des avantages significatifs pour tous les acteurs, tout en présentant certains défis à relever.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">Avantages par Acteur</h3>
+                    <div class="chart-container">
+                        <canvas id="benefitsChart"></canvas>
+                    </div>
+                    <div id="benefit-details" class="mt-4 p-4 bg-white rounded-lg shadow-md hidden">
+                        <h4 class="font-bold text-lg mb-2 text-sky-700">Détails des avantages : <span id="selected-benefit-actor"></span></h4>
+                        <p id="selected-benefit-text" class="text-sm text-slate-600"></p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-6 text-center">Principaux Défis</h3>
+                    <div class="space-y-4">
+                        <div class="bg-white p-4 rounded-lg shadow-md flex flex-col">
+                             <div class="flex items-center">
+                                <span class="text-2xl mr-4">&#128204;</span>
+                                <h4 class="font-semibold">Cohérence des Évaluations</h4>
+                                <button class="ml-auto text-sky-600 hover:text-sky-800 text-sm toggle-details" data-target="coherence-details">En savoir plus &#9658;</button>
+                            </div>
+                            <p class="text-sm mt-2">Assurer l'harmonisation des pratiques et la fiabilité des critères d'évaluation entre les différents acteurs.</p>
+                            <div id="coherence-details" class="hidden mt-3 text-sm text-slate-700 bg-slate-50 p-3 rounded">
+                                <p><strong>Pourquoi c'est un défi :</strong> La subjectivité potentielle de l'évaluation des compétences, notamment des savoir-être, rend difficile l'harmonisation des pratiques entre différents évaluateurs ou organismes.</p>
+                                <p class="mt-2"><strong>Comment le surmonter :</strong> Mettre en place des formations approfondies pour les évaluateurs, développer des grilles d'évaluation précises et des processus de calibration des jurys pour garantir l'objectivité.</p>
+                            </div>
+                        </div>
+                         <div class="bg-white p-4 rounded-lg shadow-md flex flex-col">
+                            <div class="flex items-center">
+                                <span class="text-2xl mr-4">&#128170;</span>
+                                <h4 class="font-semibold">Réactivité des Référentiels</h4>
+                                <button class="ml-auto text-sky-600 hover:text-sky-800 text-sm toggle-details" data-target="reactivity-details">En savoir plus &#9658;</button>
+                            </div>
+                            <p class="text-sm mt-2">Maintenir les certifications à jour face à l'évolution rapide des métiers et des compétences.</p>
+                            <div id="reactivity-details" class="hidden mt-3 text-sm text-slate-700 bg-slate-50 p-3 rounded">
+                                <p><strong>Pourquoi c'est un défi :</strong> Les métiers et les technologies évoluent à un rythme accéléré, rendant les référentiels potentiellement obsolètes rapidement si non mis à jour.</p>
+                                <p><strong>Comment le surmonter :</strong> Mettre en place des mécanismes de veille prospective, des révisions régulières des référentiels (RA, RC, RE) en collaboration étroite avec les branches professionnelles et les experts sectoriels.</p>
+                            </div>
+                        </div>
+                         <div class="bg-white p-4 rounded-lg shadow-md flex flex-col">
+                           <div class="flex items-center">
+                                <span class="text-2xl mr-4">&#128227;</span>
+                                <h4 class="font-semibold">Communication et Acculturation</h4>
+                                <button class="ml-auto text-sky-600 hover:text-sky-800 text-sm toggle-details" data-target="communication-details">En savoir plus &#9658;</button>
+                            </div>
+                            <p class="text-sm mt-2">Faire comprendre la valeur et le fonctionnement des blocs de compétences à toutes les parties prenantes.</p>
+                            <div id="communication-details" class="hidden mt-3 text-sm text-slate-700 bg-slate-50 p-3 rounded">
+                                <p><strong>Pourquoi c'est un défi :</strong> Le jargon technique et la nouveauté de l'approche peuvent créer des incompréhensions ou des résistances chez les apprenants, les employeurs et même certains formateurs.</p>
+                                <p><strong>Comment le surmonter :</strong> Développer des outils de communication clairs et pédagogiques, organiser des campagnes d'information ciblées et des ateliers d'acculturation pour chaque public.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="confusions" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Confusions Fréquentes autour des Blocs de Compétences RNCP</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    L'introduction des blocs de compétences a apporté des changements significatifs. Voici les confusions récurrentes pour les formateurs, avec des clarifications essentielles.
+                </p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800 flex items-center">&#128218; Mélange "Compétences" et "Savoirs"</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Erreur :</strong> Considérer qu'un bloc de compétences contient uniquement des savoirs ou connaissances. <br>
+                        <strong>Clarification :</strong> Un bloc doit décrire des compétences opérationnelles (ce que le titulaire saura faire), pas seulement des connaissances. Il faut décrire des actions observables ("Réaliser une analyse de situation X", "Organiser une intervention").
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800 flex items-center">&#128200; Bloc de Compétences = Module de Formation ?</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Erreur :</strong> Assimiler à tort un bloc de compétences à un simple module, unité d’enseignement ou unité de formation. <br>
+                        <strong>Clarification :</strong> Les blocs de compétences correspondent à une ou des activités professionnelles réalisables de façon autonome et non à la structure interne des parcours pédagogiques. Les éventuels « micro-certificats » validant un niveau intermédiaire au sein d’un bloc n’ont pas de reconnaissance officielle au sens du RNCP.
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800 flex items-center">&#128203; Articulation Certification et Formation</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Erreur :</strong> Confondre la logique de formation et la logique de certification. <br>
+                        <strong>Clarification :</strong> Le RNCP impose des blocs de compétences pour la certification (ce qui est validé in fine), mais chaque établissement reste libre de son organisation pédagogique. Il ne faut donc pas confondre la maquette pédagogique (chemin de formation) et la structure de la certification (ce qui est reconnu et attesté officiellement). Les blocs de compétences sont pensés pour la reconnaissance officielle de l’apprentissage, pas pour refléter la diversité des parcours ou individualisations mises en place par les équipes pédagogiques.
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800 flex items-center">&#128204; Nature et Cohérence des Blocs</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Erreur :</strong> Attribuer à plusieurs blocs les mêmes compétences ou activités (redondance). <br>
+                        <strong>Clarification :</strong> Un bloc doit être autonome, non redondant, et décrire un ensemble pertinent de compétences permettant d’exercer une partie du métier visé. La complémentarité est requise par la certification RNCP.
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800 flex items-center">&#128270; Portée et Reconnaissance</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Erreur :</strong> Confondre la portée des blocs transversaux (communs à plusieurs diplômes) et des blocs spécifiques (liés à une mention/spécialité). <br>
+                        <strong>Clarification :</strong> Un bloc RNCP reste adossé à une certification et n’a pas de valeur autonome hors de celle-ci, contrairement aux certifications du Répertoire Spécifique qui peuvent être « transverses » et avoir une valeur autonome.
+                    </p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md border-l-4 border-red-500">
+                    <h3 class="font-bold text-xl mb-2 text-slate-800 flex items-center">&#128196; Validation et Délivrance</h3>
+                    <p class="text-sm text-slate-600">
+                        <strong>Obligation :</strong> Lorsqu’un apprenant valide un bloc, une attestation officielle doit être remise, même s’il n’a pas l’ensemble du diplôme. C’est une reconnaissance partielle des acquis.
+                    </p>
+                </div>
+            </div>
+            <p class="max-w-3xl mx-auto text-lg text-slate-600 mt-8 text-center">
+                En résumé, la principale difficulté réside dans la distinction entre la logique de certification (blocs inscrits au RNCP, validation officielle, rapport à l’activité professionnelle autonome) et la logique de parcours pédagogique (modules, matières, individualisation, progression). Il s'agit d'une démarche de description du <strong>résultat attendu</strong> et non de l'<strong>itinéraire de formation</strong>.
+            </p>
+        </section>
+
+        <section id="ressources" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Ressources Complémentaires</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    Approfondissez votre compréhension de l'approche par compétences grâce à ces outils et documents officiels.
+                </p>
+            </div>
+            <div class="max-w-5xl mx-auto">
+                <!-- Mind Map Card (Top, single column) -->
+                <div class="bg-white p-6 rounded-lg shadow-md border-t-4 border-sky-500 text-center flex flex-col justify-between mb-8">
+                    <div>
+                        <h3 class="font-bold text-xl mb-3 text-slate-800">Mind Map : Visualisation des Concepts Clés</h3>
+                        <p class="text-slate-600 mb-4">Explorez les interconnexions entre les référentiels, les acteurs et les processus d'ingénierie de certification sous forme de carte mentale interactive.</p>
+                    </div>
+                    <a href="https://xmind.app/m/kTzqHA" target="_blank" rel="noopener noreferrer" class="inline-block bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-6 rounded-lg transition duration-300 ease-in-out shadow-md mt-auto">
+                        Accéder à la Mind Map &#8599;
+                    </a>
+                </div>
+
+                <!-- Official Resources Section (Two columns) -->
+                <h3 class="font-bold text-xl mb-4 text-slate-800 text-center">Ressources Officielles</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a href="https://www.enseignementsup-recherche.gouv.fr/sites/default/files/2024-06/articuler-le-rncp-une-approche-par-comp-tences---guide-pratique-2024-33373.pdf" target="_blank" rel="noopener noreferrer" class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition flex items-center">
+                        <span class="text-2xl mr-3">&#128195;</span> <!-- Document icon -->
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Guide pratique : Articuler le RNCP à une approche par compétences (MESR)</h4>
+                            <p class="text-sm text-slate-600">Document essentiel pour comprendre l'articulation entre le RNCP et l'APC dans l'enseignement supérieur.</p>
+                        </div>
+                    </a>
+                    <a href="https://www.francecompetences.fr/app/uploads/2020/12/FC_Guide_RS_final_interactif.pdf" target="_blank" rel="noopener noreferrer" class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition flex items-center">
+                        <span class="text-2xl mr-3">&#128195;</span>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Guide méthodologique : Élaboration d'un projet d'enregistrement au Répertoire Spécifique (France Compétences)</h4>
+                            <p class="text-sm text-slate-600">Aide à la constitution et rédaction du dossier de demande d'enregistrement d'une certification au RS.</p>
+                        </div>
+                    </a>
+                    <a href="https://www.univ-toulouse.fr/sites/default/files/2022-06/Guide-Blocs-de-competences-ESR-FTLV-2022.pdf" target="_blank" rel="noopener noreferrer" class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition flex items-center">
+                        <span class="text-2xl mr-3">&#128195;</span>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Guide méthodologique : Blocs de compétences dans l'enseignement supérieur (Université de Toulouse)</h4>
+                            <p class="text-sm text-slate-600">Guide pratique sur la transformation de l'offre de formation en blocs de compétences dans le cadre de la FTLV.</p>
+                        </div>
+                    </a>
+                    <a href="https://www.francecompetences.fr/app/uploads/2019/12/note-bloc-de-compe%CC%81tences-version-au-24092019-003.pdf" target="_blank" rel="noopener noreferrer" class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition flex items-center">
+                        <span class="text-2xl mr-3">&#128195;</span>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Note relative aux blocs de compétences (France Compétences)</h4>
+                            <p class="text-sm text-slate-600">Détaille la définition législative et le cadre juridique des blocs de compétences, ainsi que leur finalité.</p>
+                        </div>
+                    </a>
+                    <a href="https://www.francecompetences.fr/app/uploads/2020/01/Note-relative-aux-r%C3%A9f%C3%A9rentiels-dactivit%C3%A9s-de-comp%C3%A9tences-et-d%C3%A9valuation.pdf" target="_blank" rel="noopener noreferrer" class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition flex items-center">
+                        <span class="text-2xl mr-3">&#128195;</span>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Note sur les référentiels d'activités, de compétences et d'évaluation (France Compétences)</h4>
+                            <p class="text-sm text-slate-600">Contribue à la définition et à l'examen des RA, RC et RE, essentiels à toute certification professionnelle.</p>
+                        </div>
+                    </a>
+                    <a href="https://www.ressources-de-la-formation.fr/doc_num_data.php?explnum_id=22324" target="_blank" rel="noopener noreferrer" class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500 hover:shadow-lg transition flex items-center">
+                        <span class="text-2xl mr-3">&#128195;</span>
+                        <div>
+                            <h4 class="font-semibold text-slate-800">Structurer vos certifications en blocs de compétences : une nécessité (Centre Inffo)</h4>
+                            <p class="text-sm text-slate-600">Analyse et guide sur l'importance de la structuration en blocs de compétences pour les certifications.</p>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="mb-16 md:mb-24">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">Questions Fréquentes (FAQ)</h2>
+                <p class="max-w-3xl mx-auto text-lg text-slate-600">
+                    Retrouvez ici les réponses aux questions les plus courantes concernant l'Approche par Compétences et l'ingénierie de certification.
+                </p>
+            </div>
+            <div class="max-w-3xl mx-auto space-y-4">
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Qu'est-ce qu'une compétence selon l'APC ?
+                        <span class="accordion-icon">&#9658;</span>
+                    </div>
+                    <div class="accordion-content hidden">
+                        <p>Une compétence est la mobilisation pertinente de ressources (savoirs, savoir-faire techniques, savoir-être relationnels) et de l'environnement, pour exercer une activité professionnelle avec des objectifs spécifiques. Elle se traduit par des actions ou comportements observables, concrets et mesurables.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Quelle est la différence entre le RNCP et le Répertoire Spécifique (RS) ?
+                        <span class="accordion-icon">&#9658;</span>
+                    </div>
+                    <div class="accordion-content hidden">
+                        <p>Le <strong>RNCP</strong> regroupe les certifications attestant de la maîtrise de l'ensemble des compétences nécessaires à l'exercice d'un métier entier (obligatoirement structurées en blocs). Le <strong>RS</strong> enregistre les certifications et habilitations correspondant à des compétences professionnelles complémentaires ou transversales (non obligatoirement structurées en blocs).</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Un bloc de compétences est-il acquis à vie ?
+                        <span class="accordion-icon">&#9658;</span>
+                    </div>
+                    <div class="accordion-content hidden">
+                        <p>Oui, une fois qu'un bloc de compétences est validé, il est définitivement acquis et peut être crédité pour l'obtention d'un diplôme complet. Cette validation est acquise à vie pour l'individu.</p>
+                    </div>
+                </div>
+                <div class="accordion-item">
+                    <div class="accordion-header">
+                        Pourquoi les blocs de compétences sont-ils obligatoires pour le RNCP ?
+                        <span class="accordion-icon">&#9658;</span>
+                    </div>
+                    <div class="accordion-content hidden">
+                        <p>Ils sont obligatoires depuis la Loi du 5 septembre 2018 pour introduire modularité et flexibilité dans les parcours de formation, permettre l'acquisition progressive de qualifications et améliorer l'employabilité en valorisant des compétences spécifiques de manière autonome.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="scenarioModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h3 id="modal-title" class="text-2xl font-bold text-sky-700 mb-4"></h3>
+            <div id="modal-body" class="text-slate-700"></div>
+            <div id="modal-feedback" class="mt-4 p-3 rounded-lg text-white font-bold hidden"></div>
+            <div id="modal-options" class="mt-4 space-y-2"></div>
+            <button id="modal-validate" class="mt-4 bg-sky-600 hover:bg-sky-700 text-white font-bold py-2 px-4 rounded-lg hidden">Valider</button>
+        </div>
+    </div>
+
+    <footer class="bg-slate-800 text-white">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm">
+            <p>&copy; 2025 - Guide Interactif de l'Approche par Compétences. Contenu basé sur le rapport d'accompagnement des acteurs de la formation professionnelle | d. de AMIL - IRP</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- DATA FOR INTERACTIVITY ---
+        const glossaryTerms = {
+            "APC": "Approche par Compétences : méthode pédagogique axée sur l'acquisition de compétences.",
+            "RA": "Référentiel d'Activités : décrit les missions et activités d'un métier. La fondation de la certification.",
+            "RC": "Référentiel de Compétences : identifie les compétences (savoirs, savoir-faire, savoir-être) nécessaires pour réaliser les activités du RA.",
+            "BC": "Blocs de Compétences : ensembles homogènes et cohérents de compétences, évaluables et validables indépendamment, contribuant à une activité professionnelle autonome.",
+            "RE": "Référentiel d'Évaluation : définit les critères et modalités d'évaluation des acquis pour garantir la maîtrise des compétences.",
+            "RNCP": "Répertoire National des Certifications Professionnelles : regroupe les certifications couvrant un métier entier, avec structuration obligatoire en BC.",
+            "RS": "Répertoire Spécifique : enregistre les certifications de compétences complémentaires ou transversales (ex: habilitations, langues).",
+            "VAE": "Validation des Acquis de l'Expérience : dispositif permettant d'obtenir tout ou partie d'une certification sur la base de l'expérience professionnelle ou bénévole.",
+            "CPF": "Compte Personnel de Formation : dispositif de financement de la formation professionnelle, alimenté en euros et mobilisable par l'individu.",
+            "OPCO": "Opérateurs de Compétences : organismes agréés qui financent l'apprentissage et la formation professionnelle.",
+            "GPEC": "Gestion Prévisionnelle des Emplois et des Compétences : démarche visant à adapter les emplois et les compétences aux évolutions stratégiques de l'entreprise.",
+            "DGESIP": "Direction Générale de l'Enseignement Supérieur et de l'Insertion Professionnelle.",
+            "MESR": "Ministère de l'Enseignement Supérieur et de la Recherche.",
+            "SAE": "Situations d'Apprentissage et d'Évaluation : mises en situation concrètes pour développer et évaluer les compétences.",
+            "Loi du 5 mars 2014": "Loi relative à la formation professionnelle, à l'emploi et à la démocratie sociale, ayant introduit les BC et le CPF.",
+            "Loi du 5 septembre 2018": "Loi 'Pour la liberté de choisir son avenir professionnel', ayant consolidé le rôle des BC et réformé l'apprentissage."
+        };
+
+        const benefitDetailsData = {
+            "Apprenants": {
+                "Meilleure Employabilité": "L'APC permet aux apprenants d'acquérir des compétences directement applicables sur le marché du travail, augmentant leurs chances d'insertion ou d'évolution professionnelle.",
+                "Parcours Flexibles": "Grâce aux blocs de compétences, les apprenants peuvent construire des parcours de formation personnalisés, adaptés à leurs besoins et à leur rythme, facilitant l'apprentissage tout au long de la vie.",
+                "Adéquation Formation/Besoin": "Les formations sont conçues en lien direct avec les besoins des entreprises, assurant que les compétences acquises sont pertinentes et recherchées.",
+                "Gestion des Talents": "Bien que moins direct pour l'apprenant, l'APC soutient une meilleure gestion des talents par les entreprises, ce qui peut se traduire par des opportunités de développement de carrière pour l'individu.",
+                "Mobilité Professionnelle": "La reconnaissance des blocs de compétences facilite les transitions entre métiers ou secteurs, offrant plus de flexibilité dans les parcours professionnels."
+            },
+            "Organisations": {
+                "Meilleure Employabilité": "En recrutant des individus dont les compétences sont clairement définies et validées, les organisations s'assurent d'une meilleure adéquation aux postes.",
+                "Parcours Flexibles": "Les blocs de compétences permettent aux organisations de proposer des formations ciblées à leurs employés, répondant précisément à des besoins spécifiques sans nécessiter des cursus longs et généralistes.",
+                "Adéquation Formation/Besoin": "L'ingénierie de certification assure que les compétences développées correspondent aux exigences réelles et futures de l'entreprise, optimisant les investissements en formation.",
+                "Gestion des Talents": "L'APC est un outil puissant pour la GPEC, permettant d'identifier les compétences disponibles et celles à développer pour anticiper les évolutions stratégiques de l'entreprise.",
+                "Mobilité Professionnelle": "La modularité des compétences facilite la réaffectation interne des employés et la gestion des carrières, en reconnaissant les acquis et en ciblant les formations complémentaires nécessaires pour de nouvelles fonctions."
+            },
+            "Collectivité": {
+                "Meilleure Employabilité": "En améliorant l'adéquation entre l'offre de formation et les besoins du marché, l'APC contribue à réduire le chômage structurel et à augmenter la compétitivité de l'économie nationale.",
+                "Parcours Flexibles": "Le système modulaire soutient l'apprentissage tout au long de la vie, permettant à la population active de s'adapter continuellement aux mutations économiques et technologiques.",
+                "Adéquation Formation/Besoin": "La cohérence des référentiels assure que les fonds publics sont investis dans des formations qui répondent aux besoins socio-économiques réels du pays.",
+                "Gestion des Talents": "Une meilleure gestion des compétences à l'échelle nationale favorise l'innovation et la croissance économique en garantissant une main-d'œuvre qualifiée et adaptable.",
+                "Mobilité Professionnelle": "La reconnaissance des compétences via les blocs facilite la fluidité du marché du travail, permettant aux individus de se reconvertir et de s'adapter aux nouvelles opportunités."
+            }
+        };
+
+        const scenarios = {
+            "ra-scenario": {
+                title: "Mini-cas pratique : Définir un Référentiel d'Activités (RA)",
+                question: "Vous êtes responsable de formation dans un organisme qui souhaite créer une certification RNCP pour le métier de 'Chargé de communication digitale'. Quelle serait la première étape pour définir le Référentiel d'Activités (RA) ?",
+                options: [
+                    { text: "A. Lister tous les logiciels de communication digitale à maîtriser.", correct: false },
+                    { text: "B. Demander aux formateurs de lister les cours qu'ils souhaitent enseigner.", correct: false },
+                    { text: "C. Identifier et consulter des professionnels du métier pour décrire leurs missions et situations de travail typiques.", correct: true },
+                    { text: "D. Rédiger une liste de savoirs théoriques sur la communication digitale.", correct: false }
+                ],
+                explanation: "La première étape pour un RA est de consulter les professionnels du métier. Le RA décrit les activités réelles du métier, et non les savoirs, les outils ou les contenus de formation."
+            },
+            "rc-scenario": {
+                title: "Mini-cas pratique : Rédiger une Compétence (RC)",
+                question: "Pour l'activité 'Gérer les campagnes publicitaires en ligne', quelle est la meilleure formulation de compétence pour le Référentiel de Compétences (RC) ?",
+                options: [
+                    { text: "A. Connaître les plateformes publicitaires (Google Ads, Facebook Ads).", correct: false },
+                    { text: "B. Maîtriser les outils de suivi de performance.", correct: false },
+                    { text: "C. Analyser les données de performance des campagnes publicitaires en ligne afin d'optimiser le ROI.", correct: true },
+                    { text: "D. Être capable de faire de la publicité en ligne.", correct: false }
+                ],
+                explanation: "Une compétence doit être formulée avec un verbe d'action, le 'quoi', la 'finalité' et éventuellement le 'comment'. La proposition C est la seule qui décrit une capacité à agir observable et mesurable dans un contexte professionnel."
+            },
+            "bc-scenario": {
+                title: "Mini-cas pratique : Structurer en Blocs de Compétences (BC)",
+                question: "Vous avez identifié les compétences suivantes pour un métier. Comment les regrouperiez-vous en un bloc de compétences cohérent et autonome ?",
+                options: [
+                    { text: "A. Compétence 1: 'Connaître le droit du travail' ; Compétence 2: 'Savoir rédiger un contrat'.", correct: false },
+                    { text: "B. Compétence 1: 'Élaborer un plan de recrutement' ; Compétence 2: 'Mener des entretiens d'embauche' ; Compétence 3: 'Intégrer un nouveau collaborateur'.", correct: true },
+                    { text: "C. Compétence 1: 'Utiliser un logiciel de paie' ; Compétence 2: 'Maîtriser Excel'.", correct: false },
+                    { text: "D. Un seul bloc pour toutes les compétences RH.", correct: false }
+                ],
+                explanation: "Un bloc de compétences doit être un ensemble homogène et cohérent de plusieurs compétences contribuant à l'exercice autonome d'une activité professionnelle. La proposition B regroupe des compétences clés du processus de recrutement, formant une activité autonome."
+            },
+            "re-scenario": {
+                title: "Mini-cas pratique : Définir un Référentiel d'Évaluation (RE)",
+                question: "Pour évaluer la compétence 'Gérer un budget de projet', quelle modalité d'évaluation serait la plus pertinente selon le Référentiel d'Évaluation (RE) ?",
+                options: [
+                    { text: "A. Un QCM sur les principes de la gestion budgétaire.", correct: false },
+                    { text: "B. Une étude de cas où le candidat doit construire et justifier un budget détaillé pour un projet donné.", correct: true },
+                    { text: "C. Un exposé oral sur l'importance du budget.", correct: false },
+                    { text: "D. Une simple vérification des connaissances théoriques en comptabilité.", correct: false }
+                ],
+                explanation: "Le RE privilégie les modalités d'évaluation proches de la situation de travail réelle ou simulée. Une étude de cas permet de tester la capacité du candidat à appliquer ses compétences de gestion budgétaire dans un contexte pratique, ce qui est plus pertinent qu'un simple QCM ou exposé."
+            },
+            "process-step1-scenario": {
+                title: "Mini-cas pratique : Étape 1 - Analyse du travail & Définition des Activités (RA)",
+                question: "Votre équipe vient de commencer à travailler sur le RA d'une nouvelle certification. Quel est le piège le plus courant à éviter à cette étape ?",
+                options: [
+                    { text: "A. Ne consulter que les managers et pas les opérationnels.", correct: false },
+                    { text: "B. Lister des activités trop détaillées, au niveau des tâches individuelles (ex: 'répondre aux emails').", correct: true },
+                    { text: "C. Oublier de valider le RA avec les partenaires socio-économiques.", correct: false },
+                    { text: "D. Ne pas utiliser de verbes d'action.", correct: false }
+                ],
+                explanation: "Le RA doit rester à un niveau 'macro', décrivant les grandes séquences logiques de travail (10-15 activités). Lister des tâches trop détaillées rend le RA trop lourd et moins stratégique."
+            },
+            "process-step2-scenario": {
+                title: "Mini-cas pratique : Étape 2 - Dérivation des Compétences (RC)",
+                question: "Après avoir défini une activité dans le RA, vous devez en dériver les compétences pour le RC. Quelle est la meilleure approche pour formuler une compétence ?",
+                options: [
+                    { text: "A. Commencer par 'Connaître...' ou 'Maîtriser...'.", correct: false },
+                    { text: "B. Utiliser un verbe d'action à l'infinitif, suivi du 'quoi', de la 'finalité' et éventuellement du 'comment'.", correct: true },
+                    { text: "C. Faire une liste de savoirs et de savoir-faire sans les lier à une action concrète.", correct: false },
+                    { text: "D. Copier-coller des compétences existantes sans les adapter.", correct: false }
+                ],
+                explanation: "La formulation d'une compétence doit décrire une 'capacité à agir' observable et mesurable, en précisant l'action, son objet, sa finalité et son contexte. La structure Verbe + Quoi + Finalité (+ Comment) est la plus recommandée."
+            },
+            "process-step3-scenario": {
+                title: "Mini-cas pratique : Étape 3 - Structuration en Blocs (BC)",
+                question: "Lors de la création de vos blocs de compétences, vous hésitez sur le découpage. Quel principe est essentiel pour la validité d'un bloc RNCP ?",
+                options: [
+                    { text: "A. Un bloc doit correspondre exactement à un module de formation existant.", correct: false },
+                    { text: "B. Un bloc peut contenir une seule compétence très spécifique.", correct: false },
+                    { text: "C. Un bloc doit permettre l'exercice autonome d'une activité professionnelle et être suffisamment consistant pour qu'un employeur puisse recruter sur sa base.", correct: true },
+                    { text: "D. Un bloc doit regrouper des compétences très diverses pour maximiser la polyvalence.", correct: false }
+                ],
+                explanation: "Un bloc de compétences doit être un ensemble homogène et cohérent de compétences qui, une fois validé, permet l'exercice autonome d'une partie significative d'une activité professionnelle. Il doit avoir une valeur d'employabilité propre."
+            },
+            "process-step4-scenario": {
+                title: "Mini-cas pratique : Étape 4 - Définition de l'Évaluation (RE)",
+                question: "Pour le Référentiel d'Évaluation (RE), vous devez définir les modalités d'évaluation d'un bloc de compétences. Quelle est la meilleure pratique ?",
+                options: [
+                    { text: "A. Utiliser uniquement des QCM pour toutes les compétences, car c'est rapide.", correct: false },
+                    { text: "B. Privilégier des mises en situation professionnelles (réelles ou simulées) et des projets pour évaluer la capacité à agir.", correct: true },
+                    { text: "C. Laisser les évaluateurs choisir librement leurs méthodes d'évaluation pour chaque candidat.", correct: false },
+                    { text: "D. Évaluer uniquement les savoirs théoriques, les savoir-faire et savoir-être étant trop difficiles à mesurer.", correct: false }
+                ],
+                explanation: "Le RE doit garantir que les compétences sont réellement maîtrisées en privilégiant des modalités d'évaluation authentiques et proches de la réalité du travail, comme les mises en situation ou les projets, qui permettent d'observer la capacité à agir."
+            }
+        };
+
+        // --- GLOBAL FUNCTIONS ---
+        // Stores the original innerHTML of text containers to revert to for highlighting purposes.
+        const originalTextContainersContent = new Map(); 
+
+        function applyGlossaryHighlighting() {
+            const textContainers = document.querySelectorAll('p, li, h3, h4, strong, em'); 
+            
+            textContainers.forEach(container => {
+                // Store original content if not already stored (before any glossary or highlight modifications)
+                if (!originalTextContainersContent.has(container)) {
+                    originalTextContainersContent.set(container, container.innerHTML);
+                }
+
+                let currentHtml = container.innerHTML;
+                let newHtml = currentHtml;
+
+                for (const term in glossaryTerms) {
+                    const definition = glossaryTerms[term];
+                    // Regex to match whole word, case-insensitive, but NOT inside existing glossary-term spans or highlight spans or other HTML tags
+                    const regex = new RegExp(`(?<!<[^>]*?>|class="glossary-term">|class="highlight">|<strong>|<em>|\\b(?:strong|em|span|a|h\\d|li|p|div|button|input)\\b[^>]*>|[^a-zA-Z0-9À-ÿ])\\b(${term})\\b(?!<[^>]*?)(?![a-zA-Z0-9À-ÿ])`, 'gi');
+                    
+                    newHtml = newHtml.replace(regex, (match, p1) => {
+                        return `<span class="glossary-term">${p1}<span class="tooltip">${definition}</span></span>`;
+                    });
+                }
+                container.innerHTML = newHtml;
+            });
+        }
+
+        function highlightText(query) {
+            const textContainers = document.querySelectorAll('p, li, h3, h4, strong, em'); 
+
+            // Revert all previous highlights for all containers
+            textContainers.forEach(container => {
+                // Revert to the state *after* glossary highlighting, if it was applied
+                if (originalTextContainersContent.has(container)) {
+                    container.innerHTML = originalTextContainersContent.get(container);
+                }
+            });
+
+            if (!query) {
+                // Re-apply glossary highlighting if search query is empty
+                applyGlossaryHighlighting();
+                return;
+            }
+
+            textContainers.forEach(container => {
+                // Ensure original content is stored (including glossary terms)
+                if (!originalTextContainersContent.has(container)) {
+                    originalTextContainersContent.set(container, container.innerHTML);
+                }
+
+                let currentHtml = container.innerHTML;
+                // Regex to highlight, but avoid breaking existing glossary spans or other HTML tags.
+                const regex = new RegExp(`(?![^<]*>)(?!<[^>]*?)(?!class="highlight">)(?!class="glossary-term">)\\b(${query})\\b(?!<[^>]*?)`, 'gi');
+                
+                currentHtml = currentHtml.replace(regex, (match, p1) => {
+                    return `<span class="highlight">${p1}</span>`;
+                });
+                container.innerHTML = currentHtml;
+            });
+        }
+
+
+        // --- EVENT LISTENERS AND INITIALIZATIONS ---
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab functionality for Referentiels section
+            const tabs = document.querySelectorAll('.tab-btn');
+            const panes = document.querySelectorAll('.tab-pane');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    tabs.forEach(t => t.classList.remove('tab-active'));
+                    this.classList.add('tab-active');
+
+                    panes.forEach(pane => {
+                        pane.classList.add('hidden');
+                    });
+                    document.getElementById(this.dataset.tab).classList.remove('hidden');
+                });
+            });
+
+            // Chart.js for Benefits Radar Chart
+            const ctx = document.getElementById('benefitsChart').getContext('2d');
+            const benefitsChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Meilleure Employabilité', 'Parcours Flexibles', 'Adéquation Formation/Besoin', 'Gestion des Talents', 'Mobilité Professionnelle'],
+                    datasets: [{
+                        label: 'Apprenants',
+                        data: [5, 5, 4, 2, 5],
+                        backgroundColor: 'rgba(56, 189, 248, 0.2)',
+                        borderColor: 'rgba(56, 189, 248, 1)',
+                        pointBackgroundColor: 'rgba(56, 189, 248, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(56, 189, 248, 1)'
+                    }, {
+                        label: 'Organisations',
+                        data: [5, 3, 5, 5, 4],
+                        backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                        borderColor: 'rgba(34, 197, 94, 1)',
+                        pointBackgroundColor: 'rgba(34, 197, 94, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(34, 197, 94, 1)'
+                    },
+                    {
+                        label: 'Collectivité',
+                        data: [4, 4, 5, 3, 4],
+                        backgroundColor: 'rgba(249, 115, 22, 0.2)',
+                        borderColor: 'rgba(249, 115, 22, 1)',
+                        pointBackgroundColor: 'rgba(249, 115, 22, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(249, 115, 22, 1)'
+                    }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 12
+                                },
+                                color: '#334155'
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                stepSize: 1,
+                                max: 5,
+                                min: 0
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            onClick: (e, legendItem, legend) => {
+                                const index = legendItem.datasetIndex;
+                                const actor = benefitsChart.data.datasets[index].label;
+                                const detailsBox = document.getElementById('benefit-details');
+                                const actorSpan = document.getElementById('selected-benefit-actor');
+                                const textP = document.getElementById('selected-benefit-text');
+
+                                if (detailsBox.classList.contains('hidden') || actorSpan.textContent !== actor) {
+                                    actorSpan.textContent = actor;
+                                    const benefitKeys = benefitsChart.data.labels;
+                                    let detailsText = '';
+                                    benefitKeys.forEach((key, i) => {
+                                        const value = benefitsChart.data.datasets[index].data[i];
+                                        detailsText += `<strong>${key} (${value}/5) :</strong> ${benefitDetailsData[actor][key]}<br>`;
+                                    });
+                                    textP.innerHTML = detailsText;
+                                    detailsBox.classList.remove('hidden');
+                                } else {
+                                    detailsBox.classList.add('hidden');
+                                }
+                                // Default Chart.js legend click behavior (toggle visibility)
+                                Chart.defaults.plugins.legend.onClick.call(this, e, legendItem, legend);
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.r !== null) {
+                                        label += context.parsed.r + '/5';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Toggle details for Défis cards
+            document.querySelectorAll('.toggle-details').forEach(button => {
+                button.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const targetElement = document.getElementById(targetId);
+                    if (targetElement.classList.contains('hidden')) {
+                        targetElement.classList.remove('hidden');
+                        this.innerHTML = 'Moins de détails &#9660;';
+                    } else {
+                        targetElement.classList.add('hidden');
+                        this.innerHTML = 'En savoir plus &#9658;';
+                    }
+                });
+            });
+
+            // Accordion for FAQ
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = item.querySelector('.accordion-icon');
+                
+                header.addEventListener('click', function() {
+                    // Close other open accordions
+                    document.querySelectorAll('.accordion-item').forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.querySelector('.accordion-header').classList.remove('active');
+                            otherItem.querySelector('.accordion-content').classList.add('hidden');
+                            otherItem.querySelector('.accordion-icon').style.transform = 'rotate(0deg)';
+                        }
+                    });
+
+                    // Toggle current accordion
+                    header.classList.toggle('active');
+                    content.classList.toggle('hidden');
+                    if (header.classList.contains('active')) {
+                        icon.style.transform = 'rotate(90deg)';
+                    } else {
+                        icon.style.transform = 'rotate(0deg)';
+                    }
+                });
+            });
+
+            // Modal for Scenarios
+            const scenarioModal = document.getElementById('scenarioModal');
+            const closeButton = document.querySelector('.close-button');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            const modalOptions = document.getElementById('modal-options');
+            const modalValidate = document.getElementById('modal-validate');
+            const modalFeedback = document.getElementById('modal-feedback');
+            let currentScenario = null;
+
+            document.querySelectorAll('.modal-trigger').forEach(button => {
+                button.addEventListener('click', function() {
+                    const scenarioKey = this.dataset.modalContent;
+                    currentScenario = scenarios[scenarioKey];
+                    
+                    modalTitle.textContent = currentScenario.title;
+                    modalBody.textContent = currentScenario.question;
+                    modalOptions.innerHTML = '';
+                    modalFeedback.classList.add('hidden');
+                    modalFeedback.classList.remove('bg-green-500', 'bg-red-500', 'bg-yellow-500');
+                    modalValidate.classList.remove('hidden');
+                    modalValidate.onclick = validateScenario;
+
+                    currentScenario.options.forEach((option, index) => {
+                        const label = document.createElement('label');
+                        label.className = 'block p-2 border border-slate-200 rounded-md cursor-pointer hover:bg-slate-50';
+                        const radio = document.createElement('input');
+                        radio.type = 'radio';
+                        radio.name = 'scenarioOption';
+                        radio.value = index;
+                        radio.className = 'mr-2';
+                        label.appendChild(radio);
+                        label.appendChild(document.createTextNode(option.text));
+                        modalOptions.appendChild(label);
+                    });
+
+                    scenarioModal.style.display = 'flex';
+                });
+            });
+
+            closeButton.addEventListener('click', function() {
+                scenarioModal.style.display = 'none';
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target == scenarioModal) {
+                    scenarioModal.style.display = 'none';
+                }
+            });
+
+            function validateScenario() {
+                const selectedOption = document.querySelector('input[name="scenarioOption"]:checked');
+                if (!selectedOption) {
+                    modalFeedback.textContent = "Veuillez sélectionner une option.";
+                    modalFeedback.className = 'mt-4 p-3 rounded-lg bg-yellow-500 text-white font-bold block';
+                    return;
+                }
+
+                const selectedIndex = parseInt(selectedOption.value);
+                if (currentScenario.options[selectedIndex].correct) {
+                    modalFeedback.textContent = "Correct ! " + currentScenario.explanation;
+                    modalFeedback.className = 'mt-4 p-3 rounded-lg bg-green-500 text-white font-bold block';
+                } else {
+                    modalFeedback.textContent = "Incorrect. " + currentScenario.explanation;
+                    modalFeedback.className = 'mt-4 p-3 rounded-lg bg-red-500 text-white font-bold block';
+                }
+                modalFeedback.classList.remove('hidden');
+                modalValidate.classList.add('hidden'); // Hide validate button after answer
+            }
+
+            // Search functionality
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('keyup', function() {
+                highlightText(this.value);
+            });
+
+            // Apply glossary highlighting after all content is loaded
+            applyGlossaryHighlighting();
+        });
+    </script>
+</body>
+</html>
