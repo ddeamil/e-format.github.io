@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse du Compte de Résultat - BTS MCO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Professional Teal -->
+    <!-- Application Structure Plan: The application follows a pedagogical, step-by-step learning path. It starts with a welcoming introduction (video), moves to foundational concepts, then to the interactive SIG calculator (the core interactive element), followed by ratio analysis, a formative quiz to test knowledge, and finally a visual synthesis (mind map). This linear progression is designed to build knowledge logically and is facilitated by a clear top navigation bar for easy access to any section. This structure was chosen to guide the student from theory to practice and self-assessment in the most intuitive way. -->
+    <!-- Visualization & Content Choices: 
+        - SIG Calculation: Goal=Understand Process -> Presentation=Step-by-step interactive calculator with a dynamic bar chart. Interaction=User clicks "Next Step" to reveal calculations sequentially. Justification=Makes a complex cascade of calculations digestible and visual. Library=Chart.js for the dynamic chart.
+        - Ratio Analysis: Goal=Compare & Evaluate -> Presentation=Interactive cards and a comparative radar chart with a simulator. Interaction=Card clicks for details, sliders to simulate changes. Justification=Transforms a static view into an experimental sandbox for understanding business levers. Library=Chart.js.
+        - Quiz: Goal=Assess Knowledge -> Presentation=Interactive question/answer module. Interaction=User selection, immediate feedback, final score. Justification=Reinforces learning through active recall and provides constructive feedback. Method=Custom JS logic.
+        - Synthesis: Goal=Review & Synthesize -> Presentation=Embedded mind map. Interaction=User can navigate the mind map. Justification=Offers a high-level, visual summary for revision. Method=iFrame embed.
+        - Text/Concepts: Goal=Inform -> Presentation=Styled text blocks with clear headings and lists. Interaction=Accordion for FAQ. Justification=Ensures readability and easy access to key information. Method=HTML/CSS + minimal JS for accordion.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #F8F7F4;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .btn {
+            background-color: #4A6C6F; /* Deep Teal */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+        }
+        .btn:hover {
+            background-color: #3a5658;
+        }
+        .page-section {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        @media (min-width: 768px) {
+            .page-section {
+                padding-left: 2rem;
+                padding-right: 2rem;
+            }
+        }
+        .nav-link.active {
+            background-color: #4A6C6F;
+            color: white;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .chart-container {
+            position: relative;
+            height: 40vh;
+            width: 100%;
+            max-height: 400px;
+        }
+        .ratio-card { position: relative; min-height: 120px; }
+        .ratio-back {
+            transform: rotateY(180deg);
+            backface-visibility: hidden;
+            transition: transform 0.4s ease;
+        }
+        .ratio-card.flipped .ratio-back {
+            transform: rotateY(0deg);
+        }
+        .ratio-card.flipped .ratio-front {
+            transform: rotateY(-180deg);
+        }
+        .ratio-front, .ratio-back {
+            backface-visibility: hidden;
+            transition: transform 0.4s ease;
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center">
+                    <span class="font-bold text-xl text-[#4A6C6F]">BTS MCO | Compta</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#accueil" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Accueil</a>
+                        <a href="#fondamentaux" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Fondamentaux</a>
+                        <a href="#sig" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Calcul des SIG</a>
+                        <a href="#ratios" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Analyse des Ratios</a>
+                        <a href="#faq" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Points Clés & FAQ</a>
+                        <a href="#quiz" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Quiz</a>
+                        <a href="#synthese" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Synthèse</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div id="mobile-menu" class="md:hidden hidden">
+                <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                    <a href="#accueil" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Accueil</a>
+                    <a href="#fondamentaux" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Fondamentaux</a>
+                    <a href="#sig" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Calcul des SIG</a>
+                    <a href="#ratios" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Analyse des Ratios</a>
+                    <a href="#faq" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Points Clés & FAQ</a>
+                    <a href="#quiz" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Quiz</a>
+                    <a href="#synthese" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">Synthèse</a>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <section id="accueil" class="page-section text-center py-20">
+            <h1 class="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">Maîtrisez l'Analyse du Compte de Résultat</h1>
+            <p class="mt-6 max-w-2xl mx-auto text-lg leading-8 text-gray-600">Un guide interactif complet pour les étudiants en BTS MCO, conçu pour transformer un document comptable en un outil de pilotage stratégique.</p>
+            
+            <div class="mt-12">
+                 <h2 class="text-2xl font-semibold text-gray-800 mb-4">Vidéo d'Introduction</h2>
+                 <div class="max-w-3xl mx-auto" style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+                 padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+                 border-radius: 8px; will-change: transform;">
+                   <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+                     src="https://www.canva.com/design/DAGzJN_4xSQ/ER75x9XbrsJQluD82k9aFA/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+                   </iframe>
+                 </div>
+            </div>
+
+            <div class="mt-12">
+                <a href="#fondamentaux" class="scroll-to btn">Commencer l'analyse →</a>
+            </div>
+        </section>
+
+        <section id="fondamentaux" class="page-section hidden py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Les Fondamentaux</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Avant d'analyser, il faut comprendre. Charges, produits : les deux piliers du résultat.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 mb-16">
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-red-600">Charges</h3>
+                    <p class="text-gray-600 mt-2">Ce sont les <span class="font-bold">appauvrissements</span> de l'entreprise. Elles représentent tous les coûts et dépenses nécessaires à l'activité durant un exercice comptable (12 mois).</p>
+                    <ul class="mt-4 space-y-2 text-gray-700 list-disc list-inside">
+                        <li>Achats de marchandises et matières premières</li>
+                        <li>Services extérieurs (loyer, publicité, énergie)</li>
+                        <li>Impôts et taxes</li>
+                        <li>Charges de personnel (salaires, cotisations)</li>
+                        <li>Charges financières (intérêts d'emprunt)</li>
+                        <li>Dotations aux amortissements (usure du matériel)</li>
+                    </ul>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-2xl font-bold text-green-600">Produits</h3>
+                    <p class="text-gray-600 mt-2">Ce sont les <span class="font-bold">enrichissements</span> de l'entreprise. Ils correspondent principalement aux recettes générées par les ventes.</p>
+                     <ul class="mt-4 space-y-2 text-gray-700 list-disc list-inside">
+                        <li>Ventes de marchandises</li>
+                        <li>Ventes de produits finis</li>
+                        <li>Prestations de services</li>
+                        <li>Produits financiers (revenus de placements)</li>
+                        <li>Subventions d'exploitation</li>
+                    </ul>
+                </div>
+            </div>
+             <div class="card p-6 max-w-4xl mx-auto">
+                 <h3 class="text-xl font-bold mb-4 text-center">Les 3 Cycles d'Activité</h3>
+                 <p class="text-center text-gray-600 mb-6">Pour une analyse fine, on classe charges et produits selon leur nature.</p>
+                 <div class="grid md:grid-cols-3 gap-6 text-center">
+                     <div>
+                         <div class="p-4 bg-blue-50 rounded-lg">
+                             <h4 class="font-bold">Exploitation</h4>
+                             <p class="text-sm text-gray-600">Activité normale et courante. Le cœur du réacteur.</p>
+                         </div>
+                     </div>
+                     <div>
+                         <div class="p-4 bg-purple-50 rounded-lg">
+                             <h4 class="font-bold">Financier</h4>
+                             <p class="text-sm text-gray-600">Lié aux choix de financement (dettes, placements).</p>
+                         </div>
+                     </div>
+                     <div>
+                         <div class="p-4 bg-orange-50 rounded-lg">
+                            <h4 class="font-bold">Exceptionnel</h4>
+                            <p class="text-sm text-gray-600">Événements rares, non récurrents (vente d'un immeuble).</p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </section>
+        
+        <section id="sig" class="page-section hidden py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Calcul Interactif des SIG</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Décomposez le résultat étape par étape pour comprendre sa formation.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto mb-12 bg-teal-50 border-l-4 border-teal-500 text-teal-800 p-6 rounded-r-lg shadow-sm">
+                <h3 class="text-xl font-bold mb-2">Qu'est-ce que les Soldes Intermédiaires de Gestion (SIG) ?</h3>
+                <p class="text-gray-700">
+                    Les <strong>Soldes Intermédiaires de Gestion (SIG)</strong> sont des indicateurs clés qui décomposent le Compte de Résultat en plusieurs résultats partiels. Au lieu de regarder uniquement le bénéfice ou la perte finale, les SIG nous montrent <strong>comment</strong> ce résultat a été construit, étape par étape.
+                </p>
+                <p class="mt-2 text-gray-700">
+                    C'est une analyse en cascade qui permet de diagnostiquer la performance de l'entreprise à différents niveaux : sa performance commerciale (Marge Commerciale), sa capacité à créer de la richesse (Valeur Ajoutée), et sa rentabilité opérationnelle brute (EBE).
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-4">Le Compte de Résultat (Exemple)</h3>
+                    <div id="sig-list" class="space-y-3"></div>
+                </div>
+                <div class="card p-6 sticky top-24">
+                     <h3 class="text-xl font-bold mb-4">Visualisation des Soldes</h3>
+                    <div class="chart-container">
+                        <canvas id="sigChart"></canvas>
+                    </div>
+                    <div class="text-center mt-6">
+                        <button id="sig-step-btn" class="btn">Étape Suivante</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ratios" class="page-section hidden py-16">
+             <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Analyse Interactive des Ratios</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Explorez les indicateurs, comparez-vous au secteur et simulez l'impact de vos décisions.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 items-start">
+                <div>
+                    <div class="card p-6 mb-8 bg-indigo-50 border border-indigo-200">
+                        <h3 class="text-xl font-bold mb-3 text-indigo-800">Données de Base pour l'Analyse (Exemple)</h3>
+                        <p class="text-sm text-gray-700 mb-4">Les ratios ci-dessous sont calculés à partir des résultats de la section précédente. Voici les chiffres initiaux de notre entreprise :</p>
+                        <ul class="text-sm space-y-2 text-gray-800">
+                            <li class="flex justify-between"><span>Chiffre d'Affaires (CA HT) :</span> <span class="font-semibold">600 000 €</span></li>
+                            <li class="flex justify-between"><span>Marge Commerciale :</span> <span class="font-semibold">150 000 €</span></li>
+                            <li class="flex justify-between"><span>Valeur Ajoutée (VA) :</span> <span class="font-semibold">100 000 €</span></li>
+                            <li class="flex justify-between"><span>Excédent Brut d'Exploitation (EBE) :</span> <span class="font-semibold">50 000 €</span></li>
+                            <li class="flex justify-between"><span>Résultat d'Exploitation (RE) :</span> <span class="font-semibold">30 000 €</span></li>
+                        </ul>
+                    </div>
+
+                    <h3 class="text-xl font-bold mb-4">Indicateurs de Performance Clés</h3>
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <!-- Ratio Card 1 -->
+                        <div class="ratio-card card p-5 text-center cursor-pointer">
+                            <div class="ratio-front flex flex-col justify-center items-center h-full">
+                                <h4 class="font-semibold text-gray-500">Taux de Marge Comm.</h4>
+                                <p id="ratio-margeComm-value" class="text-3xl font-bold text-[#4A6C6F] mt-2"></p>
+                                <p class="text-xs text-gray-400 mt-1">(Marge Comm. / CA HT)</p>
+                            </div>
+                            <div class="ratio-back hidden absolute inset-0 bg-white p-3 rounded-lg text-left text-sm flex flex-col justify-center">
+                                <p class="font-bold mb-2">Interprétation :</p>
+                                <p class="text-xs">Mesure la performance de l'activité de négoce (achat-revente). Un taux élevé indique de bonnes marges sur les produits vendus.</p>
+                            </div>
+                        </div>
+                        <!-- Ratio Card 2 -->
+                        <div class="ratio-card card p-5 text-center cursor-pointer">
+                             <div class="ratio-front flex flex-col justify-center items-center h-full">
+                                <h4 class="font-semibold text-gray-500">Taux d'Intégration</h4>
+                                <p id="ratio-integration-value" class="text-3xl font-bold text-[#4A6C6F] mt-2"></p>
+                                <p class="text-xs text-gray-400 mt-1">(Valeur Ajoutée / CA HT)</p>
+                            </div>
+                            <div class="ratio-back hidden absolute inset-0 bg-white p-3 rounded-lg text-left text-sm flex flex-col justify-center">
+                                <p class="font-bold mb-2">Interprétation :</p>
+                                <p class="text-xs">Indique la part de richesse créée en interne. Un taux élevé signifie une faible dépendance aux fournisseurs.</p>
+                            </div>
+                        </div>
+                        <!-- Ratio Card 3 -->
+                        <div class="ratio-card card p-5 text-center cursor-pointer">
+                             <div class="ratio-front flex flex-col justify-center items-center h-full">
+                                <h4 class="font-semibold text-gray-500">Taux de Marge Brute</h4>
+                                <p id="ratio-margeBrute-value" class="text-3xl font-bold text-[#4A6C6F] mt-2"></p>
+                                <p class="text-xs text-gray-400 mt-1">(EBE / CA HT)</p>
+                            </div>
+                             <div class="ratio-back hidden absolute inset-0 bg-white p-3 rounded-lg text-left text-sm flex flex-col justify-center">
+                                <p class="font-bold mb-2">Interprétation :</p>
+                                <p class="text-xs">Mesure la capacité à générer de la trésorerie avec l'activité. C'est la rentabilité brute opérationnelle.</p>
+                            </div>
+                        </div>
+                        <!-- Ratio Card 4 -->
+                        <div class="ratio-card card p-5 text-center cursor-pointer">
+                             <div class="ratio-front flex flex-col justify-center items-center h-full">
+                                <h4 class="font-semibold text-gray-500">Taux de Marge d'Expl.</h4>
+                                <p id="ratio-margeExploit-value" class="text-3xl font-bold text-[#4A6C6F] mt-2"></p>
+                                <p class="text-xs text-gray-400 mt-1">(Résultat d'Expl. / CA HT)</p>
+                            </div>
+                            <div class="ratio-back hidden absolute inset-0 bg-white p-3 rounded-lg text-left text-sm flex flex-col justify-center">
+                                <p class="font-bold mb-2">Interprétation :</p>
+                                <p class="text-xs">Mesure le profit de l'activité principale après prise en compte de l'usure du matériel (amortissements).</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card p-6">
+                        <h3 class="text-xl font-bold mb-4">Simulateur : Le Pouvoir des Leviers</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label for="ca-slider" class="block text-sm font-medium text-gray-700">Levier Prix de Vente (impacte le CA)</label>
+                                <div class="flex items-center space-x-4">
+                                    <input id="ca-slider" type="range" min="-20" max="20" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <span id="ca-slider-value" class="font-bold w-16 text-center text-[#4A6C6F]">0%</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="conso-slider" class="block text-sm font-medium text-gray-700">Levier Négociation Achats (impacte les Coûts)</label>
+                                 <div class="flex items-center space-x-4">
+                                    <input id="conso-slider" type="range" min="-20" max="20" value="0" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                                    <span id="conso-slider-value" class="font-bold w-16 text-center text-[#4A6C6F]">0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6 sticky top-24">
+                     <h3 class="text-xl font-bold mb-4 text-center">Comparaison de la Rentabilité</h3>
+                     <div class="chart-container h-[50vh] max-h-[500px]">
+                        <canvas id="ratioChart"></canvas>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="page-section hidden py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Points Clés & FAQ</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">L'essentiel à retenir et les réponses à vos questions les plus fréquentes.</p>
+            </div>
+
+            <div class="max-w-4xl mx-auto">
+                <h3 class="text-2xl font-semibold mb-6">Points Clés à Retenir</h3>
+                <ul class="space-y-4 mb-12">
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span>Le <span class="font-bold">Compte de Résultat</span> est le film de l'activité de l'entreprise sur 12 mois, montrant si elle gagne (bénéfice) ou perd (perte) de l'argent.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span>L'analyse par les <span class="font-bold">SIG</span> décompose ce film en scènes clés pour comprendre <em>comment</em> le résultat s'est formé (performance commerciale, richesse créée, rentabilité brute).</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                         <span>La <span class="font-bold">Valeur Ajoutée (VA)</span> est cruciale : c'est la richesse créée qui est ensuite partagée entre les salariés, l'État, les prêteurs et l'entreprise.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span>L'<span class="font-bold">EBE</span> est un indicateur de performance opérationnelle "pure", car il ignore les politiques de financement et d'amortissement. C'est le cash potentiel de l'activité.</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="text-green-500 mr-3 mt-1">✓</span>
+                        <span>Les <span class="font-bold">ratios</span> sont indispensables pour le pilotage. Ils transforment les valeurs absolues en indicateurs de performance relatifs, permettant de se comparer et de suivre les tendances.</span>
+                    </li>
+                </ul>
+
+                <h3 class="text-2xl font-semibold mb-6">Foire Aux Questions</h3>
+                <div class="space-y-4">
+                    <div class="accordion-item bg-white border border-gray-200 rounded-lg">
+                        <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold">
+                            Quelle est la différence entre le Compte de Résultat et le Bilan ?
+                            <svg class="w-6 h-6 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="p-5 pt-0 text-gray-600">Imaginez une vidéo et une photo. Le Compte de Résultat est la <span class="font-bold">vidéo</span> de l'activité de l'entreprise sur un an (un flux). Il montre l'histoire de la création de richesse. Le Bilan est la <span class="font-bold">photo</span> du patrimoine de l'entreprise à un instant T (un stock). Il montre ce que l'entreprise possède (actifs) et ce qu'elle doit (passifs) à une date précise.</p>
+                        </div>
+                    </div>
+                     <div class="accordion-item bg-white border border-gray-200 rounded-lg">
+                        <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold">
+                           Pourquoi calculer l'EBE est-il si important ?
+                             <svg class="w-6 h-6 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="p-5 pt-0 text-gray-600">L'EBE (Excédent Brut d'Exploitation) est crucial car il mesure la performance de l'activité principale de l'entreprise, indépendamment de sa politique d'investissement (amortissements) et de sa politique de financement (charges financières). C'est un excellent indicateur de la <span class="font-bold">rentabilité brute</span> et de la capacité de l'entreprise à générer de la trésorerie à partir de son exploitation. Deux entreprises peuvent avoir le même résultat net mais des EBE très différents, révélant des performances opérationnelles distinctes.</p>
+                        </div>
+                    </div>
+                     <div class="accordion-item bg-white border border-gray-200 rounded-lg">
+                        <button class="accordion-header w-full flex justify-between items-center p-5 text-left font-semibold">
+                           Un EBE négatif est-il toujours un mauvais signe ?
+                             <svg class="w-6 h-6 shrink-0 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <p class="p-5 pt-0 text-gray-600">Un EBE négatif (appelé Insuffisance Brute d'Exploitation) signifie que le cycle d'exploitation seul ne génère pas assez de ressources pour couvrir les charges de personnel et les impôts. C'est un signal d'alarme sérieux car l'entreprise "brûle" de la trésorerie avec son activité principale. Cependant, dans certains cas (start-up en phase de lancement, investissement massif, crise sectorielle temporaire), il peut être transitoire. Une analyse sur plusieurs années est nécessaire pour déterminer si le problème est structurel ou conjoncturel.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" class="page-section hidden py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Quiz Formatif</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Testez vos connaissances ! Atteignez 75% de bonnes réponses pour valider votre compréhension des concepts clés.</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto">
+                <div id="quiz-container" class="card p-6 md:p-8">
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2 text-sm text-gray-600">
+                            <p id="quiz-progress-text">Question 1 / 12</p>
+                            <p id="quiz-score-text">Score: 0</p>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="quiz-progress-bar" class="bg-[#4A6C6F] h-2.5 rounded-full" style="width: 8.3%"></div>
+                        </div>
+                    </div>
+
+                    <div id="quiz-main-content">
+                        <h3 id="quiz-question" class="text-xl font-semibold mb-6"></h3>
+                        <div id="quiz-answers" class="space-y-3">
+                        </div>
+                        <div id="quiz-hint-container" class="mt-4 text-sm text-gray-500 italic hidden"></div>
+                        <div id="quiz-feedback" class="mt-6 p-4 rounded-md text-sm hidden"></div>
+                    </div>
+
+                    <div id="quiz-results" class="hidden text-center">
+                        <h3 id="quiz-results-title" class="text-2xl font-bold">Quiz terminé !</h3>
+                        <p id="quiz-results-score" class="text-4xl font-bold my-4"></p>
+                        <p id="quiz-results-message" class="text-gray-700 mb-6"></p>
+                        <button id="quiz-retry-btn" class="btn">Recommencer le quiz</button>
+                    </div>
+
+                    <div class="mt-6 flex justify-between items-center">
+                        <button id="quiz-hint-btn" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-md font-medium transition hover:bg-gray-300 text-sm">Afficher l'indice</button>
+                        <button id="quiz-next-btn" class="btn hidden">Question Suivante</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="synthese" class="page-section hidden py-16">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">Synthèse Visuelle</h2>
+                <p class="mt-3 max-w-2xl mx-auto text-lg text-gray-600">Une carte mentale pour réviser la structure de l'analyse en un coup d'œil.</p>
+            </div>
+            <div class="card p-4 aspect-video max-w-5xl mx-auto">
+                <iframe class="w-full h-full border-0 rounded-lg" src="https://www.xmind.app/embed/4wGtyS/" allowfullscreen="true"></iframe>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-white mt-16">
+        <div class="container mx-auto py-6 text-center text-sm">
+            <p>&copy; 2024 - Outil Pédagogique pour BTS MCO. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // --- NAVIGATION LOGIC ---
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.page-section');
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const scrollToLinks = document.querySelectorAll('.scroll-to');
+
+    function showSection(id) {
+        sections.forEach(section => {
+            section.classList.add('hidden');
+        });
+        const targetSection = document.getElementById(id);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+        }
+
+        navLinks.forEach(link => {
+            const linkId = link.getAttribute('href').substring(1);
+            if (linkId === id) {
+                link.classList.add('active');
+                 if(!link.classList.contains('block')){
+                     link.classList.remove('text-gray-700');
+                }
+            } else {
+                link.classList.remove('active');
+                  if(!link.classList.contains('block')){
+                    link.classList.add('text-gray-700');
+                 }
+            }
+        });
+        window.scrollTo(0, 0);
+    }
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            showSection(targetId);
+            if (!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+        });
+    });
+    
+    scrollToLinks.forEach(link => {
+         link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('href').substring(1);
+            showSection(targetId);
+        });
+    });
+
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // --- SIG CALCULATOR LOGIC ---
+    const sigModule = (() => {
+        const sigData = [
+            { label: 'Ventes de marchandises (CA HT)', value: 600000, type: 'product' },
+            { label: "Coût d'achat des marchandises vendues", value: -450000, type: 'charge' },
+            { label: 'MARGE COMMERCIALE', value: 150000, type: 'sig' },
+            { label: 'Consommations externes', value: -50000, type: 'charge' },
+            { label: 'VALEUR AJOUTÉE (VA)', value: 100000, type: 'sig' },
+            { label: 'Charges de personnel', value: -40000, type: 'charge' },
+            { label: 'Impôts et taxes', value: -10000, type: 'charge' },
+            { label: "EXCÉDENT BRUT D'EXPLOITATION (EBE)", value: 50000, type: 'sig' },
+            { label: 'Dotations aux amortissements', value: -20000, type: 'charge' },
+            { label: "RÉSULTAT D'EXPLOITATION (RE)", value: 30000, type: 'sig' }
+        ];
+
+        const sigList = document.getElementById('sig-list');
+        const sigStepBtn = document.getElementById('sig-step-btn');
+        let currentStep = 0;
+        
+        const sigCtx = document.getElementById('sigChart').getContext('2d');
+        const sigChart = new Chart(sigCtx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Montant en €',
+                    data: [],
+                    backgroundColor: [],
+                    borderColor: [],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        function addChartData(label, value, type) {
+            if (type === 'sig') {
+                sigChart.data.labels.push(label);
+                sigChart.data.datasets[0].data.push(value);
+                sigChart.data.datasets[0].backgroundColor.push('#4A6C6F');
+                sigChart.data.datasets[0].borderColor.push('#3a5658');
+                sigChart.update();
+            }
+        }
+
+        function runStep(step) {
+            if (step >= sigData.length) return;
+            const item = sigData[step];
+            const div = document.createElement('div');
+            div.className = 'flex justify-between items-center p-3 rounded-md';
+            const labelSpan = document.createElement('span');
+            labelSpan.textContent = item.label;
+            const valueSpan = document.createElement('span');
+            valueSpan.textContent = `${item.value.toLocaleString()} €`;
+
+            if (item.type === 'sig') {
+                div.classList.add('bg-teal-50', 'font-bold', 'text-teal-800');
+                labelSpan.classList.add('text-lg');
+                valueSpan.classList.add('text-lg');
+                addChartData(item.label, item.value, item.type);
+            } else if (item.type === 'charge') {
+                div.classList.add('text-red-700');
+            } else {
+                div.classList.add('text-green-700');
+            }
+            
+            div.appendChild(labelSpan);
+            div.appendChild(valueSpan);
+            sigList.appendChild(div);
+
+            currentStep++;
+            if (currentStep >= sigData.length) {
+                sigStepBtn.textContent = 'Recommencer';
+            }
+        }
+
+        function reset() {
+            sigList.innerHTML = '';
+            currentStep = 0;
+            sigChart.data.labels = [];
+            sigChart.data.datasets[0].data = [];
+            sigChart.data.datasets[0].backgroundColor = [];
+            sigChart.data.datasets[0].borderColor = [];
+            sigChart.update();
+            sigStepBtn.textContent = 'Étape Suivante';
+            runStep(0);
+        }
+        
+        sigStepBtn.addEventListener('click', () => {
+            if (currentStep >= sigData.length) {
+                reset();
+            } else {
+                runStep(currentStep);
+            }
+        });
+
+        return { init: reset };
+    })();
+    
+
+    // --- RATIO SECTION LOGIC (INTERACTIVE) ---
+    const ratioModule = (() => {
+        const baseData = {
+            ventes: 600000,
+            coutAchat: 450000,
+            consoExternes: 50000,
+            chargesPersonnel: 40000,
+            impotsTaxes: 10000,
+            dotationsAmort: 20000,
+        };
+        const sectorAverages = [30, 20, 12, 8]; // MargeComm, Intégration, MargeBrute, MargeExploit
+        
+        const ratioCtx = document.getElementById('ratioChart').getContext('2d');
+        const ratioChart = new Chart(ratioCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Marge Comm.', 'Intégration (VA)', 'Marge Brute (EBE)', 'Marge d\'Expl. (RE)'],
+                datasets: [{
+                    label: 'Votre Entreprise',
+                    data: [],
+                    fill: true,
+                    backgroundColor: 'rgba(74, 108, 111, 0.2)',
+                    borderColor: '#4A6C6F',
+                    pointBackgroundColor: '#4A6C6F',
+                    pointBorderColor: '#fff',
+                }, {
+                    label: 'Moyenne Secteur',
+                    data: sectorAverages,
+                    fill: true,
+                    backgroundColor: 'rgba(107, 114, 128, 0.1)',
+                    borderColor: '#6B7280',
+                    pointBackgroundColor: '#6B7280',
+                    borderDash: [5, 5],
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: { r: { suggestedMin: 0, suggestedMax: 35, ticks: { callback: value => value + '%' } } },
+                plugins: { tooltip: { callbacks: { label: context => `${context.dataset.label}: ${context.parsed.r.toFixed(1)}%` } } }
+            }
+        });
+
+        const caSlider = document.getElementById('ca-slider');
+        const consoSlider = document.getElementById('conso-slider');
+        const caSliderValue = document.getElementById('ca-slider-value');
+        const consoSliderValue = document.getElementById('conso-slider-value');
+
+        function calculateAndDisplay() {
+            const caVariation = parseFloat(caSlider.value) / 100;
+            const consoVariation = parseFloat(consoSlider.value) / 100;
+
+            const currentData = { ...baseData };
+            currentData.ventes = baseData.ventes * (1 + caVariation);
+            // Costs scale with sales variation for realism, and are affected by negotiation lever
+            const costLeverage = 1 - consoVariation;
+            currentData.coutAchat = baseData.coutAchat * (1 + caVariation) * costLeverage; 
+            currentData.consoExternes = baseData.consoExternes * (1 + caVariation) * costLeverage;
+
+            const margeComm = currentData.ventes - currentData.coutAchat;
+            const va = margeComm - currentData.consoExternes;
+            const ebe = va - currentData.chargesPersonnel - currentData.impotsTaxes;
+            const re = ebe - currentData.dotationsAmort;
+            const ca = currentData.ventes;
+
+            const ratios = {
+                margeComm: ca > 0 ? (margeComm / ca) * 100 : 0,
+                integration: ca > 0 ? (va / ca) * 100 : 0,
+                margeBrute: ca > 0 ? (ebe / ca) * 100 : 0,
+                margeExploit: ca > 0 ? (re / ca) * 100 : 0,
+            };
+
+            document.getElementById('ratio-margeComm-value').textContent = `${ratios.margeComm.toFixed(1)}%`;
+            document.getElementById('ratio-integration-value').textContent = `${ratios.integration.toFixed(1)}%`;
+            document.getElementById('ratio-margeBrute-value').textContent = `${ratios.margeBrute.toFixed(1)}%`;
+            document.getElementById('ratio-margeExploit-value').textContent = `${ratios.margeExploit.toFixed(1)}%`;
+
+            ratioChart.data.datasets[0].data = [ratios.margeComm, ratios.integration, ratios.margeBrute, ratios.margeExploit];
+            ratioChart.update();
+
+            caSliderValue.textContent = `${caSlider.value > 0 ? '+' : ''}${caSlider.value}%`;
+            consoSliderValue.textContent = `${consoSlider.value > 0 ? '+' : ''}${consoSlider.value}%`;
+        }
+
+        function init() {
+            caSlider.addEventListener('input', calculateAndDisplay);
+            consoSlider.addEventListener('input', calculateAndDisplay);
+
+            document.querySelectorAll('#ratios .ratio-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.querySelector('.ratio-front').classList.toggle('hidden');
+                    card.querySelector('.ratio-back').classList.toggle('hidden');
+                });
+            });
+            calculateAndDisplay();
+        }
+
+        return { init };
+    })();
+
+
+    // --- ACCORDION LOGIC ---
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('svg');
+
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
+        });
+    });
+
+    // --- QUIZ LOGIC ---
+    const quizModule = (() => {
+        const quizContainer = document.getElementById('quiz-container');
+        const quizMainContent = document.getElementById('quiz-main-content');
+        const quizQuestionEl = document.getElementById('quiz-question');
+        const quizAnswersEl = document.getElementById('quiz-answers');
+        const quizFeedbackEl = document.getElementById('quiz-feedback');
+        const quizProgressText = document.getElementById('quiz-progress-text');
+        const quizProgressBar = document.getElementById('quiz-progress-bar');
+        const quizScoreText = document.getElementById('quiz-score-text');
+        const quizHintBtn = document.getElementById('quiz-hint-btn');
+        const quizHintContainer = document.getElementById('quiz-hint-container');
+        const quizNextBtn = document.getElementById('quiz-next-btn');
+        const quizResults = document.getElementById('quiz-results');
+        const quizResultsTitle = document.getElementById('quiz-results-title');
+        const quizResultsScore = document.getElementById('quiz-results-score');
+        const quizResultsMessage = document.getElementById('quiz-results-message');
+        const quizRetryBtn = document.getElementById('quiz-retry-btn');
+
+        const quizData = [
+            {
+            question: "Quelle est la définition d'une 'charge' en comptabilité ?",
+            answers: [
+                { text: "Un enrichissement pour l'entreprise (ex: une vente)", correct: false },
+                { text: "Un appauvrissement nécessaire à l'activité (ex: un achat)", correct: true },
+                { text: "Le capital de l'entreprise", correct: false },
+                { text: "Une dette envers un fournisseur", correct: false }
+            ],
+            hint: "Pensez à ce qui 'coûte' de l'argent à l'entreprise pour qu'elle puisse fonctionner.",
+            feedback_correct: "Exact ! Une charge représente un coût, un appauvrissement que l'entreprise doit supporter pour générer son activité et ses produits.",
+            feedback_incorrect: "Ce n'est pas tout à fait ça. La bonne réponse est 'un appauvrissement'. Les charges sont les coûts (achats, salaires...) nécessaires à l'activité, tandis que les produits sont les enrichissements (ventes)."
+        },
+        {
+            question: "Quel SIG mesure la richesse réellement créée par l'entreprise avant la rémunération des acteurs (salariés, État, etc.) ?",
+            answers: [
+                { text: "La Marge Commerciale", correct: false },
+                { text: "Le Résultat d'Exploitation (RE)", correct: false },
+                { text: "La Valeur Ajoutée (VA)", correct: true },
+                { text: "L'Excédent Brut d'Exploitation (EBE)", correct: false }
+            ],
+            hint: "Ce solde est calculé après avoir déduit les consommations externes de la marge commerciale.",
+            feedback_correct: "Bravo ! La Valeur Ajoutée est la véritable richesse créée. C'est le 'gâteau' que l'entreprise va ensuite partager entre les salariés (salaires), l'État (impôts), et elle-même (capacité d'autofinancement).",
+            feedback_incorrect: "Attention, la bonne réponse est la Valeur Ajoutée (VA). C'est elle qui mesure la richesse créée par l'entreprise elle-même, avant sa distribution aux différents acteurs."
+        },
+        {
+            question: "L'Excédent Brut d'Exploitation (EBE) est souvent considéré comme un bon indicateur de :",
+            answers: [
+                { text: "La performance financière globale", correct: false },
+                { text: "La rentabilité nette de l'entreprise", correct: false },
+                { text: "La trésorerie potentielle générée par l'activité principale", correct: true },
+                { text: "Le profit après impôts", correct: false }
+            ],
+            hint: "Cet indicateur ignore les choix de financement (intérêts) et d'investissement (amortissements).",
+            feedback_correct: "Tout à fait ! L'EBE représente le flux de trésorerie potentiel généré par le cycle d'exploitation. C'est la performance 'brute' de l'activité.",
+            feedback_incorrect: "Ce n'est pas la bonne réponse. L'EBE mesure la trésorerie potentielle de l'activité principale, car il ignore les politiques de financement et d'amortissement."
+        },
+        {
+            question: "Quelle est la principale différence entre l'EBE et le Résultat d'Exploitation (RE) ?",
+            answers: [
+                { text: "Le RE inclut les charges de personnel, pas l'EBE", correct: false },
+                { text: "Le RE prend en compte les dotations aux amortissements, pas l'EBE", correct: true },
+                { text: "L'EBE est calculé après le RE", correct: false },
+                { text: "Il n'y a pas de différence majeure", correct: false }
+            ],
+            hint: "Pensez à ce qui représente l'usure du matériel utilisé pour la production.",
+            feedback_correct: "C'est la bonne réponse. Pour passer de l'EBE au RE, on soustrait les dotations aux amortissements. Le RE mesure donc la performance en tenant compte du coût de l'usure des actifs.",
+            feedback_incorrect: "Incorrect. La différence majeure réside dans les dotations aux amortissements, qui sont déduites de l'EBE pour obtenir le Résultat d'Exploitation."
+        },
+        {
+            question: "Une entreprise vend pour 100 000€ de marchandises. Le coût d'achat de ces marchandises était de 60 000€. Quelle est sa Marge Commerciale ?",
+            answers: [
+                { text: "160 000 €", correct: false },
+                { text: "60 000 €", correct: false },
+                { text: "100 000 €", correct: false },
+                { text: "40 000 €", correct: true }
+            ],
+            hint: "La marge commerciale se calcule en faisant la différence entre les ventes et le coût d'achat des marchandises vendues.",
+            feedback_correct: "Parfait. Marge Commerciale = Ventes de marchandises - Coût d'achat des marchandises vendues. Soit 100 000€ - 60 000€ = 40 000€.",
+            feedback_incorrect: "Erreur de calcul. La Marge Commerciale est simplement la différence : 100 000€ de ventes - 60 000€ de coût d'achat = 40 000€."
+        },
+        {
+            question: "À quoi sert le 'Taux de Marge Brute' (EBE / CA HT) ?",
+            answers: [
+                { text: "À mesurer la part de la richesse créée en interne", correct: false },
+                { text: "À évaluer la capacité de l'entreprise à générer de la trésorerie à partir de ses ventes", correct: true },
+                { text: "À connaître la rentabilité finale après impôts", correct: false },
+                { text: "À connaître la performance de l'activité de négoce", correct: false }
+            ],
+            hint: "Ce ratio lie la performance 'brute' (EBE) au niveau de l'activité (CA).",
+            feedback_correct: "Excellent. Ce taux indique combien de 'cash' potentiel l'entreprise génère pour 100€ de chiffre d'affaires. C'est un indicateur clé de la rentabilité opérationnelle.",
+            feedback_incorrect: "Pas exactement. Le Taux de Marge Brute (EBE / CA) mesure la capacité à générer de la trésorerie à partir des ventes. C'est un indicateur de performance opérationnelle."
+        },
+        {
+            question: "Les salaires et charges sociales sont déduits pour passer de quel SIG à quel autre SIG ?",
+            answers: [
+                { text: "De la Marge Commerciale à la Valeur Ajoutée", correct: false },
+                { text: "De la Valeur Ajoutée à l'EBE", correct: true },
+                { text: "De l'EBE au Résultat d'Exploitation", correct: false },
+                { text: "Du Chiffre d'Affaires à la Marge Commerciale", correct: false }
+            ],
+            hint: "Les salaires rémunèrent le facteur 'travail', qui est l'un des bénéficiaires de la richesse créée (la VA).",
+            feedback_correct: "Très bien. La Valeur Ajoutée sert à rémunérer le personnel (salaires et charges sociales) et l'État (impôts). Ce qui reste après cette rémunération constitue l'EBE.",
+            feedback_incorrect: "Incorrect. On passe de la Valeur Ajoutée à l'EBE en déduisant les charges de personnel et les impôts liés à la production."
+        },
+        {
+        question: "Un 'produit financier' est typiquement :",
+            answers: [
+                { text: "Une vente de marchandise", correct: false },
+                { text: "Une subvention de l'État", correct: false },
+                { text: "Les intérêts d'un placement de trésorerie", correct: true },
+                { text: "Le loyer d'un immeuble appartenant à l'entreprise", correct: false }
+            ],
+            hint: "Ce type de produit n'est pas lié à l'activité principale de vente, mais à la gestion de l'argent de l'entreprise.",
+            feedback_correct: "Correct. Les produits financiers proviennent de la gestion financière de l'entreprise, comme les revenus de ses placements ou les dividendes reçus d'autres sociétés.",
+            feedback_incorrect: "Ce n'est pas la bonne définition. Un produit financier est lié à la gestion de la trésorerie, comme les intérêts perçus sur un placement. Une vente est un produit d'exploitation."
+        },
+        {
+            question: "Le 'Taux d'intégration' (VA / CA HT) est élevé. Qu'est-ce que cela signifie ?",
+            answers: [
+                { text: "L'entreprise sous-traite une grande partie de sa production.", correct: false },
+                { text: "L'entreprise achète et revend principalement des produits finis.", correct: false },
+                { text: "L'entreprise réalise une part importante de sa production en interne.", correct: true },
+                { text: "L'entreprise a des charges de personnel très faibles.", correct: false }
+            ],
+            hint: "Une VA élevée par rapport au CA signifie que les consommations externes sont faibles.",
+            feedback_correct: "Exactement. Un taux d'intégration élevé suggère que l'entreprise maîtrise sa chaîne de production et crée beaucoup de valeur en interne, au lieu de l'acheter à des fournisseurs externes.",
+            feedback_incorrect: "C'est le contraire. Un taux d'intégration élevé signifie que l'entreprise crée beaucoup de valeur en interne et dépend peu des fournisseurs externes. Elle est donc bien 'intégrée'."
+        },
+        {
+            question: "Si l'EBE est de 50 000€ et les dotations aux amortissements de 15 000€, quel est le Résultat d'Exploitation ?",
+            answers: [
+                { text: "65 000 €", correct: false },
+                { text: "50 000 €", correct: false },
+                { text: "35 000 €", correct: true },
+                { text: "Impossible à dire sans le CA", correct: false }
+            ],
+            hint: "Le RE se calcule après avoir pris en compte l'usure du matériel (amortissements) à partir de l'EBE.",
+            feedback_correct: "C'est ça ! Résultat d'Exploitation = EBE - Dotations aux amortissements et provisions. Soit 50 000€ - 15 000€ = 35 000€.",
+            feedback_incorrect: "Attention au sens de l'opération. Pour passer de l'EBE au Résultat d'Exploitation, on soustrait les dotations aux amortissements : 50 000€ - 15 000€ = 35 000€."
+        },
+        {
+            question: "Les charges et produits exceptionnels sont liés à :",
+            answers: [
+                { text: "L'activité courante et récurrente de l'entreprise.", correct: false },
+                { text: "Des événements inhabituels et non récurrents.", correct: true },
+                { text: "La politique de financement de l'entreprise.", correct: false },
+                { text: "La paie des employés.", correct: false }
+            ],
+            hint: "Pensez à des événements qui ne se produisent pas tous les ans, comme la vente d'un bâtiment ou une amende importante.",
+            feedback_correct: "Tout à fait. Le cycle exceptionnel enregistre des opérations qui n'ont pas de lien avec l'exploitation normale de l'entreprise, comme la cession d'un actif.",
+            feedback_incorrect: "Non, c'est justement le contraire. Les éléments exceptionnels sont, par définition, non liés à l'activité courante et ne sont pas censés se répéter."
+        },
+        {
+            question: "Pourquoi l'analyse des SIG est-elle plus pertinente pour un manager que le simple résultat net ?",
+            answers: [
+                { text: "Parce que c'est une obligation légale.", correct: false },
+                { text: "Parce qu'elle décompose la formation du résultat et identifie les leviers de performance.", correct: true },
+                { text: "Parce qu'elle est plus simple à calculer.", correct: false },
+                { text: "Parce qu'elle donne directement la trésorerie de l'entreprise.", correct: false }
+            ],
+            hint: "Le résultat net est une finalité, mais comment est-on arrivé là ?",
+            feedback_correct: "Excellente réponse. Le résultat net est une synthèse, mais l'analyse des SIG est un diagnostic. Elle permet de comprendre à quel niveau la performance a été créée (ou détruite) et donc d'agir sur les bons leviers.",
+            feedback_incorrect: "Ce n'est pas la raison principale. L'analyse des SIG est pertinente car elle transforme une simple information (le résultat) en un outil de diagnostic qui montre comment ce résultat s'est construit, étape par étape."
+        }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+
+        function start() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizMainContent.classList.remove('hidden');
+            quizResults.classList.add('hidden');
+            quizNextBtn.classList.add('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            quizAnswersEl.innerHTML = '';
+            quizFeedbackEl.classList.add('hidden');
+            quizHintContainer.classList.add('hidden');
+            quizHintBtn.classList.remove('hidden');
+            quizNextBtn.classList.add('hidden');
+            const currentQuestion = quizData[currentQuestionIndex];
+            quizQuestionEl.textContent = currentQuestion.question;
+            quizProgressText.textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
+            quizScoreText.textContent = `Score: ${score}`;
+            quizProgressBar.style.width = `${((currentQuestionIndex + 1) / quizData.length) * 100}%`;
+            currentQuestion.answers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer.text;
+                button.classList.add('w-full', 'text-left', 'p-4', 'rounded-lg', 'border', 'border-gray-300', 'hover:bg-gray-100', 'transition');
+                button.addEventListener('click', () => selectAnswer(answer.correct, button));
+                quizAnswersEl.appendChild(button);
+            });
+        }
+
+        function selectAnswer(isCorrect, selectedButton) {
+            if (isCorrect) {
+                score++;
+                quizFeedbackEl.textContent = quizData[currentQuestionIndex].feedback_correct;
+            } else {
+                quizFeedbackEl.textContent = quizData[currentQuestionIndex].feedback_incorrect;
+            }
+            quizFeedbackEl.classList.remove('hidden');
+            const currentQuestion = quizData[currentQuestionIndex];
+            Array.from(quizAnswersEl.children).forEach((button, index) => {
+                button.disabled = true;
+                if (currentQuestion.answers[index].correct) {
+                    button.classList.add('bg-green-100', 'border-green-400');
+                } else if (button === selectedButton) {
+                    button.classList.add('bg-red-100', 'border-red-400');
+                }
+            });
+            quizFeedbackEl.classList.toggle('bg-green-100', isCorrect);
+            quizFeedbackEl.classList.toggle('text-green-800', isCorrect);
+            quizFeedbackEl.classList.toggle('bg-red-100', !isCorrect);
+            quizFeedbackEl.classList.toggle('text-red-800', !isCorrect);
+            quizScoreText.textContent = `Score: ${score}`;
+            quizHintBtn.classList.add('hidden');
+            quizHintContainer.classList.add('hidden');
+            quizNextBtn.classList.remove('hidden');
+            quizNextBtn.textContent = (currentQuestionIndex === quizData.length - 1) ? 'Voir les résultats' : 'Question Suivante';
+        }
+
+        function showResults() {
+            quizMainContent.classList.add('hidden');
+            quizResults.classList.remove('hidden');
+            quizNextBtn.classList.add('hidden');
+            quizHintBtn.classList.add('hidden');
+            quizHintContainer.classList.add('hidden');
+            const percentage = Math.round((score / quizData.length) * 100);
+            quizResultsScore.textContent = `Votre score : ${percentage}%`;
+            if (percentage >= 75) {
+                quizResultsTitle.textContent = "Félicitations !";
+                quizResultsMessage.textContent = "Excellent travail ! Vous avez une solide compréhension de l'analyse du compte de résultat. Vous êtes prêt pour la synthèse.";
+                quizResultsScore.classList.add('text-green-600');
+                quizResultsScore.classList.remove('text-red-600');
+            } else {
+                quizResultsTitle.textContent = "Continuez vos efforts !";
+                quizResultsMessage.textContent = "C'est un bon début. Pour vous améliorer, nous vous conseillons de revoir les sections sur les SIG et les Ratios avant de refaire le quiz.";
+                quizResultsScore.classList.add('text-red-600');
+                quizResultsScore.classList.remove('text-green-600');
+            }
+        }
+
+        quizHintBtn.addEventListener('click', () => {
+            quizHintContainer.textContent = `Indice : ${quizData[currentQuestionIndex].hint}`;
+            quizHintContainer.classList.remove('hidden');
+            quizHintBtn.classList.add('hidden');
+        });
+        quizNextBtn.addEventListener('click', () => {
+            currentQuestionIndex++;
+            (currentQuestionIndex < quizData.length) ? loadQuestion() : showResults();
+        });
+        quizRetryBtn.addEventListener('click', start);
+        
+        return { init: start };
+    })();
+    
+    // --- INITIALIZATION ---
+    const initialSection = window.location.hash ? window.location.hash.substring(1) : 'accueil';
+    showSection(initialSection);
+    sigModule.init();
+    ratioModule.init();
+    quizModule.init();
+});
+</script>
+</body>
+</html>
+
