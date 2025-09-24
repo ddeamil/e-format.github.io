@@ -122,21 +122,34 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div class="flex h-screen">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-gray-800 text-white p-6 flex flex-col shrink-0">
+    <div>
+        <!-- Sidebar for mobile (hidden by default) and desktop (visible) -->
+        <aside id="sidebar" class="fixed inset-y-0 left-0 bg-gray-800 text-white p-6 flex flex-col shrink-0 w-64 md:w-64 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out z-40">
             <h1 class="text-2xl font-bold mb-8">Analyse Financière</h1>
             <nav id="navigation" class="flex flex-col space-y-2">
-                <!-- Navigation links -->
+                <!-- Navigation links will be inserted here by JS -->
             </nav>
         </aside>
 
-        <!-- Main content -->
-        <main class="flex-1 p-8 overflow-y-auto">
-            <div id="module-container" class="bg-white p-8 rounded-lg shadow-lg module-content">
-                <!-- Module content -->
-            </div>
-        </main>
+        <!-- Overlay for mobile menu -->
+        <div id="overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+
+        <div class="md:ml-64">
+             <!-- Mobile Header -->
+            <header class="md:hidden bg-gray-800 text-white p-4 flex items-center shadow-md">
+                <button id="open-menu-btn" class="mr-4 p-2 rounded-md hover:bg-gray-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M3 18v-2h18v2H3Zm0-5v-2h18v2H3Zm0-5V6h18v2H3Z"/></svg>
+                </button>
+                <h1 class="text-xl font-semibold">Analyse Financière</h1>
+            </header>
+
+            <!-- Main content -->
+            <main class="flex-1 p-4 md:p-8 overflow-y-auto">
+                <div id="module-container" class="bg-white p-6 md:p-8 rounded-lg shadow-lg module-content">
+                    <!-- Module content will be inserted here by JS -->
+                </div>
+            </main>
+        </div>
     </div>
 
     <!-- Modal -->
@@ -173,36 +186,14 @@
                     </iframe>
                 </div>
             `,
-            intro: `<h2>Pourquoi l'Équilibre Financier est le Nerf de la Guerre ?</h2>...`, // Content kept short for brevity
-            bilan_comptable: `<h2>Le Bilan Comptable : Photographie du Patrimoine</h2>...`,
-            ratios: `<h2>Les Ratios Clés : Premiers Indicateurs de Performance</h2>...`,
-            bilan_fonctionnel: `<h2>Le Bilan Fonctionnel : Vision Économique des Cycles</h2>...`,
-            agregats: `<h2>FRNG, BFR et Trésorerie Nette : Les Piliers de l'Équilibre</h2>...`,
-            simulateur: `<h2>Simulateur d'Équilibre Financier</h2>...`,
-            ressources: `<h2>Glossaire & FAQ</h2>...`,
-            quiz: `
-                <h2>Quiz d'Évaluation</h2>
-                <p>Testez vos connaissances et validez votre compréhension des concepts clés. Vous devez obtenir au moins 75% de bonnes réponses pour réussir.</p>
-                <div id="quiz-container" class="mt-6"></div>
-            `,
-            synthese: `
-                <h2>Synthèse - Carte Mentale</h2>
-                <p>Cette carte mentale interactive résume les points essentiels de l'analyse de l'équilibre financier. Naviguez à travers les différentes branches pour réviser les définitions, les formules et les liens entre les concepts.</p>
-                <div class="w-full h-[750px] border border-gray-200 rounded-lg overflow-hidden mt-6 shadow-lg">
-                    <iframe class="w-full h-full" src='https://www.xmind.app/embed/pDBNbt/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
-                </div>
-            `
-        }
-    };
-    // Fill in the rest of the content for brevity
-    courseData.content.intro = `
+            intro: `
                 <h2>Pourquoi l'Équilibre Financier est le Nerf de la Guerre ?</h2>
                 <p>La gestion d'une unité commerciale est complexe. Le succès commercial ne garantit pas toujours la pérennité. Une mauvaise gestion financière, une trésorerie mal maîtrisée ou des investissements mal calibrés sont souvent à l'origine de difficultés qui peuvent s'avérer fatales.</p>
                 <p>Pour un manager, comprendre les mécanismes de l'équilibre financier est une nécessité stratégique. Chaque décision opérationnelle a une répercussion directe sur la santé financière de l'entreprise.</p>
                 <h3>Approche Pédagogique : Du "Quoi" au "Pourquoi"</h3>
                 <p>Ce parcours vous guidera pas à pas, du "Quoi" (Que possède l'entreprise ?) au "Comment" (Comment finance-t-elle son activité ?) et enfin au "Pourquoi" (Pourquoi sa situation est-elle saine ou précaire ?). En utilisant le cas de l'entreprise "Bel" comme fil rouge, vous apprendrez à transformer des chiffres bruts en décisions de gestion éclairées.</p>
-            `;
-    courseData.content.bilan_comptable = `
+            `,
+            bilan_comptable: `
                 <h2>Le Bilan Comptable : Photographie du Patrimoine</h2>
                 <p>Le bilan comptable est le point de départ de toute analyse. Il répond à une question simple : <strong>"À date, que possède l'entreprise (Actif) et comment l'a-t-elle financé (Passif) ?"</strong>. C'est une vision légale et statique, une photographie du patrimoine à un instant T.</p>
                 <h3>Schéma Interactif du Bilan de "Bel"</h3>
@@ -228,8 +219,8 @@
                 <div class="transition-box">
                     <p><strong>Transition :</strong> Cette vue "photographique" est essentielle, mais elle ne nous dit pas si l'entreprise est performante ou si sa structure est saine. Pour cela, nous devons faire parler les chiffres en les comparant. C'est le rôle des ratios, que nous allons explorer dans le prochain module.</p>
                 </div>
-            `;
-     courseData.content.ratios = `
+            `,
+            ratios: `
                 <h2>Les Ratios Clés : Premiers Indicateurs de Performance</h2>
                 <p>Les ratios transforment les données brutes du bilan en indicateurs de gestion pertinents. Ils permettent de répondre à des questions managériales précises et de réaliser un premier diagnostic rapide.</p>
                 <h3>Calculateur de Ratios Interactif</h3>
@@ -280,8 +271,8 @@
                  <div class="transition-box">
                     <p><strong>Transition :</strong> Les ratios sont d'excellents "flashs" d'information. Cependant, pour comprendre la <strong>dynamique</strong> de l'entreprise et comment elle génère (ou consomme) de la trésorerie au quotidien, nous devons changer de perspective. Il faut passer d'une vision comptable à une vision économique : c'est le rôle du bilan fonctionnel.</p>
                 </div>
-            `;
-    courseData.content.bilan_fonctionnel = `
+            `,
+            bilan_fonctionnel: `
                 <h2>Le Bilan Fonctionnel : Vision Économique des Cycles</h2>
                 <p>L'objectif du bilan fonctionnel est de répondre à la question : <strong>"Comment l'entreprise finance-t-elle ses investissements et son cycle d'exploitation ?"</strong>. Pour cela, on réorganise le bilan non plus par nature juridique (comptable) mais par fonction économique, ou <strong>cycle</strong> :</p>
                 <ul>
@@ -308,8 +299,8 @@
                 <div class="transition-box">
                     <p><strong>Transition :</strong> Maintenant que le bilan est organisé par cycles, nous pouvons calculer les 3 indicateurs les plus importants de l'analyse financière : le FRNG, le BFR et la Trésorerie. Ce sont les piliers qui expliquent la santé financière de l'entreprise.</p>
                 </div>
-            `;
-     courseData.content.agregats = `
+            `,
+            agregats: `
                 <h2>FRNG, BFR et Trésorerie Nette : Les Piliers de l'Équilibre</h2>
                 <p>Ces trois indicateurs (ou agrégats) sont la finalité de l'analyse fonctionnelle. Ils sont liés par une relation fondamentale que tout manager doit maîtriser : <strong>Trésorerie = FRNG - BFR</strong>.</p>
                 <div class="space-y-4">
@@ -335,8 +326,8 @@
                  <div class="transition-box">
                     <p><strong>Transition :</strong> Vous avez maintenant compris la théorie et le cas de l'entreprise Bel. Le dernier module vous permet de prendre les commandes et de devenir le manager : manipulez vous-même ces agrégats pour voir leur impact en temps réel grâce à notre simulateur.</p>
                 </div>
-            `;
-    courseData.content.simulateur = `
+            `,
+            simulateur: `
                 <h2>Simulateur d'Équilibre Financier</h2>
                 <p>Vous êtes maintenant le Directeur Financier. Manipulez les curseurs du FRNG et du BFR pour visualiser leur impact direct sur la trésorerie. L'équation <strong>TN = FRNG - BFR</strong> est le véritable tableau de bord du manager.</p>
                 
@@ -392,8 +383,8 @@
                         <p id="diagnostic_text"></p>
                     </div>
                 </div>
-            `;
-    courseData.content.ressources = `
+            `,
+            ressources: `
                 <h2>Glossaire & FAQ</h2>
                 <p>Retrouvez ici les définitions des termes clés et les réponses aux questions les plus fréquentes pour approfondir votre compréhension.</p>
                 
@@ -436,7 +427,21 @@
                         <p class="mt-2 text-sm text-gray-700">Pour un diagnostic rapide, regardez deux choses : <strong>1. Le niveau des capitaux propres :</strong> sont-ils positifs et significatifs ? C'est le signe de la solidité de base. <strong>2. La trésorerie nette (Disponibilités) :</strong> est-elle positive ? Une trésorerie négative est un signal d'alarme immédiat. Ensuite, l'analyse du FRNG et du BFR permet de comprendre le "pourquoi" de cette situation.</p>
                     </details>
                 </div>
-            `;
+            `,
+            quiz: `
+                <h2>Quiz d'Évaluation</h2>
+                <p>Testez vos connaissances et validez votre compréhension des concepts clés. Vous devez obtenir au moins 75% de bonnes réponses pour réussir.</p>
+                <div id="quiz-container" class="mt-6"></div>
+            `,
+            synthese: `
+                <h2>Synthèse - Carte Mentale</h2>
+                <p>Cette carte mentale interactive résume les points essentiels de l'analyse de l'équilibre financier. Naviguez à travers les différentes branches pour réviser les définitions, les formules et les liens entre les concepts.</p>
+                <div class="w-full h-[750px] border border-gray-200 rounded-lg overflow-hidden mt-6 shadow-lg">
+                    <iframe class="w-full h-full" src='https://www.xmind.app/embed/pDBNbt/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                </div>
+            `
+        }
+    };
             
     const quizData = [
         {
@@ -631,8 +636,52 @@
         modal.classList.add('hidden');
     }
 
-    function calculateIndependance() { /* ... function code ... */ }
-    function calculateRotationStock() { /* ... function code ... */ }
+    function calculateIndependance() { 
+        const dettes = parseFloat(document.getElementById('dettes_fin').value) || 0;
+        const capitaux = parseFloat(document.getElementById('capitaux').value) || 1; // Use 1 to prevent division by zero
+        const result = (dettes / capitaux);
+        const resultSpan = document.getElementById('result_independance');
+        const interpP = document.getElementById('interp_independance');
+
+        if (resultSpan) resultSpan.textContent = result.toFixed(2);
+        
+        if (interpP) {
+            if (result < 1) {
+                interpP.textContent = "Situation saine. Les capitaux propres sont supérieurs aux dettes financières.";
+                interpP.className = "text-sm mt-1 text-green-600";
+            } else if (result >= 1 && result <= 1.5) {
+                 interpP.textContent = "Zone de vigilance. L'endettement est significatif.";
+                interpP.className = "text-sm mt-1 text-yellow-600";
+            } else {
+                interpP.textContent = "Risque élevé. Les banques 'possèdent' une plus grande partie de l'entreprise que les actionnaires.";
+                interpP.className = "text-sm mt-1 text-red-600";
+            }
+        }
+    }
+
+    function calculateRotationStock() { 
+        const stock = parseFloat(document.getElementById('stock_moyen').value) || 0;
+        const achats = parseFloat(document.getElementById('achats_ht').value) || 1; // Use 1 to prevent division by zero
+        const result = ((stock / achats) * 360);
+        const resultSpan = document.getElementById('result_stock');
+        const interpP = document.getElementById('interp_stock');
+
+        if (resultSpan) resultSpan.textContent = `${result.toFixed(1)} jours`;
+        
+        if (interpP) {
+            if (result < 45) {
+                interpP.textContent = "Rotation rapide. Les stocks sont bien gérés et l'argent est rapidement converti en ventes.";
+                interpP.className = "text-sm mt-1 text-green-600";
+            } else if (result >= 45 && result <= 90) {
+                interpP.textContent = "Rotation correcte, mais pourrait être optimisée. Surveiller les stocks à faible rotation.";
+                interpP.className = "text-sm mt-1 text-yellow-600";
+            } else {
+                interpP.textContent = "Attention, rotation lente. Risque d'invendus, de dépréciation et d'immobilisation excessive de trésorerie.";
+                interpP.className = "text-sm mt-1 text-red-600";
+            }
+        }
+    }
+
     function initSimulator() { /* ... function code ... */ }
     function updateSimulator() { /* ... function code ... */ }
 
@@ -771,11 +820,31 @@
     
     // --- Initial Load ---
     document.addEventListener('DOMContentLoaded', () => {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
+        const openMenuBtn = document.getElementById('open-menu-btn');
+        const navigationLinks = document.getElementById('navigation');
+
+        function toggleMenu() {
+            sidebar.classList.toggle('-translate-x-full');
+            overlay.classList.toggle('hidden');
+        }
+
+        openMenuBtn.addEventListener('click', toggleMenu);
+        overlay.addEventListener('click', toggleMenu);
+        
+        // Close menu when a nav link is clicked on mobile
+        navigationLinks.addEventListener('click', (e) => {
+            if (e.target.tagName === 'A' && window.innerWidth < 768) {
+                toggleMenu();
+            }
+        });
+        
         setActiveModule(courseData.modules[0].id);
         
         // --- Dummy function fills for brevity ---
-        calculateIndependance = () => { if(document.getElementById('result_independance')) document.getElementById('result_independance').textContent = '0.91'; if(document.getElementById('interp_independance')) {document.getElementById('interp_independance').textContent = "Situation saine."; document.getElementById('interp_independance').className = "text-sm mt-1 text-green-600"} };
-        calculateRotationStock = () => { if(document.getElementById('result_stock')) document.getElementById('result_stock').textContent = '39.1 jours'; if(document.getElementById('interp_stock')) {document.getElementById('interp_stock').textContent = "Rotation rapide."; document.getElementById('interp_stock').className = "text-sm mt-1 text-green-600"}};
+        // calculateIndependance = () => { if(document.getElementById('result_independance')) document.getElementById('result_independance').textContent = '0.91'; if(document.getElementById('interp_independance')) {document.getElementById('interp_independance').textContent = "Situation saine."; document.getElementById('interp_independance').className = "text-sm mt-1 text-green-600"} };
+        // calculateRotationStock = () => { if(document.getElementById('result_stock')) document.getElementById('result_stock').textContent = '39.1 jours'; if(document.getElementById('interp_stock')) {document.getElementById('interp_stock').textContent = "Rotation rapide."; document.getElementById('interp_stock').className = "text-sm mt-1 text-green-600"}};
         initSimulator = () => { if(document.getElementById('frng_slider')) { document.getElementById('frng_slider').addEventListener('input', updateSimulator); document.getElementById('bfr_slider').addEventListener('input', updateSimulator); updateSimulator();}};
         updateSimulator = () => { if(document.getElementById('frng_value')) {
              const frng = parseInt(document.getElementById('frng_slider').value);
@@ -816,4 +885,5 @@
 
 </body>
 </html>
+
 
