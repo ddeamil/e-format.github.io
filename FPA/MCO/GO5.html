@@ -1,3 +1,5 @@
+--- START OF FILE 10.html ---
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -11,12 +13,18 @@
             font-family: 'Inter', sans-serif;
         }
         .module-content h2 {
-            font-size: 1.75rem;
+            /* MODIFICATION 1: Taille de police responsive pour les titres */
+            font-size: 1.5rem; /* Taille par défaut pour mobile (équivalent à text-xl) */
             font-weight: 600;
             margin-bottom: 1.5rem;
             color: #1a202c;
             border-bottom: 3px solid #14b8a6; /* Accent color */
             padding-bottom: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            .module-content h2 {
+                font-size: 1.75rem; /* Taille originale pour les écrans md et plus (équivalent à text-2xl) */
+            }
         }
         .module-content h3 {
             font-size: 1.25rem;
@@ -51,12 +59,7 @@
             background-color: #eff6ff;
             cursor: pointer;
         }
-        .slider-container {
-            display: grid;
-            grid-template-columns: 1fr 3fr 1fr;
-            align-items: center;
-            gap: 1rem;
-        }
+        /* MODIFICATION 2: Règle CSS du slider-container supprimée. La logique est maintenant gérée par les classes Tailwind. */
         .transition-box {
             background-color: #e6f4ea;
             border-left: 4px solid #38a169;
@@ -334,15 +337,16 @@
                 <!-- Sliders -->
                 <div class="bg-gray-50 p-6 rounded-lg shadow mt-6">
                     <div class="space-y-6">
-                        <div class="slider-container">
-                            <label for="frng_slider" class="font-medium">FRNG (€)</label>
+                        <!-- MODIFICATION 3: La classe 'slider-container' est remplacée par des classes Tailwind responsives -->
+                        <div class="flex flex-col md:grid md:grid-cols-[1fr_3fr_1fr] items-center gap-2 md:gap-4">
+                            <label for="frng_slider" class="font-medium w-full md:w-auto">FRNG (€)</label>
                             <input type="range" id="frng_slider" min="-50000" max="100000" value="38300" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                            <span id="frng_value" class="font-mono text-center p-2 bg-white border rounded">38300</span>
+                            <span id="frng_value" class="font-mono text-center p-2 bg-white border rounded w-full md:w-auto">38300</span>
                         </div>
-                        <div class="slider-container">
-                            <label for="bfr_slider" class="font-medium">BFR (€)</label>
+                        <div class="flex flex-col md:grid md:grid-cols-[1fr_3fr_1fr] items-center gap-2 md:gap-4">
+                            <label for="bfr_slider" class="font-medium w-full md:w-auto">BFR (€)</label>
                             <input type="range" id="bfr_slider" min="-50000" max="100000" value="23500" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
-                            <span id="bfr_value" class="font-mono text-center p-2 bg-white border rounded">23500</span>
+                            <span id="bfr_value" class="font-mono text-center p-2 bg-white border rounded w-full md:w-auto">23500</span>
                         </div>
                     </div>
                 </div>
@@ -436,7 +440,8 @@
             synthese: `
                 <h2>Synthèse - Carte Mentale</h2>
                 <p>Cette carte mentale interactive résume les points essentiels de l'analyse de l'équilibre financier. Naviguez à travers les différentes branches pour réviser les définitions, les formules et les liens entre les concepts.</p>
-                <div class="w-full h-[750px] border border-gray-200 rounded-lg overflow-hidden mt-6 shadow-lg">
+                <!-- MODIFICATION 4: Hauteur fixe remplacée par des classes d'aspect-ratio responsives -->
+                <div class="w-full aspect-[4/3] md:aspect-video max-h-[750px] border border-gray-200 rounded-lg overflow-hidden mt-6 shadow-lg">
                     <iframe class="w-full h-full" src='https://www.xmind.app/embed/pDBNbt/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
                 </div>
             `
@@ -885,5 +890,3 @@
 
 </body>
 </html>
-
-
