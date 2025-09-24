@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analyse des Coûts - Guide Interactif BTS MCO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: The application is structured into thematic sections accessible via a sticky navigation bar for a clear, user-guided experience. This non-linear structure allows students to either follow a logical progression from foundational concepts to advanced indicators or jump directly to a specific topic. The core of the app is a highly interactive "Seuil de Rentabilité" dashboard. This design was chosen to transform passive reading of complex formulas into an active learning process. By allowing users to manipulate variables and see real-time graphical and numerical results, it fosters a deeper, intuitive understanding of the relationships between costs, volume, and profit, which is more effective for learning than static text and tables. A formative quiz is added before the final synthesis to ensure active learning and knowledge retention. -->
+    <!-- Visualization & Content Choices: Report Info: Cost classification. -> Goal: Inform/Clarify. -> Presentation: Toggleable cards. -> Interaction: Click to reveal definitions. -> Justification: Breaks down dense info into digestible chunks. | Report Info: Full costing process. -> Goal: Explain a sequence. -> Presentation: A CSS-based visual flowchart. -> Interaction: Hover effects for emphasis. -> Justification: Visually represents the flow of costs which is easier to follow than a list. | Report Info: Break-even calculation. -> Goal: Demonstrate relationships/Allow exploration. -> Presentation: Interactive calculator with input sliders/fields and a dynamic line chart. -> Interaction: User changes inputs (price, costs) and sees immediate updates on the chart and calculated indicators. -> Justification: This is the most effective way to teach cause-and-effect in financial modeling. Library: Chart.js (Canvas). | Report Info: Knowledge Check -> Goal: Active learning/Self-assessment -> Presentation: Interactive Quiz with progress bar -> Interaction: User answers MCQs, gets immediate, constructive feedback. -> Justification: Solidifies understanding through active recall and provides a clear measure of comprehension before the final summary. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa; 
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-link.active {
+            color: #1d4ed8;
+            border-bottom-color: #1d4ed8;
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+        .process-step {
+            border-color: #60a5fa;
+            position: relative;
+        }
+        .process-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -24px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #60a5fa;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        .quiz-option {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-option:not(:disabled):hover {
+            background-color: #dbeafe; /* blue-100 */
+            border-color: #60a5fa; /* blue-400 */
+        }
+        .quiz-option.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e; /* green-500 */
+        }
+         .quiz-option.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+        }
+        @media (max-width: 768px) {
+            .process-step:not(:last-child)::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold text-blue-800">Analyse des Coûts : BTS MCO</h1>
+            <nav class="hidden md:flex space-x-4">
+                <a data-target="video" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Vidéo</a>
+                <a data-target="concepts" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Concepts</a>
+                <a data-target="couts-complets" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Coûts Complets</a>
+                <a data-target="couts-partiels" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Coûts Partiels</a>
+                <a data-target="rentabilite" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Rentabilité</a>
+                <a data-target="quiz" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Quiz</a>
+                <a data-target="synthese" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">Synthèse</a>
+                <a data-target="faq" class="nav-link py-2 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-600">FAQ</a>
+            </nav>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="block w-full bg-white border border-gray-300 rounded-md shadow-sm p-2">
+                    <option value="video">Vidéo</option>
+                    <option value="concepts">Concepts Clés</option>
+                    <option value="couts-complets">Coûts Complets</option>
+                    <option value="couts-partiels">Coûts Partiels</option>
+                    <option value="rentabilite">Seuil de Rentabilité</option>
+                    <option value="quiz">Quiz Formatif</option>
+                    <option value="synthese">Synthèse</option>
+                    <option value="faq">FAQ</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-8">
+
+        <section id="video" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-2 text-gray-700">Introduction Vidéo</h2>
+            <p class="mb-6 text-lg text-gray-600">Pour bien commencer, cette vidéo présente les concepts fondamentaux de l'analyse des coûts, leur importance en gestion et leur application dans le cadre du BTS MCO.</p>
+            <div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+             padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+             border-radius: 8px; will-change: transform;">
+              <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+                src="https://www.canva.com/design/DAGzKgqVKt8/THi7hLYCdHbkZhkRMgosMw/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+              </iframe>
+            </div>
+        </section>
+
+        <section id="concepts" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-2 text-gray-700">1. Concepts Fondamentaux</h2>
+            <p class="mb-6 text-lg text-gray-600">L'analyse des coûts est un outil de gestion essentiel qui transforme les données de la comptabilité générale (les charges) en informations utiles pour la prise de décision (les coûts). Cette section explore les classifications de base nécessaires à toute analyse.</p>
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-3 text-blue-700">Charges Directes vs. Indirectes</h3>
+                    <p class="mb-4">Cette distinction est cruciale pour la méthode des coûts complets. Elle détermine comment une charge est attribuée à un produit ou service spécifique.</p>
+                    <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold">Charges Directes :</span>
+                            <p class="text-gray-600">Affectées sans ambiguïté et sans calcul intermédiaire à un seul coût. Exemples : matières premières pour un produit, main-d'œuvre directe passée sur une commande.</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold">Charges Indirectes :</span>
+                            <p class="text-gray-600">Concernent plusieurs produits ou services et nécessitent un calcul de répartition pour être allouées. Exemples : loyer de l'usine, salaire du personnel administratif, amortissement des machines.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h3 class="text-xl font-bold mb-3 text-blue-700">Charges Fixes vs. Variables</h3>
+                    <p class="mb-4">Cette classification est la base de l'analyse des coûts partiels et du calcul du seuil de rentabilité. Elle se concentre sur le comportement des charges par rapport au volume d'activité.</p>
+                     <div class="space-y-3">
+                        <div>
+                            <span class="font-semibold">Charges Variables (ou Coûts Opérationnels) :</span>
+                            <p class="text-gray-600">Évoluent proportionnellement à l'activité de l'entreprise. Si la production double, ces charges doublent aussi. Exemples : coût d'achat des marchandises vendues, commissions des vendeurs.</p>
+                        </div>
+                        <div>
+                            <span class="font-semibold">Charges Fixes (ou Coûts de Structure) :</span>
+                            <p class="text-gray-600">Restent stables quel que soit le niveau d'activité, du moins à court terme. Exemples : loyers, assurances, salaires administratifs, abonnements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="couts-complets" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-2 text-gray-700">2. La Méthode des Coûts Complets</h2>
+            <p class="mb-8 text-lg text-gray-600">Cette méthode vise à calculer un coût de revient complet en incorporant toutes les charges, directes et indirectes, au coût des produits. Elle permet de déterminer la rentabilité de chaque produit et de fixer les prix de vente. Le processus suit une logique d'accumulation des coûts à chaque étape de la vie du produit.</p>
+            <div class="flex flex-col md:flex-row justify-around items-center space-y-8 md:space-y-0 md:space-x-8">
+                <div class="card p-6 text-center w-full md:w-1/4 process-step border-t-4">
+                    <h4 class="text-lg font-bold text-blue-700">Étape 1</h4>
+                    <p class="font-semibold text-xl">Coût d'acquisition</p>
+                    <p class="text-sm text-gray-500 mt-2">Prix d'achat + Frais d'approvisionnement (transport, charges directes et indirectes d'achat).</p>
+                </div>
+                <div class="card p-6 text-center w-full md:w-1/4 process-step border-t-4">
+                    <h4 class="text-lg font-bold text-blue-700">Étape 2</h4>
+                    <p class="font-semibold text-xl">Coût de production</p>
+                    <p class="text-sm text-gray-500 mt-2">Coût d'acquisition des matières consommées + Charges de production (main d'œuvre, amortissements).</p>
+                </div>
+                <div class="card p-6 text-center w-full md:w-1/4 process-step border-t-4">
+                    <h4 class="text-lg font-bold text-blue-700">Étape 3</h4>
+                    <p class="font-semibold text-xl">Coût de revient</p>
+                    <p class="text-sm text-gray-500 mt-2">Coût de production des produits vendus + Charges de distribution (marketing, transport) + Charges administratives.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="couts-partiels" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-2 text-gray-700">3. La Méthode des Coûts Partiels</h2>
+            <p class="mb-6 text-lg text-gray-600">Contrairement aux coûts complets, cette approche ne prend en compte qu'une partie des charges. L'analyse la plus courante est celle qui distingue les coûts fixes et les coûts variables. Elle est essentielle pour calculer la marge sur coût variable et déterminer le seuil de rentabilité.</p>
+            <div class="card p-6">
+                <h3 class="text-xl font-bold mb-3 text-blue-700">Détermination du Résultat par Variabilité</h3>
+                <p class="mb-4">Ce calcul, aussi appelé "compte de résultat différentiel", met en évidence la contribution de chaque vente à la couverture des coûts fixes.</p>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <tbody>
+                            <tr class="border-b">
+                                <td class="py-2 pr-4 font-semibold">Chiffre d'affaires (CA)</td>
+                                <td class="py-2 text-right">Montant des ventes</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 pr-4 font-semibold text-red-600">- Coûts Variables (CV)</td>
+                                <td class="py-2 text-right">Coûts proportionnels à l'activité</td>
+                            </tr>
+                            <tr class="border-b bg-blue-50">
+                                <td class="py-3 pr-4 font-bold">= Marge sur Coûts Variables (MCV)</td>
+                                <td class="py-3 text-right font-bold">CA - CV</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="py-2 pr-4 font-semibold text-red-600">- Coûts Fixes (CF)</td>
+                                <td class="py-2 text-right">Coûts de structure</td>
+                            </tr>
+                            <tr class="bg-gray-100">
+                                <td class="py-3 pr-4 font-bold">= Résultat</td>
+                                <td class="py-3 text-right font-bold">MCV - CF</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-4 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-r-lg">
+                    <span class="font-bold">La Marge sur Coûts Variables (MCV)</span> est un indicateur clé. Elle représente ce qu'il reste du chiffre d'affaires après avoir payé les coûts variables. Cette marge doit être suffisante pour couvrir tous les coûts fixes et ensuite générer un bénéfice.
+                </p>
+            </div>
+        </section>
+
+        <section id="rentabilite" class="pt-16 -mt-16 mb-12">
+             <h2 class="text-3xl font-bold mb-2 text-gray-700">4. Calculateur de Seuil de Rentabilité (SR)</h2>
+            <p class="mb-6 text-lg text-gray-600">Le seuil de rentabilité est le niveau de chiffre d'affaires pour lequel l'entreprise ne réalise ni perte, ni bénéfice (Résultat = 0). C'est le point où la marge sur coûts variables couvre exactement les coûts fixes. Utilisez cet outil interactif pour explorer comment les différentes variables impactent la rentabilité.</p>
+
+            <div class="card p-6 md:p-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <h3 class="text-2xl font-bold text-blue-700">Paramètres de simulation</h3>
+                        <div>
+                            <label for="prixVente" class="block text-sm font-medium text-gray-700">Prix de Vente Unitaire (€)</label>
+                            <input type="range" id="prixVente" min="1" max="500" value="100" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-right font-semibold text-blue-600"><span id="prixVenteVal">100</span> €</div>
+                        </div>
+                        <div>
+                            <label for="coutVariable" class="block text-sm font-medium text-gray-700">Coût Variable Unitaire (€)</label>
+                            <input type="range" id="coutVariable" min="1" max="300" value="40" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-right font-semibold text-blue-600"><span id="coutVariableVal">40</span> €</div>
+                        </div>
+                        <div>
+                            <label for="coutsFixes" class="block text-sm font-medium text-gray-700">Coûts Fixes Totals (€)</label>
+                            <input type="range" id="coutsFixes" min="1000" max="200000" value="60000" step="1000" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                            <div class="text-right font-semibold text-blue-600"><span id="coutsFixesVal">60 000</span> €</div>
+                        </div>
+
+                         <div class="pt-4 border-t">
+                            <h4 class="text-lg font-semibold mb-2 text-gray-800">Indicateurs de Sécurité</h4>
+                            <div>
+                                <label for="caRealise" class="block text-sm font-medium text-gray-700">Chiffre d'Affaires Annuel Réalisé/Prévu (€)</label>
+                                <input type="number" id="caRealise" value="150000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2">
+                            </div>
+                         </div>
+                    </div>
+                    
+                    <div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="text-2xl font-bold text-blue-700 mb-4">Résultats & Analyse</h3>
+                                <div class="grid grid-cols-2 gap-4 text-center">
+                                    <div class="bg-blue-50 p-3 rounded-lg">
+                                        <div class="text-sm text-gray-500">MCV Unitaire</div>
+                                        <div id="mcvUnitaire" class="text-2xl font-bold text-blue-800"></div>
+                                    </div>
+                                    <div class="bg-blue-50 p-3 rounded-lg">
+                                        <div class="text-sm text-gray-500">Taux de MCV</div>
+                                        <div id="tauxMcv" class="text-2xl font-bold text-blue-800"></div>
+                                    </div>
+                                </div>
+                                <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-lg my-4">
+                                    <p class="text-sm text-green-800">Seuil de Rentabilité (CA)</p>
+                                    <p id="srValeur" class="text-3xl font-bold text-green-900"></p>
+                                </div>
+                                 <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-r-lg my-4">
+                                    <p class="text-sm text-green-800">Seuil de Rentabilité (Quantité)</p>
+                                    <p id="srQuantite" class="text-3xl font-bold text-green-900"></p>
+                                </div>
+                                <div class="grid grid-cols-2 gap-4 text-center mt-4">
+                                     <div class="bg-gray-100 p-3 rounded-lg">
+                                        <div class="text-sm text-gray-500">Marge de sécurité</div>
+                                        <div id="margeSecurite" class="text-xl font-bold text-gray-800"></div>
+                                    </div>
+                                     <div class="bg-gray-100 p-3 rounded-lg">
+                                        <div class="text-sm text-gray-500">Indice de sécurité</div>
+                                        <div id="indiceSecurite" class="text-xl font-bold text-gray-800"></div>
+                                    </div>
+                                </div>
+                                <div class="bg-yellow-100 text-yellow-800 p-4 rounded-lg mt-4 text-center">
+                                    <div class="font-semibold">Point Mort</div>
+                                    <div id="pointMort" class="text-xl font-bold"></div>
+                                </div>
+                            </div>
+                            <div class="mt-0 md:mt-1">
+                                <h3 class="text-2xl font-bold text-gray-600 mb-4">Formules Appliquées</h3>
+                                <div class="bg-gray-50 p-4 rounded-lg h-full text-sm space-y-3 text-gray-700">
+                                    <p><span class="font-semibold text-blue-800">MCV unitaire</span> = PV unitaire - CV unitaire</p>
+                                    <p><span class="font-semibold text-blue-800">Taux de MCV</span> = (MCV unitaire / PV unitaire)</p>
+                                    <hr>
+                                    <p><span class="font-semibold text-green-800">SR (€)</span> = Coûts Fixes / Taux de MCV</p>
+                                    <p><span class="font-semibold text-green-800">SR (Qté)</span> = Coûts Fixes / MCV unitaire</p>
+                                    <hr>
+                                    <p><span class="font-semibold text-gray-800">Marge de sécurité</span> = CA réalisé - SR (€)</p>
+                                    <p><span class="font-semibold text-gray-800">Indice de sécurité</span> = (Marge de sécu. / CA réalisé)</p>
+                                    <hr>
+                                    <p><span class="font-semibold text-yellow-900">Point Mort (jours)</span> = (SR (€) / CA réalisé) x 360</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 pt-6 border-t">
+                     <h3 class="text-2xl font-bold text-center text-blue-700 mb-4">Représentation Graphique</h3>
+                     <div class="chart-container relative mx-auto w-full max-w-3xl h-96">
+                        <canvas id="breakEvenChart"></canvas>
+                     </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-2 text-gray-700">5. Quiz Formatif</h2>
+            <p class="mb-6 text-lg text-gray-600">Testez vos connaissances ! Ce quiz vous permettra de valider votre compréhension des concepts clés. Visez un score de 75% pour réussir.</p>
+            <div id="quiz-container" class="card p-6 md:p-8">
+                <!-- Intro Screen -->
+                <div id="quiz-intro" class="text-center">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-4">Êtes-vous prêt à vous évaluer ?</h3>
+                    <p class="mb-6">Le quiz contient 10 questions. Chaque bonne réponse vous rapproche de la maîtrise de l'analyse des coûts.</p>
+                    <button id="start-quiz-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">Commencer le Quiz</button>
+                </div>
+
+                <!-- Main Quiz Screen -->
+                <div id="quiz-main" class="hidden">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span id="question-counter" class="text-sm font-semibold text-gray-600"></span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <h3 id="question-text" class="text-xl font-bold mb-6 text-gray-800"></h3>
+                    <div id="answer-options" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="hint-container" class="mt-4 text-center">
+                        <button id="hint-btn" class="text-sm text-blue-600 hover:underline">Afficher un indice</button>
+                        <p id="hint-text" class="hidden mt-2 p-3 bg-yellow-100 text-yellow-800 rounded-lg"></p>
+                    </div>
+                    <div id="feedback-container" class="mt-6 p-4 rounded-lg hidden"></div>
+                    <div class="text-right mt-4">
+                        <button id="next-question-btn" class="bg-gray-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-800 transition-colors hidden">Question Suivante</button>
+                    </div>
+                </div>
+
+                <!-- Results Screen -->
+                <div id="quiz-results" class="hidden text-center">
+                    <h3 class="text-2xl font-bold text-blue-700 mb-4">Résultats du Quiz</h3>
+                    <p class="text-4xl font-bold mb-4" id="final-score"></p>
+                    <p class="text-lg mb-6" id="results-message"></p>
+                    <div class="flex justify-center space-x-4">
+                        <button id="retry-quiz-btn" class="bg-gray-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-600 transition-colors">Recommencer</button>
+                        <button id="continue-to-synthesis-btn" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors">Voir la Synthèse</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="synthese" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-2 text-gray-700">6. Synthèse - Carte Mentale</h2>
+            <p class="mb-6 text-lg text-gray-600">Cette carte mentale interactive résume les points essentiels de l'analyse des coûts. Naviguez à travers les différentes branches pour réviser les définitions, les formules et les liens entre les concepts.</p>
+            <div class="card p-2 md:p-4">
+                <div class="w-full h-[750px] border border-gray-200 rounded-lg overflow-hidden">
+                     <iframe class="w-full h-full" src='https://www.xmind.app/embed/8FLVPH/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="pt-16 -mt-16 mb-12">
+            <h2 class="text-3xl font-bold mb-6 text-gray-700">7. Points Clés & FAQ</h2>
+            <div class="space-y-4">
+                <div class="card p-4">
+                    <button class="accordion-toggle w-full text-left flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-blue-700">Qu'est-ce qu'une charge supplétive ?</h3>
+                        <span class="text-xl font-bold transform transition-transform duration-300">+</span>
+                    </button>
+                    <div class="accordion-content pt-2">
+                        <p class="text-gray-600">C'est une charge non enregistrée en comptabilité générale mais prise en compte en comptabilité analytique pour obtenir un coût plus économique. L'exemple le plus courant est la rémunération théorique de l'exploitant individuel ou des capitaux propres, qui ne génère pas de flux de trésorerie mais représente un coût d'opportunité.</p>
+                    </div>
+                </div>
+                 <div class="card p-4">
+                    <button class="accordion-toggle w-full text-left flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-blue-700">Pourquoi la marge sur coût variable est-elle si importante ?</h3>
+                         <span class="text-xl font-bold transform transition-transform duration-300">+</span>
+                    </button>
+                    <div class="accordion-content pt-2">
+                        <p class="text-gray-600">La MCV est le véritable moteur de la rentabilité de l'entreprise. Chaque unité vendue génère une MCV qui vient "rembourser" les coûts fixes. Une fois tous les coûts fixes couverts, chaque MCV supplémentaire devient du bénéfice pur. Maximiser la MCV (en augmentant le prix de vente ou en diminuant les coûts variables) est donc un levier majeur pour améliorer le résultat.</p>
+                    </div>
+                </div>
+                <div class="card p-4">
+                    <button class="accordion-toggle w-full text-left flex justify-between items-center">
+                        <h3 class="text-lg font-semibold text-blue-700">Quelle est la différence entre Seuil de Rentabilité et Point Mort ?</h3>
+                         <span class="text-xl font-bold transform transition-transform duration-300">+</span>
+                    </button>
+                    <div class="accordion-content pt-2">
+                        <p class="text-gray-600">Les termes sont souvent utilisés de manière interchangeable, mais il y a une nuance. Le <span class="font-semibold">Seuil de Rentabilité</span> est un montant (chiffre d'affaires en €) ou un volume (quantité à vendre). Le <span class="font-semibold">Point Mort</span> est la traduction de ce seuil en une date dans l'année à partir de laquelle l'entreprise devient rentable.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white mt-12 py-6 border-t">
+        <div class="container mx-auto text-center text-gray-500">
+            <p>&copy; Guide Interactif pour BTS MCO - Analyse des Coûts.</p>
+        </div>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Global Navigation & Accordion Logic
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+            const sections = document.querySelectorAll('main section');
+
+            function setActiveLink(targetId) {
+                navLinks.forEach(link => {
+                    if (link.dataset.target === targetId) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+            }
+            
+            function handleScroll() {
+                let current = '';
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+                setActiveLink(current);
+                if (mobileNav.value !== current) {
+                    mobileNav.value = current;
+                }
+            }
+            
+            window.addEventListener('scroll', handleScroll);
+
+            const scrollFunction = (targetId) => {
+                const targetSection = document.getElementById(targetId);
+                if (targetSection) {
+                    window.scrollTo({
+                        top: targetSection.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            };
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    scrollFunction(link.dataset.target);
+                });
+            });
+
+            mobileNav.addEventListener('change', () => {
+                scrollFunction(mobileNav.value);
+            });
+
+            const accordions = document.querySelectorAll('.accordion-toggle');
+            accordions.forEach(button => {
+                button.addEventListener('click', () => {
+                    const content = button.nextElementSibling;
+                    const icon = button.querySelector('span');
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        icon.style.transform = 'rotate(0deg)';
+                    } else {
+                        document.querySelectorAll('.accordion-content').forEach(el => el.style.maxHeight = null);
+                        document.querySelectorAll('.accordion-toggle span').forEach(el => el.style.transform = 'rotate(0deg)');
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        icon.style.transform = 'rotate(45deg)';
+                    }
+                });
+            });
+
+            // Seuil de rentabilité Calculator Logic
+            const prixVenteSlider = document.getElementById('prixVente');
+            const coutVariableSlider = document.getElementById('coutVariable');
+            const coutsFixesSlider = document.getElementById('coutsFixes');
+            const caRealiseInput = document.getElementById('caRealise');
+
+            const prixVenteVal = document.getElementById('prixVenteVal');
+            const coutVariableVal = document.getElementById('coutVariableVal');
+            const coutsFixesVal = document.getElementById('coutsFixesVal');
+            
+            const mcvUnitaireEl = document.getElementById('mcvUnitaire');
+            const tauxMcvEl = document.getElementById('tauxMcv');
+            const srValeurEl = document.getElementById('srValeur');
+            const srQuantiteEl = document.getElementById('srQuantite');
+            const margeSecuriteEl = document.getElementById('margeSecurite');
+            const indiceSecuriteEl = document.getElementById('indiceSecurite');
+            const pointMortEl = document.getElementById('pointMort');
+
+            const ctx = document.getElementById('breakEvenChart').getContext('2d');
+            let breakEvenChart;
+
+            function formatCurrency(value) {
+                return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(value);
+            }
+            function formatNumber(value) {
+                return new Intl.NumberFormat('fr-FR').format(value);
+            }
+
+            function calculateAndDisplay() {
+                const pv = parseFloat(prixVenteSlider.value);
+                const cv = parseFloat(coutVariableSlider.value);
+                const cf = parseFloat(coutsFixesSlider.value);
+                const ca = parseFloat(caRealiseInput.value) || 0;
+
+                prixVenteVal.textContent = formatNumber(pv);
+                coutVariableVal.textContent = formatNumber(cv);
+                coutsFixesVal.textContent = formatNumber(cf);
+
+                if (pv <= cv) {
+                    mcvUnitaireEl.textContent = 'N/A';
+                    tauxMcvEl.textContent = 'N/A';
+                    srValeurEl.textContent = 'Infini';
+                    srQuantiteEl.textContent = 'Infini';
+                    margeSecuriteEl.textContent = 'N/A';
+                    indiceSecuriteEl.textContent = 'N/A';
+                    pointMortEl.textContent = 'Jamais atteint';
+                    updateChart(pv, cv, cf, Infinity);
+                    return;
+                }
+
+                const mcvUnitaire = pv - cv;
+                const tauxMcv = mcvUnitaire / pv;
+                
+                const srValeur = cf / tauxMcv;
+                const srQuantite = cf / mcvUnitaire;
+
+                const margeSecurite = ca - srValeur;
+                const indiceSecurite = ca > 0 ? (margeSecurite / ca) : 0;
+                
+                const pointMortJours = ca > 0 ? (srValeur / ca) * 360 : 0;
+                const pointMortDate = new Date(new Date().getFullYear(), 0, 1);
+                pointMortDate.setDate(pointMortDate.getDate() + Math.round(pointMortJours));
+
+
+                mcvUnitaireEl.textContent = formatCurrency(mcvUnitaire);
+                tauxMcvEl.textContent = (tauxMcv * 100).toFixed(1) + ' %';
+                srValeurEl.textContent = formatCurrency(srValeur);
+                srQuantiteEl.textContent = Math.ceil(srQuantite).toLocaleString('fr-FR') + ' unités';
+                
+                margeSecuriteEl.textContent = formatCurrency(margeSecurite);
+                indiceSecuriteEl.textContent = (indiceSecurite * 100).toFixed(1) + ' %';
+                pointMortEl.textContent = pointMortJours > 0 && pointMortJours <= 360 ? `Atteint le ${pointMortDate.toLocaleDateString('fr-FR')}` : 'N/A';
+                
+                updateChart(pv, cv, cf, srQuantite);
+            }
+            
+            function updateChart(pv, cv, cf, srQuantite) {
+                const maxQuantite = Math.max(20, Math.ceil(srQuantite * 2));
+                const labels = [];
+                const caData = [];
+                const ctData = [];
+                const step = Math.ceil(maxQuantite / 10);
+                
+                for (let q = 0; q <= maxQuantite; q += step) {
+                    labels.push(q);
+                    caData.push(q * pv);
+                    ctData.push(cf + (q * cv));
+                }
+                
+                if (!breakEvenChart) {
+                    Chart.defaults.font.family = 'Inter';
+                    breakEvenChart = new Chart(ctx, {
+                        type: 'line',
+                        data: { labels, datasets: [] },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: { display: true, text: 'Point Mort Graphique', font: { size: 16 } },
+                                tooltip: {
+                                    mode: 'index',
+                                    intersect: false,
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.dataset.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            if (context.parsed.y !== null) {
+                                                label += formatCurrency(context.parsed.y);
+                                            }
+                                            return label;
+                                        }
+                                    }
+                                },
+                            },
+                            scales: {
+                                x: { title: { display: true, text: 'Quantités Vendues' } },
+                                y: { title: { display: true, text: 'Montant (€)' } }
+                            },
+                            interaction: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            elements: {
+                                point: { radius: 2 }
+                            }
+                        }
+                    });
+                }
+                
+                breakEvenChart.data.labels = labels;
+                breakEvenChart.data.datasets = [
+                    {
+                        label: 'Chiffre d\'Affaires',
+                        data: caData,
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Coûts Totals',
+                        data: ctData,
+                        borderColor: 'rgb(239, 68, 68)',
+                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Coûts Fixes',
+                        data: Array(labels.length).fill(cf),
+                        borderColor: 'rgb(107, 114, 128)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        pointRadius: 0
+                    }
+                ];
+                breakEvenChart.update();
+            }
+
+            [prixVenteSlider, coutVariableSlider, coutsFixesSlider, caRealiseInput].forEach(el => {
+                el.addEventListener('input', calculateAndDisplay);
+            });
+            
+            // Quiz Logic
+            const quizData = [
+                {
+                    question: "Laquelle de ces charges est un exemple de coût VARIABLE ?",
+                    options: ["Le loyer de l'entrepôt", "Le salaire du comptable", "Les commissions des vendeurs", "L'assurance annuelle du bâtiment"],
+                    answer: "Les commissions des vendeurs",
+                    hint: "Pensez à la charge qui augmente si les ventes augmentent.",
+                    feedbackCorrect: "Exact ! Les commissions sont directement proportionnelles au volume des ventes, c'est donc un coût variable.",
+                    feedbackIncorrect: "Incorrect. La bonne réponse est 'Les commissions des vendeurs'. Les autres options (loyer, salaire fixe, assurance) sont des coûts fixes car ils ne changent pas avec le niveau d'activité."
+                },
+                {
+                    question: "Comment définit-on une charge INDIRECTE ?",
+                    options: ["Une charge directement liée à la fabrication d'un seul produit", "Une charge qui concerne plusieurs produits et nécessite une répartition", "Une charge qui n'est pas payée par l'entreprise", "Une charge qui diminue quand la production augmente"],
+                    answer: "Une charge qui concerne plusieurs produits et nécessite une répartition",
+                    hint: "Le mot clé est 'répartition' ou 'clé d'allocation'.",
+                    feedbackCorrect: "C'est bien ça ! Une charge indirecte, comme le loyer de l'usine, doit être répartie entre les différents produits fabriqués.",
+                    feedbackIncorrect: "Ce n'est pas la bonne définition. Une charge est indirecte car elle ne peut pas être affectée à un seul produit sans un calcul de répartition. Le loyer de l'usine, par exemple, profite à toute la production."
+                },
+                {
+                    question: "Que représente la Marge sur Coût Variable (MCV) ?",
+                    options: ["Le bénéfice net de l'entreprise", "Le chiffre d'affaires moins les coûts fixes", "La part du chiffre d'affaires qui reste pour couvrir les coûts fixes et générer du bénéfice", "Le coût total des marchandises vendues"],
+                    answer: "La part du chiffre d'affaires qui reste pour couvrir les coûts fixes et générer du bénéfice",
+                    hint: "La formule est : Chiffre d'Affaires - Coûts Variables.",
+                    feedbackCorrect: "Excellent ! La MCV est l'indicateur clé qui montre la contribution de chaque vente à la couverture des charges de structure.",
+                    feedbackIncorrect: "Réponse inexacte. La MCV se calcule par 'Chiffre d'Affaires - Coûts Variables'. C'est ce qui reste pour payer les charges fixes. Si la MCV est supérieure aux coûts fixes, l'entreprise fait un bénéfice."
+                },
+                 {
+                    question: "Le Seuil de Rentabilité est atteint lorsque...",
+                    options: ["Le chiffre d'affaires est maximal", "La Marge sur Coût Variable est égale aux Coûts Fixes", "Les coûts variables sont nuls", "L'entreprise réalise son premier euro de bénéfice"],
+                    answer: "La Marge sur Coût Variable est égale aux Coûts Fixes",
+                    hint: "C'est le point où le résultat est exactement de zéro.",
+                    feedbackCorrect: "Parfait ! Au seuil de rentabilité, le résultat est de 0, ce qui signifie que la MCV a entièrement couvert les coûts fixes, sans encore générer de profit.",
+                    feedbackIncorrect: "Pas tout à fait. Le seuil de rentabilité est le point d'équilibre où le résultat est nul. Cela se produit précisément lorsque la Marge sur Coût Variable est exactement égale aux Coûts Fixes."
+                },
+                {
+                    question: "Quelle méthode de calcul des coûts est indispensable pour déterminer le seuil de rentabilité ?",
+                    options: ["La méthode des coûts complets", "La méthode ABC (Activity Based Costing)", "La méthode des coûts partiels (coûts variables/fixes)", "La méthode du coût de revient"],
+                    answer: "La méthode des coûts partiels (coûts variables/fixes)",
+                    hint: "Cette méthode se base sur le comportement des charges par rapport à l'activité.",
+                    feedbackCorrect: "Correct. La distinction entre charges fixes et variables, propre à la méthode des coûts partiels, est le fondement même du calcul du seuil de rentabilité.",
+                    feedbackIncorrect: "Ce n'est pas la bonne méthode. Pour calculer le seuil de rentabilité, il est impératif de séparer les charges en fixes et variables, ce qui est le principe de la méthode des coûts partiels."
+                },
+                {
+                    question: "Le coût de revient d'un produit inclut...",
+                    options: ["Seulement le coût d'achat des matières premières", "Le coût de production et les frais administratifs", "Le coût de production, les frais de distribution et les frais administratifs", "Seulement le coût de production"],
+                    answer: "Le coût de production, les frais de distribution et les frais administratifs",
+                    hint: "Il s'agit du coût le plus 'complet' possible avant de calculer le résultat.",
+                    feedbackCorrect: "Très bien ! Le coût de revient est la somme de tous les coûts supportés par le produit jusqu'à sa vente finale.",
+                    feedbackIncorrect: "Réponse incomplète. Le coût de revient est la somme de toutes les charges supportées par un produit : coût de production + frais hors production (distribution, administration, etc.)."
+                },
+                {
+                    question: "À quoi sert principalement le calcul du 'Point Mort' ?",
+                    options: ["À connaître le montant du bénéfice annuel", "À déterminer le prix de vente d'un produit", "À trouver la date à laquelle l'entreprise devient rentable dans l'année", "À calculer le total des coûts fixes"],
+                    answer: "À trouver la date à laquelle l'entreprise devient rentable dans l'année",
+                    hint: "Le Point Mort est une notion de temps.",
+                    feedbackCorrect: "Exactement ! Le Point Mort traduit le seuil de rentabilité (qui est un montant) en une date dans le calendrier.",
+                    feedbackIncorrect: "Attention à la nuance. Le Seuil de Rentabilité est un montant (€) ou une quantité. Le Point Mort est la traduction de ce seuil en une date dans l'année."
+                },
+                 {
+                    question: "Si le prix de vente unitaire augmente (toutes choses égales par ailleurs), que se passe-t-il pour le seuil de rentabilité ?",
+                    options: ["Il augmente", "Il diminue", "Il ne change pas", "Il devient nul"],
+                    answer: "Il diminue",
+                    hint: "Une augmentation du prix de vente augmente la marge sur coût variable unitaire.",
+                    feedbackCorrect: "Logique parfaite ! Un prix de vente plus élevé augmente la MCV. Il faudra donc vendre moins de produits pour couvrir les mêmes coûts fixes. Le seuil de rentabilité baisse.",
+                    feedbackIncorrect: "C'est l'inverse. Si le prix de vente augmente, la marge sur chaque produit est plus grande. L'entreprise atteindra donc plus rapidement le point où elle couvre ses coûts fixes. Le seuil de rentabilité diminue."
+                },
+                 {
+                    question: "La 'Marge de sécurité' représente...",
+                    options: ["Le bénéfice réalisé par l'entreprise", "Le montant des coûts fixes", "Le stock de sécurité dans l'entrepôt", "La baisse de chiffre d'affaires que l'entreprise peut supporter avant d'être en perte"],
+                    answer: "La baisse de chiffre d'affaires que l'entreprise peut supporter avant d'être en perte",
+                    hint: "La formule est : CA réalisé - Seuil de Rentabilité.",
+                    feedbackCorrect: "C'est la bonne définition. C'est un excellent indicateur de la solidité de l'entreprise : plus la marge est grande, plus l'entreprise est 'en sécurité'.",
+                    feedbackIncorrect: "Incorrect. La marge de sécurité est la différence entre le chiffre d'affaires actuel et le seuil de rentabilité. Elle indique la 'marge de manœuvre' de l'entreprise avant de commencer à perdre de l'argent."
+                },
+                {
+                    question: "Une augmentation des coûts fixes...",
+                    options: ["Diminue le seuil de rentabilité", "N'a aucun impact sur le seuil de rentabilité", "Augmente le seuil de rentabilité", "Augmente la marge sur coût variable"],
+                    answer: "Augmente le seuil de rentabilité",
+                    hint: "Il y a plus de charges à couvrir avant de devenir rentable.",
+                    feedbackCorrect: "C'est exact. S'il y a plus de coûts fixes à couvrir, il faudra générer une marge sur coût variable plus importante, et donc un chiffre d'affaires plus élevé, pour atteindre l'équilibre.",
+                    feedbackIncorrect: "Réfléchissez à la logique : si les charges de structure augmentent (loyer, salaires fixes...), l'entreprise devra vendre plus pour les couvrir. Par conséquent, le seuil de rentabilité augmente."
+                }
+            ];
+
+            const quizIntro = document.getElementById('quiz-intro');
+            const quizMain = document.getElementById('quiz-main');
+            const quizResults = document.getElementById('quiz-results');
+
+            const startBtn = document.getElementById('start-quiz-btn');
+            const nextBtn = document.getElementById('next-question-btn');
+            const retryBtn = document.getElementById('retry-quiz-btn');
+            const continueBtn = document.getElementById('continue-to-synthesis-btn');
+            const hintBtn = document.getElementById('hint-btn');
+
+            const questionCounterEl = document.getElementById('question-counter');
+            const progressBar = document.getElementById('progress-bar');
+            const questionTextEl = document.getElementById('question-text');
+            const answerOptionsEl = document.getElementById('answer-options');
+            const hintTextEl = document.getElementById('hint-text');
+            const feedbackEl = document.getElementById('feedback-container');
+            const finalScoreEl = document.getElementById('final-score');
+            const resultsMessageEl = document.getElementById('results-message');
+
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let quizStarted = false;
+
+            function startQuiz() {
+                quizIntro.classList.add('hidden');
+                quizResults.classList.add('hidden');
+                quizMain.classList.remove('hidden');
+                
+                currentQuestionIndex = 0;
+                score = 0;
+                quizStarted = true;
+                showQuestion();
+            }
+
+            function showQuestion() {
+                resetState();
+                const currentQuestion = quizData[currentQuestionIndex];
+                questionCounterEl.textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
+                progressBar.style.width = `${((currentQuestionIndex) / quizData.length) * 100}%`;
+                questionTextEl.textContent = currentQuestion.question;
+
+                currentQuestion.options.forEach(option => {
+                    const button = document.createElement('button');
+                    button.textContent = option;
+                    button.classList.add('quiz-option', 'w-full', 'p-4', 'text-left', 'border-2', 'rounded-lg');
+                    button.addEventListener('click', () => selectAnswer(option, button));
+                    answerOptionsEl.appendChild(button);
+                });
+            }
+
+            function resetState() {
+                answerOptionsEl.innerHTML = '';
+                feedbackEl.classList.add('hidden');
+                nextBtn.classList.add('hidden');
+                hintBtn.classList.remove('hidden');
+                hintTextEl.classList.add('hidden');
+            }
+
+            function selectAnswer(selectedOption, btn) {
+                const currentQuestion = quizData[currentQuestionIndex];
+                const isCorrect = selectedOption === currentQuestion.answer;
+                
+                feedbackEl.classList.remove('hidden');
+                hintBtn.classList.add('hidden');
+                hintTextEl.classList.add('hidden');
+
+                if (isCorrect) {
+                    score++;
+                    btn.classList.add('correct');
+                    feedbackEl.innerHTML = `<p class="font-bold text-green-700">Bonne réponse !</p><p>${currentQuestion.feedbackCorrect}</p>`;
+                    feedbackEl.className = 'mt-6 p-4 rounded-lg bg-green-50 border border-green-300';
+                } else {
+                    btn.classList.add('incorrect');
+                    feedbackEl.innerHTML = `<p class="font-bold text-red-700">Réponse incorrecte.</p><p>${currentQuestion.feedbackIncorrect}</p>`;
+                    feedbackEl.className = 'mt-6 p-4 rounded-lg bg-red-50 border border-red-300';
+                }
+
+                Array.from(answerOptionsEl.children).forEach(button => {
+                    button.disabled = true;
+                    if(button.textContent === currentQuestion.answer){
+                        if(!isCorrect) button.classList.add('correct');
+                    }
+                });
+
+                nextBtn.classList.remove('hidden');
+                 if (currentQuestionIndex === quizData.length - 1) {
+                    nextBtn.textContent = 'Voir les résultats';
+                } else {
+                    nextBtn.textContent = 'Question Suivante';
+                }
+            }
+            
+            function nextQuestion() {
+                currentQuestionIndex++;
+                progressBar.style.width = `${((currentQuestionIndex) / quizData.length) * 100}%`;
+                if (currentQuestionIndex < quizData.length) {
+                    showQuestion();
+                } else {
+                    showResults();
+                }
+            }
+            
+            function showResults() {
+                quizMain.classList.add('hidden');
+                quizResults.classList.remove('hidden');
+                
+                finalScoreEl.textContent = `${score} / ${quizData.length}`;
+                const percentage = (score / quizData.length) * 100;
+
+                if (percentage >= 75) {
+                    resultsMessageEl.innerHTML = `<span class="text-green-600 font-bold">Félicitations !</span> Vous avez réussi le quiz avec ${percentage.toFixed(0)}% de bonnes réponses. Vous maîtrisez les concepts clés.`;
+                } else {
+                    resultsMessageEl.innerHTML = `<span class="text-yellow-600 font-bold">Presque !</span> Vous avez obtenu ${percentage.toFixed(0)}%. N'hésitez pas à revoir les sections précédentes ou à refaire le quiz pour renforcer vos connaissances.`;
+                }
+            }
+
+            startBtn.addEventListener('click', startQuiz);
+            nextBtn.addEventListener('click', nextQuestion);
+            retryBtn.addEventListener('click', startQuiz);
+            continueBtn.addEventListener('click', () => scrollFunction('synthese'));
+            hintBtn.addEventListener('click', () => {
+                hintTextEl.textContent = quizData[currentQuestionIndex].hint;
+                hintTextEl.classList.remove('hidden');
+                hintBtn.classList.add('hidden');
+            });
+            
+            // Initial call to set up the page correctly
+            handleScroll();
+            calculateAndDisplay();
+        });
+    </script>
+</body>
+</html>
+

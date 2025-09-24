@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Gestion des Approvisionnements - BTS MCO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #FDFBF8; color: #3f3f46; }
+        .tab-active { border-color: #4f46e5; color: #4f46e5; background-color: #eef2ff; }
+        .tab-inactive { border-color: transparent; color: #71717a; }
+        .content-section { display: none; }
+        .content-section.active { display: block; }
+        .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); padding: 1.5rem; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin: auto; height: 40vh; max-height: 450px; }
+        .calculator-input, .sim-input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid #d4d4d8; border-radius: 0.375rem; transition: border-color 0.2s; }
+        .calculator-input:focus, .sim-input:focus { outline: none; border-color: #4f46e5; }
+        .accordion-item { border-bottom: 1px solid #e5e7eb; }
+        .accordion-button { width: 100%; text-align: left; padding: 1rem; font-weight: 500; color: #374151; display: flex; justify-content: space-between; align-items: center; background-color: #f9fafb; border: none; cursor: pointer; }
+        .accordion-button:hover { background-color: #f3f4f6; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding: 0 1rem; background-color: white; }
+        .accordion-content .content-inner { padding: 1rem 0; }
+        .accordion-icon { transition: transform 0.3s ease; }
+        .accordion-button.active .accordion-icon { transform: rotate(180deg); }
+        .formula-box { background-color: #f3f4f6; padding: 1rem; border-radius: 0.5rem; border-left: 4px solid #4f46e5; font-family: monospace; color: #1f2937; margin: 1rem 0; text-align: center; }
+        .sim-button { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; transition: background-color 0.2s; }
+        .sim-button:disabled { background-color: #d1d5db; cursor: not-allowed; }
+        .tooltip-container { position: relative; display: inline-flex; align-items: center; cursor: pointer; }
+        .tooltip-icon { font-size: 0.75rem; background-color: #4f46e5; color: #ffffff; border-radius: 9999px; width: 1.25rem; height: 1.25rem; display: flex; justify-content: center; align-items: center; margin-left: 0.35rem; font-weight: bold; }
+        .tooltip-text { visibility: hidden; width: 220px; background-color: #1f2937; color: #fff; text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 1; bottom: 125%; left: 50%; margin-left: -110px; opacity: 0; transition: opacity 0.3s; font-size: 0.8rem; }
+        .tooltip-container:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .mission-box { background-color: #eef2ff; border-left: 4px solid #4f46e5; padding: 1rem; margin-bottom: 1rem; border-radius: 0 0.5rem 0.5rem 0; }
+        .analysis-box { background-color: #f0fdf4; border: 1px solid #bbf7d0; padding: 1rem; margin-top: 1.5rem; border-radius: 0.5rem; text-align: center; }
+        .stock-level-diagram div { border-left: 4px solid; padding-left: 1rem; margin-bottom: 1rem; cursor: pointer; }
+        .progress-bar-container { width: 100%; background-color: #e5e7eb; border-radius: 9999px; height: 1rem; }
+        .progress-bar { background-color: #4f46e5; height: 1rem; border-radius: 9999px; transition: width 0.5s ease-in-out; }
+        .quiz-option { display: block; width: 100%; text-align: left; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 0.5rem; margin-bottom: 0.5rem; transition: all 0.2s; }
+        .quiz-option:hover { border-color: #4f46e5; background-color: #eef2ff; }
+        .quiz-option.correct { background-color: #dcfce7; border-color: #22c55e; }
+        .quiz-option.incorrect { background-color: #fee2e2; border-color: #ef4444; }
+        .quiz-option:disabled { opacity: 0.7; cursor: not-allowed; }
+        .feedback-box { padding: 1rem; margin-top: 1rem; border-radius: 0.5rem; }
+        .feedback-box.correct { background-color: #f0fdf4; border-left: 4px solid #22c55e; }
+        .feedback-box.incorrect { background-color: #fef2f2; border-left: 4px solid #ef4444; }
+        .prose ul { list-style-type: disc; padding-left: 1.5rem; }
+        .prose ol { list-style-type: decimal; padding-left: 1.5rem; }
+        .prose li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="top" class="container mx-auto p-4 md:p-8">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800">Gestion des Approvisionnements</h1>
+            <p class="text-lg text-gray-600 mt-2">Un outil interactif pour les étudiants en BTS MCO</p>
+        </header>
+
+        <div class="mb-8 relative">
+             <!-- Burger Menu Button -->
+            <button id="burger-btn" class="md:hidden absolute top-0 right-0 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 z-20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+            <div class="border-b border-gray-200">
+                <!-- Desktop Navigation -->
+                <nav class="hidden md:flex -mb-px flex-wrap justify-center gap-x-2 sm:gap-x-4" aria-label="Tabs">
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-active" data-tab="introduction">Introduction</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="fondamentaux">Les Fondamentaux</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="reguliere">Demande Régulière</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="irreguliere">Demande Irrégulière</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="niveaux">Niveaux de Stock</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="arbitrage">Arbitrage</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="synthese">Synthèse</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="lexique">Lexique</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="faq">FAQ</button>
+                    <button class="tab-btn whitespace-nowrap py-4 px-3 sm:px-4 border-b-2 font-medium text-sm sm:text-base tab-inactive" data-tab="quiz">Quiz</button>
+                </nav>
+            </div>
+             <!-- Mobile Navigation Menu -->
+            <nav id="mobile-menu" class="hidden md:hidden absolute top-full right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10 border">
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="introduction">Introduction</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="fondamentaux">Les Fondamentaux</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="reguliere">Demande Régulière</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="irreguliere">Demande Irrégulière</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="niveaux">Niveaux de Stock</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="arbitrage">Arbitrage</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="synthese">Synthèse</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="lexique">Lexique</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="faq">FAQ</button>
+                <button class="tab-btn block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" data-tab="quiz">Quiz</button>
+            </nav>
+        </div>
+
+        <main>
+            <section id="introduction" class="content-section active">
+                <div class="card">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800">Introduction Vidéo</h2>
+                    <p class="mb-6 text-gray-600">Pour bien commencer, cette vidéo présente les concepts fondamentaux de la gestion des approvisionnements, leur importance et leur application dans le cadre du MCO.</p>
+                    <div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+                     padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+                     border-radius: 8px; will-change: transform;">
+                      <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+                        src="https://www.canva.com/design/DAGzhAP0nGw/QEFhuab5wAwZmJ8UtEQE2Q/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+                      </iframe>
+                    </div>
+                </div>
+            </section>
+
+            <section id="fondamentaux" class="content-section">
+                <div class="card text-center">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800">Le Dilemme du Manager : Trouver l'Équilibre</h2>
+                    <div class="max-w-3xl mx-auto text-gray-600 mb-4 text-left bg-gray-50 p-4 rounded-lg border">
+                        <p>Vous êtes le manager de l'épicerie Avicenne. Pour votre produit phare, la farine, vous faites face à un dilemme classique. Votre objectif : trouver le nombre de commandes annuelles idéal pour minimiser vos frais de gestion.</p>
+                        <p class="mt-2"><strong>Vos données :</strong> Consommation annuelle : <strong>1 200 000 €</strong> | Coût de passation d'une commande : <strong>150 €</strong> | Taux de possession du stock : <strong>15%</strong>.</p>
+                        <p class="mt-2 text-indigo-600 font-medium">Observez comment le <strong>stock moyen</strong> évolue et impacte directement vos coûts.</p>
+                    </div>
+                    <div class="chart-container mb-6"><canvas id="costsChart"></canvas></div>
+                    <div class="max-w-md mx-auto">
+                        <label for="orderCountSlider" class="block text-sm font-medium text-gray-700 mb-2">Faites varier le nombre de commandes : <span id="sliderValue" class="font-bold text-indigo-600"></span></label>
+                        <input id="orderCountSlider" type="range" min="1" max="25" value="12" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div class="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                        <div><p class="text-sm text-gray-500">Stock Moyen</p><p id="averageStock" class="text-xl font-semibold text-green-600"></p></div>
+                        <div><p class="text-sm text-gray-500">Coût de Possession (Stockage)</p><p id="possessionCost" class="text-xl font-semibold text-blue-600"></p></div>
+                        <div><p class="text-sm text-gray-500">Coût de Passation (Commande)</p><p id="orderingCost" class="text-xl font-semibold text-red-600"></p></div>
+                        <div><p class="text-sm text-gray-500">Coût Total de Gestion</p><p id="totalCost" class="text-xl font-bold text-gray-800"></p></div>
+                    </div>
+                    <div class="mt-8 pt-6 border-t">
+                        <h3 class="text-lg font-medium text-gray-900">Comment ça marche ? Les formules derrière le simulateur</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4 text-sm">
+                            <div class="bg-gray-50 p-4 rounded-lg"><p class="font-semibold">Stock Moyen (€)</p><p class="text-gray-600">Conso. Annuelle / (2 x Nb Commandes)</p></div>
+                            <div class="bg-blue-50 p-4 rounded-lg"><p class="font-semibold">Coût de Possession (€)</p><p class="text-gray-600">Stock Moyen x Taux de Possession</p></div>
+                            <div class="bg-red-50 p-4 rounded-lg"><p class="font-semibold">Coût de Passation (€)</p><p class="text-gray-600">Nb Commandes x Coût d'une Commande</p></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="reguliere" class="content-section">
+                 <div class="card">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800 text-center">Mini-Cas : Optimisation chez Avicenne</h2>
+                    <p class="max-w-3xl mx-auto text-gray-600 mb-8 text-center">Suivez le raisonnement complet d'un manager pour optimiser les commandes de farine, dont la demande est stable.</p>
+                    <div class="border rounded-lg p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Étape 1 : Calcul du Taux de Possession</h3>
+                        <p class="text-sm text-gray-600 mb-4">Avant d'optimiser, il faut connaître les coûts. Aidez le manager à calculer le coût réel de son stock de farine.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6"><div class="space-y-3"><p class="font-medium text-gray-700">A. Coûts de possession annuels (€)</p><div><label for="costLoyer" class="text-sm">Loyer de l'entrepôt</label><input type="number" id="costLoyer" value="45000" class="calculator-input mt-1"></div><div><label for="costSalaires" class="text-sm">Salaires du personnel</label><input type="number" id="costSalaires" value="30000" class="calculator-input mt-1"></div><div><label for="costAssurances" class="text-sm">Assurances & divers</label><input type="number" id="costAssurances" value="15000" class="calculator-input mt-1"></div></div><div class="space-y-3"><p class="font-medium text-gray-700">B. Stock moyen en valeur (€)</p><div><label for="stockMoyen" class="text-sm">Valeur moyenne du stock de farine</label><input type="number" id="stockMoyen" value="600000" class="calculator-input mt-1"></div><div class="mt-6 pt-6 border-t"><p class="font-medium text-gray-700">C. Calcul du Taux (%)</p><p class="text-xs text-gray-500 mb-2">Formule : (Total Coûts A / Stock Moyen B) * 100</p><div class="bg-indigo-50 p-4 rounded-lg text-center"><p class="text-sm text-gray-600">Taux de Possession Calculé</p><p id="calculatedRate" class="text-2xl font-bold text-indigo-700">15 %</p></div></div></div></div>
+                        <div class="text-center mt-6"><button id="useCalculatedRate" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-indigo-700 transition">Utiliser ce taux pour l'Étape 2 &#8595;</button></div>
+                    </div>
+                    <div class="border rounded-lg p-6 mt-8">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-4">Étape 2 : Application de la Formule de Wilson</h3>
+                        <p class="text-sm text-gray-600 mb-4">Maintenant que le taux est connu, utilisez la formule de Wilson pour trouver le nombre de commandes idéal.</p>
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md my-4" role="alert"><p><strong>Rappel :</strong> Ce modèle n'est valable que pour une demande stable et prévisible.</p></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start"><div class="space-y-4"><div><label for="consommation" class="block text-sm font-medium text-gray-700">Consommation annuelle de farine (€)</label><input type="number" id="consommation" value="1200000" class="calculator-input mt-1"></div><div><label for="tauxPossession" class="flex items-center text-sm font-medium text-gray-700">Taux de possession du stock (%)</label><input type="number" id="tauxPossession" value="15" class="calculator-input mt-1 bg-gray-100" readonly></div><div><label for="coutPassation" class="block text-sm font-medium text-gray-700">Coût de passation d'une commande (€)</label><input type="number" id="coutPassation" value="150" class="calculator-input mt-1"></div><button id="calculateWilson" class="w-full bg-gray-700 text-white font-semibold py-2 px-4 rounded-md hover:bg-gray-800 transition">Calculer l'optimum</button></div><div class="bg-gray-50 p-6 rounded-lg"><h4 class="text-lg font-medium text-gray-900 mb-4">Résultats Optimaux</h4><div class="space-y-3"><div><p class="text-sm text-gray-600">Nombre optimal de commandes (N)</p><p id="wilsonN" class="text-2xl font-bold text-gray-800">-</p></div><div><p class="text-sm text-gray-600">Coût de gestion minimum</p><p id="wilsonCost" class="text-2xl font-bold text-gray-800">-</p></div><div><p class="text-sm text-gray-600">Fréquence des commandes</p><p id="wilsonFreq" class="text-lg font-semibold text-gray-800">-</p></div></div></div></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="irreguliere" class="content-section">
+                 <div class="card"><h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Gestion pour une Demande Irrégulière</h2><p class="max-w-3xl mx-auto text-gray-600 mb-8 text-center">Quand la demande varie, il faut des méthodes flexibles. Expérimentez "pas à pas" les deux approches principales pour comprendre leur logique de déclenchement.</p><div class="grid grid-cols-1 lg:grid-cols-2 gap-8"><div class="bg-gray-50 p-6 rounded-lg"><h3 class="text-xl font-semibold text-center mb-2 text-gray-800">Méthode du Point de Commande</h3><div class="mission-box text-sm"><p>🎯 <strong>Votre Mission :</strong> Observez comment le stock est le seul patron ! La commande se déclenche *uniquement* lorsque le stock final passe sous le 'stock d'alerte'.</p></div><div class="grid grid-cols-2 gap-4 mb-4 text-sm"><div><label for="pdcStockInitial">Stock initial</label><input type="number" id="pdcStockInitial" value="60" class="sim-input mt-1"></div><div><label for="pdcStockAlerte" class="flex items-center">Stock d'alerte<div class="tooltip-container"><span class="tooltip-icon">i</span><span class="tooltip-text">C'est le seuil qui déclenche l'alarme. Essayez avec 40 puis 15 et voyez comme la date de commande change !</span></div></label><input type="number" id="pdcStockAlerte" value="25" class="sim-input mt-1"></div><div><label for="pdcQteCmd">Qté commandée</label><input type="number" id="pdcQteCmd" value="50" class="sim-input mt-1"></div><div><label for="pdcDelai">Délai livraison (j)</label><input type="number" id="pdcDelai" value="2" class="sim-input mt-1"></div><div class="col-span-2"><label for="pdcVentes">Ventes journalières</label><input type="text" id="pdcVentes" value="10, 12, 8, 15, 11, 9, 13" class="sim-input mt-1"></div></div><div class="flex justify-center gap-4 mb-4"><button id="pdcNextDay" class="sim-button bg-indigo-600 text-white">Jour Suivant</button><button id="pdcReset" class="sim-button bg-gray-300 text-gray-800">Réinitialiser</button></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="text-xs uppercase bg-gray-200"><tr><th class="px-2 py-2">Jour</th><th class="px-2 py-2">Stock Début</th><th class="px-2 py-2">Vente</th><th class="px-2 py-2">Stock Fin</th><th class="px-2 py-2">Action</th></tr></thead><tbody id="pdcTableBody"></tbody></table></div></div><div class="bg-gray-50 p-6 rounded-lg"><h3 class="text-xl font-semibold text-center mb-2 text-gray-800">Méthode de la Gestion Calendaire</h3><div class="mission-box text-sm"><p>🎯 <strong>Votre Mission :</strong> Remarquez que la date est reine ! La commande a toujours lieu au 'jour de commande' prévu. Concentrez-vous sur la quantité commandée, qui, elle, s'adapte.</p></div><div class="grid grid-cols-2 gap-4 mb-4 text-sm"><div><label for="calStockInitial">Stock initial</label><input type="number" id="calStockInitial" value="70" class="sim-input mt-1"></div><div><label for="calStockSecu" class="flex items-center">Stock sécurité<div class="tooltip-container"><span class="tooltip-icon">i</span><span class="tooltip-text">C'est votre matelas de sécurité. Il est ajouté au calcul du besoin pour s'assurer de ne jamais tomber à zéro.</span></div></label><input type="number" id="calStockSecu" value="10" class="sim-input mt-1"></div><div><label for="calJourCmd" class="flex items-center">Jour de commande<div class="tooltip-container"><span class="tooltip-icon">i</span><span class="tooltip-text">Le calendrier décide. Changez cette valeur et voyez comment la simulation attend toujours ce jour précis pour commander.</span></div></label><input type="number" id="calJourCmd" value="5" class="sim-input mt-1"></div><div><label for="calDelai">Délai livraison (j)</label><input type="number" id="calDelai" value="2" class="sim-input mt-1"></div><div class="col-span-2"><label for="calVentes">Ventes journalières</label><input type="text" id="calVentes" value="10, 12, 8, 15, 11, 9, 13, 10, 14" class="sim-input mt-1"></div></div><div class="flex justify-center gap-4 mb-4"><button id="calNextDay" class="sim-button bg-indigo-600 text-white">Jour Suivant</button><button id="calReset" class="sim-button bg-gray-300 text-gray-800">Réinitialiser</button></div><div class="overflow-x-auto"><table class="min-w-full text-sm"><thead class="text-xs uppercase bg-gray-200"><tr><th class="px-2 py-2">Jour</th><th class="px-2 py-2">Stock Début</th><th class="px-2 py-2">Vente</th><th class="px-2 py-2">Stock Fin</th><th class="px-2 py-2">Action</th></tr></thead><tbody id="calTableBody"></tbody></table></div></div></div></div>
+            </section>
+            
+            <section id="niveaux" class="content-section">
+                <div class="card"><h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Comprendre les Niveaux de Stock Stratégiques</h2><p class="max-w-3xl mx-auto text-gray-600 mb-8 text-center">Un manager définit plusieurs niveaux de stock clés pour sécuriser ses approvisionnements. Survolez chaque niveau pour voir sa définition et sa formule de calcul.</p><div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center"><div class="stock-level-diagram"><div style="border-color: #ef4444;" data-level="alerte"><h4 class="font-bold text-lg">Stock d'Alerte</h4><p class="text-sm text-gray-500">Niveau qui déclenche la commande.</p></div><div style="border-color: #f97316;" data-level="securite"><h4 class="font-bold text-lg">Stock de Sécurité</h4><p class="text-sm text-gray-500">Marge pour parer aux imprévus.</p></div><div style="border-color: #eab308;" data-level="minimum"><h4 class="font-bold text-lg">Stock Minimum</h4><p class="text-sm text-gray-500">Stock pour couvrir les ventes durant la livraison.</p></div></div><div id="stockLevelExplanation" class="bg-gray-50 p-6 rounded-lg min-h-[200px] flex items-center justify-center"><p class="text-gray-500 text-center">Survolez un niveau de stock pour voir les détails.</p></div></div></div>
+            </section>
+            
+            <section id="arbitrage" class="content-section">
+                <div class="card"><h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Arbitrage Managérial par les Coûts</h2><div class="mission-box text-sm text-center"><p><strong>Contexte Managérial :</strong> Vous êtes le manager. La demande est irrégulière, la formule de Wilson est donc inutile. Votre seule arme est de simuler les coûts pour différents scénarios afin de prendre la décision la plus rationnelle et la moins coûteuse.</p></div><div class="grid grid-cols-1 md:grid-cols-3 gap-6 my-8"><div><label for="arbBesoin" class="flex items-center text-sm font-medium">Besoin total en valeur (€)<div class="tooltip-container"><span class="tooltip-icon">i</span><span class="tooltip-text">C'est la quantité totale que vous devez acheter sur la période (ex: les ventes du mois prochain estimées).</span></div></label><input type="number" id="arbBesoin" value="10000" class="calculator-input mt-1"></div><div><label for="arbTaux" class="flex items-center text-sm font-medium">Taux de possession (%)<div class="tooltip-container"><span class="tooltip-icon">i</span><span class="tooltip-text">Formule : Coût de Possession (€) / Stock Moyen en Valeur (€). Ce taux représente le coût annuel pour stocker 1€ de marchandise.</span></div></label><input type="number" id="arbTaux" value="15" class="calculator-input mt-1"></div><div><label for="arbCout" class="flex items-center text-sm font-medium">Coût de passation (€)<div class="tooltip-container"><span class="tooltip-icon">i</span><span class="tooltip-text">Chaque commande que vous passez vous coûte cette somme (frais admin, livraison...). Plus vous commandez, plus ce coût augmente.</span></div></label><input type="number" id="arbCout" value="50" class="calculator-input mt-1"></div></div><div class="text-center mb-8"><button id="calculateArbitrage" class="bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-indigo-700 transition">Lancer la simulation</button></div><div class="overflow-x-auto"><table class="min-w-full text-sm text-left"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr><th class="px-4 py-2">Nb Commandes</th><th class="px-4 py-2">Coût Possession</th><th class="px-4 py-2">Coût Passation</th><th class="px-4 py-2 font-bold">Coût Total</th></tr></thead><tbody id="arbitrageTable"></tbody></table></div><div id="analysisResult" class="analysis-box" style="display: none;"></div></div>
+            </section>
+
+            <section id="synthese" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-semibold mb-2 text-gray-800">Synthèse - Carte Mentale</h2>
+                    <p class="mb-6 text-gray-600">Cette carte mentale interactive résume les points essentiels de la gestion des approvisionnements. Naviguez à travers les différentes branches pour réviser les définitions, les formules et les liens entre les concepts.</p>
+                    <div class="w-full h-[750px] border border-gray-200 rounded-lg overflow-hidden">
+                         <iframe src='https://www.xmind.app/embed/PBT9X6/' width="100%" height="100%" frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                    </div>
+                </div>
+            </section>
+
+            <section id="lexique" class="content-section">
+                <div class="card"><h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Lexique des Termes Clés</h2><p class="max-w-3xl mx-auto text-gray-600 mb-8 text-center">Maîtrisez le vocabulaire essentiel. Cliquez sur chaque terme pour afficher sa définition.</p><div id="accordion-lexique" class="space-y-2"><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Coût de gestion des approvisionnements</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Somme du coût de passation des commandes et du coût de possession du stock. L'objectif du gestionnaire est de trouver le point d'équilibre où cette somme est la plus faible possible.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Coût de passation d'une commande (ou Coût de lancement)</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Ensemble des charges administratives et logistiques générées par le processus d'achat lui-même (salaires, fournitures, transport, réception). Ce coût est proportionnel au nombre de commandes passées.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Coût de possession du stock (ou Coût de stockage)</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Ensemble des dépenses engagées pour détenir physiquement et financièrement des marchandises (loyer de l'entrepôt, personnel, assurances, coût du capital immobilisé, risques d'obsolescence). Ce coût est proportionnel au volume de stock moyen détenu.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Formule de Wilson (ou EOQ - Economic Order Quantity)</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Outil mathématique permettant de déterminer le nombre optimal de commandes (et la quantité par commande) qui minimise le coût total de gestion du stock. Elle n'est applicable que pour des produits dont la demande est certaine, constante et régulière.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Gestion calendaire</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Méthode d'approvisionnement pour demande irrégulière, basée sur le principe "Date Fixe, Quantité Variable". Les commandes sont passées à intervalles réguliers, mais la quantité commandée est ajustée pour couvrir les besoins jusqu'à la prochaine livraison. Pertinente quand le fournisseur impose des jours de livraison.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Méthode du point de commande</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Méthode d'approvisionnement pour demande irrégulière, basée sur le principe "Quantité Fixe, Date Variable". Une commande d'une quantité prédéfinie est déclenchée chaque fois que le stock atteint un seuil critique (le stock d'alerte). Pertinente quand le fournisseur impose des quantités de commande.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Rupture de stock</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Incapacité à satisfaire la demande d'un client car le produit est indisponible. C'est un échec opérationnel aux conséquences graves : perte de chiffre d'affaires (coût direct), perte de clients et dégradation de l'image de marque (coûts indirects).</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Stock d'alerte (ou Point de commande)</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Niveau de stock qui agit comme un signal opérationnel : une fois atteint, il déclenche l'action de passer une nouvelle commande. Il est calculé pour que la livraison arrive avant que l'entreprise n'ait besoin de consommer son stock de sécurité. Formule : Stock d'Alerte = Stock Minimum + Stock de Sécurité.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Stock de sécurité</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Stock additionnel, conservé en plus du stock minimum, pour se prémunir contre les aléas et l'incertitude (retard de livraison, pic de ventes). C'est un tampon contre l'imprévu qui matérialise le niveau de service client souhaité.</p></div></div></div><div class="accordion-item rounded-lg overflow-hidden shadow-sm"><button class="accordion-button"><span>Stock minimum</span><span class="accordion-icon">&#9660;</span></button><div class="accordion-content"><div class="content-inner prose max-w-none"><p>Niveau de stock théorique nécessaire pour couvrir la consommation moyenne pendant le délai de livraison normal d'un fournisseur. Il assure la continuité des ventes durant un cycle de réapprovisionnement standard.</p></div></div></div></div></div>
+            </section>
+
+            <section id="faq" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 text-center">Foire Aux Questions (FAQ)</h2>
+                    <p class="max-w-3xl mx-auto text-gray-600 mb-8 text-center">Les réponses claires aux questions les plus fréquentes des gestionnaires débutants.</p>
+                    <div id="accordion-faq" class="space-y-2">
+                        <div class="accordion-item rounded-lg overflow-hidden shadow-sm">
+                            <button class="accordion-button"><span>Quel est le dilemme fondamental de la gestion des approvisionnements ?</span><span class="accordion-icon">&#9660;</span></button>
+                            <div class="accordion-content">
+                                <div class="content-inner prose max-w-none">
+                                    <p>Il s'agit d'un arbitrage constant entre deux stratégies extrêmes :</p>
+                                    <ul>
+                                        <li><strong>Commander en grande quantité et peu souvent :</strong> Cette approche réduit au minimum les frais de passation de commandes (moins de frais administratifs, moins de livraisons). Cependant, elle fait exploser les coûts de possession du stock, car elle nécessite un grand espace de stockage et immobilise une part importante de la trésorerie.</li>
+                                        <li><strong>Commander en petite quantité et très souvent :</strong> Cette approche réduit les coûts de possession (moins de stock, moins de capital immobilisé). En revanche, elle multiplie les frais administratifs et les coûts de transport liés à la fréquence élevée des commandes.</li>
+                                    </ul>
+                                    <p>L'optimisation consiste à trouver le point d'équilibre parfait entre ces deux extrêmes, celui où le coût total (passation + possession) est le plus bas possible.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item rounded-lg overflow-hidden shadow-sm">
+                            <button class="accordion-button"><span>Pourquoi ne pas simplement commander en très grande quantité pour ne jamais être en rupture de stock ?</span><span class="accordion-icon">&#9660;</span></button>
+                            <div class="accordion-content">
+                                <div class="content-inner prose max-w-none">
+                                    <p>Si cette stratégie semble sécurisante car elle élimine le risque de pénurie, elle génère en réalité des contraintes et des coûts qui sont souvent prohibitifs et contre-productifs :</p>
+                                    <ul>
+                                        <li><strong>Contraintes Physiques :</strong> Avoir beaucoup de stock nécessite un espace de stockage important, ce qui a un coût direct (loyer, aménagement).</li>
+                                        <li><strong>Contraintes Financières :</strong> C'est la contrainte la plus forte. Un stock volumineux immobilise une part importante de la trésorerie de l'entreprise qui ne peut être utilisée pour d'autres investissements. De plus, il génère un coût de possession très élevé (assurances, personnel, etc.).</li>
+                                        <li><strong>Contraintes Commerciales :</strong> Cette stratégie augmente au maximum le risque d'invendus, de péremption (pour les produits périssables) ou d'obsolescence (pour les produits technologiques ou de mode).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item rounded-lg overflow-hidden shadow-sm">
+                            <button class="accordion-button"><span>Dans quel cas précis doit-on utiliser la formule de Wilson ?</span><span class="accordion-icon">&#9660;</span></button>
+                            <div class="accordion-content">
+                                <div class="content-inner prose max-w-none">
+                                    <p>La formule de Wilson est un outil d'optimisation puissant, mais elle ne doit être utilisée que lorsque la demande pour un produit est connue, certaine et régulière dans le temps. Si la demande est volatile, saisonnière ou imprévisible, les hypothèses du modèle ne sont plus valides. Tenter de l'appliquer dans un tel contexte mènerait inévitablement à des ruptures de stock ou à du surstockage. C'est précisément pour gérer ces situations d'incertitude que d'autres méthodes existent.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item rounded-lg overflow-hidden shadow-sm">
+                            <button class="accordion-button"><span>Que faire si la demande pour mon produit est imprévisible et irrégulière ?</span><span class="accordion-icon">&#9660;</span></button>
+                            <div class="accordion-content">
+                                <div class="content-inner prose max-w-none">
+                                    <p>Dans ce contexte, l'objectif principal n'est plus de trouver un optimum mathématique, mais de garantir la disponibilité du produit et d'éviter à tout prix la rupture de stock. Contrairement au Modèle de Wilson qui recherche un optimum économique dans un monde prévisible, ces méthodes sont des stratégies de gestion du risque dans un environnement incertain. Le choix de la méthode est alors souvent contraint par votre fournisseur :</p>
+                                    <ul>
+                                        <li>La <strong>méthode du point de commande</strong> est à utiliser si votre fournisseur vous impose des quantités de commande fixes (par exemple, par cartons complets).</li>
+                                        <li>La <strong>méthode de gestion calendaire</strong> est à utiliser si votre fournisseur vous impose des dates de livraison fixes (par exemple, une tournée de livraison chaque mardi).</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item rounded-lg overflow-hidden shadow-sm">
+                            <button class="accordion-button"><span>Qu'est-ce qu'une rupture de stock et pourquoi est-ce si grave ?</span><span class="accordion-icon">&#9660;</span></button>
+                            <div class="accordion-content">
+                                <div class="content-inner prose max-w-none">
+                                    <p>La rupture de stock est l'incapacité à satisfaire la demande d'un client car le produit qu'il souhaite acheter est indisponible. Il s'agit d'un échec opérationnel majeur qui déclenche une véritable boucle de rétroaction négative. Ses conséquences dépassent largement la simple vente manquée :</p>
+                                    <ul>
+                                        <li><strong>Coûts directs :</strong> C'est la perte immédiate du chiffre d'affaires et de la marge sur la vente qui n'a pas pu être réalisée.</li>
+                                        <li><strong>Coûts indirects (souvent plus graves) :</strong>
+                                            <ul>
+                                                <li><strong>Perte du client :</strong> Un client frustré se tournera vers un concurrent et risque de ne jamais revenir.</li>
+                                                <li><strong>Dégradation de l'image de marque :</strong> Des ruptures fréquentes, relayées par des avis négatifs, nuisent à votre réputation de fiabilité et affectent les ventes futures.</li>
+                                                <li><strong>Désorganisation opérationnelle :</strong> La gestion de l'urgence (commandes express, gestion des plaintes) engendre des coûts supplémentaires et perturbe les équipes.</li>
+                                            </ul>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item rounded-lg overflow-hidden shadow-sm">
+                            <button class="accordion-button"><span>Comment les niveaux de stock (minimum, sécurité, alerte) fonctionnent-ils ensemble ?</span><span class="accordion-icon">&#9660;</span></button>
+                            <div class="accordion-content">
+                                <div class="content-inner prose max-w-none">
+                                    <p>Imaginez votre stock comme le réservoir de carburant d'une voiture. Ces trois niveaux forment un système de protection à plusieurs étages, articulé de manière logique pour ne jamais tomber en panne sèche (la rupture de stock) :</p>
+                                    <ol>
+                                        <li>Le <strong>Stock Minimum</strong> est le carburant normal que vous prévoyez d'utiliser pour atteindre la prochaine station-service (votre prochaine livraison).</li>
+                                        <li>Le <strong>Stock de Sécurité</strong> est le réservoir de réserve. C'est une assurance que vous ne devriez jamais avoir à utiliser dans des conditions normales.</li>
+                                        <li>Le <strong>Stock d'Alerte</strong> est le voyant de carburant sur votre tableau de bord. Il ne s'allume pas quand le réservoir est vide, mais quand il vous reste juste assez de carburant (votre Stock Minimum) pour atteindre la prochaine station sans avoir à toucher à votre réserve (votre Stock de Sécurité). En passant commande à ce niveau précis, vous vous assurez que la nouvelle livraison arrive pour reconstituer votre stock de roulement, afin que votre stock de sécurité reste intact pour faire face à une véritable urgence.</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="quiz" class="content-section">
+                <div class="card"><div id="quiz-container"><div class="mb-4"><div class="flex justify-between items-center mb-2"><h2 class="text-xl font-semibold text-gray-800">Quiz : Testez vos connaissances</h2><p id="quiz-progress-text" class="text-sm font-medium text-gray-600"></p></div><div class="progress-bar-container"><div id="quiz-progress-bar" class="progress-bar" style="width: 0%;"></div></div></div><div id="quiz-question-area" class="mt-6"><p id="quiz-question" class="text-lg text-gray-700 font-medium mb-4"></p><div id="quiz-options" class="space-y-2"></div><div class="mt-4"><button id="quiz-hint-btn" class="text-sm text-indigo-600 hover:text-indigo-800">💡 Afficher l'indice</button><p id="quiz-hint-text" class="hidden mt-2 text-sm bg-yellow-100 p-3 rounded-md"></p></div><div id="quiz-feedback" class="hidden mt-4"></div><div class="text-right mt-6"><button id="quiz-next-btn" class="hidden bg-indigo-600 text-white font-semibold py-2 px-6 rounded-md hover:bg-indigo-700 transition">Question Suivante</button></div></div></div><div id="quiz-results-area" class="hidden text-center"><h2 class="text-2xl font-bold mb-4">Résultats du Quiz</h2><div id="quiz-result-message" class="p-4 rounded-lg mb-6"><p id="quiz-score" class="text-4xl font-bold"></p><p id="quiz-verdict" class="text-lg mt-2"></p></div><h3 class="text-xl font-semibold mb-4">Récapitulatif de vos réponses</h3><div id="quiz-summary" class="text-left space-y-4"></div><div class="mt-8"><button id="quiz-restart-btn" class="bg-gray-700 text-white font-semibold py-2 px-8 rounded-md hover:bg-gray-800 transition">Recommencer le Quiz</button></div></div></div>
+            </section>
+        </main>
+
+        <footer class="text-center py-8 mt-12 border-t border-gray-200 text-sm text-gray-500">
+            <p>Une application pédagogique - MCO.</p>
+            <p class="mt-1">© 2025-2026 | Tous droits réservés.</p>
+        </footer>
+    </div>
+    
+    <a href="#top" id="back-to-top-btn" class="fixed bottom-6 right-6 bg-indigo-600 hover:bg-indigo-700 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg transition-opacity duration-300 opacity-0 invisible z-50">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+    </a>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Logique de Navigation (Burger + Tabs) ---
+            const burgerBtn = document.getElementById('burger-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const allTabs = document.querySelectorAll('.tab-btn');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            burgerBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            const switchTab = (clickedTab) => {
+                const targetId = clickedTab.dataset.tab;
+
+                allTabs.forEach(t => {
+                    const isTarget = t.dataset.tab === targetId;
+                    t.classList.toggle('tab-active', isTarget);
+                    t.classList.toggle('tab-inactive', !isTarget);
+                });
+
+                contentSections.forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(targetId).classList.add('active');
+
+                mobileMenu.classList.add('hidden');
+            };
+
+            allTabs.forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab));
+            });
+            
+            // --- Logique des accordéons ---
+            function setupAccordion(containerId) {
+                const accordionContainer = document.getElementById(containerId);
+                accordionContainer.querySelectorAll('.accordion-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const content = button.nextElementSibling;
+                        button.classList.toggle('active');
+                        content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                    });
+                });
+            }
+            setupAccordion('accordion-lexique');
+            setupAccordion('accordion-faq');
+
+            // --- Simulateur: Les Fondamentaux ---
+            const slider = document.getElementById('orderCountSlider');
+            let costsChart;
+            const C_VAL = 1200000, T_VAL = 0.15, P_VAL = 150;
+            function updateCosts(numOrders) { 
+                const stockMoyen = C_VAL / (2 * numOrders); 
+                const coutPossession = stockMoyen * T_VAL; 
+                const coutPassation = numOrders * P_VAL; 
+                const coutTotal = coutPossession + coutPassation; 
+                document.getElementById('sliderValue').textContent = numOrders; 
+                document.getElementById('averageStock').textContent = stockMoyen.toFixed(2) + ' €';
+                document.getElementById('possessionCost').textContent = coutPossession.toFixed(2) + ' €'; 
+                document.getElementById('orderingCost').textContent = coutPassation.toFixed(2) + ' €'; 
+                document.getElementById('totalCost').textContent = coutTotal.toFixed(2) + ' €'; 
+                return { coutTotal }; 
+            }
+            function createOrUpdateChart() { const labels = Array.from({ length: 25 }, (_, i) => i + 1); const possessionData = labels.map(n => (C_VAL / (2 * n)) * T_VAL); const orderingData = labels.map(n => n * P_VAL); const totalData = labels.map((n, i) => possessionData[i] + orderingData[i]); const ctx = document.getElementById('costsChart').getContext('2d'); if (costsChart) { costsChart.destroy(); } costsChart = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Coût de Possession', data: possessionData, borderColor: 'rgb(59, 130, 246)', tension: 0.1 }, { label: 'Coût de Passation', data: orderingData, borderColor: 'rgb(239, 68, 68)', tension: 0.1 }, { label: 'Coût Total', data: totalData, borderColor: 'rgb(31, 41, 55)', borderWidth: 3, tension: 0.1 }, { type: 'scatter', label: 'Point Actuel', data: [], backgroundColor: 'rgb(79, 70, 229)', pointRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } }); updateChartPoint(parseInt(slider.value)); }
+            function updateChartPoint(numOrders) { const costs = updateCosts(numOrders); if (costsChart) { costsChart.data.datasets[3].data = [{ x: numOrders, y: costs.coutTotal }]; costsChart.update(); } }
+            slider.addEventListener('input', (e) => updateChartPoint(parseInt(e.target.value)));
+            
+            document.querySelector('[data-tab="fondamentaux"]').addEventListener('click', () => {
+                setTimeout(() => {
+                    if (!costsChart) {
+                        createOrUpdateChart();
+                    }
+                }, 50);
+            });
+
+
+             // --- Mini-cas: Demande Régulière ---
+            const costInputs = [document.getElementById('costLoyer'), document.getElementById('costSalaires'), document.getElementById('costAssurances'), document.getElementById('stockMoyen')];
+            const calculatedRateEl = document.getElementById('calculatedRate');
+            const tauxPossessionEl = document.getElementById('tauxPossession');
+            function calculateRate() { const costLoyer = parseFloat(document.getElementById('costLoyer').value) || 0; const costSalaires = parseFloat(document.getElementById('costSalaires').value) || 0; const costAssurances = parseFloat(document.getElementById('costAssurances').value) || 0; const stockMoyen = parseFloat(document.getElementById('stockMoyen').value) || 0; const totalCosts = costLoyer + costSalaires + costAssurances; const rate = stockMoyen > 0 ? (totalCosts / stockMoyen) * 100 : 0; calculatedRateEl.textContent = rate.toFixed(2) + ' %'; }
+            costInputs.forEach(input => input.addEventListener('input', calculateRate));
+            document.getElementById('useCalculatedRate').addEventListener('click', () => { const rateValue = parseFloat(calculatedRateEl.textContent); if (!isNaN(rateValue)) { tauxPossessionEl.value = rateValue.toFixed(2); document.getElementById('calculateWilson').click(); tauxPossessionEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); } });
+            document.getElementById('calculateWilson').addEventListener('click', () => { const C = parseFloat(document.getElementById('consommation').value), T = parseFloat(tauxPossessionEl.value) / 100, P = parseFloat(document.getElementById('coutPassation').value); if (isNaN(C) || isNaN(T) || isNaN(P) || C <= 0 || T < 0 || P <= 0) { document.getElementById('wilsonN').textContent = '-'; document.getElementById('wilsonCost').textContent = '-'; document.getElementById('wilsonFreq').textContent = '-'; return; }; const minCost = Math.sqrt(2 * C * T * P); const N = minCost / P; document.getElementById('wilsonN').textContent = N.toFixed(2); document.getElementById('wilsonCost').textContent = minCost.toFixed(2) + ' €'; document.getElementById('wilsonFreq').textContent = `Environ tous les ${(365 / N).toFixed(0)} jours`; });
+            calculateRate();
+
+            // --- Logique: Niveaux de Stock ---
+            const stockLevels = document.querySelectorAll('.stock-level-diagram div');
+            const explanationBox = document.getElementById('stockLevelExplanation');
+            const explanations = { 
+                minimum: { 
+                    title: "Stock Minimum", 
+                    text: "Stock pour couvrir les ventes durant la livraison.", 
+                    formula: "Stock Minimum = Consommation moyenne journalière &times; Délai de livraison moyen en jours" 
+                }, 
+                securite: { 
+                    title: "Stock de Sécurité", 
+                    text: "Marge pour parer aux imprévus (retards, pic de ventes).", 
+                    formula: "Calculé selon le niveau de risque accepté." 
+                }, 
+                alerte: { 
+                    title: "Stock d'Alerte", 
+                    text: "Niveau de stock qui déclenche la commande.", 
+                    formula: "Formule : Stock Minimum + Stock de Sécurité" 
+                } 
+            };
+            stockLevels.forEach(level => { level.addEventListener('mouseenter', () => { const levelData = explanations[level.dataset.level]; explanationBox.innerHTML = `<div class="text-left"><h4 class="font-bold text-lg text-gray-800">${levelData.title}</h4><p class="mt-2 text-gray-600">${levelData.text}</p><p class="mt-4 font-semibold text-indigo-600 text-sm">${levelData.formula}</p></div>`; }); });
+
+            // --- Simulateur: Point de Commande (PdC) ---
+            const pdcState = { jour: 0, stock: 0, ventes: [], alerte: 0, qteCmd: 0, delai: 0, commandeEnCours: false, joursAvantLivraison: 0 };
+            const pdcResetBtn = document.getElementById('pdcReset');
+            const pdcNextDayBtn = document.getElementById('pdcNextDay');
+            const pdcTableBody = document.getElementById('pdcTableBody');
+            function resetPdcSim() { pdcState.jour = 0; pdcState.stock = parseInt(document.getElementById('pdcStockInitial').value); pdcState.ventes = document.getElementById('pdcVentes').value.split(',').map(v => parseInt(v.trim()) || 0); pdcState.alerte = parseInt(document.getElementById('pdcStockAlerte').value); pdcState.qteCmd = parseInt(document.getElementById('pdcQteCmd').value); pdcState.delai = parseInt(document.getElementById('pdcDelai').value); pdcState.commandeEnCours = false; pdcState.joursAvantLivraison = 0; pdcTableBody.innerHTML = ''; pdcNextDayBtn.disabled = false; }
+            pdcResetBtn.addEventListener('click', resetPdcSim);
+            pdcNextDayBtn.addEventListener('click', () => { if (pdcState.jour >= pdcState.ventes.length) { pdcNextDayBtn.disabled = true; return; } const stockDebut = pdcState.stock, venteDuJour = pdcState.ventes[pdcState.jour] || 0; let stockFin = stockDebut - venteDuJour, action = '-', rowClass = ''; if (pdcState.commandeEnCours) { pdcState.joursAvantLivraison--; if (pdcState.joursAvantLivraison <= 0) { stockFin += pdcState.qteCmd; action = `<span class="font-bold text-green-600">Livraison reçue</span>`; pdcState.commandeEnCours = false; rowClass = 'bg-green-100'; } } if (!pdcState.commandeEnCours && stockFin <= pdcState.alerte) { action = `<span class="font-bold text-red-600">Commande</span>`; pdcState.commandeEnCours = true; pdcState.joursAvantLivraison = pdcState.delai; rowClass = 'bg-red-100'; } pdcTableBody.innerHTML += `<tr class="${rowClass}"><td class="px-2 py-2 text-center">${pdcState.jour + 1}</td><td class="px-2 py-2 text-center">${stockDebut}</td><td class="px-2 py-2 text-center">${venteDuJour}</td><td class="px-2 py-2 font-semibold text-center">${stockFin}</td><td class="px-2 py-2 text-center">${action}</td></tr>`; pdcState.stock = stockFin; pdcState.jour++; if (pdcState.jour >= pdcState.ventes.length) pdcNextDayBtn.disabled = true; });
+            resetPdcSim();
+
+            // --- Simulateur: Gestion Calendaire (Cal) ---
+            const calState = { jour: 0, stock: 0, ventes: [], stockSecu: 0, jourCmd: 0, delai: 0, livraisonEnAttente: 0, jourDeLivraison: -1 };
+            const calResetBtn = document.getElementById('calReset');
+            const calNextDayBtn = document.getElementById('calNextDay');
+            const calTableBody = document.getElementById('calTableBody');
+            function resetCalSim() { calState.jour = 0; calState.stock = parseInt(document.getElementById('calStockInitial').value); calState.ventes = document.getElementById('calVentes').value.split(',').map(v => parseInt(v.trim()) || 0); calState.stockSecu = parseInt(document.getElementById('calStockSecu').value); calState.jourCmd = parseInt(document.getElementById('calJourCmd').value); calState.delai = parseInt(document.getElementById('calDelai').value); calState.livraisonEnAttente = 0; calState.jourDeLivraison = -1; calTableBody.innerHTML = ''; calNextDayBtn.disabled = false; }
+            calResetBtn.addEventListener('click', resetCalSim);
+            calNextDayBtn.addEventListener('click', () => { if (calState.jour >= calState.ventes.length) { calNextDayBtn.disabled = true; return; } const stockDebut = calState.stock, venteDuJour = calState.ventes[calState.jour] || 0; let stockFin = stockDebut - venteDuJour, action = '-', rowClass = ''; if (calState.jour + 1 === calState.jourDeLivraison) { stockFin += calState.livraisonEnAttente; action = `<span class="font-bold text-green-600">Livraison (${calState.livraisonEnAttente})</span>`; calState.livraisonEnAttente = 0; calState.jourDeLivraison = -1; rowClass = 'bg-green-100'; } if (calState.jourCmd > 0 && (calState.jour + 1) % calState.jourCmd === 0) { const joursACouvrir = calState.delai + calState.jourCmd; const ventesFutures = calState.ventes.slice(calState.jour + 1, calState.jour + 1 + joursACouvrir).reduce((a, b) => a + b, 0); const stockCible = ventesFutures + calState.stockSecu; const qteACommander = Math.max(0, stockCible - (stockFin + calState.livraisonEnAttente)); action = `<span class="font-bold text-blue-600">Cmd: ${qteACommander}</span>`; calState.livraisonEnAttente = qteACommander; calState.jourDeLivraison = calState.jour + 1 + calState.delai; rowClass = 'bg-blue-100'; } calTableBody.innerHTML += `<tr class="${rowClass}"><td class="px-2 py-2 text-center">${calState.jour + 1}</td><td class="px-2 py-2 text-center">${stockDebut}</td><td class="px-2 py-2 text-center">${venteDuJour}</td><td class="px-2 py-2 font-semibold text-center">${stockFin}</td><td class="px-2 py-2 text-center">${action}</td></tr>`; calState.stock = stockFin; calState.jour++; if (calState.jour >= calState.ventes.length) calNextDayBtn.disabled = true; });
+            resetCalSim();
+
+            // --- Simulateur: Arbitrage ---
+            const calculateArbitrageBtn = document.getElementById('calculateArbitrage');
+            function runArbitrage() { const C = parseFloat(document.getElementById('arbBesoin').value), T = parseFloat(document.getElementById('arbTaux').value) / 100, P = parseFloat(document.getElementById('arbCout').value); const tableBody = document.getElementById('arbitrageTable'), analysisResult = document.getElementById('analysisResult'); if (isNaN(C) || isNaN(T) || isNaN(P) || !tableBody) return; tableBody.innerHTML = ''; let minCost = Infinity, bestN = 0; for (let n = 1; n <= 10; n++) { const coutTotal = (C / (2 * n)) * T + (n * P); if (coutTotal < minCost) { minCost = coutTotal; bestN = n; } } for (let n = 1; n <= 10; n++) { const coutPossession = (C / (2 * n)) * T, coutPassation = n * P, coutTotal = coutPossession + coutPassation; const isOptimal = n === bestN; const rowClass = isOptimal ? 'bg-green-100 font-bold' : ''; tableBody.innerHTML += `<tr class="${rowClass}"><td class="px-4 py-2">${n}</td><td class="px-4 py-2">${coutPossession.toFixed(2)} €</td><td class="px-4 py-2">${coutPassation.toFixed(2)} €</td><td class="px-4 py-2 text-gray-800">${coutTotal.toFixed(2)} € ${isOptimal ? '&#9733;' : ''}</td></tr>`; } analysisResult.innerHTML = `<strong>Analyse du Manager :</strong> Le scénario le plus économique est de passer <strong>${bestN} commandes</strong>, pour un coût total optimisé de <strong>${minCost.toFixed(2)} €</strong>.`; analysisResult.style.display = 'block'; };
+            calculateArbitrageBtn.addEventListener('click', runArbitrage);
+            runArbitrage();
+
+            // --- Logique du Quiz ---
+            const quizData = [
+                {
+                    question: "Un gestionnaire qui décide de passer de très nombreuses petites commandes pour minimiser son stock moyen parviendra à réduire son coût de gestion global, car le coût de possession sera presque nul.",
+                    type: "tf",
+                    options: ["Vrai", "Faux"],
+                    answer: "Faux",
+                    hint: 'Pensez à la nature "antagoniste" des deux coûts principaux. Que se passe-t-il pour le coût de passation lorsque le nombre de commandes augmente ?',
+                    feedback: {
+                        correct: "Exact. Votre raisonnement est correct. Bien que les coûts de possession diminuent, la multiplication des commandes fait exploser les coûts de passation (frais administratifs, transport, etc.). Le coût de gestion total, qui est la somme des deux, augmentera donc fortement.",
+                        incorrect: "Attention au caractère antagoniste des coûts. Le coût de gestion des approvisionnements est la somme du coût de possession ET du coût de passation. En passant de très nombreuses commandes, le coût de passation total (Coût par commande × Nombre de commandes) devient très élevé et annule, voire dépasse, le gain réalisé sur le coût de possession."
+                    }
+                },
+                {
+                    question: "Le magasin Avicenne paie un loyer pour son entrepôt, emploie un magasinier et souscrit une assurance contre le vol et la détérioration de ses marchandises. Ces charges font principalement partie de quel coût ?",
+                    type: "mcq",
+                    options: ["Le coût de passation des commandes", "Le coût de gestion des approvisionnements", "Le coût de possession du stock", "Le coût d'opportunité du capital immobilisé"],
+                    answer: "Le coût de possession du stock",
+                    hint: "Ce coût regroupe toutes les dépenses liées au fait de détenir physiquement et financièrement du stock.",
+                    feedback: {
+                        correct: "Parfait. Le coût de possession regroupe bien tous les frais liés à la détention des marchandises : frais de magasinage (loyer, personnel), frais financiers (capital immobilisé) et frais de dépréciation (risques).",
+                        incorrect: "Il est important de bien distinguer les deux types de coûts. Le coût de passation (a) est lié au processus d'achat. Le coût de gestion (b) est le total des deux. Le coût d'opportunité (d) n'est qu'une des composantes du coût de possession. Les charges décrites (loyer, assurance, personnel de stockage) sont directement liées au fait de détenir du stock."
+                    }
+                },
+                {
+                    question: "Le service achat du magasin Avicenne passe une journée à contacter des fournisseurs, à remplir des bons de commande et à organiser le transport pour un réapprovisionnement. Les salaires de ce personnel et les frais de livraison sont inclus dans :",
+                    type: "mcq",
+                    options: ["Le coût de possession du stock", "Le coût de passation des commandes", "Le stock de sécurité", "Le taux de possession"],
+                    answer: "Le coût de passation des commandes",
+                    hint: "Ce coût est lié à l'action de commander elle-même, indépendamment de la quantité.",
+                    feedback: {
+                        correct: "Excellent. Le coût de passation des commandes couvre précisément les charges administratives (salaires du service achat) et logistiques (transport, réception) générées par le processus d'achat lui-même.",
+                        incorrect: "Le coût de possession (a) concerne les charges liées au stockage des marchandises une fois qu'elles sont dans l'entrepôt. Ici, les coûts sont engagés pour faire venir la marchandise. Il s'agit donc bien du coût de passation."
+                    }
+                },
+                {
+                    question: "La formule de Wilson est un outil universel qui permet de calculer la quantité optimale à commander pour n'importe quel produit, qu'il s'agisse de sel, dont la demande est très stable, ou de maillots de bain, dont la demande est très saisonnière.",
+                    type: "tf",
+                    options: ["Vrai", "Faux"],
+                    answer: "Faux",
+                    hint: 'Quelle est la condition d\'application "essentielle" et "stricte" de ce modèle mathématique ?',
+                    feedback: {
+                        correct: "Très bien. Vous avez parfaitement identifié la limite principale de cet outil. La formule de Wilson n'est pertinente et efficace que lorsque la demande pour un produit est certaine, constante et régulière. L'appliquer à une demande volatile comme celle des maillots de bain conduirait à du surstockage ou des ruptures.",
+                        incorrect: "Attention, la formule de Wilson est un outil puissant mais très spécifique. L'une de ses hypothèses fondamentales est que la demande est connue et stable. Pour des produits à demande irrégulière ou saisonnière, il faut utiliser d'autres méthodes comme le point de commande ou la gestion calendaire."
+                    }
+                },
+                {
+                    question: "En appliquant la formule de Wilson, un gestionnaire cherche avant tout à déterminer :",
+                    type: "mcq",
+                    options: ["Le niveau du stock de sécurité pour éviter les ruptures.", "La cadence d'approvisionnement qui rendra le coût total de gestion des stocks le plus bas possible.", "La quantité à commander lorsque la demande est très irrégulière.", "Le meilleur prix d'achat unitaire auprès des fournisseurs."],
+                    answer: "La cadence d'approvisionnement qui rendra le coût total de gestion des stocks le plus bas possible.",
+                    hint: "L'objectif de la formule est de trouver un point d'équilibre économique entre deux forces opposées.",
+                    feedback: {
+                        correct: "C'est exact. L'objectif unique de la formule de Wilson est de trouver le point d'équilibre économique, c'est-à-dire le nombre de commandes (et donc la quantité par commande) qui minimise la somme des coûts de possession et de passation.",
+                        incorrect: "Le stock de sécurité (a) et la gestion de la demande irrégulière (c) sont traités par d'autres méthodes. Le prix d'achat (d) est une donnée d'entrée de la formule, mais pas son résultat. La formule de Wilson se concentre exclusivement sur la minimisation du coût total de gestion du stock."
+                    }
+                },
+                {
+                    question: "Le système de gestion du magasin Avicenne indique que le stock de riz vient d'atteindre 105 unités, ce qui déclenche automatiquement l'envoi d'un bon de commande au fournisseur. Ce niveau de 105 unités représente :",
+                    type: "mcq",
+                    options: ["Le stock minimum", "Le stock de sécurité", "Le stock d'alerte (ou point de commande)", "Le stock moyen"],
+                    answer: "Le stock d'alerte (ou point de commande)",
+                    hint: 'Ce seuil est un "signal opérationnel" calculé pour agir avant de devoir utiliser les réserves.',
+                    feedback: {
+                        correct: "Parfait. Le stock d'alerte est précisément le niveau de stock qui, une fois atteint, déclenche l'action de passer une nouvelle commande. Il est calculé pour que la livraison arrive avant que le stock de sécurité ne soit entamé.",
+                        incorrect: "Le stock minimum (a) couvre les besoins pendant la livraison et le stock de sécurité (b) couvre les imprévus. Le stock d'alerte est la somme des deux et sert de déclencheur. C'est le \"voyant sur le tableau de bord\" qui indique qu'il est temps de commander."
+                    }
+                },
+                {
+                    question: "Lorsque le coût de gestion des approvisionnements est à son point le plus bas (l'optimum de Wilson), c'est parce que le coût de possession du stock et le coût de passation des commandes sont les plus proches l'un de l'autre.",
+                    type: "tf",
+                    options: ["Vrai", "Faux"],
+                    answer: "Vrai",
+                    hint: "Observez le tableau de simulation de l'exemple de la farine. Que remarquez-vous sur les valeurs des deux coûts lorsque le coût total est minimal ?",
+                    feedback: {
+                        correct: "Tout à fait. C'est une caractéristique fondamentale du modèle de Wilson. L'optimum est trouvé au point d'intersection des deux courbes de coût. Dans les simulations, on observe que le coût total est minimal lorsque le coût de possession et le coût de passation sont les plus proches en valeur.",
+                        incorrect: "Revoyez les tableaux de simulation. Vous constaterez que lorsque le nombre de commandes est très faible (coût de passation bas, coût de possession élevé) ou très élevé (coût de passation élevé, coût de possession bas), l'écart entre les deux coûts est immense et le coût total est élevé. Le minimum est atteint lorsque ces deux forces contraires s'équilibrent."
+                    }
+                },
+                {
+                    question: "Un client fidèle du magasin Avicenne ne trouve pas sa farine habituelle en rayon. Frustré, il se rend chez un concurrent, y fait toutes ses courses et publie un avis négatif en ligne. Cet événement illustre principalement :",
+                    type: "mcq",
+                    options: ["Un problème lié au coût de passation des commandes.", "Les coûts directs et indirects d'une rupture de stock.", "Les contraintes d'un approvisionnement en grande quantité.", "Une erreur dans le calcul du stock moyen."],
+                    answer: "Les coûts directs et indirects d'une rupture de stock.",
+                    hint: "Les conséquences d'un stock vide dépassent largement la simple vente manquée.",
+                    feedback: {
+                        correct: "Excellente analyse. Vous avez bien identifié que la rupture de stock a des conséquences multiples : la perte de la vente (coût direct), mais aussi et surtout la perte du client et la dégradation de l'image de marque (coûts indirects), qui sont souvent bien plus graves à long terme.",
+                        incorrect: "Une rupture de stock est un échec opérationnel majeur. La situation décrite va bien au-delà d'un simple problème de coût (a) ou de contrainte de stockage (c). Elle montre la \"boucle de rétroaction négative\" : vente perdue -> client insatisfait -> perte de fidélité -> mauvaise publicité."
+                    }
+                },
+                {
+                    question: "Le fournisseur de riz du magasin Avicenne impose des jours de livraison fixes : il ne passe que le mardi et le jeudi. Pour gérer son stock de riz, dont la demande est volatile, le magasin doit donc utiliser :",
+                    type: "mcq",
+                    options: ["La formule de Wilson", "La méthode du point de commande", "La méthode de la gestion calendaire", "Une stratégie d'approvisionnement en grande quantité"],
+                    answer: "La méthode de la gestion calendaire",
+                    hint: 'L\'une des méthodes est basée sur le principe "Date Fixe, Quantité Variable".',
+                    feedback: {
+                        correct: "C'est la bonne réponse. La gestion calendaire est spécifiquement conçue pour les situations où le fournisseur impose des dates de livraison fixes. Les commandes sont passées à intervalle régulier, et seule la quantité commandée varie en fonction des besoins.",
+                        incorrect: "La formule de Wilson (a) ne s'applique pas car la demande est volatile. La méthode du point de commande (b) est utilisée quand la quantité est fixe, pas la date. Ici, la contrainte porte sur le calendrier, d'où le nom 'gestion calendaire'."
+                    }
+                },
+                {
+                    question: "Pour un autre produit, le fournisseur impose de commander par palettes complètes de 200 unités. Les ventes étant irrégulières, la commande est déclenchée à des dates différentes, chaque fois que le stock devient bas. Cette méthode s'appelle :",
+                    type: "mcq",
+                    options: ["La gestion calendaire", "La formule de Wilson", "La méthode du point de commande", "Le calcul du stock minimum"],
+                    answer: "La méthode du point de commande",
+                    hint: 'Cette méthode suit le principe "Quantité Fixe, Date Variable".',
+                    feedback: {
+                        correct: "Exact. La méthode du point de commande est la bonne stratégie lorsque le fournisseur impose une quantité fixe. La commande est déclenchée à une date variable, dès que le stock atteint le seuil d'alerte (le point de commande).",
+                        incorrect: "La gestion calendaire (a) est utilisée quand la date de livraison est fixe. La formule de Wilson (b) s'applique à une demande régulière. Ici, la contrainte porte sur la quantité, et la commande est déclenchée par un niveau de stock, ce qui est le principe même du point de commande."
+                    }
+                },
+                {
+                    question: "Le stock de sécurité est le stock prévu pour couvrir la consommation normale pendant le délai de livraison du fournisseur. Il est donc consommé et renouvelé à chaque cycle de commande.",
+                    type: "tf",
+                    options: ["Vrai", "Faux"],
+                    answer: "Faux",
+                    hint: "Pensez à la métaphore du réservoir de carburant d'une voiture. Le stock de sécurité est-il le carburant normal ou la réserve d'urgence ?",
+                    feedback: {
+                        correct: "Très bien, vous avez bien fait la distinction. Le stock de sécurité est un \"tampon\" additionnel pour se protéger contre les imprévus (retard de livraison, pic de ventes). Le stock qui couvre la consommation normale pendant le délai de livraison est le \"stock minimum\". Le stock de sécurité ne doit, en théorie, jamais être utilisé.",
+                        incorrect: "Attention à ne pas confondre les deux. Le \"stock minimum\" est celui qui est consommé pendant que vous attendez la livraison. Le \"stock de sécurité\" est une réserve supplémentaire pour faire face aux aléas. C'est une assurance contre l'imprévu qui doit rester intacte en temps normal."
+                    }
+                },
+                {
+                    question: "Le magasin Avicenne a une consommation annuelle de 12 000 kg de farine à 1€/kg, un coût de passation de 15€ et un taux de possession de 10%. En utilisant la formule de Wilson, quel est le nombre optimal de commandes à passer ?",
+                    type: "mcq",
+                    options: ["Environ 4 commandes", "Environ 10 commandes", "Environ 6 commandes", "Environ 2 commandes"],
+                    answer: "Environ 6 commandes",
+                    hint: "Appliquez le calcul : N = √(Consommation en valeur × Taux de possession / (2 × Coût de passation)) soit √(12000 × 0,10 / (2 × 15)).",
+                    feedback: {
+                        correct: "Excellent calcul. N = √(12000 × 1 × 0,10 / (2 × 15)) = √(1200 / 30) = √40 ≈ 6,32. On arrondit au nombre entier le plus proche, soit 6 commandes par an.",
+                        incorrect: "Le calcul est le suivant : le numérateur est (12000 × 1 × 0,10) = 1200. Le dénominateur est (2 × 15) = 30. Le ratio est donc 1200 / 30 = 40. La racine carrée de 40 est approximativement 6,32. Le nombre optimal de commandes est donc 6."
+                    }
+                }
+            ];
+            let currentQuestionIndex = 0; let score = 0; let userAnswers = [];
+            const quizContainer = document.getElementById('quiz-container'); const resultsContainer = document.getElementById('quiz-results-area'); const questionEl = document.getElementById('quiz-question'); const optionsEl = document.getElementById('quiz-options'); const hintBtn = document.getElementById('quiz-hint-btn'); const hintText = document.getElementById('quiz-hint-text'); const feedbackEl = document.getElementById('quiz-feedback'); const nextBtn = document.getElementById('quiz-next-btn'); const progressBar = document.getElementById('quiz-progress-bar'); const progressText = document.getElementById('quiz-progress-text');
+            function startQuiz() { currentQuestionIndex = 0; score = 0; userAnswers = []; quizContainer.style.display = 'block'; resultsContainer.style.display = 'none'; showQuestion(); }
+            function showQuestion() { resetState(); const question = quizData[currentQuestionIndex]; questionEl.textContent = question.question; question.options.forEach(option => { const button = document.createElement('button'); button.textContent = option; button.classList.add('quiz-option'); button.addEventListener('click', () => selectAnswer(button, option)); optionsEl.appendChild(button); }); updateProgress(); }
+            function resetState() { optionsEl.innerHTML = ''; feedbackEl.innerHTML = ''; feedbackEl.style.display = 'none'; hintText.style.display = 'none'; hintBtn.style.display = 'block'; nextBtn.style.display = 'none'; }
+            function selectAnswer(button, selectedOption) { const question = quizData[currentQuestionIndex]; const isCorrect = selectedOption === question.answer; userAnswers[currentQuestionIndex] = { question: question.question, selected: selectedOption, correct: question.answer, isCorrect: isCorrect }; if (isCorrect) { score++; button.classList.add('correct'); feedbackEl.innerHTML = `<div class="feedback-box correct"><p class="font-semibold">Bonne réponse !</p><p class="text-sm">${question.feedback.correct}</p></div>`; } else { button.classList.add('incorrect'); feedbackEl.innerHTML = `<div class="feedback-box incorrect"><p class="font-semibold">Mauvaise réponse</p><p class="text-sm">${question.feedback.incorrect}</p></div>`; Array.from(optionsEl.children).forEach(btn => { if (btn.textContent === question.answer) { btn.classList.add('correct'); } }); } feedbackEl.style.display = 'block'; Array.from(optionsEl.children).forEach(btn => btn.disabled = true); nextBtn.style.display = 'inline-block'; hintBtn.style.display = 'none'; hintText.style.display = 'none'; }
+            function updateProgress() { const progress = ((currentQuestionIndex) / quizData.length) * 100; progressBar.style.width = `${progress}%`; progressText.textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`; }
+            hintBtn.addEventListener('click', () => { hintText.textContent = quizData[currentQuestionIndex].hint; hintText.style.display = 'block'; hintBtn.style.display = 'none'; });
+            nextBtn.addEventListener('click', () => { currentQuestionIndex++; if (currentQuestionIndex < quizData.length) { showQuestion(); } else { showResults(); } });
+            function showResults() { quizContainer.style.display = 'none'; resultsContainer.style.display = 'block'; const percentage = Math.round((score / quizData.length) * 100); const scoreEl = document.getElementById('quiz-score'); const verdictEl = document.getElementById('quiz-verdict'); const resultMessageEl = document.getElementById('quiz-result-message'); scoreEl.textContent = `${percentage}%`; if (percentage >= 75) { verdictEl.textContent = "Bravo ! Vous maîtrisez les concepts clés !"; resultMessageEl.classList.add('bg-green-100', 'text-green-800'); resultMessageEl.classList.remove('bg-orange-100', 'text-orange-800'); } else { verdictEl.textContent = "Bon effort ! N'hésitez pas à revoir les sections pour renforcer vos connaissances."; resultMessageEl.classList.add('bg-orange-100', 'text-orange-800'); resultMessageEl.classList.remove('bg-green-100', 'text-green-800'); } const summaryEl = document.getElementById('quiz-summary'); summaryEl.innerHTML = ''; userAnswers.forEach((ans, index) => { const icon = ans.isCorrect ? '✅' : '❌'; const selectedClass = ans.isCorrect ? '' : 'text-red-600 line-through'; const correctDisplay = ans.isCorrect ? '' : `<p class="text-sm text-green-700">La bonne réponse était : ${ans.correct}</p>`; summaryEl.innerHTML += `<div class="border p-3 rounded-md"><p class="font-medium">${index + 1}. ${ans.question}</p><p class="text-sm mt-1">Votre réponse : <span class="${selectedClass}">${icon} ${ans.selected}</span></p>${correctDisplay}</div>`; }); }
+            document.getElementById('quiz-restart-btn').addEventListener('click', startQuiz);
+            startQuiz();
+
+            // --- Bouton Retour en Haut ---
+            const backToTopBtn = document.getElementById('back-to-top-btn');
+            if (backToTopBtn) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 400) {
+                        backToTopBtn.classList.remove('opacity-0', 'invisible');
+                        backToTopBtn.classList.add('opacity-100', 'visible');
+                    } else {
+                        backToTopBtn.classList.remove('opacity-100', 'visible');
+                        backToTopBtn.classList.add('opacity-0', 'invisible');
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

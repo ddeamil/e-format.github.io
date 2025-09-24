@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Observer les Opérations Courantes de l'Unité Commerciale</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: L'application est structurée en quatre modules thématiques interactifs plutôt qu'en chapitres linéaires. 1) Une comparaison côte à côte des 3 cycles fondamentaux pour une distinction claire. 2) Un sélecteur d'activité dynamique qui met à jour un diagramme et un graphique pour visualiser les variations du cycle d'exploitation. 3) Une chronologie interactive du flux de transaction, du devis à la facture, avec une facture "cliquable" pour explorer les mentions légales. 4) Un calculateur de BFR interactif pour que l'utilisateur puisse manipuler les variables et voir l'impact sur la trésorerie. Cette structure a été choisie pour transformer la lecture passive en une exploration active et pratique, facilitant la compréhension de concepts complexes comme le BFR par la simulation. -->
+    <!-- Visualization & Content Choices: 1. Comparaison des cycles -> Cartes HTML/Tailwind -> Interaction au survol -> Clarté et comparaison directe. 2. Variation des cycles par activité -> Diagramme HTML/Flexbox et graphique à barres Chart.js -> Interaction via boutons -> Visualisation dynamique des différences de processus et d'impact financier (BFR). 3. Flux documentaire -> Chronologie HTML/CSS -> Clic pour détails -> Montre la séquence logique et l'importance de chaque document. 4. Calcul du BFR -> Formulaire avec sliders et graphique à barres Chart.js -> Mise à jour en temps réel -> Démystifie une formule comptable en une expérience de simulation tangible. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #383838;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; /* Conserve pour les écrans plus larges */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px; /* Hauteur de base */
+            min-height: 250px; /* Assure une hauteur minimale sur mobile */
+            max-height: 400px;
+        }
+        @media (max-width: 767px) { /* Pour les petits écrans spécifiquement */
+            .chart-container {
+                height: 250px; /* Légèrement réduit pour les mobiles */
+                max-width: 95%; /* S'adapte mieux au viewport */
+            }
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-link {
+            transition: all 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #D97706;
+            border-bottom-color: #D97706;
+        }
+        .btn-primary {
+            background-color: #D97706;
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: #B45309;
+        }
+        .btn-secondary {
+            background-color: #F3F4F6;
+            color: #374151;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary.active {
+            background-color: #D97706;
+            color: white;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .flow-step {
+            border-left: 3px solid #D1D5DB;
+            transition: border-color 0.3s;
+            cursor: pointer; /* Added cursor for clickability */
+        }
+        .flow-step:hover {
+            border-left-color: #D97706;
+        }
+        /* Generic tooltip style - hidden by default */
+        .tooltip {
+            position: absolute;
+            display: none;
+            background-color: #1F2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            z-index: 10;
+            white-space: pre-wrap;
+            max-width: 250px; /* Use max-width for responsiveness */
+            pointer-events: none; /* Prevent tooltip from intercepting mouse events */
+        }
+
+        /* Styling for the info icon */
+        .info-icon {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 9999px;
+            background-color: #D97706;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: bold;
+            line-height: 1rem; /* Center the 'i' vertically */
+            vertical-align: middle; /* Align with text */
+            position: relative; /* Make it a positioning context for nested tooltips */
+            margin-left: 0.25rem; /* Small space after text */
+        }
+        /* Specific tooltip positioning for info-icons (e.g., in BFR labels and Facture) */
+        .info-icon .tooltip {
+            left: 100%; /* Position to the right of the icon */
+            transform: translateX(0) translateY(-50%); /* Align vertically with icon */
+            top: 50%;
+            margin-left: 0.5rem; /* Space between icon and tooltip */
+            display: none; /* Hidden by default */
+        }
+        /* Override for tooltips that should appear to the left (e.g., end-of-line elements) */
+        .info-icon.tooltip-left .tooltip {
+            left: auto; /* Reset left */
+            right: 100%; /* Position to the left of the icon */
+            margin-left: 0; /* Reset margin-left */
+            margin-right: 0.5rem; /* Space between icon and tooltip */
+            transform: translateX(0) translateY(-50%); /* Keep vertical alignment */
+        }
+
+        /* Show tooltip on group hover */
+        .group:hover .tooltip {
+            display: block;
+        }
+
+
+        /* Quiz specific styles */
+        .quiz-option-btn {
+            background-color: #F3F4F6;
+            color: #374151;
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            text-align: left;
+            width: 100%;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            border: 1px solid #E5E7EB;
+        }
+        .quiz-option-btn:hover:not(:disabled) {
+            background-color: #E5E7EB;
+        }
+        .quiz-option-btn.selected {
+            background-color: #FDFBF8;
+            border-color: #D97706;
+            color: #D97706;
+        }
+        .quiz-option-btn.correct {
+            background-color: #D1FAE5; /* green-100 */
+            border-color: #10B981; /* green-500 */
+            color: #065F46; /* green-900 */
+        }
+        .quiz-option-btn.incorrect {
+            background-color: #FEE2E2; /* red-100 */
+            border-color: #EF4444; /* red-500 */
+            color: #991B1B; /* red-900 */
+        }
+        .quiz-option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+        .modal.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.75rem;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out;
+        }
+        @media (max-width: 500px) { /* Pour les très petits écrans, réduire la largeur max */
+            .modal-content {
+                width: 95%; /* Un peu plus de marge */
+                padding: 1.5rem; /* Réduire le padding */
+            }
+        }
+        .modal.open .modal-content {
+            transform: translateY(0);
+        }
+        /* Assurer le word-break pour le contenu de la modale */
+        .modal-content p, .modal-content li {
+            word-break: break-word;
+            overflow-wrap: break-word; /* Standard plus récent */
+        }
+
+        /* Ensure fact-item is relative for tooltip positioning */
+        .fact-item {
+            position: relative;
+            display: inline-block; /* Allow proper sizing for tooltips */
+        }
+
+        /* Labels des sliders du BFR */
+        .bfr-slider-label {
+            display: flex; /* Utiliser flexbox */
+            align-items: center; /* Centrer verticalement */
+            flex-wrap: wrap; /* Permettre le retour à la ligne */
+            margin-bottom: 0.25rem; /* Ajuster l'espacement si besoin */
+            font-weight: 500;
+        }
+
+        /* Styles pour les nouvelles cartes du lexique */
+        .lexicon-card {
+            border: 1px solid #E5E7EB;
+            border-radius: 0.75rem;
+            background-color: #FDFBF8; /* Légèrement différent du fond pour les distinguer */
+        }
+        .lexicon-card summary {
+            list-style: none; /* Supprime la flèche native du navigateur */
+        }
+        .lexicon-card summary::-webkit-details-marker { /* Pour Webkit (Chrome, Safari) */
+            display: none;
+        }
+        .lexicon-card details[open] summary {
+            border-bottom: 1px solid #E5E7EB; /* Ligne de séparation quand ouvert */
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold text-amber-700">Gestion de l'UC</h1>
+            <!-- Mobile Menu Toggle Button -->
+            <button id="mobile-menu-toggle" class="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+            </button>
+            <!-- Desktop Navigation Links -->
+            <div id="desktop-nav-links" class="hidden md:flex space-x-8">
+                <a href="#video" class="nav-link pb-1">Introduction</a>
+                <a href="#cycles" class="nav-link pb-1">Les Cycles</a>
+                <a href="#exploitation" class="nav-link pb-1">Le Cycle d'Exploitation</a>
+                <a href="#flux" class="nav-link pb-1">Flux & Documents</a>
+                <a href="#bfr" class="nav-link pb-1">Trésorerie & BFR</a>
+                <a href="#lexique" class="nav-link pb-1">Lexique</a>
+                <a href="#faq" class="nav-link pb-1">FAQ</a>
+                <a href="#quiz" class="nav-link pb-1">Quiz</a>
+                <a href="#synthese" class="nav-link pb-1">Synthèse</a>
+            </div>
+        </nav>
+        <!-- Mobile Menu Container -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white shadow-lg py-4 border-t">
+            <div class="container mx-auto px-6 flex flex-col space-y-2">
+                 <a href="#video" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Introduction</a>
+                 <a href="#cycles" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Les Cycles</a>
+                 <a href="#exploitation" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Le Cycle d'Exploitation</a>
+                 <a href="#flux" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Flux & Documents</a>
+                 <a href="#bfr" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Trésorerie & BFR</a>
+                 <a href="#lexique" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Lexique</a>
+                 <a href="#faq" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">FAQ</a>
+                 <a href="#quiz" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Quiz</a>
+                 <a href="#synthese" class="nav-link block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-md">Synthèse</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+        <section id="hero" class="text-center mb-20">
+            <h2 class="text-4xl md:text-5xl font-bold mb-4">Observer les Opérations Courantes</h2>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">
+                Une exploration interactive des cycles, flux et documents qui rythment la vie d'une unité commerciale. Passez de la théorie à la pratique.
+            </p>
+        </section>
+
+        <!-- New Video Introduction Section -->
+        <section id="video" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Introduction Vidéo : Les Opérations Courantes</h3>
+                <p class="text-md text-gray-500 mt-2">Pour bien commencer, cette vidéo présente les concepts fondamentaux des opérations courantes, leur importance en gestion et leur application dans le cadre du BTS MCO.</p>
+            </div>
+            <div class="card p-2 md:p-4">
+                <div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+                 padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); overflow: hidden;
+                 border-radius: 8px; will-change: transform;">
+                  <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+                    src="https://www.canva.com/design/DAGzV8J1OWc/NPKOhNi9_xfuhv2314BpKA/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+                  </iframe>
+                </div>
+                <p class="text-center text-xs text-gray-500 mt-2">Design by desmond de amil</p>
+            </div>
+        </section>
+        <!-- End New Video Introduction Section -->
+
+        <section id="cycles" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Les 3 Cycles Fondamentaux de l'Entreprise</h3>
+                <p class="text-md text-gray-500 mt-2">Chaque opération s'inscrit dans un cycle spécifique. Comprendre leur distinction est essentiel pour analyser la santé de l'entreprise.</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="card p-6 text-center">
+                    <div class="text-4xl mb-4">🏗️</div>
+                    <h4 class="text-xl font-semibold mb-2">Cycle d'Investissement</h4>
+                    <p class="text-gray-600 mb-4">Opérations à long terme (> 1 an) qui façonnent l'outil de production.</p>
+                    <ul class="text-left space-y-2 text-sm">
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Acquisition/cession d'immobilisations.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Engage des ressources financières importantes.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Impacte le haut du bilan (Actif immobilisé).</li>
+                    </ul>
+                    <button class="text-sm text-amber-600 mt-4 hover:underline" onclick="openInfoModal('investissement')">En savoir plus</button>
+                </div>
+                <div class="card p-6 text-center">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h4 class="text-xl font-semibold mb-2">Cycle de Financement</h4>
+                    <p class="text-gray-600 mb-4">Opérations à long terme visant à se procurer les capitaux nécessaires.</p>
+                     <ul class="text-left space-y-2 text-sm">
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Sources : Apports, emprunts, autofinancement.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Structure le passif de l'entreprise.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Impacte le haut du bilan (Capitaux propres).</li>
+                    </ul>
+                    <button class="text-sm text-amber-600 mt-4 hover:underline" onclick="openInfoModal('financement')">En savoir plus</button>
+                </div>
+                <div class="card p-6 text-center">
+                    <div class="text-4xl mb-4">🔄</div>
+                    <h4 class="text-xl font-semibold mb-2">Cycle d'Exploitation</h4>
+                    <p class="text-gray-600 mb-4">Activités courantes et récurrentes qui génèrent le chiffre d'affaires.</p>
+                     <ul class="text-left space-y-2 text-sm">
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Court terme (< 1 an) : Achat, production, vente.</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Génère le Besoin en Fonds de Roulement (BFR).</li>
+                        <li class="flex items-start"><span class="font-bold mr-2 text-amber-600">✓</span> Impacte le bas du bilan (Actifs et passifs circulants).</li>
+                    </ul>
+                    <button class="text-sm text-amber-600 mt-4 hover:underline" onclick="openInfoModal('exploitationCycle')">En savoir plus</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="exploitation" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Le Cycle d'Exploitation à la Loupe</h3>
+                <p class="text-md text-gray-500 mt-2">Le cycle d'exploitation varie grandement selon le type d'activité. Sélectionnez un secteur pour visualiser son processus et son impact sur le BFR.</p>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <div class="flex justify-center space-x-2 md:space-x-4 mb-8">
+                    <button id="btn-indus" class="btn-secondary active px-4 py-2 rounded-md font-semibold">Industrielle</button>
+                    <button id="btn-commer" class="btn-secondary px-4 py-2 rounded-md font-semibold">Commerciale</button>
+                    <button id="btn-serv" class="btn-secondary px-4 py-2 rounded-md font-semibold">Services</button>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <h4 id="activity-title" class="text-2xl font-semibold mb-4">Activité Industrielle</h4>
+                        <p id="activity-desc" class="text-gray-600 mb-6">Processus long et complexe, impliquant la transformation de matières premières en produits finis.</p>
+                        <div id="activity-steps" class="space-y-4">
+                        </div>
+                    </div>
+                    <div>
+                        <div class="chart-container">
+                            <canvas id="bfrImpactChart"></canvas>
+                        </div>
+                        <p id="bfr-impact-explanation" class="text-center text-sm text-gray-600 mt-4"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="flux" class="mb-20">
+             <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">La Vie d'une Transaction : Flux et Documents</h3>
+                <p class="text-md text-gray-500 mt-2">Chaque transaction commerciale génère des flux physiques et financiers, matérialisés par une chaîne de documents officiels. <span class="text-amber-700 font-semibold">Cliquez sur chaque étape</span> pour en savoir plus.</p>
+            </div>
+            <div class="grid md:grid-cols-2 gap-8 md:gap-12">
+                <div class="space-y-8">
+                    <div class="flow-step pl-6 relative" onclick="openInfoModal('devis')">
+                        <div class="absolute -left-1.5 top-0 w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <h4 class="font-semibold text-lg flex items-center">
+                            1. Devis
+                            <span class="info-icon ml-2">i</span>
+                        </h4>
+                        <p class="text-gray-600">Proposition commerciale formelle. Une fois signé "bon pour accord", il engage les deux parties et devient un contrat.</p>
+                    </div>
+                    <div class="flow-step pl-6 relative" onclick="openInfoModal('bonDeCommande')">
+                        <div class="absolute -left-1.5 top-0 w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <h4 class="font-semibold text-lg flex items-center">
+                            2. Bon de Commande
+                            <span class="info-icon ml-2">i</span>
+                        </h4>
+                        <p class="text-gray-600">Document émis par l'acheteur pour confirmer son achat. Il sécurise la transaction pour le vendeur.</p>
+                    </div>
+                    <div class="flow-step pl-6 relative" onclick="openInfoModal('bonDeLivraison')">
+                         <div class="absolute -left-1.5 top-0 w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <h4 class="font-semibold text-lg flex items-center">
+                            3. Bon de Livraison & Flux Physique
+                            <span class="info-icon ml-2">i</span>
+                        </h4>
+                        <p class="text-gray-600">Accompagne la marchandise et prouve la réception. C'est la matérialisation du flux physique (le bien change de mains).</p>
+                    </div>
+                     <div class="flow-step pl-6 relative" onclick="openInfoModal('factureDoc')">
+                         <div class="absolute -left-1.5 top-0 w-3 h-3 bg-gray-300 rounded-full"></div>
+                        <h4 class="font-semibold text-lg flex items-center">
+                            4. Facture & Flux Financier
+                            <span class="info-icon ml-2">i</span>
+                        </h4>
+                        <p class="text-gray-600">Document comptable et légal qui établit la créance du vendeur et déclenche la demande de paiement (le flux financier).</p>
+                    </div>
+                </div>
+                <div class="card p-6">
+                    <h4 class="font-semibold text-center text-lg mb-4">Anatomie d'une Facture Conforme</h4>
+                    <p class="text-center text-sm text-gray-500 mb-4">Survolez les zones <span class="info-icon ml-1 group">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 200px;">Cliquez ou survolez les éléments marqués d'un 'i' pour plus de détails.</span></span> pour découvrir les mentions obligatoires.</p>
+                    <div class="border border-gray-200 p-4 rounded-md bg-gray-50 text-sm relative">
+                        <div class="flex justify-between mb-4">
+                            <!-- Facture Item: VOTRE ENTREPRISE -->
+                            <div class="fact-item group">
+                                <strong>VOTRE ENTREPRISE</strong><span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Dénomination sociale, adresse, SIREN, RCS, forme juridique, capital social. Essentiel pour identifier légalement le vendeur.</span></span><br>
+                                123 Rue du Commerce<br>
+                                75001 Paris
+                            </div>
+                            <div class="text-right">
+                                <strong>FACTURE N° F2025-001</strong><br>
+                                <!-- Facture Item: Date - Using tooltip-left for right-aligned elements -->
+                                <span class="fact-item group">
+                                    Date: 18/09/2025<span class="info-icon ml-1 tooltip-left">i<span class="tooltip group-hover:block absolute right-full mr-2 top-1/2 -translate-y-1/2" style="width: 250px;">La date d'émission est cruciale pour le calcul des délais de paiement et l'exigibilité de la TVA.</span></span>
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Facture Item: Client -->
+                        <div class="mb-4 fact-item group">
+                            <strong>Client :</strong><span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Identification complète du client professionnel, incluant son SIREN (obligatoire depuis 2024).</span></span><br>
+                            Client Pro SA<br>
+                            456 Avenue des Achats<br>
+                            69002 Lyon
+                        </div>
+                        <table class="w-full mb-4">
+                           <thead class="bg-gray-200">
+                                <tr>
+                                    <!-- Facture Item: Désignation -->
+                                    <th class="p-2 text-left fact-item group">
+                                        Désignation<span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Description précise des biens ou services vendus. Indispensable pour la validité commerciale et fiscale.</span></span>
+                                    </th>
+                                    <th class="p-2 text-right">Qté</th>
+                                    <th class="p-2 text-right">P.U. HT</th>
+                                    <th class="p-2 text-right">Total HT</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b"><td class="p-2">Produit A</td><td class="p-2 text-right">2</td><td class="p-2 text-right">50.00 €</td><td class="p-2 text-right">100.00 €</td></tr>
+                                <tr class="border-b"><td class="p-2">Service B</td><td class="p-2 text-right">1</td><td class="p-2 text-right">150.00 €</td><td class="p-2 text-right">150.00 €</td></tr>
+                            </tbody>
+                        </table>
+                        <div class="flex justify-end">
+                            <div class="w-1/2">
+                                <!-- Facture Item: Total HT -->
+                                <div class="flex justify-between"><span class="fact-item group">Total HT<span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Le montant total hors taxes est la base de calcul de la TVA.</span></span></span><span>250.00 €</span></div>
+                                <!-- Facture Item: TVA -->
+                                <div class="flex justify-between"><span class="fact-item group">TVA (20%)<span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Taux et montant de TVA. Mention obligatoire pour la collecte et la déduction de la taxe.</span></span></span><span>50.00 €</span></div>
+                                <!-- Facture Item: Total TTC -->
+                                <div class="flex justify-between font-bold text-base mt-2"><span class="fact-item group">Total TTC<span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Le montant Toutes Taxes Comprises est la somme que le client doit effectivement payer.</span></span></span><span>300.00 €</span></div>
+                            </div>
+                        </div>
+                        <!-- Facture Item: Conditions de paiement -->
+                        <div class="mt-6 pt-4 border-t fact-item group">
+                           <strong>Conditions de paiement :</strong><span class="info-icon ml-1">i<span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 250px;">Délai de paiement, taux de pénalités de retard, et indemnité forfaitaire de 40€ pour frais de recouvrement. Ces mentions sont légalement obligatoires.</span></span> Paiement à 30 jours fin de mois.
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-md text-sm text-red-800">
+                        <h5 class="font-semibold mb-2">Sanctions en cas d'omission de mentions obligatoires sur la facture :</h5>
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><span class="font-bold">Fiscales :</span> Amende de 15 € par mention manquante/inexacte (plafonnée à 25% du montant de la facture). Risque de remise en cause du droit à déduction de la TVA pour le client.</li>
+                            <li><span class="font-bold">Pénales/Administratives :</span> Amende administrative jusqu'à 75 000 € (personne physique) / 375 000 € (personne morale), doublée en cas de récidive ou de factures fictives.</li>
+                            <li><span class="font-bold">Civiles/Commerciales :</span> Affaiblit la position du vendeur en cas de litige, le débiteur pouvant contester la validité de la créance.</li>
+                        </ul>
+                        <p class="mt-2 text-xs text-red-700">La conservation des factures est obligatoire pendant 10 ans.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="bfr" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Piloter sa Trésorerie : le Rôle Clé du BFR</h3>
+                <p class="text-md text-gray-500 mt-2">Le Besoin en Fonds de Roulement (BFR) mesure le décalage de trésorerie créé par le cycle d'exploitation. Utilisez ce simulateur pour comprendre son fonctionnement.</p>
+            </div>
+            <div class="card p-8">
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                     <div>
+                        <h4 class="text-2xl font-semibold mb-4">Simulateur de BFR</h4>
+                        <p class="text-gray-600 mb-6">Modifiez les durées moyennes pour voir leur impact direct sur le besoin de financement de votre cycle d'exploitation.</p>
+                        <div class="space-y-6">
+                            <div>
+                                <!-- BFR Slider: Durée de stockage -->
+                                <label for="stock" class="bfr-slider-label relative group">
+                                    Durée de stockage (jours)
+                                    <span class="info-icon ml-2">i
+                                        <span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 300px;">
+                                            Plus la durée de stockage des marchandises ou matières premières est longue, plus l'entreprise immobilise de la trésorerie. Cela augmente son Besoin en Fonds de Roulement (BFR), car l'argent est bloqué et non disponible pour d'autres usages.
+                                        </span>
+                                    </span>
+                                </label>
+                                <input type="range" id="stock" min="0" max="120" value="45" class="w-full">
+                                <div class="text-right font-semibold"><span id="stock-value">45</span> jours</div>
+                            </div>
+                            <div>
+                                <!-- BFR Slider: Délai de paiement clients -->
+                                <label for="clients" class="bfr-slider-label relative group">
+                                    Délai de paiement clients (jours)
+                                    <span class="info-icon ml-2">i
+                                        <span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 300px;">
+                                            Plus le délai accordé aux clients pour régler leurs achats est long, plus l'entreprise doit 'avancer' l'argent correspondant. Cela augmente les Créances Clients et donc le BFR, car les fonds ne sont encaissés que plus tard.
+                                        </span>
+                                    </span>
+                                </label>
+                                <input type="range" id="clients" min="0" max="90" value="60" class="w-full">
+                                 <div class="text-right font-semibold"><span id="clients-value">60</span> jours</div>
+                            </div>
+                            <div>
+                                <!-- BFR Slider: Délai de paiement fournisseurs -->
+                                <label for="fournisseurs" class="bfr-slider-label relative group">
+                                    Délai de paiement fournisseurs (jours)
+                                    <span class="info-icon ml-2">i
+                                        <span class="tooltip group-hover:block absolute left-full ml-2 top-1/2 -translate-y-1/2" style="width: 300px;">
+                                            Plus le délai de paiement obtenu des fournisseurs est long, plus ces derniers financent une partie de l'activité de l'entreprise. Cela augmente les Dettes Fournisseurs et réduit le BFR, car l'entreprise conserve sa trésorerie plus longtemps.
+                                        </span>
+                                    </span>
+                                </label>
+                                <input type="range" id="fournisseurs" min="0" max="90" value="30" class="w-full">
+                                 <div class="text-right font-semibold"><span id="fournisseurs-value">30</span> jours</div>
+                            </div>
+                            <div>
+                                <label for="ca" class="block mb-1 font-medium">Chiffre d'Affaires Annuel HT</label>
+                                <input type="number" id="ca" value="500000" class="w-full p-2 border rounded-md">
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-center mb-4">
+                            <p class="text-gray-600">Besoin en Fonds de Roulement (BFR)</p>
+                            <p id="bfr-result" class="text-4xl font-bold text-amber-700">0 €</p>
+                            <p id="bfr-type-explanation" class="text-sm text-gray-600 mt-2"></p>
+                        </div>
+                        <div class="chart-container h-[250px] md:h-[300px]">
+                            <canvas id="bfrChart"></canvas>
+                        </div>
+                        <div class="text-center text-xs text-gray-500 mt-2">
+                            <p class="mb-1">BFR = Stocks + Créances Clients - Dettes Fournisseurs</p>
+                            <p class="font-bold text-gray-700 mt-2">Formules de calcul détaillées du simulateur :</p>
+                            <p class="font-mono text-gray-600 text-left px-4 text-sm">
+                                Stocks = (CA Annuel HT / 360) × Durée de stockage (jours)<br>
+                                Créances Clients = (CA Annuel TTC / 360) × Délai de paiement clients (jours)<br>
+                                Dettes Fournisseurs = (Achats Annuels HT / 360) × Délai de paiement fournisseurs (jours)
+                            </p>
+                            <p class="text-xs text-gray-500 mt-2 text-left px-4">
+                                *Hypothèses simplificatrices du simulateur :<br>
+                                - CA Annuel TTC = CA Annuel HT × 1,20 (pour une TVA à 20%)<br>
+                                - Achats Annuels HT = CA Annuel HT × 0,60 (estimation)
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="lexique" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Lexique des Opérations Courantes</h3>
+                <p class="text-md text-gray-500 mt-2">Cliquez sur chaque terme pour afficher sa définition.</p>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Besoin en Fonds de Roulement (BFR)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Montant que l'entreprise doit financer en permanence pour couvrir les décalages de trésorerie de son cycle d'exploitation (décaissements avant encaissements).</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Bon de Commande (BDC)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Document émis par l'acheteur pour confirmer son intention d'acheter des biens ou services aux conditions proposées par le vendeur. Il devient un contrat si accepté par le vendeur.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Bon de Livraison (BL)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Document accompagnant la marchandise livrée, attestant du flux physique et de la réception des biens par le client une fois signé.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Cycle d'Exploitation
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Ensemble des opérations courantes et récurrentes d'une entreprise (achats, production, ventes) qui génèrent le chiffre d'affaires. Sa durée est généralement inférieure à un an.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Cycle de Financement
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Opérations à long terme visant à se procurer les capitaux nécessaires à l'entreprise (apports, emprunts, autofinancement).</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Cycle d'Investissement
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Opérations à long terme (> 1 an) concernant l'acquisition ou la cession d'immobilisations (biens durables) qui façonnent l'outil de production de l'entreprise.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Dette Fournisseur
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Somme due par l'entreprise à ses fournisseurs pour des achats de biens ou services, dont le paiement est différé.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Devis
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Proposition commerciale formelle du vendeur, détaillant les biens/services et leur prix. Il n'engage le client qu'après signature "bon pour accord".</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Facture
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Document comptable et légal émis par le vendeur qui établit sa créance et demande le paiement pour les biens vendus ou services rendus.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Flux Financiers (ou Monétaires)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Mouvements de trésorerie (décaissements et encaissements) qui sont la contrepartie monétaire des flux physiques.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Flux Physiques (ou Réels)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Mouvements concrets de biens et de services (ex: livraison de marchandises, réalisation d'une prestation).</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Ressource en Fonds de Roulement (RFR)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Situation où les encaissements du cycle d'exploitation précèdent les décaissements, générant un excédent de trésorerie disponible pour l'entreprise.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Règlement au comptant
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Paiement effectué immédiatement, le jour de la transaction ou de l'émission de la facture.</p>
+                    </details>
+
+                    <details class="lexicon-card p-4 group">
+                        <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-amber-700 hover:text-amber-800">
+                            Règlement à crédit (ou à terme différé)
+                            <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                        </summary>
+                        <p class="mt-2 text-gray-700 border-t pt-2 mt-2 border-gray-200">Paiement pour lequel un délai est accordé au débiteur (client ou entreprise) par le créancier (entreprise ou fournisseur).</p>
+                    </details>
+                </div>
+            </div>
+        </section>
+
+        <section id="faq" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Foire Aux Questions (FAQ)</h3>
+                <p class="text-md text-gray-500 mt-2">Des réponses rapides à vos interrogations fréquentes sur les opérations courantes.</p>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-md space-y-4">
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Quelles sont les différences entre les trois cycles fondamentaux de l'entreprise ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">Les trois cycles sont : le Cycle d'Investissement (opérations à long terme pour l'outil de production), le Cycle de Financement (opérations à long terme pour les capitaux nécessaires) et le Cycle d'Exploitation (opérations courantes et récurrentes de production/vente, à court terme).</p>
+                </details>
+
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Comment le cycle d'exploitation varie-t-il selon l'activité de l'entreprise ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">La durée et le nombre d'étapes varient : l'activité industrielle est longue (approvisionnement, stockage MP, production, stockage PF, vente), l'activité commerciale est moyenne (achat, stockage Mses, vente), et les prestations de services sont très courtes (préparation, réalisation, encaissement), voire instantanées.</p>
+                </details>
+
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Quelle est la différence entre un flux physique et un flux financier ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">Un flux physique représente le mouvement concret de biens ou la réalisation de services (ex: livraison de marchandises). Un flux financier est la contrepartie monétaire de ce flux (ex: paiement d'une facture, encaissement d'une vente).</p>
+                </details>
+
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Pourquoi la facture est-elle un document commercial si important ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">La facture est le document le plus réglementé car elle a un triple rôle : commercial (preuve de vente), comptable (base d'enregistrement) et fiscal (déclaration de TVA). Elle établit légalement la créance du vendeur.</p>
+                </details>
+
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Quelles sont les sanctions en cas de facture non conforme ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">Les sanctions peuvent être fiscales (amendes, remise en cause de la déduction de TVA), pénales/administratives (amendes importantes) et civiles/commerciales (affaiblissement de la position du vendeur en cas de litige). La conservation est obligatoire pendant 10 ans.</p>
+                </details>
+
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Qu'est-ce que le Besoin en Fonds de Roulement (BFR) et comment l'optimiser ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">Le BFR représente le décalage de trésorerie généré par le cycle d'exploitation. Un BFR positif indique un besoin de financement. On l'optimise en réduisant les stocks, en accélérant les encaissements clients (réduire le délai de paiement client) et en allongeant les délais de paiement fournisseurs.</p>
+                </details>
+
+                <details class="group bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
+                    <summary class="flex justify-between items-center font-semibold cursor-pointer text-lg text-gray-800 hover:text-amber-700">
+                        Qu'est-ce qu'une Ressource en Fonds de Roulement (RFR) ?
+                        <span class="ml-2 transform transition-transform group-open:rotate-180">▼</span>
+                    </summary>
+                    <p class="mt-2 text-gray-700">Une RFR (ou BFR négatif) se produit lorsque les encaissements du cycle d'exploitation précèdent les décaissements. L'entreprise dispose alors d'un excédent de trésorerie généré par son activité, qui peut financer d'autres besoins.</p>
+                </details>
+            </div>
+        </section>
+
+        <section id="quiz" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Testez vos connaissances !</h3>
+                <p class="text-md text-gray-500 mt-2">Un quiz interactif pour vérifier votre compréhension des opérations courantes de l'unité commerciale.</p>
+            </div>
+
+            <!-- Quiz Intro Screen -->
+            <div id="quiz-intro" class="card p-8 text-center">
+                <h4 class="text-2xl font-semibold mb-4">Prêt à relever le défi ?</h4>
+                <p class="text-gray-600 mb-6">Ce quiz contient 15 questions pour évaluer votre maîtrise des cycles, flux et documents de l'unité commerciale.</p>
+                <button id="start-quiz-btn" class="btn-primary px-8 py-3 rounded-md font-semibold text-lg">Démarrer le Quiz</button>
+            </div>
+
+            <!-- Quiz Container -->
+            <div id="quiz-container" class="card p-8 hidden">
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+                    <div id="quiz-progress-bar" class="bg-amber-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                <p id="quiz-question" class="text-xl font-semibold mb-6"></p>
+                <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <!-- Options will be dynamically generated here -->
+                </div>
+                
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 md:space-x-4">
+                    <button id="quiz-hint-btn" class="btn-secondary px-6 py-3 rounded-md font-semibold w-full md:w-auto">Indice</button>
+                    <button id="quiz-submit-btn" class="btn-primary px-6 py-3 rounded-md font-semibold w-full md:w-auto" disabled>Valider</button>
+                    <button id="quiz-next-btn" class="btn-primary px-6 py-3 rounded-md font-semibold w-full md:w-auto hidden">Question Suivante</button>
+                </div>
+
+                <div id="quiz-feedback" class="mt-8 p-4 rounded-md hidden">
+                    <p id="quiz-feedback-text" class="text-gray-700"></p>
+                </div>
+            </div>
+
+            <!-- Quiz Results Screen -->
+            <div id="quiz-results" class="card p-8 hidden">
+                <h3 class="text-3xl font-bold mb-4">Résultats du Quiz</h3>
+                <p class="text-lg text-gray-600 mb-4">Votre score : <span id="final-score" class="font-bold text-amber-700">0</span> / <span id="total-questions" class="font-bold">0</span></p>
+                <p id="results-message" class="text-xl font-semibold mb-6"></p>
+                <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                    <button id="quiz-restart-btn" class="btn-primary px-6 py-3 rounded-md font-semibold">Recommencer le Quiz</button>
+                    <button id="quiz-view-synthesis-btn" class="btn-secondary px-6 py-3 rounded-md font-semibold">Voir la Synthèse</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- New Synthesis Section -->
+        <section id="synthese" class="mb-20">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl font-bold">Synthèse - Carte Mentale</h3>
+                <p class="text-md text-gray-500 mt-2">Cette carte mentale interactive résume les points essentiels des opérations courantes. Naviguez à travers les différentes branches pour réviser les définitions, les concepts et les liens entre eux.</p>
+            </div>
+            <div class="card p-2 md:p-4">
+                <div class="w-full h-[600px] md:h-[750px] border border-gray-200 rounded-lg overflow-hidden">
+                     <iframe class="w-full h-full" src='https://www.xmind.app/embed/AWgAw6/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </section>
+        <!-- End New Synthesis Section -->
+    </main>
+
+    <footer class="bg-white border-t mt-12">
+        <div class="container mx-auto px-6 py-4 text-center text-gray-500">
+            <p>&copy; 2025 - Outil Pédagogique pour BTS MCO.</p>
+        </div>
+    </footer>
+
+    <!-- Info Modal Structure -->
+    <div id="infoModal" class="modal">
+        <div class="modal-content">
+            <h5 id="modalTitle" class="text-2xl font-bold text-amber-700 mb-4"></h5>
+            <p id="modalContent" class="text-gray-700 mb-4"></p>
+            <ul id="modalList" class="text-left space-y-2 text-sm text-gray-600"></ul>
+            <button onclick="closeInfoModal()" class="btn-primary mt-6 px-4 py-2 rounded-md">Fermer</button>
+        </div>
+    </div>
+    
+    <script>
+        // --- Global Scope Declarations (variables are declared but not assigned yet) ---
+        let infoModal, modalTitle, modalContent, modalList;
+
+        // Functions for Info Modal (global scope, will use the globally declared variables)
+        function openInfoModal(type, titleOverride = null, contentOverride = null, listOverride = null) {
+            let data;
+            if (type in cycleInfo) {
+                data = cycleInfo[type];
+            } else if (type in flowStepInfo) {
+                data = flowStepInfo[type];
+            } else {
+                console.error("Unknown info type:", type);
+                return;
+            }
+
+            modalTitle.textContent = titleOverride || data.title;
+            modalContent.innerHTML = contentOverride || data.content;
+            
+            modalList.innerHTML = '';
+            const items = listOverride || data.list;
+            if (items && items.length > 0) {
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'flex items-start';
+                    li.innerHTML = `<span class="font-bold mr-2 text-amber-600">✓</span>${item}`;
+                    modalList.appendChild(li);
+                });
+                modalList.style.display = 'block';
+            } else {
+                modalList.style.display = 'none';
+            }
+
+            infoModal.classList.add('open');
+        }
+
+        function closeInfoModal() {
+            infoModal.classList.remove('open');
+        }
+
+        // --- Cycle Info Data (global scope) ---
+        const cycleInfo = {
+            investissement: {
+                title: "Cycle d'Investissement",
+                content: "Le cycle d'investissement concerne les opérations à long terme (> 1 an) qui façonnent l'outil de production de l'entreprise. Il engage des ressources financières importantes et conditionne sa capacité future.",
+                list: [
+                    "<strong>Horizon :</strong> Long terme (> 1 an).",
+                    "<strong>Opérations :</strong> Acquisition et cession des immobilisations (biens durables comme les machines, les locaux, les brevets).",
+                    "<strong>Rôle :</strong> Engage des ressources financières importantes et façonne l'outil de production.",
+                    "<strong>Bilan :</strong> Impacte le haut du bilan (Actif immobilisé).",
+                    "<strong>Trésorerie :</strong> Entraîne une consommation de trésorerie lourde et ponctuelle."
+                ]
+            },
+            financement: {
+                title: "Cycle de Financement",
+                content: "Le cycle de financement regroupe les opérations à long terme visant à se procurer les capitaux nécessaires pour financer les investissements et le cycle d'exploitation.",
+                list: [
+                    "<strong>Horizon :</strong> Long terme.",
+                    "<strong>Opérations :</strong> Sources internes (autofinancement) ou externes (augmentations de capital, emprunts bancaires).",
+                    "<strong>Rôle :</strong> Structure le passif du bilan et détermine l'indépendance financière.",
+                    "<strong>Bilan :</strong> Impacte le haut du bilan (Capitaux propres, Dettes financières).",
+                    "<strong>Trésorerie :</strong> Génère un apport initial ou ponctuel de ressources."
+                ]
+            },
+            exploitationCycle: {
+                title: "Cycle d'Exploitation",
+                content: "Le cycle d'exploitation regroupe toutes les opérations courantes et récurrentes, de l'approvisionnement à l'encaissement des ventes, qui génèrent le chiffre d'affaires de l'entreprise.",
+                list: [
+                    "<strong>Horizon :</strong> Court terme (< 1 an).",
+                    "<strong>Opérations :</strong> Achats, production (si applicable), ventes, salaires, etc.",
+                    "<strong>Rôle :</strong> Génère le Besoin en Fonds de Roulement (BFR) en raison des décalages de trésorerie.",
+                    "<strong>Bilan :</strong> Impacte le bas du bilan (Actif et Passif circulants).",
+                    "<strong>Trésorerie :</strong> Génère une consommation et une génération récurrentes de trésorerie."
+                ]
+            }
+        };
+
+        // --- Flux & Documents Section Data (global scope) ---
+        const flowStepInfo = {
+            devis: {
+                title: "1. Le Devis",
+                content: "Le devis est une offre commerciale formelle émise par le vendeur, détaillant les biens ou services et leur prix. Il n'engage pas le client tant qu'il n'est pas accepté.",
+                list: [
+                    "<strong>Rôle Principal :</strong> Proposition commerciale.",
+                    "<strong>Émetteur :</strong> Vendeur.",
+                    "<strong>Destinataire :</strong> Acheteur.",
+                    "<strong>Valeur Juridique (si signé) :</strong> Devient un contrat (offre acceptée) et engage les deux parties."
+                ]
+            },
+            bonDeCommande: {
+                title: "2. Le Bon de Commande (BDC)",
+                content: "Le bon de commande est un document émis par l'acheteur pour confirmer sa volonté d'acheter aux conditions proposées par le vendeur. Il sécurise la transaction pour le vendeur.",
+                list: [
+                    "<strong>Rôle Principal :</strong> Confirmation d'achat.",
+                    "<strong>Émetteur :</strong> Acheteur.",
+                    "<strong>Destinataire :</strong> Vendeur.",
+                    "<strong>Valeur Juridique (si accepté) :</strong> Devient un contrat (commande acceptée). Le vendeur est tenu de livrer, l'acheteur de payer."
+                ]
+            },
+            bonDeLivraison: {
+                title: "3. Le Bon de Livraison (BL) & Flux Physique",
+                content: "Le bon de livraison accompagne la marchandise et atteste de la réalisation du flux physique (le bien change de mains). Sa signature par le client prouve la réception des biens.",
+                list: [
+                    "<strong>Rôle Principal :</strong> Preuve de réception de la marchandise.",
+                    "<strong>Émetteur :</strong> Vendeur.",
+                    "<strong>Destinataire :</strong> Acheteur.",
+                    "<strong>Valeur Juridique (si signé) :</strong> Preuve de livraison conforme, fondamentale en cas de litige sur la conformité de la livraison."
+                ]
+            },
+            factureDoc: {
+                title: "4. La Facture & Flux Financier",
+                content: "La facture est le document comptable et légal qui établit la créance du vendeur, la rendant certaine, liquide et exigible. Elle déclenche la demande de paiement et finalise la transaction commerciale.",
+                list: [
+                    "<strong>Rôle Principal :</strong> Demande de paiement et preuve de créance.",
+                    "<strong>Émetteur :</strong> Vendeur.",
+                    "<strong>Destinataire :</strong> Acheteur.",
+                    "<strong>Valeur Juridique :</strong> Pièce obligatoire entre professionnels, base de l'enregistrement comptable et de la déclaration de TVA."
+                ]
+            }
+        };
+
+        // --- QUIZ DATA (global scope) ---
+        const quizData = [
+            {
+                id: 'q1',
+                type: 'qcm',
+                question: "Quel cycle regroupe les opérations d'achat, de production et de vente, avec un horizon temporel court (moins d'un an) ?",
+                options: ["Cycle d'Investissement", "Cycle de Financement", "Cycle d'Exploitation", "Cycle de Trésorerie"],
+                correctAnswerIndex: 2,
+                hint: "Pensez aux activités quotidiennes et récurrentes de l'entreprise.",
+                feedbackCorrect: "Excellente réponse ! Le cycle d'exploitation est au cœur de l'activité quotidienne et génère le chiffre d'affaires.",
+                feedbackIncorrect: "Faux. Ce sont les opérations du cycle d'exploitation qui sont à court terme et récurrentes."
+            },
+            {
+                id: 'q2',
+                type: 'vrai_faux',
+                question: "L'activité industrielle génère généralement un Besoin en Fonds de Roulement (BFR) plus faible que l'activité de services.",
+                options: ["VRAI", "FAUX"],
+                correctAnswerIndex: 1, // FAUX
+                hint: "Considérez la présence et la durée de stockage des matières premières et produits finis dans l'industrie.",
+                feedbackCorrect: "C'est exact ! L'activité industrielle a un BFR structurellement plus élevé en raison des stocks importants et des longs processus de transformation.",
+                feedbackIncorrect: "Faux. L'activité industrielle, avec ses stocks et sa production, a un BFR plus élevé que l'activité de services."
+            },
+            {
+                id: 'q3',
+                type: 'qcm',
+                question: "Quel document commercial atteste du mouvement concret des biens et de leur réception par le client ?",
+                options: ["Le Devis", "Le Bon de Commande", "Le Bon de Livraison", "La Facture"],
+                correctAnswerIndex: 2,
+                hint: "Ce document accompagne la marchandise lors de son transport.",
+                feedbackCorrect: "Bonne réponse ! Le Bon de Livraison matérialise le flux physique et sert de preuve de réception.",
+                feedbackIncorrect: "Non, ce n'est pas ce document. Le Bon de Livraison est celui qui prouve la réception des biens."
+            },
+            {
+                id: 'q4',
+                type: 'vrai_faux',
+                question: "Un devis signé 'bon pour accord' par le client n'a aucune valeur contractuelle.",
+                options: ["VRAI", "FAUX"],
+                correctAnswerIndex: 1, // FAUX
+                hint: "La signature du client est un engagement.",
+                feedbackCorrect: "C'est exact ! Un devis signé par le client devient un contrat et engage les deux parties.",
+                feedbackIncorrect: "Faux. Un devis signé 'bon pour accord' acquiert une valeur contractuelle et engage les deux parties."
+            },
+            {
+                id: 'q5',
+                type: 'qcm',
+                question: "Quelle mention n'est PAS obligatoire sur une facture entre professionnels ?",
+                options: ["Le numéro de SIREN du vendeur", "Le taux de pénalités de retard", "Le code APE de l'entreprise", "Le montant total TTC"],
+                correctAnswerIndex: 2,
+                hint: "Certaines informations sont utiles mais pas légalement exigées par le Code de commerce pour la facture.",
+                feedbackCorrect: "Bonne réponse ! Le code APE est une mention d'usage, mais pas légalement obligatoire sur la facture, contrairement aux autres.",
+                feedbackIncorrect: "Non, cette mention est obligatoire. Le code APE est une mention d'usage, mais pas légalement obligatoire sur la facture."
+            },
+            {
+                id: 'q6',
+                type: 'vrai_faux',
+                question: "Une facture non conforme aux mentions obligatoires peut entraîner des sanctions fiscales pour l'entreprise.",
+                options: ["VRAI", "FAUX"],
+                correctAnswerIndex: 0, // VRAI
+                hint: "Pensez aux risques liés à la TVA ou aux amendes.",
+                feedbackCorrect: "C'est tout à fait vrai. Le non-respect des obligations de facturation expose l'entreprise à des sanctions fiscales (amendes, remise en cause de la TVA).",
+                feedbackIncorrect: "Faux. Les sanctions fiscales sont bien un risque en cas de non-conformité de la facture."
+            },
+            {
+                id: 'q7',
+                type: 'qcm',
+                question: "Quel mode de règlement est le plus courant pour payer les fournisseurs entre entreprises (B2B) ?",
+                options: ["Les espèces", "Le virement bancaire SEPA", "Le chèque", "La carte bancaire"],
+                correctAnswerIndex: 1,
+                hint: "Pensez à la sécurité et la traçabilité des transactions importantes.",
+                feedbackCorrect: "Exact ! Le virement bancaire SEPA est le moyen de paiement privilégié en B2B pour sa sécurité et sa traçabilité.",
+                feedbackIncorrect: "Non, ce n'est pas le mode le plus courant. Le virement bancaire SEPA est le plus utilisé en B2B."
+            },
+            {
+                id: 'q8',
+                type: 'vrai_faux',
+                question: "Le paiement au comptant signifie que le paiement est dû à 30 jours fin de mois.",
+                options: ["VRAI", "FAUX"],
+                correctAnswerIndex: 1, // FAUX
+                hint: "Que signifie 'au comptant' dans le langage courant ?",
+                feedbackCorrect: "C'est correct ! Le paiement au comptant est un paiement immédiat, pas un paiement différé.",
+                feedbackIncorrect: "Faux. Le paiement au comptant est un paiement immédiat, à la livraison ou à la réalisation de la prestation."
+            },
+            {
+                id: 'q9',
+                type: 'qcm',
+                question: "Un BFR (Besoin en Fonds de Roulement) négatif est généralement synonyme de :",
+                options: ["Un besoin de financement accru", "Une situation de trésorerie dégradée", "Une Ressource en Fonds de Roulement (RFR)", "Un problème de gestion des stocks"],
+                correctAnswerIndex: 2,
+                hint: "Si le BFR est négatif, l'entreprise génère de la trésorerie par son cycle d'exploitation.",
+                feedbackCorrect: "Très bien ! Un BFR négatif signifie que l'entreprise dispose d'une Ressource en Fonds de Roulement (RFR), ce qui est une situation financière favorable.",
+                feedbackIncorrect: "Non, c'est l'inverse. Un BFR négatif indique une Ressource en Fonds de Roulement (RFR), ce qui est positif pour la trésorerie."
+            },
+            {
+                id: 'q10',
+                type: 'vrai_faux',
+                question: "La durée du cycle d'exploitation est calculée par : Durée de stockage + Durée du crédit client - Durée du crédit fournisseur.",
+                options: ["VRAI", "FAUX"],
+                correctAnswerIndex: 1, // FAUX
+                hint: "Le crédit fournisseur est une ressource qui réduit le besoin, pas la durée du cycle elle-même.",
+                feedbackCorrect: "C'est exact ! La durée du cycle d'exploitation est (Durée de stockage + Durée du crédit client). Le crédit fournisseur impacte le BFR, pas la durée brute du cycle.",
+                feedbackIncorrect: "Faux. Le crédit fournisseur ne soustrait pas à la durée du cycle d'exploitation, mais réduit le BFR. La durée du cycle d'exploitation se concentre sur les flux d'actifs circulants."
+            },
+            // --- NOUVELLES QUESTIONS AXÉES COMPRÉHENSION / APPLICATION ---
+            {
+                id: 'q11',
+                type: 'qcm',
+                question: "L'entreprise 'Délices du Vercors' achète des noix (matières premières), les transforme en huile qu'elle conditionne, stocke et vend ensuite à des magasins. Ce processus récurrent est principalement lié à quel cycle ?",
+                options: ["Cycle de Financement", "Cycle d'Investissement", "Cycle d'Exploitation", "Cycle Fiscal"],
+                correctAnswerIndex: 2,
+                hint: "Pensez aux activités principales et quotidiennes d'une entreprise de production.",
+                feedbackCorrect: "Exact ! Ce scénario décrit un processus typique d'achat, production, stockage et vente, caractéristique du cycle d'exploitation industriel.",
+                feedbackIncorrect: "Faux. Les activités d'achat, production et vente au quotidien relèvent du cycle d'exploitation."
+            },
+            {
+                id: 'q12',
+                type: 'qcm',
+                question: "Si une entreprise décide d'allonger ses délais de paiement clients (accorde plus de temps à ses clients pour payer), quel sera l'impact probable sur son Besoin en Fonds de Roulement (BFR), toutes choses égales par ailleurs ?",
+                options: ["Le BFR diminuera", "Le BFR augmentera", "Le BFR restera inchangé", "Le BFR deviendra négatif"],
+                correctAnswerIndex: 1,
+                hint: "Plus les clients mettent du temps à payer, plus l'entreprise doit avancer d'argent pour couvrir ses charges.",
+                feedbackCorrect: "Correct ! Allonger les délais de paiement clients signifie que l'entreprise immobilise plus de fonds plus longtemps dans ses créances, augmentant ainsi son BFR.",
+                feedbackIncorrect: "Non. Des délais de paiement clients plus longs augmentent les créances clients, et donc le BFR."
+            },
+            {
+                id: 'q13',
+                type: 'qcm',
+                question: "Le Bon de Livraison est un document crucial car sa signature par le client valide la conformité de la livraison. Quelle est sa principale fonction par rapport à la facture ?",
+                options: ["Il remplace la facture", "Il déclenche le paiement avant la facture", "Il prouve le flux physique avant le flux financier", "Il sert uniquement à la comptabilité interne"],
+                correctAnswerIndex: 2,
+                hint: "Pensez à l'ordre chronologique des événements : réception des biens, puis demande de paiement.",
+                feedbackCorrect: "Très bien ! Le BL matérialise le transfert physique des biens, étape nécessaire avant que la facture ne demande le flux financier correspondant.",
+                feedbackIncorrect: "Faux. Le Bon de Livraison prouve la réalisation du flux physique, tandis que la facture déclenche le flux financier."
+            },
+            {
+                id: 'q14',
+                type: 'qcm',
+                question: "Une Ressource en Fonds de Roulement (BFR négatif) est souvent observée dans les entreprises qui parviennent à :",
+                options: ["Accorder de longs délais de paiement à leurs clients", "Maintenir des stocks importants", "Encaisser leurs ventes avant de payer leurs fournisseurs", "Investir massivement dans des immobilisations"],
+                correctAnswerIndex: 2,
+                hint: "C'est une situation où l'entreprise génère de la trésorerie par son cycle d'exploitation.",
+                feedbackCorrect: "C'est la bonne réponse ! Encaisser rapidement et payer tardivement permet de dégager une ressource de trésorerie grâce au cycle d'exploitation.",
+                feedbackIncorrect: "Non, les autres options tendent à augmenter le BFR. Une RFR est générée par un décalage favorable entre encaissements et décaissements du cycle d'exploitation."
+            },
+            {
+                id: 'q15',
+                type: 'qcm',
+                question: "Si une entreprise omet de mentionner le taux de pénalités de retard sur une facture adressée à un professionnel, quelle est une conséquence directe possible pour l'entreprise émettrice ?",
+                options: ["Le client ne sera pas obligé de payer la facture", "L'entreprise ne pourra pas appliquer de pénalités de retard en cas de paiement tardif", "L'entreprise devra payer une amende fixe de 40€", "La facture sera considérée comme nulle et non avenue"],
+                correctAnswerIndex: 1,
+                hint: "La mention obligatoire des pénalités vise à les rendre applicables.",
+                feedbackCorrect: "Exact ! Sans cette mention légalement obligatoire, l'entreprise perd son droit d'appliquer des pénalités de retard même si le client paie en retard.",
+                feedbackIncorrect: "Faux. L'omission spécifique du taux de pénalités de retard rend ces pénalités inapplicables pour le vendeur."
+            }
+        ];
+
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Assign DOM elements after the DOM is ready ---
+            infoModal = document.getElementById('infoModal');
+            modalTitle = document.getElementById('modalTitle');
+            modalContent = document.getElementById('modalContent');
+            modalList = document.getElementById('modalList');
+
+            // --- Quiz DOM Elements ---
+            const quizIntro = document.getElementById('quiz-intro');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const quizContainer = document.getElementById('quiz-container');
+            const quizProgressBar = document.getElementById('quiz-progress-bar');
+            const quizQuestion = document.getElementById('quiz-question');
+            const quizOptions = document.getElementById('quiz-options');
+            const quizHintBtn = document.getElementById('quiz-hint-btn');
+            const quizSubmitBtn = document.getElementById('quiz-submit-btn');
+            const quizNextBtn = document.getElementById('quiz-next-btn');
+            const quizFeedback = document.getElementById('quiz-feedback');
+            const quizFeedbackText = document.getElementById('quiz-feedback-text');
+            const quizResults = document.getElementById('quiz-results');
+            const finalScoreSpan = document.getElementById('final-score');
+            const totalQuestionsSpan = document.getElementById('total-questions');
+            const resultsMessage = document.getElementById('results-message');
+            const quizRestartBtn = document.getElementById('quiz-restart-btn');
+            const quizViewSynthesisBtn = document.getElementById('quiz-view-synthesis-btn');
+
+
+            // --- Quiz State Variables ---
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let selectedAnswer = null; // Stores the index of the selected answer
+            let hintUsedForCurrentQuestion = false;
+
+            // --- Quiz Functions ---
+
+            function initQuiz() {
+                currentQuestionIndex = 0;
+                score = 0;
+                selectedAnswer = null;
+                hintUsedForCurrentQuestion = false;
+
+                quizIntro.classList.remove('hidden');
+                quizContainer.classList.add('hidden');
+                quizResults.classList.add('hidden');
+                
+                // Ensure total questions displayed on results screen is correct
+                totalQuestionsSpan.textContent = quizData.length;
+                // Update text on intro screen for new question count
+                document.querySelector('#quiz-intro p.mb-6').textContent = `Ce quiz contient ${quizData.length} questions pour évaluer votre maîtrise des cycles, flux et documents de l'unité commerciale.`;
+
+
+                // Event listeners for quiz buttons are already set on DOMContentLoaded,
+                // but if they were dynamic, they would be re-attached here.
+            }
+
+            function startQuiz() {
+                quizIntro.classList.add('hidden');
+                quizContainer.classList.remove('hidden');
+                displayQuestion();
+            }
+
+            function displayQuestion() {
+                selectedAnswer = null;
+                hintUsedForCurrentQuestion = false;
+
+                quizSubmitBtn.disabled = true;
+                quizNextBtn.classList.add('hidden');
+                quizHintBtn.classList.remove('hidden'); // Show hint button for new question
+                quizFeedback.classList.add('hidden');
+                quizFeedback.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500', 'bg-blue-100', 'border-blue-500'); // Clean up feedback styling
+
+                const question = quizData[currentQuestionIndex];
+                quizQuestion.textContent = `${currentQuestionIndex + 1}. ${question.question}`;
+                quizOptions.innerHTML = ''; // Clear previous options
+
+                question.options.forEach((option, index) => {
+                    const optionElement = document.createElement('button');
+                    optionElement.classList.add('quiz-option-btn');
+                    optionElement.textContent = option;
+                    optionElement.dataset.index = index;
+                    optionElement.addEventListener('click', () => handleOptionClick(index, optionElement));
+                    quizOptions.appendChild(optionElement);
+                });
+
+                updateProgressBar();
+            }
+
+            function handleOptionClick(index, element) {
+                selectedAnswer = index;
+                // Remove 'selected' from all options
+                document.querySelectorAll('.quiz-option-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                // Add 'selected' to the clicked option
+                element.classList.add('selected');
+                quizSubmitBtn.disabled = false; // Enable submit button
+            }
+
+            function updateProgressBar() {
+                const progress = ((currentQuestionIndex) / quizData.length) * 100;
+                quizProgressBar.style.width = `${progress}%`;
+            }
+
+            function checkAnswer() {
+                if (selectedAnswer === null) {
+                    // This should ideally not happen if quizSubmitBtn is disabled
+                    alert("Veuillez sélectionner une réponse.");
+                    return;
+                }
+
+                const question = quizData[currentQuestionIndex];
+                const isCorrect = (selectedAnswer === question.correctAnswerIndex);
+
+                // Disable all options and highlight correct/incorrect
+                document.querySelectorAll('.quiz-option-btn').forEach((btn, index) => {
+                    btn.disabled = true;
+                    if (index === question.correctAnswerIndex) {
+                        btn.classList.add('correct');
+                    } else if (index === selectedAnswer && !isCorrect) {
+                        btn.classList.add('incorrect');
+                    }
+                    btn.classList.remove('selected'); // Remove selected class
+                });
+
+                quizSubmitBtn.disabled = true; // Disable submit after checking
+                quizHintBtn.classList.add('hidden'); // Hide hint button after checking
+                quizNextBtn.classList.remove('hidden'); // Show next button
+
+                if (isCorrect) {
+                    score++;
+                }
+                showFeedback(isCorrect);
+            }
+
+            function showFeedback(isCorrect) {
+                const question = quizData[currentQuestionIndex];
+                quizFeedback.classList.remove('hidden');
+                quizFeedback.classList.remove('bg-blue-100', 'border-blue-500'); // Clear hint styling
+                if (isCorrect) {
+                    quizFeedback.classList.add('bg-green-100', 'border-green-500');
+                    quizFeedbackText.textContent = question.feedbackCorrect;
+                } else {
+                    quizFeedback.classList.add('bg-red-100', 'border-red-500');
+                    quizFeedbackText.textContent = question.feedbackIncorrect;
+                }
+            }
+
+            function nextQuestion() {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < quizData.length) {
+                    displayQuestion();
+                } else {
+                    showResults();
+                }
+                // Update progress bar for the next question (or 100% if finished)
+                updateProgressBar(); 
+            }
+
+            function showHint() {
+                if (hintUsedForCurrentQuestion) return; // Prevent multiple hints
+
+                const question = quizData[currentQuestionIndex];
+                quizFeedback.classList.remove('hidden');
+                quizFeedback.classList.remove('bg-green-100', 'border-green-500', 'bg-red-100', 'border-red-500');
+                quizFeedback.classList.add('bg-blue-100', 'border-blue-500'); // Neutral color for hint
+                quizFeedbackText.textContent = `Indice : ${question.hint}`;
+                hintUsedForCurrentQuestion = true;
+                // Optionally disable hint button after use or apply penalty
+                // quizHintBtn.disabled = true;
+            }
+
+            function showResults() {
+                quizContainer.classList.add('hidden');
+                quizResults.classList.remove('hidden');
+
+                finalScoreSpan.textContent = score;
+                totalQuestionsSpan.textContent = quizData.length; // Ensure this is correct
+
+                const percentage = (score / quizData.length) * 100;
+                if (percentage >= 80) {
+                    resultsMessage.textContent = "Félicitations ! Excellente maîtrise des concepts.";
+                    resultsMessage.classList.remove('text-red-600', 'text-yellow-600');
+                    resultsMessage.classList.add('text-green-600');
+                } else if (percentage >= 50) {
+                    resultsMessage.textContent = "Bien joué ! Vous avez une bonne compréhension, continuez à réviser.";
+                    resultsMessage.classList.remove('text-red-600', 'text-green-600');
+                    resultsMessage.classList.add('text-yellow-600');
+                } else {
+                    resultsMessage.textContent = "Des efforts sont nécessaires. N'hésitez pas à revoir les sections du cours.";
+                    resultsMessage.classList.remove('text-green-600', 'text-yellow-600');
+                    resultsMessage.classList.add('text-red-600');
+                }
+            }
+
+            // --- Event Listeners for Quiz Buttons ---
+            startQuizBtn.addEventListener('click', startQuiz);
+            quizSubmitBtn.addEventListener('click', checkAnswer);
+            quizNextBtn.addEventListener('click', nextQuestion);
+            quizHintBtn.addEventListener('click', showHint);
+            quizRestartBtn.addEventListener('click', initQuiz);
+            quizViewSynthesisBtn.addEventListener('click', () => {
+                document.querySelector('#synthese').scrollIntoView({ behavior: 'smooth' }); // Scrolls to synthesis section
+            });
+
+
+            // --- Initialise the Quiz when DOM is ready ---
+            initQuiz();
+
+            // --- Mobile Navigation Toggle ---
+            const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            mobileMenuToggle.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Close mobile menu when a link is clicked
+            mobileMenu.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', () => {
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                });
+            });
+
+
+            // --- Navigation Active State ---
+            // Targeting both desktop and mobile links with the same class
+            const navLinks = document.querySelectorAll('.nav-link'); 
+            const sections = document.querySelectorAll('section[id]');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '-50% 0px -50% 0px', // Adjusted to activate when section is roughly in the middle
+                threshold: 0 // We use rootMargin to define the "active" area
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        navLinks.forEach(link => link.classList.remove('active'));
+                        // Select the link that matches the current section ID, from both desktop and mobile menus
+                        const activeLink = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+                        if (activeLink) {
+                            activeLink.classList.add('active');
+                        }
+                    }
+                });
+            }, observerOptions);
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+
+            // Close modal on outside click (this listener should be set once infoModal is assigned)
+            infoModal.addEventListener('click', (e) => {
+                if (e.target === infoModal) {
+                    closeInfoModal();
+                }
+            });
+
+            // --- Activity Cycle Data and Chart ---
+            const activityData = {
+                indus: {
+                    title: 'Activité Industrielle',
+                    desc: 'Processus long et complexe, impliquant la transformation de matières premières en produits finis.',
+                    steps: [
+                        'Approvisionnement (Matières premières)',
+                        'Stockage des matières premières',
+                        'Production / Fabrication',
+                        'Stockage des produits finis',
+                        'Commercialisation & Encaissement'
+                    ],
+                    bfr: 80,
+                    bfrExplanation: "Le BFR de l'activité industrielle est structurellement élevé. La phase de production, les multiples niveaux de stocks (matières premières, en-cours, produits finis) et les délais de fabrication immobilisent des capitaux sur une longue durée avant l'encaissement des ventes."
+                },
+                commer: {
+                    title: 'Activité Commerciale',
+                    desc: 'Achat de marchandises destinées à être revendues en l\'état, sans transformation majeure.',
+                    steps: [
+                        'Approvisionnement (Marchandises)',
+                        'Stockage des marchandises',
+                        'Commercialisation & Encaissement'
+                    ],
+                    bfr: 50,
+                    bfrExplanation: "L'activité commerciale a un BFR généralement moyen. Bien qu'il n'y ait pas de production, la gestion des stocks de marchandises et les délais de paiement clients nécessitent un financement. Une rotation rapide des stocks est essentielle pour minimiser le BFR."
+                },
+                serv: {
+                    title: 'Prestation de Services',
+                    desc: 'Le "stock" est souvent immatériel (compétences, flotte de véhicules). Le cycle peut être très court, voire instantané.',
+                    steps: [
+                        'Achat de consommables / Préparation',
+                        'Réalisation de la prestation',
+                        'Facturation & Encaissement'
+                    ],
+                    bfr: 15,
+                    bfrExplanation: "Le BFR de la prestation de services est souvent faible, voire négatif (RFR). La notion de stock est limitée ou inexistante et les encaissements sont souvent rapides (paiement comptant), ce qui permet de financer les charges avant même de les décaisser."
+                }
+            };
+            
+            const activityTitle = document.getElementById('activity-title');
+            const activityDesc = document.getElementById('activity-desc');
+            const activitySteps = document.getElementById('activity-steps');
+            const bfrImpactExplanation = document.getElementById('bfr-impact-explanation');
+            const activityButtons = { // Renamed to avoid conflict with quiz buttons
+                indus: document.getElementById('btn-indus'),
+                commer: document.getElementById('btn-commer'),
+                serv: document.getElementById('btn-serv'),
+            };
+
+            let bfrImpactChart;
+
+            function updateActivity(type) {
+                const data = activityData[type];
+                activityTitle.textContent = data.title;
+                activityDesc.textContent = data.desc;
+                bfrImpactExplanation.textContent = data.bfrExplanation;
+                
+                activitySteps.innerHTML = '';
+                data.steps.forEach((step, index) => {
+                    const stepDiv = document.createElement('div');
+                    stepDiv.className = 'flex items-center';
+                    stepDiv.innerHTML = `<div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 font-bold flex items-center justify-center mr-4">${index + 1}</div><p>${step}</p>`;
+                    activitySteps.appendChild(stepDiv);
+                });
+
+                Object.values(activityButtons).forEach(btn => btn.classList.remove('active'));
+                activityButtons[type].classList.add('active');
+                
+                updateBfrImpactChart(data.bfr);
+            }
+
+            function createBfrImpactChart() {
+                const ctx = document.getElementById('bfrImpactChart').getContext('2d');
+                bfrImpactChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Impact sur le BFR'],
+                        datasets: [{
+                            label: 'Niveau du BFR Relatif',
+                            data: [0],
+                            backgroundColor: ['#F59E0B'],
+                            borderColor: ['#D97706'],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { max: 100, beginAtZero: true, grid: { display: false }, ticks: { display: false } },
+                            y: { grid: { display: false } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false },
+                            title: { display: true, text: 'Niveau Relatif du Besoin en Fonds de Roulement' }
+                        }
+                    }
+                });
+            }
+
+            function updateBfrImpactChart(value) {
+                bfrImpactChart.data.datasets[0].data[0] = value;
+                bfrImpactChart.update();
+            }
+
+            activityButtons.indus.addEventListener('click', () => updateActivity('indus'));
+            activityButtons.commer.addEventListener('click', () => updateActivity('commer'));
+            activityButtons.serv.addEventListener('click', () => updateActivity('serv'));
+
+            createBfrImpactChart();
+            updateActivity('indus');
+
+            // --- BFR Simulator Section ---
+            const caInput = document.getElementById('ca');
+            const stockSlider = document.getElementById('stock');
+            const clientsSlider = document.getElementById('clients');
+            const fournisseursSlider = document.getElementById('fournisseurs');
+            const stockValue = document.getElementById('stock-value');
+            const clientsValue = document.getElementById('clients-value');
+            const fournisseursValue = document.getElementById('fournisseurs-value');
+            const bfrResult = document.getElementById('bfr-result');
+            const bfrTypeExplanation = document.getElementById('bfr-type-explanation');
+            
+            let bfrChart;
+
+            function calculateBFR() {
+                const ca = parseFloat(caInput.value) || 0;
+                const stockDays = parseInt(stockSlider.value);
+                const clientsDays = parseInt(clientsSlider.value);
+                const fournisseursDays = parseInt(fournisseursSlider.value);
+
+                stockValue.textContent = stockDays;
+                clientsValue.textContent = clientsDays;
+                fournisseursValue.textContent = fournisseursDays;
+                
+                // Simplified calculation for demonstration purposes
+                // Stock = (CA HT / 360) * Durée de stockage
+                // Créances Clients = (CA TTC / 360) * Délai paiement clients (assuming CA is HT, add 20% VAT for TTC)
+                // Dettes Fournisseurs = (Achats HT / 360) * Délai paiement fournisseurs (assuming Achats are 60% of CA HT)
+
+                const stockAmount = (ca / 360) * stockDays;
+                const clientsAmount = (ca * 1.2 / 360) * clientsDays; // Assuming 20% VAT
+                const fournisseursAmount = (ca * 0.6 / 360) * fournisseursDays; // Assuming purchases are 60% of CA HT
+
+                const bfr = stockAmount + clientsAmount - fournisseursAmount;
+
+                bfrResult.textContent = `${Math.round(bfr).toLocaleString('fr-FR')} €`;
+                
+                if (bfr > 0) {
+                    bfrTypeExplanation.textContent = `L'entreprise a un besoin de financement de ${Math.round(bfr).toLocaleString('fr-FR')} € pour son cycle d'exploitation.`;
+                    bfrTypeExplanation.classList.remove('text-green-600');
+                    bfrTypeExplanation.classList.add('text-red-600');
+                } else if (bfr < 0) {
+                    bfrTypeExplanation.textContent = `L'entreprise dispose d'une ressource de ${Math.round(Math.abs(bfr)).toLocaleString('fr-FR')} € générée par son cycle d'exploitation (RFR).`;
+                    bfrTypeExplanation.classList.remove('text-red-600');
+                    bfrTypeExplanation.classList.add('text-green-600');
+                } else {
+                    bfrTypeExplanation.textContent = `Le BFR est neutre.`;
+                    bfrTypeExplanation.classList.remove('text-red-600', 'text-green-600');
+                }
+
+                updateBfrChart(stockAmount, clientsAmount, -fournisseursAmount); // Suppliers are a negative amount for BFR
+            }
+            
+            function createBfrChart() {
+                 const ctx = document.getElementById('bfrChart').getContext('2d');
+                 bfrChart = new Chart(ctx, {
+                     type: 'bar',
+                     data: {
+                         labels: ['Composantes du BFR'],
+                         datasets: [
+                             { label: 'Stocks', data: [0], backgroundColor: '#3B82F6' },
+                             { label: 'Créances Clients', data: [0], backgroundColor: '#10B981' },
+                             { label: 'Dettes Fournisseurs', data: [0], backgroundColor: '#EF4444' }
+                         ]
+                     },
+                     options: {
+                         responsive: true,
+                         maintainAspectRatio: false,
+                         scales: {
+                             x: { 
+                                stacked: true, 
+                                grid: { display: false },
+                                ticks: { font: { size: 10 } }, /* Réduire la taille de police sur X */
+                                title: { display: true, text: 'Composantes du BFR', font: { size: 10 } } /* Titre axe X */
+                             },
+                             y: { 
+                                stacked: true, 
+                                ticks: { 
+                                    callback: value => `${(value / 1000).toFixed(0)}k €`, /* Formater plus court */
+                                    font: { size: 10 }, /* Réduire la taille de police sur Y */
+                                    padding: 5 /* Ajouter un peu de padding */
+                                },
+                                title: { display: true, text: 'Montant en €', font: { size: 10 } } /* Titre axe Y */
+                             }
+                         },
+                         plugins: {
+                             legend: { 
+                                position: 'bottom',
+                                labels: {
+                                    font: { size: 10 } /* Réduire la taille de police de la légende */
+                                }
+                             },
+                             tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.dataset.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed.y !== null) {
+                                            label += new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(context.parsed.y);
+                                        }
+                                        return label;
+                                    }
+                                }
+                             },
+                             title: {
+                                display: false, /* Désactiver le titre global car les titres d'axe sont plus pertinents ici */
+                             }
+                         }
+                     }
+                 });
+            }
+
+            function updateBfrChart(stock, clients, fournisseurs) {
+                bfrChart.data.datasets[0].data[0] = stock;
+                bfrChart.data.datasets[1].data[0] = clients;
+                bfrChart.data.datasets[2].data[0] = fournisseurs;
+                bfrChart.update();
+            }
+
+            [caInput, stockSlider, clientsSlider, fournisseursSlider].forEach(el => {
+                el.addEventListener('input', calculateBFR);
+            });
+
+            createBfrChart();
+            calculateBFR(); // Initial calculation on page load
+            
+            // --- Smooth Scroll for Nav Links ---
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+        });
+    </script>
+</body>
+</html>

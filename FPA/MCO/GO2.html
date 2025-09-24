@@ -1,0 +1,1810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Pédagogique : Gérer les Stocks et les Inventaires</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chosen Palette: Warm Neutral Study -->
+    <!-- Application Structure Plan: La structure a été enrichie pour suivre un parcours pédagogique allant du stratégique à l'opérationnel. Un nouveau "Chapitre 0" pose les enjeux managériaux en s'appuyant sur l'Analyse Stratégique. Les chapitres suivants ont été renommés pour refléter leur finalité (Classifier, Piloter, etc.). De nouveaux modules interactifs (Coût du stock, Classification ABC, Checklist d'inventaire) ont été ajoutés pour concrétiser les procédures du "Manuel". Des encadrés "Conseil du Manager" ponctuent le parcours pour lier la technique à la décision. -->
+    <!-- Visualization & Content Choices: 
+    - Chapitre 0 (Stratégie): Un calculateur de "coût de possession" a été ajouté pour matérialiser l'impact financier d'un stock. Objectif: Informer/Impact. Interaction: L'utilisateur saisit une valeur et voit le coût "caché" annuel.
+    - Chapitre 1 (Classifier): L'outil Pareto a été transformé en simulateur de classification ABC. Objectif: Organiser/Comparer. Interaction: L'utilisateur trie, puis clique pour classifier les produits en A, B, C, révélant les politiques de gestion associées. Justification: Rend la segmentation ABC concrète et actionnable.
+    - Chapitre 4 (Inventaire): L'ancienne procédure est remplacée par une checklist interactive et un graphique sur les causes de la démarque (Chart.js sur Canvas). Objectif: Organiser/Informer. Interaction: L'utilisateur peut cocher les étapes et visualiser les sources de pertes. Justification: Gamifie l'apprentissage de la procédure et synthétise visuellement les risques.
+    - Tous chapitres: Ajout d'encadrés "Conseil du Manager" pour synthétiser l'apport décisionnel de chaque concept. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f7f4;
+            color: #4a4a4a;
+            /* Empêche le scroll du body lorsque la sidebar est ouverte sur mobile */
+            overflow-x: hidden; 
+        }
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+            position: relative; /* Pour le positionnement du bouton hamburger */
+        }
+        /* Sidebar pour mobile (cachée par défaut) */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 280px;
+            height: 100%;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            flex-shrink: 0;
+            transform: translateX(-100%); /* Cachée à gauche */
+            transition: transform 0.3s ease-in-out;
+            z-index: 50; /* Au-dessus du contenu principal */
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        /* Sidebar visible sur desktop */
+        @media (min-width: 768px) { /* md breakpoint */
+            .sidebar {
+                transform: translateX(0); /* Visible */
+                position: static; /* Ne pas affecter le scroll */
+                box-shadow: none;
+            }
+            .main-container {
+                margin-left: 0; /* Pas de décalage sur desktop */
+            }
+        }
+        /* Classe pour afficher la sidebar sur mobile */
+        .sidebar.open {
+            transform: translateX(0);
+        }
+
+        /* Backdrop pour la sidebar mobile */
+        .sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 40;
+            display: none; /* Cachée par défaut */
+        }
+        .sidebar-backdrop.visible {
+            display: block;
+        }
+
+        /* Bouton hamburger */
+        .hamburger-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 60; /* Au-dessus de la sidebar et du backdrop */
+            background-color: #4f46e5;
+            color: white;
+            padding: 0.75rem;
+            border-radius: 9999px; /* Cercle */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .hamburger-btn {
+                display: none; /* Caché sur desktop */
+            }
+        }
+
+        /* Bouton de fermeture de la sidebar */
+        .sidebar-close-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: #d1d5db;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        .sidebar-close-btn:hover {
+            color: #9ca3af;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .sidebar-close-btn {
+                display: none; /* Caché sur desktop */
+            }
+        }
+
+        .content {
+            flex-grow: 1;
+            padding: 1rem; /* Padding réduit pour mobile */
+            overflow-y: auto;
+            width: 100%; /* Prend toute la largeur sur mobile */
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            .content {
+                padding: 2rem; /* Padding normal sur desktop */
+                margin-left: 0; /* Pas de décalage sur desktop */
+            }
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            border-left: 4px solid transparent;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.2s ease-in-out;
+        }
+        .nav-link:hover {
+            background-color: #f3f4f6;
+            color: #111827;
+            border-left-color: #d1d5db;
+        }
+        .nav-link.active {
+            background-color: #eef2ff;
+            color: #4338ca;
+            border-left-color: #4f46e5;
+            font-weight: 600;
+        }
+        .card {
+            background-color: #ffffff;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .interactive-section {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            margin-top: 1.5rem;
+        }
+        .interactive-header {
+            background-color: #f9fafb;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            border-radius: 0.75rem 0.75rem 0 0;
+        }
+        .interactive-content {
+            padding: 1.5rem;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            display: inline-flex; /* Pour les icônes */
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary {
+            background-color: #4f46e5;
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #4338ca;
+        }
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
+        /* Boutons de classification ABC, ajout de couleurs spécifiques */
+        .btn-orange {
+            background-color: #f97316; /* Tailwind orange-500 */
+            color: #ffffff;
+        }
+        .btn-orange:hover {
+            background-color: #ea580c; /* Tailwind orange-600 */
+        }
+        .btn-emerald {
+            background-color: #10b981; /* Tailwind emerald-500 */
+            color: #ffffff;
+        }
+        .btn-emerald:hover {
+            background-color: #059669; /* Tailwind emerald-600 */
+        }
+
+        .formula-box {
+            background-color: #eef2ff;
+            border-left: 4px solid #4f46e5;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 0.25rem;
+        }
+        .formula-box h5 { /* Ajustement taille titre */
+            font-size: 1rem;
+        }
+        .formula-box p {
+            font-family: monospace;
+            font-size: 1.05rem; /* Légèrement réduit pour meilleure compacité */
+            color: #3730a3;
+            text-align: center;
+            margin-top: 0.5rem;
+        }
+        .manager-tip-box {
+            background-color: #fefce8;
+            border-left: 4px solid #eab308;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            border-radius: 0.25rem;
+        }
+        .manager-tip-box p {
+            color: #854d0e;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem; /* Légèrement réduit pour meilleure lisibilité sur mobile */
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        thead {
+            background-color: #f9fafb;
+        }
+        tbody tr:hover {
+            background-color: #f3f4f6;
+        }
+        .sortable {
+            cursor: pointer;
+            display: flex; /* Pour aligner texte et icône de tri */
+            align-items: center;
+            gap: 5px; /* Espace entre texte et icône */
+        }
+        .sortable:hover {
+            color: #4f46e5;
+        }
+        /* Retrait du pseudo-élément ↕, remplacé par Font Awesome */
+        .sortable::after {
+            content: none;
+        }
+
+        .checklist li {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .checklist input {
+            margin-right: 1rem;
+            min-width: 1.25rem; /* S'assurer que le checkbox est cliquable */
+            min-height: 1.25rem;
+        }
+        .checklist .info-icon {
+            margin-left: auto;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0.25rem; /* Zone cliquable plus grande */
+            border-radius: 50%;
+            transition: background-color 0.2s ease;
+        }
+        .checklist .info-icon:hover, .checklist .info-icon:focus {
+            background-color: #e5e7eb;
+            outline: none; /* Pour l'accessibilité */
+        }
+        .tooltip {
+            display: none;
+            position: absolute;
+            background-color: #111827;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            z-index: 100; /* Plus haut que tout le reste */
+            max-width: 250px;
+            text-align: center;
+            font-size: 0.875rem;
+            pointer-events: none; /* N'interfère pas avec les clics */
+        }
+        /* Styles pour les classes ABC */
+        tr.class-a { background-color: rgba(239, 68, 68, 0.1); }
+        tr.class-b { background-color: rgba(249, 115, 22, 0.1); }
+        tr.class-c { background-color: rgba(16, 185, 129, 0.1); }
+
+        .error-message {
+            color: #dc2626; /* red-600 */
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Styles spécifiques pour le lexique et la FAQ */
+        .lexicon-term {
+            margin-top: 1.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151; /* gray-700 */
+            font-size: 1.1rem;
+        }
+        .lexicon-definition {
+            margin-left: 1rem;
+            margin-bottom: 1rem;
+            color: #4a4a4a; /* body default color */
+        }
+        .lexicon-definition ul {
+            list-style-type: disc;
+            margin-left: 1.25rem;
+            margin-top: 0.5rem;
+        }
+        .faq-question {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            color: #1f2937; /* gray-800 */
+            font-size: 1.3rem;
+        }
+        .faq-answer {
+            margin-bottom: 2rem;
+            color: #4a4a4a;
+        }
+        .faq-answer ul {
+            list-style-type: disc;
+            margin-left: 1.25rem;
+            margin-top: 0.5rem;
+        }
+        .faq-answer ol {
+            list-style-type: decimal;
+            margin-left: 1.25rem;
+            margin-top: 0.5rem;
+        }
+        .faq-answer strong {
+            color: #1f2937;
+        }
+        /* Style pour les tables dans la FAQ */
+        .faq-table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid #e5e7eb; /* Bordure légère */
+            border-radius: 0.5rem;
+        }
+        .faq-table-container table {
+            width: 100%;
+            min-width: 500px; /* Minimum width for tables to ensure horizontal scroll on small screens */
+        }
+        .faq-table-container th, .faq-table-container td {
+            padding: 0.8rem;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: top;
+            font-size: 0.875rem;
+        }
+        .faq-table-container thead th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        .faq-table-container tbody tr:last-child td {
+            border-bottom: none;
+        }
+        /* Style spécifique pour les embed vidéos/cartes mentales */
+        .embed-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-top: 56.2500%; /* 16:9 Aspect Ratio */
+            padding-bottom: 0;
+            box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16);
+            margin-top: 1.6em;
+            margin-bottom: 0.9em;
+            overflow: hidden;
+            border-radius: 8px;
+            will-change: transform;
+        }
+        .embed-container iframe {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+        .mindmap-container {
+            border: 1px solid #e5e7eb; /* card-like border */
+            border-radius: 0.75rem; /* card-like border radius */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* card-like shadow */
+            padding: 0.5rem; /* Reduced padding for embed */
+            height: 750px; /* Specific height for XMind embed */
+            max-height: 80vh; /* Max height to fit in viewport */
+            width: 100%;
+            overflow: hidden; /* Ensure iframe stays within bounds */
+        }
+        .mindmap-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        /* STYLES SPÉCIFIQUES POUR LE QUIZ */
+        .answer-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            text-align: left;
+            background-color: #ffffff;
+            transition: all 0.2s ease;
+        }
+        .answer-btn:hover:not(:disabled) {
+            border-color: #4f46e5;
+            background-color: #eef2ff;
+        }
+        .answer-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+        .answer-btn.correct {
+            background-color: #dcfce7; /* green-100 */
+            border-color: #22c55e; /* green-500 */
+            color: #15803d; /* green-700 */
+            font-weight: 600;
+        }
+        .answer-btn.incorrect {
+            background-color: #fee2e2; /* red-100 */
+            border-color: #ef4444; /* red-500 */
+            color: #b91c1c; /* red-700 */
+            font-weight: 600;
+        }
+        #feedback-container.correct-feedback {
+            background-color: #f0fdf4; /* green-50 */
+            border-left: 4px solid #22c55e; /* green-500 */
+        }
+        #feedback-container.incorrect-feedback {
+            background-color: #fef2f2; /* red-50 */
+            border-left: 4px solid #ef4444; /* red-500 */
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- Bouton hamburger pour mobile -->
+        <button id="hamburgerBtn" class="hamburger-btn md:hidden">
+            <i class="fa-solid fa-bars fa-lg"></i>
+        </button>
+
+        <!-- Sidebar (menu de navigation) -->
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn md:hidden" id="sidebarCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="p-6">
+                <h1 class="text-xl font-bold text-gray-800">Gestion des Stocks</h1>
+                <p class="text-sm text-gray-500">Module BTS MCO</p>
+            </div>
+            <nav>
+                <a href="#section-video" class="nav-link active">Introduction Vidéo</a>
+                <a href="#section-0" class="nav-link">0. Introduction Stratégique</a>
+                <a href="#section-1" class="nav-link">1. Classifier pour Prioriser</a>
+                <a href="#section-2" class="nav-link">2. Valoriser les Stocks</a>
+                <a href="#section-3" class="nav-link">3. Piloter avec les KPIs</a>
+                <a href="#section-4" class="nav-link">4. Maîtriser l'Inventaire</a>
+                <a href="#section-5" class="nav-link">5. Lexique Essentiel</a>
+                <a href="#section-6" class="nav-link">6. Foire Aux Questions (FAQ)</a>
+                <a href="#section-quiz" class="nav-link">7. Quiz Formatif</a>
+                <a href="#section-synthesis" class="nav-link">8. Synthèse & Carte Mentale</a>
+            </nav>
+        </aside>
+
+        <!-- Fond sombre pour la sidebar mobile -->
+        <div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+
+        <!-- Contenu principal -->
+        <main class="content">
+
+            <!-- NOUVELLE SECTION : VIDÉO D'INTRODUCTION -->
+            <div id="section-video" class="content-section">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">Introduction Vidéo : La Gestion des Stocks expliquée</h2>
+                    <p class="text-gray-600 mb-6 text-lg">Pour bien commencer, cette vidéo présente les concepts fondamentaux de la gestion des stocks, leur importance en logistique et leur application pratique dans le cadre du BTS MCO.</p>
+                    <div class="embed-container">
+                        <iframe loading="lazy" 
+                            src="https://www.canva.com/design/DAGzch3y2MA/js6xihrPFIvUx6XwwL4dyg/watch?embed" 
+                            allowfullscreen="allowfullscreen" 
+                            allow="fullscreen">
+                        </iframe>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-2 text-right">Design by desmond de amil (via Canva)</p>
+                </div>
+            </div>
+
+            <div id="section-0" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">0. Introduction : Le Stock, un Arbitrage Stratégique</h2>
+                    <p class="text-gray-600 mb-4">La gestion des stocks n'est pas qu'une fonction logistique, c'est un pilier de la performance de l'entreprise. Au cœur de cette discipline se trouve un arbitrage permanent : satisfaire le client avec une disponibilité maximale des produits, tout en maîtrisant les coûts et les risques financiers liés à leur détention. Un stock bien géré est un moteur commercial ; mal géré, il immobilise de la trésorerie et devient un risque.</p>
+                </div>
+                <div class="interactive-section">
+                    <div class="interactive-header">
+                         <h3 class="text-lg font-semibold text-gray-700">Simulateur : Le Poids "Caché" du Stock</h3>
+                    </div>
+                    <div class="interactive-content">
+                        <p class="mb-4">Un stock a un coût de possession (entreposage, assurance, dépréciation...) estimé entre 20% et 30% de sa valeur par an. Entrez la valeur de votre stock pour visualiser cet impact financier concret.</p>
+                        <label for="stock_cost_value" class="block text-sm font-medium">Valeur du stock (€) :</label>
+                        <input type="number" id="stock_cost_value" class="w-full p-2 border rounded mb-2" placeholder="Ex: 50000" min="0">
+                        <p id="stock_cost_error" class="error-message hidden">Veuillez entrer une valeur de stock valide (supérieure à 0).</p>
+                        <div class="flex flex-col sm:flex-row gap-2 mt-4">
+                            <button id="calc_stock_cost" class="btn btn-primary w-full sm:w-1/2"><i class="fa-solid fa-calculator mr-2"></i>Calculer</button>
+                            <button id="reset_stock_cost" class="btn btn-secondary w-full sm:w-1/2"><i class="fa-solid fa-rotate-left mr-2"></i>Réinitialiser</button>
+                        </div>
+                        <div id="stock_cost_result" class="mt-4 text-center font-bold text-lg text-indigo-700"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-1" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">1. Classifier pour Prioriser les Actions</h2>
+                    <p class="text-gray-600">Gérer des centaines de références de la même manière est inefficace. Il faut concentrer les ressources (temps, argent) là où l'impact est maximal. La méthode ABC, une extension de la loi de Pareto (20/80), permet de segmenter le stock en trois classes pour appliquer des politiques de gestion différenciées et plus pertinentes.</p>
+                </div>
+                <div class="interactive-section">
+                    <div class="interactive-header">
+                         <h3 class="text-lg font-semibold text-gray-700">Outil interactif : Simulateur de Classification ABC</h3>
+                    </div>
+                    <div class="interactive-content">
+                        <p class="mb-4">Triez le tableau par chiffre d'affaires (CA) pour identifier les produits les plus importants. Ensuite, utilisez les boutons pour les classifier en A, B ou C et découvrir la politique de gestion recommandée pour chaque groupe.</p>
+                        <div class="chart-container mb-6">
+                            <canvas id="paretoChart"></canvas>
+                        </div>
+                        <div class="overflow-x-auto mb-4">
+                            <table id="paretoTable">
+                                <thead><tr><th class="sortable" data-column="ref">Réf. <i class="fa-solid fa-sort"></i></th><th class="sortable" data-column="qte">Qtés <i class="fa-solid fa-sort"></i></th><th class="sortable" data-column="ca">CA (€) <i class="fa-solid fa-sort"></i></th><th>% CA</th><th>% Cumulé</th></tr></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                        <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 mb-4">
+                            <button id="classifyA" class="btn btn-primary flex-1"><i class="fa-solid fa-chart-pie mr-2"></i>Classifier A (Top 80% CA)</button>
+                            <button id="classifyB" class="btn btn-orange flex-1"><i class="fa-solid fa-chart-pie mr-2"></i>Classifier B (15% suivants)</button>
+                            <button id="classifyC" class="btn btn-emerald flex-1"><i class="fa-solid fa-chart-pie mr-2"></i>Classifier C (Derniers 5%)</button>
+                        </div>
+                        <div id="managementPolicy" class="p-4 bg-gray-50 rounded-lg hidden"></div>
+                        <div class="manager-tip-box"><p><i class="fa-solid fa-lightbulb mr-2"></i><b>Conseil du Manager :</b> La classification ABC est dynamique. Réévaluez-la régulièrement, surtout si votre gamme de produits ou vos ventes évoluent. Un produit C peut devenir un A, et vice-versa !</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-2" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">2. Valoriser les Stocks</h2>
+                    <p class="text-gray-600">La valorisation est une opération comptable cruciale qui impacte le bilan et le résultat de l'entreprise. Elle consiste à donner une valeur monétaire au stock final. La méthode choisie influence directement le bénéfice affiché et donc les impôts.</p>
+                </div>
+                 <div class="interactive-section">
+                    <div class="interactive-header"><h3 class="text-lg font-semibold text-gray-700">Simulateur de Valorisation de Stock</h3></div>
+                    <div class="interactive-content">
+                        <div class="mb-6"><h4 class="font-semibold text-gray-700 mb-2">Les Formules Clés :</h4>
+                            <div class="space-y-4">
+                                <div class="formula-box"><h5 class="font-semibold text-gray-800 mb-1">Coût Moyen Pondéré (CMP) Fin de Période</h5><p>CMP = (Valeur SI + Valeur Entrées) / (Qté SI + Qté Entrées)</p></div>
+                                <div class="formula-box"><h5 class="font-semibold text-gray-800 mb-1">Coût Moyen Pondéré (CMP) Après Chaque Entrée</h5><p>Nouveau CMP = Valeur du Stock en € / Quantité en Stock</p></div>
+                                <div class="formula-box"><h5 class="font-semibold text-gray-800 mb-1">PEPS (Premier Entré, Premier Sorti) ou FIFO (First-In, First-Out)</h5><p class="!text-base !font-sans !text-center !text-gray-700">Principe : Les sorties sont valorisées au coût des lots les plus anciens.</p></div>
+                            </div>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2 text-gray-700">Données des mouvements :</h4>
+                                <div class="overflow-x-auto">
+                                    <table id="stockMovements"><thead><tr><th>Date</th><th>Libellé</th><th>Qté</th><th>PU (€)</th></tr></thead><tbody></tbody></table>
+                                </div>
+                                <div class="mt-4 flex flex-col sm:flex-row gap-2">
+                                    <button id="calcCmpPeriod" class="btn btn-primary flex-1"><i class="fa-solid fa-calculator mr-2"></i>CMP Fin Période</button>
+                                    <button id="calcCmpEntry" class="btn btn-primary flex-1"><i class="fa-solid fa-calculator mr-2"></i>CMP / Entrée</button>
+                                    <button id="calcPeps" class="btn btn-primary flex-1"><i class="fa-solid fa-calculator mr-2"></i>PEPS</button>
+                                </div>
+                                <button id="reset_stock_valorisation" class="btn btn-secondary w-full mt-2"><i class="fa-solid fa-rotate-left mr-2"></i>Réinitialiser</button>
+                            </div>
+                            <div><h4 class="font-semibold mb-2 text-gray-700">Résultat - Fiche de stock (<span id="methodTitle"></span>):</h4><div class="overflow-x-auto"><table id="stockValuationResult"><thead><tr><th>Date</th><th>Libellé</th><th>Entrées</th><th>Sorties</th><th>Stock</th></tr></thead><tbody><tr><td colspan="5" class="text-center text-gray-500">Sélectionnez une méthode.</td></tr></tbody></table></div><div id="finalStockValue" class="mt-4 text-center font-bold text-lg text-indigo-700"></div></div>
+                        </div>
+                        <div class="manager-tip-box"><p><i class="fa-solid fa-lightbulb mr-2"></i><b>Conseil du Manager :</b> Le choix de la méthode de valorisation n'est pas neutre. En période d'inflation, la méthode PEPS affiche un bénéfice plus élevé (et donc plus d'impôts) car elle confronte les ventes actuelles à des coûts d'achat plus anciens et plus faibles.</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-3" class="content-section hidden">
+                <div class="card">
+                     <h2 class="text-2xl font-bold mb-2 text-gray-800">3. Piloter avec les Indicateurs de Gestion (KPIs)</h2>
+                     <p class="text-gray-600">Pour piloter les stocks, il faut les mesurer. Les KPIs (Key Performance Indicators) sont des instruments de bord qui permettent de diagnostiquer la performance de votre gestion. Un stock qui tourne vite est un signe de bonne santé commerciale et financière.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="card"><h3 class="font-semibold text-lg text-gray-700 mb-2">1. Stock Moyen</h3><p class="text-sm text-gray-600 mb-4">La quantité moyenne de stock sur une période.</p><div class="formula-box"><p>(SI + SF) / 2</p></div><label for="sm_si" class="block text-sm font-medium">Stock début (SI):</label><input type="number" id="sm_si" class="w-full p-2 border rounded mb-2" value="100" min="0"><label for="sm_sf" class="block text-sm font-medium">Stock fin (SF):</label><input type="number" id="sm_sf" class="w-full p-2 border rounded mb-4" value="120" min="0"><p id="sm_error" class="error-message hidden">Veuillez entrer des valeurs valides.</p><div class="flex flex-col sm:flex-row gap-2 mt-4"><button id="calcSM" class="btn btn-primary w-full sm:w-1/2"><i class="fa-solid fa-calculator mr-2"></i>Calculer</button><button id="resetSM" class="btn btn-secondary w-full sm:w-1/2"><i class="fa-solid fa-rotate-left mr-2"></i>Réinitialiser</button></div><p id="resultSM" class="mt-4 text-center font-bold text-lg text-indigo-700"></p></div>
+                    <div class="card"><h3 class="font-semibold text-lg text-gray-700 mb-2">2. Ratio de Rotation</h3><p class="text-sm text-gray-600 mb-4">Indique combien de fois le stock a été renouvelé. Plus il est élevé, mieux c'est.</p><div class="formula-box"><p>Qtés Vendues / Stock Moyen</p></div><label for="rr_qv" class="block text-sm font-medium">Quantités vendues :</label><input type="number" id="rr_qv" class="w-full p-2 border rounded mb-2" value="880" min="0"><label for="rr_sm" class="block text-sm font-medium">Stock moyen :</label><input type="number" id="rr_sm" class="w-full p-2 border rounded mb-4" value="110" min="0"><p id="rr_error" class="error-message hidden">Veuillez entrer des valeurs valides. Le stock moyen ne peut être zéro.</p><div class="flex flex-col sm:flex-row gap-2 mt-4"><button id="calcRR" class="btn btn-primary w-full sm:w-1/2"><i class="fa-solid fa-calculator mr-2"></i>Calculer</button><button id="resetRR" class="btn btn-secondary w-full sm:w-1/2"><i class="fa-solid fa-rotate-left mr-2"></i>Réinitialiser</button></div><p id="resultRR" class="mt-4 text-center font-bold text-lg text-indigo-700"></p></div>
+                    <div class="card"><h3 class="font-semibold text-lg text-gray-700 mb-2">3. Durée Moyenne de Stockage</h3><p class="text-sm text-gray-600 mb-4">Le nombre de jours où un article reste en stock. Plus il est faible, mieux c'est.</p><div class="formula-box"><p>Période (jours) / Ratio Rotation</p></div><label for="ds_dp" class="block text-sm font-medium">Période (jours) :</label><input type="number" id="ds_dp" class="w-full p-2 border rounded mb-2" value="365" min="1"><label for="ds_rr" class="block text-sm font-medium">Ratio de rotation :</label><input type="number" id="ds_rr" class="w-full p-2 border rounded mb-4" value="8" min="0"><p id="ds_error" class="error-message hidden">Veuillez entrer des valeurs valides. Le ratio de rotation ne peut être zéro.</p><div class="flex flex-col sm:flex-row gap-2 mt-4"><button id="calcDS" class="btn btn-primary w-full sm:w-1/2"><i class="fa-solid fa-calculator mr-2"></i>Calculer</button><button id="resetDS" class="btn btn-secondary w-full sm:w-1/2"><i class="fa-solid fa-rotate-left mr-2"></i>Réinitialiser</button></div><p id="resultDS" class="mt-4 text-center font-bold text-lg text-indigo-700"></p></div>
+                </div>
+                <div class="manager-tip-box"><p><i class="fa-solid fa-lightbulb mr-2"></i><b>Conseil du Manager :</b> Un ratio de rotation qui ralentit ou une durée de stockage qui s'allonge n'est pas juste un chiffre. C'est un signal d'alerte sur la désirabilité d'un produit, l'efficacité de vos actions marketing ou un problème d'approvisionnement. Agissez !</p></div>
+            </div>
+
+            <div id="section-4" class="content-section hidden">
+                <div class="card">
+                     <h2 class="text-2xl font-bold mb-2 text-gray-800">4. Maîtriser l'Inventaire Physique</h2>
+                     <p class="text-gray-600 mb-4">L'inventaire est un audit opérationnel, une "photographie" du stock à un instant T. C'est une obligation légale, mais surtout un outil de gestion essentiel pour confronter le stock théorique (informatique) au stock réel (physique). Les écarts, ou "démarques", sont des indicateurs précieux sur d'éventuels vols, casses ou erreurs de procédure.</p>
+                </div>
+                 <div class="grid lg:grid-cols-2 gap-6">
+                    <div class="card">
+                        <h3 class="font-semibold text-lg text-gray-700 mb-4">Checklist de Préparation d'Inventaire</h3>
+                        <ul id="inventoryChecklist" class="checklist"></ul>
+                    </div>
+                    <div class="card">
+                         <h3 class="font-semibold text-lg text-gray-700 mb-4">Analyse de la Démarque Inconnue</h3>
+                         <div class="chart-container" style="height: 300px; max-height: 40vh;">
+                            <canvas id="demarqueChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                 <div class="manager-tip-box"><p><i class="fa-solid fa-lightbulb mr-2"></i><b>Conseil du Manager :</b> L'inventaire n'est pas une corvée, c'est un check-up de santé pour votre entreprise. Des écarts importants et récurrents signalent une hémorragie financière et des failles dans vos processus qu'il faut corriger d'urgence.</p></div>
+            </div>
+
+            <!-- NOUVELLES SECTIONS : LEXIQUE ET FAQ -->
+            <div id="section-5" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">5. Lexique Essentiel du Gestionnaire de Stocks</h2>
+                    <p class="text-gray-600 mb-6">La maîtrise du vocabulaire technique de la gestion des stocks est une compétence fondamentale et non négociable pour tout futur manager en unité commerciale. Loin d'être du jargon, ces termes sont les outils conceptuels indispensables pour analyser, piloter et optimiser la performance d'un point de vente. Comprendre et utiliser ce lexique avec précision est la première étape pour transformer une contrainte logistique en un levier de rentabilité et de satisfaction client.</p>
+
+                    <dl class="text-gray-600">
+                        <dt class="lexicon-term">Assortiment</dt>
+                        <dd class="lexicon-definition">L'ensemble des produits proposés à la vente par une unité commerciale. Il est la matérialisation de la promesse faite au client, permettant de proposer un choix attractif et varié qui répond à ses besoins et suscite l'acte d'achat.</dd>
+                        
+                        <dt class="lexicon-term">Coût des Marchandises Vendues (CMV)</dt>
+                        <dd class="lexicon-definition">Indicateur comptable qui représente le coût d'acquisition des marchandises qui ont été vendues au cours d'une période. La valeur du stock final, déterminée par l'inventaire, impacte directement ce coût et, par conséquent, le résultat de l'entreprise.</dd>
+
+                        <dt class="lexicon-term">Coût Moyen Pondéré (CMP ou CUMP)</dt>
+                        <dd class="lexicon-definition">Méthode de valorisation des stocks qui lisse les variations des prix d'achat en calculant un coût moyen unique pour des articles identiques. Après chaque nouvelle entrée en stock, un nouveau coût moyen est calculé. Cette méthode est idéale pour les produits non périssables et fongibles (interchangeables).</dd>
+
+                        <dt class="lexicon-term">Démarque (Connue et Inconnue)</dt>
+                        <dd class="lexicon-definition">Écart constaté lorsque le stock réel est inférieur au stock théorique. La démarque représente une perte pour l'entreprise.
+                            <ul>
+                                <li><strong>Démarque connue :</strong> La cause de la perte est identifiée et enregistrée (ex: casse, péremption, vol avéré).</li>
+                                <li><strong>Démarque inconnue :</strong> La perte est découverte lors de l'inventaire physique sans que sa cause soit identifiée. Les causes principales en France se répartissent comme suit :
+                                    <ul>
+                                        <li>Vols par les clients (45%)</li>
+                                        <li>Vols par le personnel interne (22%)</li>
+                                        <li>Erreurs administratives (15%)</li>
+                                        <li>Casse et dégradation non enregistrées (10%)</li>
+                                        <li>Erreurs des fournisseurs (5%)</li>
+                                        <li>Autres causes (3%)</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </dd>
+
+                        <dt class="lexicon-term">Durée Moyenne de Stockage</dt>
+                        <dd class="lexicon-definition">Indicateur de performance qui mesure le nombre de jours moyen pendant lequel un article reste en stock avant d'être vendu. L'objectif stratégique est de minimiser cette durée pour accélérer la conversion du stock en liquidités.</dd>
+
+                        <dt class="lexicon-term">Fiche de Stock</dt>
+                        <dd class="lexicon-definition">Outil opérationnel, aujourd'hui informatisé, qui retrace chronologiquement tous les mouvements (entrées et sorties) d'une référence spécifique. Elle permet de connaître à tout moment le stock théorique de ce produit.</dd>
+
+                        <dt class="lexicon-term">Gamme</dt>
+                        <dd class="lexicon-definition">Ensemble de produits de même catégorie ou de même fonction, proposée par une entreprise pour répondre à un même besoin client. Une gamme est souvent déclinée en plusieurs lignes (ex: Gamme de smartphones > Ligne "Premium", "Standard", "Éco").</dd>
+
+                        <dt class="lexicon-term">Inventaire Physique</dt>
+                        <dd class="lexicon-definition">Opération de comptage manuel de tous les produits physiquement présents dans l'unité commerciale. Il répond à un double objectif : une obligation légale (imposée par l'article L. 123-12 du Code de commerce au moins une fois par an) et un besoin de gestion pour confronter le stock réel au stock théorique et identifier les écarts.</dd>
+
+                        <dt class="lexicon-term">Méthode 20/80 (Loi de Pareto)</dt>
+                        <dd class="lexicon-definition">Principe d'analyse qui postule qu'environ 20% des références en stock génèrent 80% du chiffre d'affaires. Son objectif est d'identifier ce groupe de "références vitales" pour leur accorder un suivi prioritaire et des ressources de gestion renforcées.</dd>
+
+                        <dt class="lexicon-term">Méthode ABC</dt>
+                        <dd class="lexicon-definition">Extension de la loi de Pareto qui segmente le stock en trois catégories pour une gestion plus fine et adaptée à l'importance de chaque groupe de produits. La répartition type est :
+                            <ul>
+                                <li><strong>Classe A :</strong> Environ 20% des références représentent 80% de la valeur. Gestion très stricte et suivi permanent.</li>
+                                <li><strong>Classe B :</strong> Environ 30% des références représentent 15% de la valeur. Gestion régulière et suivi périodique.</li>
+                                <li><strong>Classe C :</strong> Environ 50% des références représentent 5% de la valeur. Gestion simplifiée.</li>
+                            </ul>
+                        </dd>
+
+                        <dt class="lexicon-term">Premier Entré, Premier Sorti (PEPS ou FIFO)</dt>
+                        <dd class="lexicon-definition">Méthode de valorisation des stocks qui suit le flux physique logique : les premiers articles entrés en stock sont considérés comme les premiers à être vendus. Elle fonctionne par la gestion de lots distincts, chacun conservant son propre coût d'acquisition. Cette méthode est essentielle pour les produits périssables ou à obsolescence rapide (mode, technologie).</dd>
+
+                        <dt class="lexicon-term">Ratio de Rotation des Stocks</dt>
+                        <dd class="lexicon-definition">Indicateur de performance clé qui mesure la vitesse de renouvellement du stock. Il indique combien de fois le stock a été entièrement vendu et remplacé au cours d'une période. Un ratio élevé est généralement un signe de bonne santé commerciale et de gestion efficace.</dd>
+
+                        <dt class="lexicon-term">Rupture de Stock</dt>
+                        <dd class="lexicon-definition">Risque majeur qui se matérialise par l'absence d'un produit demandé par un client. Ses conséquences sont graves : perte de chiffre d'affaires immédiate, risque de perte définitive du client qui se tourne vers la concurrence, et dégradation de l'image de marque de l'enseigne.</dd>
+
+                        <dt class="lexicon-term">Stock (Double Utilité)</dt>
+                        <dd class="lexicon-definition">Ensemble des biens détenus par une entreprise et destinés à la vente ou à être utilisés dans son processus de production. Le stock a une double utilité stratégique :
+                            <ul>
+                                <li><strong>Moteur commercial :</strong> Il assure la disponibilité des produits et la constitution d'un assortiment attractif pour satisfaire les clients.</li>
+                                <li><strong>Amortisseur opérationnel :</strong> Il agit comme un "tampon" qui protège l'entreprise contre les variations de la demande et les aléas d'approvisionnement (ex: retard de livraison).</li>
+                            </ul>
+                        </dd>
+
+                        <dt class="lexicon-term">Stock Moyen</dt>
+                        <dd class="lexicon-definition">Indicateur qui mesure la valeur ou la quantité moyenne de stock détenue par l'entreprise sur une période donnée. Il représente l'investissement moyen immobilisé et "dormant" dans les stocks.</dd>
+
+                        <dt class="lexicon-term">Stock Réel vs. Stock Théorique</dt>
+                        <dd class="lexicon-definition">Deux notions fondamentales confrontées lors de l'inventaire :
+                            <ul>
+                                <li><strong>Stock théorique :</strong> La quantité de produit qui est censée être en stock selon les enregistrements du système d'information (fiche de stock).</li>
+                                <li><strong>Stock réel :</strong> La quantité de produit qui est physiquement présente et comptée manuellement lors de l'inventaire.</li>
+                            </ul>
+                        </dd>
+
+                        <dt class="lexicon-term">Sur-stockage</dt>
+                        <dd class="lexicon-definition">Risque lié à la détention d'un stock excessif par rapport à la demande. Ses conséquences négatives sont multiples :
+                            <ul>
+                                <li>Immobilisation de la trésorerie (coût d'opportunité).</li>
+                                <li>Augmentation des coûts de possession (loyer, assurance, manutention).</li>
+                                <li>Risque de dépréciation (obsolescence, péremption, casse).</li>
+                            </ul>
+                        </dd>
+
+                        <dt class="lexicon-term">Surmarque</dt>
+                        <dd class="lexicon-definition">Écart, plus rare que la démarque, constaté lorsque le stock réel est supérieur au stock théorique. Elle est presque toujours le résultat d'erreurs administratives (ex: erreur de saisie à la réception d'une livraison).</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div id="section-6" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">6. Foire Aux Questions (FAQ) : Les Clés pour Comprendre</h2>
+                    <p class="text-gray-600 mb-6">Cette section est un guide pratique conçu pour répondre aux questions les plus courantes que se posent les managers commerciaux débutants. Chaque réponse vise à être directement applicable et à clarifier les enjeux stratégiques qui se cachent derrière les concepts de la gestion des stocks.</p>
+
+                    <h3 class="faq-question">2.1 Pourquoi la gestion des stocks est-elle un équilibre délicat entre "trop" et "pas assez" ?</h3>
+                    <div class="faq-answer">
+                        <p>La performance de la gestion des stocks réside dans la maîtrise d'un arbitrage stratégique constant, car les deux extrêmes représentent un échec opérationnel aux conséquences immédiates.</p>
+                        <ol>
+                            <li><strong>Le risque du "pas assez" (Rupture de Stock) :</strong> L'absence d'un produit demandé par un client entraîne une perte de chiffre d'affaires immédiate. Mais l'impact est plus profond : l'insatisfaction client peut le pousser durablement vers la concurrence, et l'image de marque de l'enseigne se dégrade, perçue comme peu fiable.</li>
+                            <li><strong>Le coût du "trop" (Sur-stockage) :</strong> Un stock excessif engendre une cascade de coûts qui pèsent lourdement sur la rentabilité.
+                                <ul>
+                                    <li><strong>Coût financier :</strong> La trésorerie est immobilisée dans les entrepôts et ne peut être investie ailleurs (marketing, innovation, etc.). C'est un coût d'opportunité direct.</li>
+                                    <li><strong>Coût de possession :</strong> Ce sont les frais directs liés à la détention physique du stock (loyer de l'entrepôt, assurance, énergie, manutention).</li>
+                                    <li><strong>Risque de dépréciation :</strong> Plus un produit reste longtemps en stock, plus sa valeur est menacée par l'obsolescence (mode, technologie), la péremption ou la détérioration physique.</li>
+                                </ul>
+                            </li>
+                        </ol>
+                        <p class="mt-2"><strong>Estimation Clé :</strong> On estime que chaque euro de stock excédentaire peut générer entre 20 et 30 centimes de coûts additionnels par an.</p>
+                        <p class="mt-2">En conclusion, la performance ne consiste pas à éliminer le stock, mais à trouver le juste équilibre qui maximise la satisfaction client tout en minimisant les coûts et les risques financiers.</p>
+                    </div>
+
+                    <h3 class="faq-question">2.2 Comment savoir sur quels produits concentrer mes efforts dans un magasin avec des milliers de références ?</h3>
+                    <div class="faq-answer">
+                        <p>Gérer des milliers de références avec la même intensité est impossible et inefficace. La clé est de prioriser en se concentrant sur les produits qui ont le plus d'impact sur la performance.</p>
+                        <ol>
+                            <li><strong>Identifier les "Références Vitales" avec la Méthode des 20/80 :</strong> Basée sur le principe de Pareto, cette méthode observe qu'environ 20% des références génèrent 80% du chiffre d'affaires. L'objectif est d'isoler ce groupe stratégique pour lui accorder un suivi rigoureux. La mise en œuvre consiste d'abord à calculer la contribution de chaque référence au chiffre d'affaires. Ensuite, il faut classer les références par ordre décroissant de cette contribution. Enfin, en cumulant les pourcentages de contribution, on identifie le groupe de tête qui atteint le seuil de 80%, isolant ainsi les produits vitaux.</li>
+                            <li><strong>Affiner la Gestion avec la Méthode ABC :</strong> Cette méthode est un raffinement de la loi de Pareto qui segmente le stock en trois catégories, chacune appelant une politique de gestion spécifique.
+                                <div class="faq-table-container">
+                                    <table class="w-full text-left text-gray-700">
+                                        <thead>
+                                            <tr>
+                                                <th class="py-3 px-4">Classe</th>
+                                                <th class="py-3 px-4">Description</th>
+                                                <th class="py-3 px-4">Politique de Gestion Recommandée</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="py-3 px-4"><strong>Classe A</strong></td>
+                                                <td class="py-3 px-4">Les produits critiques : Environ 20% des références représentant 80% de la valeur.</td>
+                                                <td class="py-3 px-4">Suivi très strict et permanent. Inventaires fréquents, prévisions de vente très précises. La moindre rupture sur ces produits a un impact financier significatif.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 px-4"><strong>Classe B</strong></td>
+                                                <td class="py-3 px-4">Les produits intermédiaires : Environ 30% des références représentant 15% de la valeur.</td>
+                                                <td class="py-3 px-4">Gestion régulière. Suivi et inventaires périodiques (ex: trimestriels). La gestion est moins intensive que pour la classe A.</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="py-3 px-4"><strong>Classe C</strong></td>
+                                                <td class="py-3 px-4">Les produits de faible valeur : Environ 50% des références ne représentant que 5% de la valeur.</td>
+                                                <td class="py-3 px-4">Gestion simplifiée. On peut commander en plus grande quantité pour espacer les réapprovisionnements, car le coût d'immobilisation de ce stock est faible.</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </li>
+                        </ol>
+                    </div>
+
+                    <h3 class="faq-question">2.3 Concrètement, quelle est la différence entre les méthodes de valorisation CMP et PEPS ?</h3>
+                    <div class="faq-answer">
+                        <p>Le choix d'une méthode de valorisation n'est pas neutre. Il a un impact direct sur la valeur du stock inscrite au bilan et sur le bénéfice de l'entreprise affiché dans le compte de résultat.</p>
+                        <ul>
+                            <li>La méthode <strong>CMP (Coût Moyen Pondéré)</strong> lisse les variations des prix d'achat en recalculant un coût moyen unique après chaque nouvelle entrée. Elle est idéale pour les produits non périssables et interchangeables dont les prix fluctuent. Elle offre une vision stable et moyenne de la valeur des actifs.</li>
+                            <li>La méthode <strong>PEPS (Premier Entré, Premier Sorti)</strong> suit le flux physique réel des marchandises. Elle gère le stock par lots distincts et valorise les sorties en puisant toujours dans le lot le plus ancien. Elle est essentielle pour les produits périssables ou à la mode pour garantir une bonne rotation physique.</li>
+                        </ul>
+                        <p class="mt-2">Le tableau suivant synthétise les différences clés :</p>
+                        <div class="faq-table-container">
+                            <table class="w-full text-left text-gray-700">
+                                <thead>
+                                    <tr>
+                                        <th class="py-3 px-4">Critère</th>
+                                        <th class="py-3 px-4">Méthode CMP (Coût Moyen Pondéré)</th>
+                                        <th class="py-3 px-4">Méthode PEPS (Premier Entré, Premier Sorti)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="py-3 px-4"><strong>Principe</strong></td>
+                                        <td class="py-3 px-4">Lisse les coûts en calculant une moyenne. Le stock est vu comme une masse homogène.</td>
+                                        <td class="py-3 px-4">Suit le flux physique réel en gérant des lots distincts à des coûts différents.</td>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4"><strong>Idéal pour...</strong></td>
+                                        <td class="py-3 px-4">Produits non périssables et interchangeables dont les prix d'achat fluctuent.</td>
+                                        <td class="py-3 px-4">Produits périssables ou sujets à une obsolescence rapide (mode, technologie).</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4"><strong>Impact en période d'inflation</strong></td>
+                                        <td class="py-3 px-4">Fournit une vision moyenne et lissée de la performance.</td>
+                                        <td class="py-3 px-4">Augmente le bénéfice comptable affiché (car les sorties sont valorisées à des coûts anciens, plus faibles), ce qui peut conduire à une charge fiscale plus élevée.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="py-3 px-4"><strong>Valeur du Stock Final (Exemple)</strong></td>
+                                        <td class="py-3 px-4">3 515,40 €</td>
+                                        <td class="py-3 px-4">3 672,00 €</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <h3 class="faq-question">2.4 Comment puis-je mesurer si ma gestion de stock est performante ?</h3>
+                    <div class="faq-answer">
+                        <p>Pour mesurer la performance, il faut s'appuyer sur un tableau de bord d'indicateurs clés (KPIs) qui transforment les données brutes en intelligence décisionnelle.</p>
+                        <p class="mt-2">Les trois indicateurs fondamentaux sont :</p>
+                        <ol>
+                            <li><strong>Le Stock Moyen :</strong> Il mesure l'investissement moyen immobilisé dans les stocks sur une période.
+                                <ul class="list-none ml-0"><li>Formule : <code>(Stock début + Stock fin) / 2</code></li></ul></li>
+                            <li><strong>Le Ratio de Rotation des Stocks :</strong> Il mesure la vitesse de renouvellement du stock (combien de fois le stock a été entièrement vendu et remplacé).
+                                <ul class="list-none ml-0"><li>Formule : <code>Coût des Marchandises Vendues / Stock moyen</code></li></ul></li>
+                            <li><strong>La Durée Moyenne de Stockage :</strong> Il exprime le nombre de jours, en moyenne, qu'un article passe en stock.
+                                <ul class="list-none ml-0"><li>Formule : <code>Durée de la période en jours / Ratio de rotation</code></li></ul></li>
+                        </ol>
+                        <p class="mt-2">La valeur de ces indicateurs ne réside pas dans un calcul unique, mais dans leur analyse dynamique. Il est essentiel de suivre leur évolution dans le temps et de les comparer aux moyennes du secteur (benchmarking).</p>
+                        <p class="mt-2">L'étude de cas de la librairie Amblard est éclairante : une rotation globale jugée trop faible a conduit à une analyse plus fine par rayon. Celle-ci a révélé une excellente performance du rayon "romans" (rotation de 6) contrastant avec une performance très médiocre du rayon "beaux-arts" (rotation de 1). Ce diagnostic précis a permis de cibler des actions correctrices : réduire les commandes pour les livres d'art et réallouer le capital vers les romans, améliorant ainsi la rentabilité globale.</p>
+                    </div>
+
+                    <h3 class="faq-question">2.5 L'inventaire, est-ce juste une obligation légale ?</h3>
+                    <div class="faq-answer">
+                        <p>Non, l'inventaire est bien plus qu'une simple contrainte. Il a une double nature, à la fois légale et stratégique.</p>
+                        <ol>
+                            <li><strong>Une Obligation Légale :</strong> C'est une exigence non négociable imposée par l'article L. 123-12 du Code de commerce, qui oblige toute entreprise à contrôler physiquement ses actifs au moins une fois par an pour garantir la fiabilité de ses comptes.</li>
+                            <li><strong>Un Audit Opérationnel Stratégique :</strong> C'est un "moment de vérité" qui confronte le stock théorique à la réalité du terrain. L'analyse des écarts (la démarque) permet de diagnostiquer les failles de l'entreprise : vols, erreurs administratives, casse, etc. C'est un outil de contrôle interne puissant.</li>
+                        </ol>
+                        <p class="mt-2">De plus, l'inventaire a un impact comptable direct. La découverte d'une démarque réduit la valeur du stock final. En appliquant la formule CMV = Stock Initial + Achats - Stock Final, cette diminution augmente mécaniquement le Coût des Marchandises Vendues (CMV), ce qui réduit le bénéfice déclaré. L'inventaire assure donc que le résultat comptable reflète fidèlement la performance économique réelle de l'entreprise.</p>
+                    </div>
+
+                    <h3 class="faq-question">2.6 Quelles sont les étapes clés pour ne pas rater mon inventaire ?</h3>
+                    <div class="faq-answer">
+                        <p>La fiabilité d'un inventaire dépend de la rigueur de sa procédure. L'improvisation est l'ennemie de la fiabilité. Voici les cinq étapes impératives à respecter :</p>
+                        <ol>
+                            <li><strong>Planifier avec Rigueur :</strong> Définir bien en amont la date, le périmètre exact du comptage, les objectifs et les responsabilités. Constituer des équipes de comptage, idéalement en binômes pour un contrôle mutuel.</li>
+                            <li><strong>Préparer et Rationaliser l'Espace :</strong> Une zone d'inventaire propre et organisée est une condition non négociable. Il faut ranger les zones, regrouper les produits identiques, ouvrir les cartons et s'assurer que les étiquettes et codes-barres sont parfaitement visibles.</li>
+                            <li><strong>Figer Impérativement les Stocks :</strong> C'est l'étape la plus critique. Pendant toute la durée du comptage, aucun mouvement de stock (réception, vente, transfert entre magasins) ne doit avoir lieu. Cela garantit que l'on compte une situation stable et non une cible mouvante.</li>
+                            <li><strong>Compter avec Méthode :</strong> Le comptage doit suivre une approche systématique et cohérente (ex: de haut en bas, de gauche à droite) pour s'assurer que rien n'est oublié ou compté deux fois. Pour une fiabilité maximale, un double comptage par une équipe différente est fortement recommandé.</li>
+                            <li><strong>Centraliser et Diagnostiquer :</strong> Une fois le comptage terminé, il faut saisir l'ensemble des données, les comparer au stock théorique pour calculer les écarts, et investiguer de manière approfondie les différences significatives pour en trouver la cause racine.</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOUVELLE SECTION : QUIZ FORMATIF -->
+            <div id="section-quiz" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-4 text-gray-800">7. Quiz Formatif : Testez vos Connaissances</h2>
+                    
+                    <!-- Écran d'accueil du quiz -->
+                    <div id="quiz-start-screen">
+                        <p class="text-gray-600 mb-6 text-lg">Vous allez répondre à 15 questions pour valider votre compréhension du module. Un score d'au moins 75% est requis pour réussir. Bonne chance !</p>
+                        <button id="start-quiz-btn" class="btn btn-primary"><i class="fa-solid fa-play mr-2"></i>Commencer le Quiz</button>
+                    </div>
+            
+                    <!-- Conteneur principal du quiz (caché initialement) -->
+                    <div id="quiz-container" class="hidden">
+                        <div class="mb-4">
+                            <div class="flex justify-between mb-1">
+                                <span class="text-base font-medium text-indigo-700">Progression</span>
+                                <span id="quiz-progress-text" class="text-sm font-medium text-indigo-700">Question 1 / 15</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                <div id="quiz-progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                            </div>
+                        </div>
+            
+                        <h3 id="question-text" class="text-xl font-semibold my-6 text-gray-800"></h3>
+                        <div id="answers-container" class="space-y-3"></div>
+                        
+                        <div class="mt-6 flex justify-between items-center">
+                            <button id="hint-btn" class="btn btn-secondary"><i class="fa-solid fa-lightbulb mr-2"></i>Indice</button>
+                            <button id="next-question-btn" class="btn btn-primary hidden">Question Suivante <i class="fa-solid fa-arrow-right ml-2"></i></button>
+                        </div>
+                        <div id="feedback-container" class="mt-4 p-4 rounded-md hidden text-sm"></div>
+                    </div>
+            
+                    <!-- Écran de résultats (caché initialement) -->
+                    <div id="quiz-results-screen" class="hidden text-center">
+                        <h3 id="results-title" class="text-2xl font-bold text-gray-800"></h3>
+                        <p id="results-score" class="text-5xl font-bold my-4"></p>
+                        <p id="results-feedback" class="text-gray-600 mb-8 text-lg"></p>
+                        <div class="flex flex-col sm:flex-row justify-center gap-4">
+                            <button id="restart-quiz-btn" class="btn btn-secondary"><i class="fa-solid fa-rotate-right mr-2"></i>Recommencer le Quiz</button>
+                            <a href="#section-synthesis" id="synthesis-link-btn" class="btn btn-primary nav-link"><i class="fa-solid fa-diagram-project mr-2"></i>Voir la Synthèse</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NOUVELLE SECTION : SYNTHÈSE CARTE MENTALE -->
+            <div id="section-synthesis" class="content-section hidden">
+                <div class="card">
+                    <h2 class="text-2xl font-bold mb-2 text-gray-800">8. Synthèse & Carte Mentale</h2>
+                    <p class="mb-6 text-lg text-gray-600">Cette carte mentale interactive résume les points essentiels de la gestion des stocks. Naviguez à travers les différentes branches pour réviser les définitions, les méthodes et les indicateurs clés abordés dans ce module.</p>
+                    <div class="mindmap-container">
+                        <iframe src='https://www.xmind.app/embed/dLHV3Y/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+    <div id="tooltip" class="tooltip"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const navLinks = document.querySelectorAll('.nav-link');
+    const sections = document.querySelectorAll('.content-section');
+    const sidebar = document.getElementById('sidebar');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebarCloseBtn = document.getElementById('sidebarCloseBtn');
+    const body = document.body; // Référence au body pour gérer overflow
+
+    // --- Sidebar Responsiveness and Navigation ---
+    function toggleSidebar() {
+        sidebar.classList.toggle('open');
+        sidebarBackdrop.classList.toggle('visible');
+        if (sidebar.classList.contains('open')) {
+            body.style.overflow = 'hidden'; // Empêche le scroll du body quand sidebar ouverte
+        } else {
+            body.style.overflow = '';
+        }
+    }
+
+    hamburgerBtn.addEventListener('click', toggleSidebar);
+    sidebarCloseBtn.addEventListener('click', toggleSidebar);
+    sidebarBackdrop.addEventListener('click', toggleSidebar); // Fermer en cliquant sur le fond
+
+    function showSection(hash) {
+        sections.forEach(section => section.classList.add('hidden'));
+        const targetSection = document.querySelector(hash);
+        if (targetSection) {
+            targetSection.classList.remove('hidden');
+            if(history.pushState) { // check if browser supports pushState
+                 history.pushState(null, null, hash);
+            }
+            targetSection.scrollIntoView({ behavior: 'smooth' });
+        } else {
+            document.querySelector('#section-video').classList.remove('hidden');
+        }
+
+        if (window.innerWidth < 768 && sidebar.classList.contains('open')) {
+            toggleSidebar();
+        }
+
+        updateActiveLink(hash);
+    }
+
+    let activeSectionId = '';
+    const sectionOffsets = [];
+
+    function collectSectionOffsets() {
+        sectionOffsets.length = 0;
+        document.querySelectorAll('.content-section').forEach(section => {
+            if(section.id){ // only add sections with an ID
+                sectionOffsets.push({
+                    id: `#${section.id}`,
+                    top: section.offsetTop,
+                    bottom: section.offsetTop + section.offsetHeight
+                });
+            }
+        });
+    }
+
+    function debounce(func, delay) {
+        let timeout;
+        return function(...args) {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => func.apply(this, args), delay);
+        };
+    }
+
+    function updateActiveLink(currentHash = null) {
+        let newActiveSectionId = currentHash;
+        if (!newActiveSectionId) {
+            let scrollPosition = window.scrollY + 150;
+            for (let i = sectionOffsets.length - 1; i >= 0; i--) {
+                const section = sectionOffsets[i];
+                if (scrollPosition >= section.top) {
+                    newActiveSectionId = section.id;
+                    break;
+                }
+            }
+        }
+        
+        if (newActiveSectionId && newActiveSectionId !== activeSectionId) {
+            activeSectionId = newActiveSectionId;
+            navLinks.forEach(link => {
+                if (link.getAttribute('href') === activeSectionId) {
+                    link.classList.add('active');
+                } else {
+                    link.classList.remove('active');
+                }
+            });
+        }
+    }
+    
+    window.addEventListener('scroll', debounce(updateActiveLink, 50));
+    window.addEventListener('resize', debounce(() => {
+        collectSectionOffsets();
+        updateActiveLink();
+    }, 200));
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const hash = e.currentTarget.getAttribute('href');
+            showSection(hash);
+        });
+    });
+
+    window.addEventListener('popstate', () => {
+        const hash = window.location.hash || '#section-video';
+        sections.forEach(section => section.classList.add('hidden'));
+        const targetSection = document.querySelector(hash);
+        if (targetSection) targetSection.classList.remove('hidden');
+        updateActiveLink(hash);
+    });
+    
+    // Initialisation
+    collectSectionOffsets();
+    const initialHash = window.location.hash || '#section-video';
+    showSection(initialHash);
+
+
+    // --- Section 0: Stock Cost Calculator ---
+    const stockCostValueInput = document.getElementById('stock_cost_value');
+    const stockCostResultEl = document.getElementById('stock_cost_result');
+    const stockCostErrorEl = document.getElementById('stock_cost_error');
+
+    document.getElementById('calc_stock_cost').addEventListener('click', () => {
+        const stockValue = parseFloat(stockCostValueInput.value);
+        if (isNaN(stockValue) || stockValue <= 0) {
+            stockCostErrorEl.classList.remove('hidden');
+            stockCostResultEl.innerHTML = '';
+            return;
+        }
+        stockCostErrorEl.classList.add('hidden');
+        const minCost = stockValue * 0.20;
+        const maxCost = stockValue * 0.30;
+        stockCostResultEl.innerHTML = `Le coût de possession annuel est estimé entre <br> <span class="text-red-600">${minCost.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</span> et <span class="text-red-600">${maxCost.toLocaleString('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2})} €</span>.`;
+    });
+
+    document.getElementById('reset_stock_cost').addEventListener('click', () => {
+        stockCostValueInput.value = '';
+        stockCostResultEl.innerHTML = '';
+        stockCostErrorEl.classList.add('hidden');
+    });
+
+    // --- Section 1: Pareto/ABC ---
+    let paretoChartInstance = null;
+    const initialParetoData = [
+        { ref: 'H', qte: 15, ca: 22500 }, { ref: 'C', qte: 80, ca: 16000 }, { ref: 'A', qte: 120, ca: 12000 },
+        { ref: 'G', qte: 50, ca: 7500 }, { ref: 'B', qte: 300, ca: 3000 }, { ref: 'D', qte: 500, ca: 2500 },
+        { ref: 'F', qte: 400, ca: 2000 }, { ref: 'E', qte: 25, ca: 500 }
+    ];
+    let paretoData = [...initialParetoData]; // Make it mutable for sorting
+    let currentSort = { column: 'ca', direction: 'desc' };
+    let processedData = [];
+
+    function renderParetoTableAndChart() {
+        const sortedData = [...paretoData].sort((a, b) => {
+            let valA = a[currentSort.column];
+            let valB = b[currentSort.column];
+            if (typeof valA === 'string') { // Handle string sorting for 'ref'
+                return currentSort.direction === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+            }
+            return currentSort.direction === 'asc' ? valA - valB : valB - valA;
+        });
+
+        const totalCA = sortedData.reduce((sum, item) => sum + item.ca, 0);
+        let cumulativePercentage = 0;
+        const tableBody = document.querySelector('#paretoTable tbody');
+        tableBody.innerHTML = '';
+        processedData = [];
+
+        sortedData.forEach(item => {
+            const percentage = (item.ca / totalCA) * 100;
+            cumulativePercentage += percentage;
+            processedData.push({ ...item, percentage, cumulativePercentage });
+            const row = document.createElement('tr');
+            row.innerHTML = `<td>${item.ref}</td><td>${item.qte}</td><td>${item.ca.toFixed(2)}</td><td>${percentage.toFixed(2)}%</td><td>${cumulativePercentage.toFixed(2)}%</td>`;
+            tableBody.appendChild(row);
+        });
+
+        // Update sort icons
+        document.querySelectorAll('#paretoTable th.sortable').forEach(th => {
+            const icon = th.querySelector('.fa-solid');
+            icon.classList.remove('fa-sort-up', 'fa-sort-down');
+            if (th.dataset.column === currentSort.column) {
+                icon.classList.add(currentSort.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+            } else {
+                icon.classList.add('fa-sort');
+            }
+        });
+
+        const chartData = {
+            labels: processedData.map(d => d.ref),
+            datasets: [
+                { label: 'CA par Référence (€)', data: processedData.map(d => d.ca), backgroundColor: 'rgba(79, 70, 229, 0.6)', yAxisID: 'y' },
+                { label: '% Cumulé du CA', data: processedData.map(d => d.cumulativePercentage), type: 'line', borderColor: 'rgba(234, 88, 12, 1)', fill: false, yAxisID: 'y1', tension: 0.1 }
+            ]
+        };
+
+        if (paretoChartInstance) { paretoChartInstance.destroy(); }
+        const ctx = document.getElementById('paretoChart').getContext('2d');
+        paretoChartInstance = new Chart(ctx, { type: 'bar', data: chartData, options: { responsive: true, maintainAspectRatio: false, scales: { y: { position: 'left', title: { display: true, text: 'Chiffre d\'Affaires (€)' } }, y1: { type: 'linear', position: 'right', min: 0, max: 100, grid: { drawOnChartArea: false }, title: { display: true, text: 'Pourcentage Cumulé (%)' }, ticks: { callback: value => `${value}%` } } }, plugins: { tooltip: { mode: 'index', intersect: false }, title: { display: true, text: 'Analyse de Pareto' } } } });
+    }
+
+    document.querySelectorAll('#paretoTable th.sortable').forEach(th => {
+        th.addEventListener('click', () => {
+            const column = th.dataset.column;
+            if (currentSort.column === column) { currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc'; }
+            else { currentSort.column = column; currentSort.direction = 'desc'; }
+            renderParetoTableAndChart();
+            managementPolicyEl.classList.add('hidden'); // Masquer la politique quand on trie
+            clearClassification();
+        });
+    });
+
+    const managementPolicyEl = document.getElementById('managementPolicy');
+    const policyTexts = {
+        A: '<strong>Classe A : Haute Priorité.</strong><p class="text-gray-700 mt-2">Ce sont les produits qui génèrent la plus grande part de votre chiffre d\'affaires. Ils nécessitent une attention particulière :</p><ul><li>• Suivi permanent des stocks.</li><li>• Inventaires tournants fréquents (ex: hebdomadaire).</li><li>• Optimisation des commandes pour éviter toute rupture.</li><li>• Prévisions de vente très précises.</li></ul>',
+        B: '<strong>Classe B : Priorité Moyenne.</strong><p class="text-gray-700 mt-2">Ces produits ont une importance intermédiaire. Leur gestion est moins intensive que la classe A :</p><ul><li>• Suivi régulier (ex: mensuel).</li><li>• Inventaires périodiques (ex: trimestriel).</li><li>• Gestion par stock de sécurité.</li><li>• Prévisions de vente moyennement précises.</li></ul>',
+        C: '<strong>Classe C : Faible Priorité.</strong><p class="text-gray-700 mt-2">Ils représentent une faible part du chiffre d\'affaires mais souvent un grand nombre de références. L\'objectif est de minimiser les coûts de gestion :</p><ul><li>• Gestion simplifiée (ex: recomplètement).</li><li>• Inventaire annuel suffisant.</li><li>• Tolérance aux ruptures occasionnelles (sauf si impact client fort).</li><li>• Prévisions de vente moins critiques.</li></ul>'
+    };
+    
+    document.getElementById('classifyA').addEventListener('click', () => classify('A'));
+    document.getElementById('classifyB').addEventListener('click', () => classify('B'));
+    document.getElementById('classifyC').addEventListener('click', () => classify('C'));
+
+    function clearClassification() {
+        const rows = document.querySelectorAll('#paretoTable tbody tr');
+        rows.forEach(row => {
+            row.classList.remove('class-a', 'class-b', 'class-c');
+        });
+    }
+
+    function classify(className) {
+        clearClassification(); // Clear previous classification
+        const rows = document.querySelectorAll('#paretoTable tbody tr');
+        rows.forEach((row, index) => {
+            const item = processedData[index];
+            if (className === 'A' && item.cumulativePercentage <= 80) { row.classList.add('class-a'); }
+            else if (className === 'B' && item.cumulativePercentage > 80 && item.cumulativePercentage <= 95) { row.classList.add('class-b'); }
+            else if (className === 'C' && item.cumulativePercentage > 95) { row.classList.add('class-c'); }
+        });
+        managementPolicyEl.innerHTML = policyTexts[className];
+        managementPolicyEl.classList.remove('hidden');
+    }
+
+    renderParetoTableAndChart();
+
+    // --- Section 2: Valorisation ---
+    const initialStockMovementsData = [
+        { date: '01/01', label: 'Stock Initial', type: 'in', qty: 100, price: 10.00 },
+        { date: '05/01', label: 'Achat BE-01', type: 'in', qty: 50, price: 12.00 },
+        { date: '10/01', label: 'Vente BS-01', type: 'out', qty: 80 },
+        { date: '15/01', label: 'Achat BE-02', type: 'in', qty: 100, price: 11.50 },
+        { date: '20/01', label: 'Vente BS-02', type: 'out', qty: 120 }
+    ];
+    let stockMovementsData = [...initialStockMovementsData];
+
+    const movementsTable = document.querySelector('#stockMovements tbody');
+    const resultTableBody = document.querySelector('#stockValuationResult tbody');
+    const methodTitleEl = document.getElementById('methodTitle');
+    const finalStockValueEl = document.getElementById('finalStockValue');
+
+    function populateMovementsTable() {
+        movementsTable.innerHTML = '';
+        stockMovementsData.forEach(m => {
+            movementsTable.innerHTML += `<tr><td>${m.date}</td><td>${m.label}</td><td>${m.qty}</td><td>${m.price ? m.price.toFixed(2) : '-'}</td></tr>`;
+        });
+    }
+
+    function formatRow(date, label, entryQty, entryPu, entryVal, outQty, outPu, outVal, stockQty, stockPu, stockVal) {
+        const formattedEntry = entryQty ? `${entryQty}<br/>${entryPu.toFixed(2)}€<br/>${entryVal.toFixed(2)}€` : '';
+        const formattedOut = outQty ? `${outQty}<br/>${outPu.toFixed(2)}€<br/>${outVal.toFixed(2)}€` : '';
+        const formattedStockPu = stockQty > 0 ? stockPu.toFixed(2) : '0.00';
+        const formattedStockVal = stockVal.toFixed(2);
+        return `<tr><td>${date}</td><td>${label}</td><td>${formattedEntry}</td><td>${formattedOut}</td><td>${stockQty}<br/>${formattedStockPu}€<br/>${formattedStockVal}€</td></tr>`;
+    }
+
+    document.getElementById('calcCmpPeriod').addEventListener('click', () => {
+        methodTitleEl.textContent = 'CMP Fin de Période';
+        resultTableBody.innerHTML = '';
+        const totalInValue = stockMovementsData.filter(m => m.type === 'in').reduce((sum, m) => sum + (m.qty * m.price), 0);
+        const totalInQty = stockMovementsData.filter(m => m.type === 'in').reduce((sum, m) => sum + m.qty, 0);
+        const cmp = totalInQty > 0 ? totalInValue / totalInQty : 0;
+        let stockQty = 0;
+        let finalStock;
+        stockMovementsData.forEach(m => {
+            let rowHtml = '';
+            if (m.type === 'in') {
+                stockQty += m.qty;
+                rowHtml = formatRow(m.date, m.label, m.qty, m.price, m.qty * m.price, null, null, null, stockQty, cmp, stockQty * cmp);
+            } else {
+                stockQty -= m.qty;
+                rowHtml = formatRow(m.date, m.label, null, null, null, m.qty, cmp, m.qty * cmp, stockQty, cmp, stockQty * cmp);
+            }
+            finalStock = { qty: stockQty, pu: cmp, val: stockQty * cmp };
+            resultTableBody.innerHTML += rowHtml;
+        });
+        finalStockValueEl.innerHTML = `Valeur du Stock Final: ${finalStock.val.toFixed(2)}€`;
+    });
+
+    document.getElementById('calcCmpEntry').addEventListener('click', () => {
+        methodTitleEl.textContent = 'CMP / Entrée';
+        resultTableBody.innerHTML = '';
+        let stockQty = 0;
+        let stockVal = 0;
+        let currentCmp = 0;
+        let finalStock;
+        stockMovementsData.forEach(m => {
+            let rowHtml = '';
+            if (m.type === 'in') {
+                stockQty += m.qty;
+                stockVal += m.qty * m.price;
+                currentCmp = stockQty > 0 ? stockVal / stockQty : 0;
+                rowHtml = formatRow(m.date, m.label, m.qty, m.price, m.qty * m.price, null, null, null, stockQty, currentCmp, stockVal);
+            } else {
+                const outVal = m.qty * currentCmp;
+                stockQty -= m.qty;
+                stockVal -= outVal;
+                rowHtml = formatRow(m.date, m.label, null, null, null, m.qty, currentCmp, outVal, stockQty, currentCmp, stockVal);
+            }
+            finalStock = { qty: stockQty, pu: currentCmp, val: stockVal };
+            resultTableBody.innerHTML += rowHtml;
+        });
+        finalStockValueEl.innerHTML = `Valeur du Stock Final: ${finalStock.val.toFixed(2)}€`;
+    });
+
+    document.getElementById('calcPeps').addEventListener('click', () => {
+        methodTitleEl.textContent = 'PEPS / FIFO';
+        resultTableBody.innerHTML = '';
+        let stockLots = [];
+        let finalStockValue = 0;
+        let finalStockQty = 0;
+        stockMovementsData.forEach(m => {
+            let stockQty = 0, stockVal = 0, stockPu = 0;
+            if (m.type === 'in') {
+                stockLots.push({ qty: m.qty, price: m.price });
+                stockLots.forEach(lot => { stockQty += lot.qty; stockVal += lot.qty * lot.price; });
+                stockPu = stockQty > 0 ? stockVal / stockQty : 0;
+                resultTableBody.innerHTML += formatRow(m.date, m.label, m.qty, m.price, m.qty * m.price, null, null, null, stockQty, stockPu, stockVal);
+            } else {
+                let qtyToTake = m.qty;
+                let outVal = 0;
+                let outPu = 0; // Cost per unit of the outgoing batch
+                let tempOutValue = 0;
+                while (qtyToTake > 0 && stockLots.length > 0) {
+                    const lot = stockLots[0];
+                    const taken = Math.min(qtyToTake, lot.qty);
+                    tempOutValue += taken * lot.price;
+                    lot.qty -= taken;
+                    qtyToTake -= taken;
+                    if (lot.qty === 0) {
+                        stockLots.shift();
+                    }
+                }
+                outVal = tempOutValue;
+                outPu = m.qty > 0 ? outVal / m.qty : 0; // Calculate average unit price for outgoing quantity
+                
+                stockQty = 0; stockVal = 0; // Recalculate current stock
+                stockLots.forEach(lot => { stockQty += lot.qty; stockVal += lot.qty * lot.price; });
+                stockPu = stockQty > 0 ? stockVal / stockQty : 0; // Recalculate current stock unit price
+
+                resultTableBody.innerHTML += formatRow(m.date, m.label, null, null, null, m.qty, outPu, outVal, stockQty, stockPu, stockVal);
+            }
+            finalStockQty = stockQty;
+            finalStockValue = stockVal;
+        });
+        finalStockValueEl.innerHTML = `Valeur du Stock Final: ${finalStockValue.toFixed(2)}€`;
+    });
+
+    document.getElementById('reset_stock_valorisation').addEventListener('click', () => {
+        stockMovementsData = [...initialStockMovementsData]; // Reset to initial data
+        populateMovementsTable();
+        resultTableBody.innerHTML = '<tr><td colspan="5" class="text-center text-gray-500">Sélectionnez une méthode.</td></tr>';
+        methodTitleEl.textContent = '';
+        finalStockValueEl.innerHTML = '';
+    });
+    populateMovementsTable(); // Initial population
+
+    // --- Section 3: KPIs ---
+    function validateAndCalculate(inputIds, outputId, errorId, calculationFn) {
+        const inputs = inputIds.map(id => document.getElementById(id));
+        const outputEl = document.getElementById(outputId);
+        const errorEl = document.getElementById(errorId);
+        let allValid = true;
+        const values = inputs.map(input => {
+            const value = parseFloat(input.value);
+            if (isNaN(value) || value < parseFloat(input.min || 0) || (input.id.includes('rr_sm') && value === 0) || (input.id.includes('ds_rr') && value === 0)) {
+                allValid = false;
+            }
+            return value;
+        });
+
+        if (!allValid) {
+            errorEl.classList.remove('hidden');
+            outputEl.innerHTML = '';
+            return;
+        }
+        errorEl.classList.add('hidden');
+        outputEl.innerHTML = calculationFn(...values);
+    }
+
+    // Stock Moyen
+    document.getElementById('calcSM').addEventListener('click', () => {
+        validateAndCalculate(['sm_si', 'sm_sf'], 'resultSM', 'sm_error', (si, sf) => `Stock Moyen: ${((si + sf) / 2).toFixed(2)}`);
+    });
+    document.getElementById('resetSM').addEventListener('click', () => {
+        document.getElementById('sm_si').value = '100';
+        document.getElementById('sm_sf').value = '120';
+        document.getElementById('resultSM').innerHTML = '';
+        document.getElementById('sm_error').classList.add('hidden');
+    });
+
+    // Ratio de Rotation
+    document.getElementById('calcRR').addEventListener('click', () => {
+        validateAndCalculate(['rr_qv', 'rr_sm'], 'resultRR', 'rr_error', (qv, sm) => `Ratio: ${(sm !== 0 ? qv / sm : 0).toFixed(2)}`);
+    });
+    document.getElementById('resetRR').addEventListener('click', () => {
+        document.getElementById('rr_qv').value = '880';
+        document.getElementById('rr_sm').value = '110';
+        document.getElementById('resultRR').innerHTML = '';
+        document.getElementById('rr_error').classList.add('hidden');
+    });
+
+    // Durée Moyenne de Stockage
+    document.getElementById('calcDS').addEventListener('click', () => {
+        validateAndCalculate(['ds_dp', 'ds_rr'], 'resultDS', 'ds_error', (dp, rr) => `Durée: ${(rr !== 0 ? dp / rr : 0).toFixed(2)} jours`);
+    });
+    document.getElementById('resetDS').addEventListener('click', () => {
+        document.getElementById('ds_dp').value = '365';
+        document.getElementById('ds_rr').value = '8';
+        document.getElementById('resultDS').innerHTML = '';
+        document.getElementById('ds_error').classList.add('hidden');
+    });
+
+    // --- Section 4: Inventory ---
+    const checklistData = [
+        { text: "Planifier (date, périmètre, équipes)", info: "Définir clairement qui fait quoi, quand et où. Une bonne planification représente 50% du succès." },
+        { text: "Ranger et Organiser les zones de comptage", info: "Un entrepôt propre et bien rangé réduit considérablement les risques d'erreurs de comptage." },
+        { text: "Figer les Stocks", info: "Crucial ! Bloquer toute entrée et sortie de marchandise dans le système informatique juste avant le début du comptage pour garantir l'intégrité des données." },
+        { text: "Compter et Contrôler (double comptage)", info: "Le comptage par une première équipe, suivi d'un contrôle par une seconde sur les zones sensibles, fiabilise les résultats." },
+        { text: "Centraliser, Saisir et Analyser les écarts", info: "Comparer le stock physique compté au stock théorique pour identifier et investiguer les différences." }
+    ];
+    const checklistEl = document.getElementById('inventoryChecklist');
+    const tooltipEl = document.getElementById('tooltip');
+
+    checklistData.forEach((item, index) => {
+        const li = document.createElement('li');
+        const checkboxId = `checklist-item-${index}`;
+        li.innerHTML = `
+            <input type="checkbox" id="${checkboxId}" class="h-5 w-5 rounded">
+            <label for="${checkboxId}">${item.text}</label>
+            <i class="fa-solid fa-circle-info info-icon" data-info="${item.info}" tabindex="0" role="tooltip" aria-describedby="tooltip"></i>
+        `;
+        checklistEl.appendChild(li);
+    });
+    
+    // Tooltip logic for mouse, focus, and click (touch)
+    document.querySelectorAll('.info-icon').forEach(icon => {
+        let hideTimeout;
+
+        const showTooltip = (e, info) => {
+            clearTimeout(hideTimeout);
+            tooltipEl.textContent = info;
+            tooltipEl.style.display = 'block';
+            const iconRect = e.target.getBoundingClientRect();
+            let tooltipX = iconRect.left + (iconRect.width / 2) - (tooltipEl.offsetWidth / 2);
+            if (tooltipX < 10) tooltipX = 10;
+            if (tooltipX + tooltipEl.offsetWidth > window.innerWidth - 10) {
+                tooltipX = window.innerWidth - tooltipEl.offsetWidth - 10;
+            }
+            let tooltipY = iconRect.top + window.scrollY - tooltipEl.offsetHeight - 10;
+            if (tooltipY < window.scrollY) {
+                tooltipY = iconRect.bottom + window.scrollY + 10;
+            }
+            tooltipEl.style.left = `${tooltipX}px`;
+            tooltipEl.style.top = `${tooltipY}px`;
+        };
+        const hideTooltip = () => {
+            hideTimeout = setTimeout(() => { tooltipEl.style.display = 'none'; }, 100);
+        };
+        icon.addEventListener('mouseenter', e => showTooltip(e, e.target.dataset.info));
+        icon.addEventListener('mouseleave', hideTooltip);
+        icon.addEventListener('focus', e => showTooltip(e, e.target.dataset.info));
+        icon.addEventListener('blur', hideTooltip);
+        icon.addEventListener('click', e => {
+            (tooltipEl.style.display === 'block' && tooltipEl.textContent === e.target.dataset.info) ? hideTooltip() : showTooltip(e, e.target.dataset.info);
+        });
+        document.addEventListener('click', (e) => {
+            if (!icon.contains(e.target) && !tooltipEl.contains(e.target)) {
+                hideTooltip();
+            }
+        });
+    });
+
+    const demarqueCtx = document.getElementById('demarqueChart').getContext('2d');
+    new Chart(demarqueCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Vols Clients', 'Vols Internes', 'Erreurs Administratives', 'Casse & Dégradations', 'Erreurs Fournisseurs', 'Autres'],
+            datasets: [{
+                label: 'Causes de la Démarque Inconnue',
+                data: [45, 22, 15, 10, 5, 3],
+                backgroundColor: ['#ef4444', '#f97316', '#eab308', '#84cc16', '#22c55e', '#6b7280'],
+                borderColor: '#ffffff',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Causes Moyennes de la Démarque Inconnue' }
+            }
+        }
+    });
+
+    // --- SECTION 7: QUIZ LOGIC ---
+
+    const quizData = [
+        {
+            question: "Quel est le principal arbitrage stratégique dans la gestion des stocks ?",
+            answers: [
+                "Maximiser les ventes vs. minimiser les coûts de transport",
+                "Satisfaire la demande client vs. maîtriser les coûts de possession et les risques",
+                "Réduire le temps de livraison vs. augmenter la variété des produits",
+                "Automatiser l'entrepôt vs. former le personnel"
+            ],
+            correctAnswer: 1,
+            hint: "Pensez à l'équilibre entre 'trop' et 'pas assez' de stock.",
+            feedback: {
+                correct: "Exact ! La gestion des stocks est un équilibre constant entre la satisfaction client (disponibilité) et la maîtrise des coûts financiers (sur-stockage).",
+                incorrect: "Incorrect. Le cœur du problème est bien l'équilibre entre satisfaire le client en ayant du stock, et ne pas subir les coûts et risques financiers liés à un stock trop important."
+            }
+        },
+        {
+            question: "Dans la méthode ABC, quelle catégorie de produits nécessite la gestion la plus stricte et des inventaires fréquents ?",
+            answers: ["La Classe A", "La Classe B", "La Classe C", "Toutes les classes de la même manière"],
+            correctAnswer: 0,
+            hint: "Cette classe représente environ 80% de la valeur du stock.",
+            feedback: {
+                correct: "Parfait ! La Classe A, qui représente ~80% de la valeur, est la plus critique. Une rupture sur ces articles a un impact financier majeur, d'où un suivi très strict.",
+                incorrect: "Pas tout à fait. C'est la Classe A (20% des références, 80% de la valeur) qui est la plus critique et qui demande le plus d'attention. L'objectif de la méthode ABC est justement de ne pas gérer toutes les classes de la même manière."
+            }
+        },
+        {
+            question: "En période d'inflation (hausse des prix d'achat), quelle méthode de valorisation aura tendance à afficher un bénéfice comptable plus élevé ?",
+            answers: ["La méthode CMP (Coût Moyen Pondéré)", "La méthode PEPS (FIFO)", "Les deux méthodes donneront le même résultat", "La méthode de l'inventaire annuel"],
+            correctAnswer: 1,
+            hint: "Pensez à la manière dont les sorties sont valorisées. Confronte-t-on les ventes actuelles à des coûts anciens ou à des coûts moyens ?",
+            feedback: {
+                correct: "Exact ! En période d'inflation, la méthode PEPS valorise les sorties aux coûts des lots les plus anciens (donc les moins chers), ce qui maximise la marge et le bénéfice affiché.",
+                incorrect: "Incorrect. C'est la méthode PEPS (Premier Entré, Premier Sorti) qui maximise le bénéfice en période de hausse des prix, car elle confronte les ventes récentes aux coûts d'achat les plus anciens et donc les plus bas."
+            }
+        },
+        {
+            question: "Un ratio de rotation des stocks qui augmente est généralement...",
+            answers: ["Un mauvais signe, indiquant un sur-stockage", "Un bon signe, indiquant que les produits se vendent plus vite", "Un signe de problèmes avec les fournisseurs", "Sans importance pour la gestion"],
+            correctAnswer: 1,
+            hint: "La 'rotation' mesure la vitesse à laquelle le stock est renouvelé.",
+            feedback: {
+                correct: "C'est juste ! Un ratio de rotation plus élevé signifie que le stock est vendu et renouvelé plus fréquemment, ce qui est un indicateur de bonne santé commerciale et de gestion efficace.",
+                incorrect: "Attention, c'est l'inverse. Un ratio de rotation qui augmente signifie que le stock 'tourne' plus vite. C'est donc un signe très positif d'efficacité commerciale."
+            }
+        },
+        {
+            question: "Quelle est la principale cause de la démarque inconnue en France ?",
+            answers: ["Les erreurs administratives", "La casse non enregistrée", "Les vols (clients et internes)", "Les erreurs des fournisseurs"],
+            correctAnswer: 2,
+            hint: "Ce risque est lié au comportement humain, à l'intérieur comme à l'extérieur de l'entreprise.",
+            feedback: {
+                correct: "C'est exact. Les vols, qu'ils soient commis par des clients ou par le personnel, représentent la part la plus importante de la démarque inconnue (environ 67% combinés).",
+                incorrect: "Non, bien que les erreurs administratives soient une cause, la part la plus importante de la démarque inconnue provient des vols, externes (clients) et internes (personnel)."
+            }
+        },
+        {
+            question: "Comment est calculé le Coût Moyen Pondéré (CMP) après chaque entrée ?",
+            answers: [
+                "En faisant la moyenne des prix de tous les articles en stock.",
+                "En divisant la valeur totale du stock (avant entrée + nouvelle entrée) par la quantité totale.",
+                "En prenant le prix du dernier article entré.",
+                "En calculant la moyenne entre le stock initial et le stock final."
+            ],
+            correctAnswer: 1,
+            hint: "C'est une moyenne 'pondérée' par les quantités.",
+            feedback: {
+                correct: "Parfait ! Le nouveau CMP est bien la valeur totale du stock (ancienne valeur + valeur de l'entrée) divisée par la quantité totale (ancienne quantité + quantité de l'entrée).",
+                incorrect: "Presque, mais il faut pondérer par les quantités. La bonne formule est : (Valeur du stock avant l'entrée + Coût de la nouvelle entrée) / (Quantité en stock avant l'entrée + Quantité de la nouvelle entrée)."
+            }
+        },
+        {
+            question: "Le sur-stockage entraîne principalement...",
+            answers: [
+                "Une amélioration de l'image de marque.",
+                "Une augmentation des ruptures de stock.",
+                "Une immobilisation de la trésorerie et un risque de dépréciation.",
+                "Une diminution des coûts de transport."
+            ],
+            correctAnswer: 2,
+            hint: "Pensez aux conséquences financières d'avoir 'trop' de marchandises qui ne se vendent pas.",
+            feedback: {
+                correct: "Tout à fait. Le sur-stockage bloque de l'argent qui pourrait être utilisé ailleurs (coût d'opportunité) et expose les produits au risque de devenir obsolètes, périmés ou cassés.",
+                incorrect: "Incorrect. Le principal risque du sur-stockage est financier : l'argent est 'gelé' dans l'entrepôt et les produits risquent de perdre de leur valeur avec le temps (dépréciation)."
+            }
+        },
+        {
+            question: "L'obligation légale de réaliser un inventaire physique au moins une fois par an est dictée par :",
+            answers: ["Le Code du Travail", "Le Code de la Consommation", "Le Code de Commerce", "Le Plan Comptable Général (PCG)"],
+            correctAnswer: 2,
+            hint: "C'est la loi qui régit la vie des entreprises commerciales.",
+            feedback: {
+                correct: "Excellent ! C'est bien l'article L. 123-12 du Code de commerce qui impose cette obligation pour garantir la fiabilité des comptes annuels de l'entreprise.",
+                incorrect: "La bonne réponse est le Code de Commerce. C'est lui qui fixe les règles fondamentales pour les entreprises, y compris l'obligation de contrôler physiquement leurs actifs une fois par an."
+            }
+        },
+        {
+            question: "Si une entreprise a un ratio de rotation de 12 sur une année (360 jours), quelle est sa durée moyenne de stockage ?",
+            answers: ["12 jours", "30 jours", "60 jours", "360 jours"],
+            correctAnswer: 1,
+            hint: "La formule est : Durée de la période (jours) / Ratio de rotation.",
+            feedback: {
+                correct: "Très bien ! Le calcul est 360 jours / 12 = 30 jours. Cela signifie qu'en moyenne, un article reste 30 jours en stock avant d'être vendu.",
+                incorrect: "La formule à appliquer est : Durée de la période / Ratio de rotation. Soit 360 / 12 = 30 jours."
+            }
+        },
+        {
+            question: "Pour quel type de produits la méthode PEPS (FIFO) est-elle particulièrement recommandée ?",
+            answers: [
+                "Pour les produits non périssables et standardisés comme les vis.",
+                "Pour les produits périssables ou à obsolescence rapide (mode, technologie).",
+                "Pour les produits à forte marge uniquement.",
+                "Pour les services immatériels."
+            ],
+            correctAnswer: 1,
+            hint: "Pensez à une logique de flux : qu'est-ce qui doit sortir en premier ?",
+            feedback: {
+                correct: "C'est exact. La méthode PEPS (Premier Entré, Premier Sorti) est essentielle pour s'assurer que les produits les plus anciens sont vendus en premier, évitant ainsi la péremption ou l'obsolescence.",
+                incorrect: "La méthode PEPS est cruciale pour les produits qui ont une 'durée de vie' limitée, qu'elle soit due à la péremption (alimentaire) ou à la mode (technologie, vêtements)."
+            }
+        },
+        {
+            question: "Une 'surmarque' est une situation où :",
+            answers: [
+                "Le stock réel est inférieur au stock théorique.",
+                "Le stock réel est égal au stock théorique.",
+                "Le stock réel est supérieur au stock théorique.",
+                "La marge sur un produit est très élevée."
+            ],
+            correctAnswer: 2,
+            hint: "C'est l'inverse de la 'démarque'.",
+            feedback: {
+                correct: "Parfait. Une surmarque signifie qu'on a physiquement plus de produits que ce que le système informatique indique. C'est souvent dû à des erreurs administratives.",
+                incorrect: "Non, la surmarque est l'opposé de la démarque. C'est lorsque le comptage physique révèle PLUS de stock que prévu par le système informatique."
+            }
+        },
+        {
+            question: "Le coût de possession d'un stock inclut typiquement :",
+            answers: [
+                "Uniquement le prix d'achat des marchandises.",
+                "Le coût du marketing pour vendre les produits.",
+                "Le coût de l'entrepôt, l'assurance et le risque de dépréciation.",
+                "Les salaires de l'équipe de direction."
+            ],
+            correctAnswer: 2,
+            hint: "Ce sont les coûts liés au fait de 'détenir' physiquement le stock.",
+            feedback: {
+                correct: "C'est juste. Le coût de possession regroupe tous les frais engendrés par la détention physique du stock : loyer, assurance, énergie, manutention, et le coût du risque (casse, vol, obsolescence).",
+                incorrect: "Le coût de possession concerne les frais directs liés à la détention du stock. Le prix d'achat en est exclu (c'est le coût d'acquisition). La bonne réponse inclut les frais d'entrepôt, d'assurance, etc."
+            }
+        },
+        {
+            question: "Lequel de ces rôles n'est PAS celui du stock en tant qu'\"amortisseur opérationnel\" ?",
+            answers: [
+                "Protéger contre les retards de livraison des fournisseurs.",
+                "Garantir un assortiment attractif pour le client.",
+                "Faire face aux pics de demande imprévus.",
+                "Absorber les chocs liés à une promotion réussie."
+            ],
+            correctAnswer: 1,
+            hint: "L'amortisseur opérationnel est un rôle de 'défense'. Lequel de ces rôles est plutôt 'offensif' ?",
+            feedback: {
+                correct: "Excellent ! Garantir un assortiment attractif est le rôle du stock en tant que 'moteur commercial'. Les autres options sont bien des rôles d'amortisseur' ou de 'tampon' de sécurité.",
+                incorrect: "Attention à la nuance. Le rôle d'amortisseur' est défensif (protéger contre les imprévus). Le rôle de 'moteur commercial' est offensif. Garantir un assortiment attractif appartient à cette deuxième catégorie."
+            }
+        },
+        {
+            question: "Quelle est l'étape la plus critique pour garantir la fiabilité d'un inventaire ?",
+            answers: [
+                "Ranger l'entrepôt avant de commencer.",
+                "Figer les stocks (stopper tous les mouvements).",
+                "Utiliser des douchettes à code-barres.",
+                "Former les équipes de comptage."
+            ],
+            correctAnswer: 1,
+            hint: "Sans cette étape, on compte une 'cible mouvante', ce qui fausse tous les résultats.",
+            feedback: {
+                correct: "Absolument. Figer les stocks est l'étape cruciale. Si des marchandises entrent ou sortent pendant le comptage, les données collectées seront instantanément fausses.",
+                incorrect: "Bien que toutes ces étapes soient importantes, la plus critique est de figer les stocks. Si on ne stoppe pas tous les mouvements, on ne peut pas avoir une image fiable du stock à un instant T."
+            }
+        },
+        {
+            question: "Que mesure la 'Durée Moyenne de Stockage' ?",
+            answers: [
+                "Le temps nécessaire pour recevoir une commande.",
+                "Le nombre de fois que le stock est renouvelé par an.",
+                "L'âge moyen du manager des stocks.",
+                "Le nombre de jours moyen pendant lequel un article reste en stock avant d'être vendu."
+            ],
+            correctAnswer: 3,
+            hint: "La réponse est presque dans le nom de l'indicateur.",
+            feedback: {
+                correct: "C'est exactement ça. C'est un indicateur clé qui mesure la rapidité à laquelle l'investissement en stock se transforme en liquidités.",
+                incorrect: "La durée moyenne de stockage est bien le temps qu'un article passe dans l'entrepôt. Le nombre de fois que le stock est renouvelé est le 'Ratio de Rotation'."
+            }
+        }
+    ];
+
+    const quizStartScreen = document.getElementById('quiz-start-screen');
+    const quizContainer = document.getElementById('quiz-container');
+    const quizResultsScreen = document.getElementById('quiz-results-screen');
+    
+    const startQuizBtn = document.getElementById('start-quiz-btn');
+    const restartQuizBtn = document.getElementById('restart-quiz-btn');
+    const hintBtn = document.getElementById('hint-btn');
+    const nextQuestionBtn = document.getElementById('next-question-btn');
+    
+    const progressBar = document.getElementById('quiz-progress-bar');
+    const progressText = document.getElementById('quiz-progress-text');
+    const questionText = document.getElementById('question-text');
+    const answersContainer = document.getElementById('answers-container');
+    const feedbackContainer = document.getElementById('feedback-container');
+
+    const resultsTitle = document.getElementById('results-title');
+    const resultsScore = document.getElementById('results-score');
+    const resultsFeedback = document.getElementById('results-feedback');
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let answered = false;
+
+    function startQuiz() {
+        currentQuestionIndex = 0;
+        score = 0;
+        answered = false;
+        quizStartScreen.classList.add('hidden');
+        quizResultsScreen.classList.add('hidden');
+        quizContainer.classList.remove('hidden');
+        nextQuestionBtn.classList.add('hidden');
+        showQuestion();
+    }
+
+    function showQuestion() {
+        answered = false;
+        feedbackContainer.classList.add('hidden');
+        hintBtn.disabled = false;
+        
+        const currentQuestion = quizData[currentQuestionIndex];
+        
+        const progressPercentage = ((currentQuestionIndex) / quizData.length) * 100;
+        progressBar.style.width = `${progressPercentage}%`;
+        progressText.textContent = `Question ${currentQuestionIndex + 1} / ${quizData.length}`;
+
+        questionText.textContent = currentQuestion.question;
+        answersContainer.innerHTML = '';
+
+        currentQuestion.answers.forEach((answer, index) => {
+            const button = document.createElement('button');
+            button.textContent = answer;
+            button.classList.add('answer-btn');
+            button.dataset.index = index;
+            button.addEventListener('click', selectAnswer);
+            answersContainer.appendChild(button);
+        });
+    }
+
+    function selectAnswer(e) {
+        if (answered) return;
+        answered = true;
+        hintBtn.disabled = true;
+
+        const selectedButton = e.target;
+        const selectedAnswerIndex = parseInt(selectedButton.dataset.index);
+        const currentQuestion = quizData[currentQuestionIndex];
+        const isCorrect = selectedAnswerIndex === currentQuestion.correctAnswer;
+
+        if (isCorrect) {
+            score++;
+            selectedButton.classList.add('correct');
+            feedbackContainer.innerHTML = `<p class="font-semibold">Bonne réponse !</p><p>${currentQuestion.feedback.correct}</p>`;
+            feedbackContainer.className = 'mt-4 p-4 rounded-md correct-feedback';
+        } else {
+            selectedButton.classList.add('incorrect');
+            feedbackContainer.innerHTML = `<p class="font-semibold">Réponse incorrecte.</p><p>${currentQuestion.feedback.incorrect}</p>`;
+            feedbackContainer.className = 'mt-4 p-4 rounded-md incorrect-feedback';
+        }
+        
+        // Highlight correct answer if wrong answer was chosen
+        if (!isCorrect) {
+            answersContainer.children[currentQuestion.correctAnswer].classList.add('correct');
+        }
+
+        // Disable all buttons
+        Array.from(answersContainer.children).forEach(btn => {
+            btn.disabled = true;
+        });
+
+        feedbackContainer.classList.remove('hidden');
+        nextQuestionBtn.classList.remove('hidden');
+    }
+
+    function showHint() {
+        const currentQuestion = quizData[currentQuestionIndex];
+        feedbackContainer.innerHTML = `<p><i class="fa-solid fa-lightbulb mr-2"></i><b>Indice :</b> ${currentQuestion.hint}</p>`;
+        feedbackContainer.className = 'mt-4 p-4 rounded-md bg-yellow-50 border-l-4 border-yellow-400';
+        feedbackContainer.classList.remove('hidden');
+        hintBtn.disabled = true;
+    }
+
+    function showNextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizData.length) {
+            showQuestion();
+            nextQuestionBtn.classList.add('hidden');
+        } else {
+            showResults();
+        }
+    }
+    
+    function showResults() {
+        quizContainer.classList.add('hidden');
+        quizResultsScreen.classList.remove('hidden');
+
+        const finalScorePercent = Math.round((score / quizData.length) * 100);
+        resultsScore.textContent = `${finalScorePercent}%`;
+
+        if (finalScorePercent >= 75) {
+            resultsTitle.textContent = "Félicitations, vous avez réussi !";
+            resultsTitle.classList.remove('text-red-600');
+            resultsTitle.classList.add('text-green-600');
+            resultsScore.classList.remove('text-red-600');
+            resultsScore.classList.add('text-green-600');
+            resultsFeedback.textContent = "Vous avez une excellente compréhension des concepts de la gestion des stocks. Vous êtes prêt à passer à la synthèse.";
+        } else {
+            resultsTitle.textContent = "Continuez vos efforts !";
+            resultsTitle.classList.remove('text-green-600');
+            resultsTitle.classList.add('text-red-600');
+            resultsScore.classList.remove('text-green-600');
+            resultsScore.classList.add('text-red-600');
+            resultsFeedback.textContent = `Votre score est de ${finalScorePercent}%. N'hésitez pas à revoir les chapitres précédents pour consolider vos connaissances avant de retenter le quiz.`;
+        }
+    }
+
+    startQuizBtn.addEventListener('click', startQuiz);
+    restartQuizBtn.addEventListener('click', startQuiz);
+    hintBtn.addEventListener('click', showHint);
+    nextQuestionBtn.addEventListener('click', showNextQuestion);
+});
+</script>
+</body>
+</html>

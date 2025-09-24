@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fixer les Prix - Parcours Ultime BTS MCO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals & Slate Blue -->
+    <!-- Application Structure Plan: Version finale et exhaustive. Structure en 10 sections. Le parcours est complet : Intro vidéo, apprentissage interactif, validation (Quiz), révision ciblée (Points Clés, FAQ), et conclusion par une synthèse visuelle. -->
+    <!-- Visualization & Content Choices: Tous les modules interactifs sont conservés. De nouvelles sections Points Clés (liste synthétique) et FAQ (accordéon interactif) sont ajoutées pour la consolidation des connaissances. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #FAF8F2; color: #2d3748; scroll-behavior: smooth; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .nav-link { transition: all 0.3s; }
+        /* Adjusted active/hover for mobile menu */
+        .nav-link.active, .nav-link:hover { color: #3B82F6; }
+        /* Only apply border-bottom on desktop for active/hover */
+        @media (min-width: 768px) {
+            .nav-link.active, .nav-link:hover { border-bottom-color: #3B82F6; }
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .btn-primary { background-color: #3B82F6; color: white; transition: background-color 0.3s; }
+        .btn-primary:hover:not(:disabled) { background-color: #2563EB; }
+        .btn-primary:disabled { background-color: #93C5FD; cursor: not-allowed; }
+        .btn-secondary { background-color: #E5E7EB; color: #374151; transition: background-color 0.3s; }
+        .btn-secondary:hover { background-color: #D1D5DB; }
+        .tab-btn.active { background-color: #3B82F6; color: white; border-color: #3B82F6; }
+        .info-trigger { position: absolute; top: 10px; right: 10px; width: 24px; height: 24px; border-radius: 50%; background-color: #e0e7ff; color: #3b82f6; border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        code { background-color: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+        /* FAQ: max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; */
+        .faq-answer { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Fixer les Prix : Parcours Ultime</h1>
+                <p class="text-md text-gray-600">Une ressource pédagogique pour le BTS MCO</p>
+            </div>
+            <!-- Hamburger button for mobile -->
+            <button id="hamburger-btn" class="md:hidden p-2 rounded-md text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-4 6h4"></path>
+                </svg>
+            </button>
+        </div>
+        <nav id="navbar" class="bg-gray-50 border-b border-gray-200">
+            <div id="nav-menu" class="hidden md:block container mx-auto px-4 py-2"> <!-- This div will be toggled -->
+                <ul class="flex flex-col md:flex-row md:justify-center text-sm sm:text-base space-y-2 md:space-y-0 md:space-x-4">
+                    <li class="w-full md:w-auto"><a href="#introduction" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Intro</a></li>
+                    <li class="w-full md:w-auto"><a href="#role" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Rôle</a></li>
+                    <li class="w-full md:w-auto"><a href="#facteurs" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Facteurs</a></li>
+                    <li class="w-full md:w-auto"><a href="#calculs" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Calculs</a></li>
+                    <li class="w-full md:w-auto"><a href="#strategies" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Stratégies</a></li>
+                    <li class="w-full md:w-auto"><a href="#optimisation" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Optimisation</a></li>
+                    <li class="w-full md:w-auto"><a href="#quiz" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Quiz</a></li>
+                    <li class="w-full md:w-auto"><a href="#points-cles" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Points Clés</a></li>
+                    <li class="w-full md:w-auto"><a href="#faq" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">FAQ</a></li>
+                    <li class="w-full md:w-auto"><a href="#synthese" class="nav-link text-gray-600 font-semibold py-2 md:py-3 border-b-2 border-transparent block text-center md:text-left hover:bg-gray-100 md:hover:bg-transparent rounded-md md:rounded-none">Synthèse</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        
+        <section id="introduction" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-8">Introduction en Vidéo</h2>
+            <div class="max-w-4xl mx-auto">
+                <div style="position: relative; width: 100%; height: 0; padding-top: 56.2500%;
+                padding-bottom: 0; box-shadow: 0 2px 8px 0 rgba(63,69,81,0.16); margin-top: 1.6em; margin-bottom: 0.9em; overflow: hidden;
+                border-radius: 8px; will-change: transform;">
+                <iframe loading="lazy" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; border: none; padding: 0;margin: 0;"
+                    src="https://www.canva.com/design/DAGzOAlUXxo/tSkmkcW7xRuLboiVDP18Nw/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen">
+                </iframe>
+                </div>
+                <a class="text-sm text-gray-500 hover:text-blue-600" href="https:&#x2F;&#x2F;www.canva.com&#x2F;design&#x2F;DAGzOAlUXxo&#x2F;tSkmkcW7xRuLboiVDP18Nw&#x2F;watch?utm_content=DAGzOAlUXxo&amp;utm_campaign=designshare&amp;utm_medium=embeds&amp;utm_source=link" target="_blank" rel="noopener">Démystifier le Prix</a> by desmond de amil
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="role" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-2">À Quoi Sert le Prix ?</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">Le prix est une variable stratégique aux multiples facettes. Il n'est pas seulement un chiffre, mais un signal puissant envoyé à l'ensemble du marché. Explorez ses différentes fonctions en cliquant sur chaque acteur pour découvrir sa perspective.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+                <div class="role-card card bg-white p-6 rounded-lg shadow-sm text-center cursor-pointer" data-role="entreprise"><h3 class="font-bold text-xl mb-2">🏢 Pour l'Entreprise</h3><p id="desc-entreprise" class="text-gray-600 hidden">Couvrir les coûts, générer une marge, assurer la rentabilité et financer le développement.</p></div>
+                <div class="role-card card bg-white p-6 rounded-lg shadow-sm text-center cursor-pointer" data-role="concurrents"><h3 class="font-bold text-xl mb-2">⚔️ Pour les Concurrents</h3><p id="desc-concurrents" class="text-gray-600 hidden">Une arme concurrentielle. Il sert de référence et peut être une barrière à l'entrée.</p></div>
+                <div class="role-card card bg-white p-6 rounded-lg shadow-sm text-center cursor-pointer" data-role="clients"><h3 class="font-bold text-xl mb-2">👤 Pour les Clients</h3><p id="desc-clients" class="text-gray-600 hidden">Le coût à payer, mais aussi un indicateur de qualité perçue. Le rapport qualité/prix est clé.</p></div>
+                <div class="role-card card bg-white p-6 rounded-lg shadow-sm text-center cursor-pointer" data-role="marche"><h3 class="font-bold text-xl mb-2">📈 Pour le Marché</h3><p id="desc-marche" class="text-gray-600 hidden">Le mécanisme qui ajuste l'offre et la demande, et régule les échanges.</p></div>
+                <div class="role-card card bg-white p-6 rounded-lg shadow-sm text-center cursor-pointer" data-role="etat"><h3 class="font-bold text-xl mb-2">🏛️ Pour l'État</h3><p id="desc-etat" class="text-gray-600 hidden">Source de recettes (TVA) et outil de régulation pour protéger les consommateurs.</p></div>
+            </div>
+             <div class="mt-8 bg-indigo-50 border-l-4 border-indigo-400 p-4 rounded-r-lg max-w-4xl mx-auto"><h4 class="font-bold text-indigo-800">Le saviez-vous ?</h4><p class="text-indigo-700">Dans le mix-marketing (les "4P" : Produit, Prix, Place, Promotion), le prix est la seule variable qui génère des revenus. Toutes les autres représentent des coûts.</p></div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="facteurs" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-2">Les Facteurs d'Influence</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">La fixation du prix est un exercice d'équilibre complexe. Elle se situe à l'intersection des contraintes internes à l'entreprise et des forces externes du marché. Utilisez les boutons pour explorer ces dimensions et cliquez sur ⓘ pour plus de détails.</p>
+            <div class="text-center mb-8"><button id="btn-internes" class="tab-btn active px-6 py-2">Facteurs Internes</button><button id="btn-externes" class="tab-btn px-6 py-2 btn-secondary ml-2">Facteurs Externes</button></div>
+            <div id="facteurs-content">
+                <div id="internes" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card bg-white p-6 rounded-lg shadow-sm relative"><button class="info-trigger" data-title="Les Coûts" data-content="Le coût représente le prix plancher. Fixer un prix de vente HT inférieur au coût d'achat est illégal (revente à perte).<br><br><b>Exemple :</b> Un t-shirt acheté 10€ HT a un coût d'achat de 10€. Le prix de vente HT devra être ≥ 10€ pour être légal.">ⓘ</button><h4 class="font-bold">Les Coûts</h4><p>Le prix plancher. Doit couvrir les coûts pour être légal et rentable.</p></div>
+                    <div class="card bg-white p-6 rounded-lg shadow-sm relative"><button class="info-trigger" data-title="La Stratégie de l'Enseigne" data-content="<b>Écrémage :</b> prix élevé (ex: dernier iPhone).<br><b>Pénétration :</b> prix bas (ex: arrivée de Free mobile).<br><b>Alignement :</b> prix similaire à la concurrence.">ⓘ</button><h4 class="font-bold">La Stratégie</h4><p>Le prix dépend des objectifs : écrémage, pénétration ou alignement.</p></div>
+                    <div class="card bg-white p-6 rounded-lg shadow-sm relative"><button class="info-trigger" data-title="Le Positionnement" data-content="Le prix doit être cohérent avec l'image de marque.<br><br><b>Exemple :</b> Rolex vend des montres chères, renforçant son image de luxe. Lidl base son succès sur des prix très bas.">ⓘ</button><h4 class="font-bold">Le Positionnement</h4><p>Doit être cohérent avec l'image de marque (luxe, discount...).</p></div>
+                </div>
+                <div id="externes" class="hidden grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="card bg-white p-6 rounded-lg shadow-sm relative"><button class="info-trigger" data-title="L'Intensité de la Concurrence" data-content="Plus il y a de concurrents, moins l'entreprise a de liberté sur ses prix.<br><br><b>Exemple :</b> Un restaurateur dans une rue avec 20 pizzerias a peu de marge de manœuvre. Le seul boulanger d'un village peut se permettre des prix plus élevés.">ⓘ</button><h4 class="font-bold">La Concurrence</h4><p>La pression concurrentielle limite la liberté de fixation des prix.</p></div>
+                    <div class="card bg-white p-6 rounded-lg shadow-sm relative"><button class="info-trigger" data-title="La Demande des Clients" data-content="Mesure la sensibilité des clients au prix (<b>élasticité-prix</b>). Il existe aussi un <b>prix psychologique</b> (zone d'acceptabilité).">ⓘ</button><h4 class="font-bold">La Demande</h4><p>Sensibilité des clients au prix et perception de la valeur.</p></div>
+                    <div class="card bg-white p-6 rounded-lg shadow-sm relative"><button class="info-trigger" data-title="Les Contraintes Légales" data-content="<b>Principales règles (Code de Commerce) :</b><br>• <b>Interdiction de la revente à perte</b> (art. L442-5).<br>• <b>Réglementation des soldes</b>.<br>• <b>Interdiction des prix imposés</b> par un fournisseur.">ⓘ</button><h4 class="font-bold">Les Lois</h4><p>La réglementation encadre les prix (revente à perte, soldes...).</p></div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="calculs" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-12">Calculs & Méthodes de Fixation</h2>
+            <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+                <h3 class="text-xl font-bold mb-4 text-center">Calculateur de Prix par les Coûts</h3>
+                <p class="text-center text-gray-600 mb-6">Modifiez les valeurs ci-dessous pour calculer le prix de vente et la marge.</p> <!-- Added CTA -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <div class="mb-4"><label for="coutAchat">Coût d'Achat HT (€)</label><input type="number" id="coutAchat" value="50" class="mt-1 w-full rounded-md border-gray-300"></div>
+                        <div class="mb-4"><label for="tauxMarge">Taux de Marge (%)</label><input type="number" id="tauxMarge" value="40" class="mt-1 w-full rounded-md border-gray-300"></div>
+                        <div class="mb-4"><label for="tauxTVA">Taux de TVA (%)</label><input type="number" id="tauxTVA" value="20" class="mt-1 w-full rounded-md border-gray-300"></div>
+                        <div class="mt-6 p-4 bg-blue-50 rounded-lg text-blue-800"><p><strong>PV HT :</strong> <span id="pvht"></span></p><p><strong>PV TTC :</strong> <span id="pvttc"></span></p><p><strong>Marge Brute :</strong> <span id="marge"></span></p><p><strong>Taux de Marque :</strong> <span id="tauxMarque"></span></p><p><strong>Coefficient Multiplicateur :</strong> <span id="coeff"></span></p></div>
+                        <p class="text-xs text-gray-500 mt-2">Rappel légal : Le PV HT ne peut être inférieur au Coût d'Achat HT (seuil de revente à perte).</p>
+                    </div>
+                    <div class="chart-container"><canvas id="margeChart"></canvas></div>
+                </div>
+                <div class="mt-8 border-t pt-6">
+                    <h4 class="font-bold text-lg mb-4">Formules et Explications</h4>
+                    <div class="space-y-4 text-sm"><p><code>Marge Brute (€) = Coût d'Achat HT × (Taux de Marge / 100)</code></p><p><code>Coefficient Multiplicateur = PV TTC / Coût d'Achat HT</code></p><div class="p-4 bg-gray-100 rounded-lg"><h5 class="font-semibold">Taux de Marge vs. Taux de Marque</h5><p class="mt-2">Le <b>Taux de Marge</b> se calcule sur le <b>Coût d'Achat</b>. Le <b>Taux de Marque</b> se calcule sur le <b>Prix de Vente HT</b>.<br><code>Taux de Marque (%) = (Marge Brute / PV HT) × 100</code></p></div><button id="show-coef-table" class="btn-secondary text-sm px-4 py-2 mt-2">Voir tableau Coef. / Taux Marque</button></div>
+                </div>
+                 <div class="mt-6 p-4 bg-red-50 border-l-4 border-red-400 rounded-r-lg"><h5 class="font-bold text-red-800">⚠️ Les Limites de l'Approche par les Coûts</h5><p class="mt-2 text-red-700">Cette méthode est essentielle mais dangereuse si utilisée seule. Elle ignore totalement la perception de la valeur par le client et la pression des prix des concurrents.</p></div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h3 class="text-xl font-bold text-center mb-2">Méthode du Prix Psychologique</h3>
+                <p class="text-center text-gray-600 mb-6">Ajustez les prix minimum et maximum perçus par vos clients pour trouver la zone d'acceptabilité.</p> <!-- Added CTA -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                    <div>
+                        <div class="mb-4"><label for="prixMin">Prix minimum (seuil qualité)</label><input type="number" id="prixMin" value="15" class="mt-1 w-full rounded-md border-gray-300"></div>
+                        <div class="mb-4"><label for="prixMax">Prix maximum (seuil achat)</label><input type="number" id="prixMax" value="35" class="mt-1 w-full rounded-md border-gray-300"></div>
+                        <button id="psycho-btn" class="btn-primary w-full py-2">Calculer</button>
+                        <div class="mt-4 text-center"><p id="psycho-result" class="font-bold text-2xl text-blue-600 h-8"></p></div>
+                    </div>
+                    <div class="chart-container h-64 md:h-80"><canvas id="psychoChart"></canvas></div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+        
+        <section id="strategies" class="py-12 scroll-mt-24">
+             <h2 class="text-2xl font-bold text-center mb-12">Stratégies de Prix & Contextes</h2>
+
+            <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+                <h3 class="text-xl font-bold mb-4 text-center">Simulateur de Stratégie de Lancement</h3>
+                <p class="text-center text-gray-600 mb-6">Imaginez lancer une nouvelle marque de baskets éco-responsables. Observez l'impact de votre stratégie sur le volume et le chiffre d'affaires.</p>
+                <div class="text-center mb-6">
+                    <button class="strategy-btn btn-primary px-4 py-2" data-strategy="ecremage">Écrémage</button>
+                    <button class="strategy-btn btn-secondary px-4 py-2 ml-2" data-strategy="alignement">Alignement</button>
+                    <button class="strategy-btn btn-secondary px-4 py-2 ml-2" data-strategy="penetration">Pénétration</button>
+                </div>
+                <div class="chart-container"><canvas id="strategyChart"></canvas></div>
+                <p id="strategy-desc" class="mt-4 text-center font-medium bg-gray-50 p-3 rounded-lg"></p>
+            </div>
+
+             <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+                <h3 class="text-xl font-bold mb-4 text-center">Adapter sa Stratégie au Cycle de Vie du Produit</h3>
+                <div class="border-b-2 border-gray-200"><div class="flex -mb-0.5" id="cycle-tabs"><button class="tab-btn border-2 border-b-0 rounded-t-lg px-4 py-2 active" data-cycle="lancement">Lancement</button><button class="tab-btn border-2 border-b-0 rounded-t-lg px-4 py-2 ml-2 btn-secondary" data-cycle="croissance">Croissance</button><button class="tab-btn border-2 border-b-0 rounded-t-lg px-4 py-2 ml-2 btn-secondary" data-cycle="maturite">Maturité</button><button class="tab-btn border-2 border-b-0 rounded-t-lg px-4 py-2 ml-2 btn-secondary" data-cycle="declin">Déclin</button></div></div>
+                <div class="p-6 border-2 border-t-0 rounded-b-lg" id="cycle-content"><h4 class="font-semibold" id="cycle-title"></h4><p id="cycle-scenario" class="my-3"></p><div id="cycle-options" class="space-y-2"></div><p id="cycle-feedback" class="mt-4 font-medium"></p></div>
+            </div>
+            
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h3 class="text-xl font-bold mb-4 text-center">Le Défi de la Tarification Omnicanale</h3>
+                <p class="text-center text-gray-600 mb-6">Pour un même prix de vente public, la rentabilité varie énormément selon le canal. Simulez l'impact.</p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                    <div>
+                        <div class="mb-4"><label>Prix de Vente Public TTC</label><p class="text-2xl font-bold">50,00 €</p></div>
+                        <div class="mb-4"><label>Coût de Production HT</label><p class="text-lg font-semibold">20,00 €</p></div>
+                        <h4 class="font-semibold mt-6 mb-3">Choisissez un canal de vente :</h4>
+                        <div class="flex flex-col space-y-2"><button class="canal-btn btn-primary" data-cost="5" data-name="Site Web (Vente Directe)">Site Web (Vente Directe)</button><button class="canal-btn btn-secondary" data-cost="15" data-name="Vente via Détaillant">Vente via Détaillant</button><button class="canal-btn btn-secondary" data-cost="12" data-name="Magasin en Propre">Magasin en Propre</button></div>
+                    </div>
+                    <div id="omni-results" class="bg-gray-50 p-6 rounded-lg text-center hidden"><h4 class="font-bold text-lg" id="omni-canal-name"></h4><p class="text-sm mt-4">Prix de Vente HT</p><p class="font-semibold text-xl">41,67 €</p><p class="text-sm mt-3">Coûts additionnels (logistique, marge, etc.)</p><p class="font-semibold text-xl text-red-600" id="omni-cost"></p><p class="text-sm mt-3">Marge Nette pour l'entreprise</p><p class="font-bold text-3xl text-green-700" id="omni-marge"></p></div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="optimisation" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-2">Moduler et Optimiser les Prix</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">Un prix n'est jamais figé. Les entreprises l'ajustent en permanence pour répondre aux opportunités du marché, optimiser leurs revenus et écouler leurs stocks. Découvrez les principales techniques de modulation.</p>
+            <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+                 <h3 class="text-xl font-bold mb-6 text-center">Soldes vs. Promotions : Ne Pas Confondre !</h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="border-2 border-red-200 bg-red-50 p-6 rounded-lg"><h4 class="text-lg font-bold text-red-800 mb-3">🔥 Les Soldes</h4><ul class="space-y-2 text-red-700"><li><strong>Objectif :</strong> Écoulement des invendus.</li><li><strong>Période :</strong> Strictement réglementée (2 fois/an).</li><li class="font-bold"><strong>Règle clé :</strong> Seule exception autorisant la revente à perte.</li></ul></div>
+                    <div class="border-2 border-green-200 bg-green-50 p-6 rounded-lg"><h4 class="text-lg font-bold text-green-800 mb-3">✅ Les Promotions</h4><ul class="space-y-2 text-green-700"><li><strong>Objectif :</strong> Dynamiser les ventes.</li><li><strong>Période :</strong> Libre, toute l'année.</li><li class="font-bold"><strong>Règle clé :</strong> Revente à perte strictement interdite.</li></ul></div>
+                 </div>
+            </div>
+             <div class="bg-white p-8 rounded-lg shadow-lg mb-12">
+                <h3 class="text-xl font-bold mb-2 text-center">Simulateur de Rentabilité d'une Promotion</h3>
+                <p class="text-center text-gray-600 mb-6">Entrez vos données actuelles et simulez l'impact d'une réduction sur votre marge globale.</p> <!-- Added CTA -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-semibold">1. Situation Actuelle</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label for="promo-pv" class="text-sm">PV HT</label><input type="number" id="promo-pv" value="20" class="w-full rounded-md"></div>
+                            <div><label for="promo-marge-unit" class="text-sm">Marge unitaire HT</label><input type="number" id="promo-marge-unit" value="8" class="w-full rounded-md"></div>
+                            <div class="col-span-2"><label for="promo-volume" class="text-sm">Ventes /semaine</label><input type="number" id="promo-volume" value="100" class="w-full rounded-md"></div>
+                        </div>
+                        <h4 class="font-semibold mt-6">2. Votre Promotion</h4>
+                        <div><label for="promo-reduc" class="text-sm">Réduction (%) : <span id="promo-reduc-val">15 %</span></label><input type="range" id="promo-reduc" min="0" max="50" value="15" class="w-full"></div>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-lg">
+                        <h4 class="font-semibold text-center">3. Résultats</h4>
+                        <div class="text-center p-3 rounded-md bg-gray-200"><p class="text-sm">Marge Globale Actuelle</p><p class="text-2xl font-bold" id="current-total-marge"></p></div>
+                        <div class="text-center p-3 rounded-md mt-3" id="result-card"><p id="result-label">Nvelle Marge Globale</p><p class="text-3xl font-bold" id="new-total-marge"></p></div>
+                        <div class="pt-4 mt-3 border-t text-sm text-center"><p>Pour ne pas perdre d'argent, vous devez vendre au minimum :</p><p><strong class="text-blue-600 text-lg" id="breakeven-volume"></strong>.</p></div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h3 class="text-xl font-bold mb-4 text-center">Le Yield Management & l'IA</h3>
+                <p class="text-center text-gray-600 mb-6">Pensez au prix d'un billet de train Paris-Lyon : il varie constamment. C'est le Yield Management. Cette technique, aujourd'hui démultipliée par l'<b>Intelligence Artificielle</b>, ajuste les prix en temps réel pour optimiser le CA. Cliquez pour simuler l'évolution.</p>
+                 <div class="text-center mb-6"><button id="yield-sim-btn" class="btn-primary px-6 py-2">Lancer la simulation</button></div>
+                <div class="chart-container"><canvas id="yieldChart"></canvas></div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="quiz" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-2">Quiz Formatif</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">Validez vos connaissances ! Répondez à ces 10 questions pour tester votre maîtrise des concepts. Un score de 75% est requis pour débloquer la synthèse finale.</p>
+            <div id="quiz-container" class="bg-white p-8 rounded-lg shadow-lg max-w-4xl mx-auto">
+                <div id="quiz-start-screen">
+                    <p class="text-center">Prêt(e) à tester vos acquis ?</p>
+                    <div class="text-center mt-6"><button id="start-quiz-btn" class="btn-primary px-8 py-3 text-lg">Commencer le Quiz</button></div>
+                </div>
+                <div id="quiz-main-screen" class="hidden">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-2"><span class="text-sm font-semibold" id="quiz-question-counter"></span><span class="text-sm font-semibold" id="quiz-score"></span></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="quiz-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 0%"></div></div>
+                    </div>
+                    <h3 class="text-xl font-bold my-4" id="quiz-question-text"></h3>
+                    <div id="quiz-options-container" class="space-y-3"></div>
+                    <div class="flex justify-between items-center mt-4">
+                        <button id="quiz-hint-btn" class="btn-secondary text-sm px-3 py-1">💡 Indice</button>
+                        <button id="quiz-next-btn" class="btn-primary px-5 py-2 hidden">Suivant</button>
+                    </div>
+                    <p id="quiz-hint-text" class="mt-3 text-sm bg-yellow-50 p-2 rounded hidden"></p>
+                    <div id="quiz-feedback" class="mt-4 p-3 rounded-lg text-center font-medium"></div>
+                </div>
+                <div id="quiz-end-screen" class="hidden text-center">
+                    <h3 class="text-2xl font-bold mb-4">Quiz Terminé !</h3>
+                    <p class="text-4xl font-bold mb-4" id="quiz-final-score"></p>
+                    <p class="mb-6" id="quiz-end-message"></p>
+                    <div id="quiz-end-buttons" class="flex justify-center gap-4"></div>
+                </div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="points-cles" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-12">Les Points Clés à Retenir</h2>
+            <div class="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400"><strong>Le prix a de multiples fonctions :</strong> Pour l'entreprise (coûts, marge), le client (qualité), les concurrents (positionnement) et l'État (TVA).</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400"><strong>Deux types de facteurs l'influencent :</strong> Internes (coûts, stratégie) et externes (concurrence, loi, demande).</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400"><strong>L'approche par les coûts est la base :</strong> Mais elle doit être complétée par une analyse du marché (demande, concurrence).</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400"><strong>La loi encadre les prix :</strong> L'interdiction de la revente à perte est la règle, les soldes l'unique exception.</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400"><strong>L'omnicanal complexifie la gestion :</strong> Un même prix de vente public peut cacher des rentabilités très différentes par canal.</div>
+                <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-400"><strong>Moduler les prix est essentiel :</strong> Promotions, soldes, et tarification dynamique permettent d'optimiser la rentabilité.</div>
+            </div>
+        </section>
+
+        <hr class="my-8 border-gray-200">
+
+        <section id="faq" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-12">Foire Aux Questions</h2>
+            <div id="faq-container" class="max-w-4xl mx-auto space-y-4"></div>
+        </section>
+        
+        <hr class="my-8 border-gray-200">
+
+        <section id="synthese" class="py-12 scroll-mt-24">
+            <h2 class="text-2xl font-bold text-center mb-6">Synthèse - Carte Mentale</h2>
+            <p class="text-lg text-gray-600 text-center max-w-3xl mx-auto mb-12">Cette carte mentale interactive résume les points essentiels de la fixation des prix. Naviguez à travers les différentes branches pour réviser les définitions, les formules et les liens entre les concepts.</p>
+            <div class="bg-white p-2 md:p-4 rounded-lg shadow-lg max-w-5xl mx-auto">
+                <div class="w-full h-[750px] border border-gray-200 rounded-lg overflow-hidden">
+                    <iframe class="w-full h-full" src='https://www.xmind.app/embed/VdcM9G/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <div id="info-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center p-4 z-50"><div class="bg-white rounded-lg shadow-2xl p-6 w-full max-w-lg relative">
+        <button id="close-modal" class="absolute top-2 right-3 text-3xl text-gray-500 hover:text-gray-800">&times;</button>
+        <h3 id="modal-title" class="text-2xl font-bold mb-4"></h3><div id="modal-content" class="leading-relaxed"></div>
+    </div></div>
+
+    <footer class="bg-gray-800 text-white mt-12 py-6"><div class="container mx-auto px-4 text-center"><p>&copy; 2025 - Ressource Pédagogique Ultime pour BTS MCO</p></div></footer>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Navigation (Scroll Spy) ---
+    const sections = document.querySelectorAll('section'), navLinks = document.querySelectorAll('.nav-link');
+    const observer = new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)navLinks.forEach(l=>l.classList.toggle('active',l.getAttribute('href').substring(1)===e.target.id))})},{threshold:0.1});
+    sections.forEach(s=>observer.observe(s));
+
+    // --- Hamburger Menu ---
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const navMenu = document.getElementById('nav-menu');
+
+    hamburgerBtn.addEventListener('click', () => {
+        navMenu.classList.toggle('hidden');
+    });
+
+    // Close menu when a nav link is clicked (for mobile)
+    navMenu.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            // Check if the menu is currently visible (i.e., not hidden)
+            if (!navMenu.classList.contains('hidden')) {
+                navMenu.classList.add('hidden'); // Close the menu
+            }
+        });
+    });
+
+    // --- Rôle du Prix ---
+    document.querySelectorAll('.role-card').forEach(c=>{const d=document.getElementById(`desc-${c.dataset.role}`);c.addEventListener('click',()=>{const h=d.classList.contains('hidden');document.querySelectorAll('.role-card p').forEach(p=>p.classList.add('hidden'));if(h)d.classList.remove('hidden')})});
+
+    // --- Facteurs d'influence & Modal ---
+    const infoModal=document.getElementById('info-modal');
+    document.querySelectorAll('.info-trigger').forEach(t=>{t.addEventListener('click',()=>{document.getElementById('modal-title').textContent=t.dataset.title;document.getElementById('modal-content').innerHTML=t.dataset.content;infoModal.classList.remove('hidden')})});
+    const closeModal=()=>infoModal.classList.add('hidden');
+    document.getElementById('close-modal').addEventListener('click',closeModal);
+    infoModal.addEventListener('click',e=>{if(e.target===infoModal)closeModal()});
+    const btnInternes=document.getElementById('btn-internes'),btnExternes=document.getElementById('btn-externes'),internesContent=document.getElementById('internes'),externesContent=document.getElementById('externes');
+    btnInternes.addEventListener('click',()=>{internesContent.classList.remove('hidden');externesContent.classList.add('hidden');btnInternes.classList.replace('btn-secondary','active');btnExternes.classList.replace('active','btn-secondary')});
+    btnExternes.addEventListener('click',()=>{externesContent.classList.remove('hidden');internesContent.classList.add('hidden');btnExternes.classList.replace('btn-secondary','active');btnInternes.classList.replace('active','btn-secondary')});
+
+    // --- Calculateur de prix ---
+    const coutAchatInput=document.getElementById('coutAchat'),tauxMargeInput=document.getElementById('tauxMarge'),tauxTVAInput=document.getElementById('tauxTVA');let margeChart;
+    function calculatePrice(){const c=parseFloat(coutAchatInput.value)||0,tm=parseFloat(tauxMargeInput.value)||0,tv=parseFloat(tauxTVAInput.value)||0;const m=c*(tm/100),p=c+m,pt=p*(1+(tv/100)),tma=p>0?(m/p)*100:0,coef=c>0?pt/c:0;document.getElementById('pvht').textContent=`${p.toFixed(2)} €`;document.getElementById('pvttc').textContent=`${pt.toFixed(2)} €`;document.getElementById('marge').textContent=`${m.toFixed(2)} €`;document.getElementById('tauxMarque').textContent=`${tma.toFixed(2)} %`;document.getElementById('coeff').textContent=`${coef.toFixed(2)}`;if(margeChart)margeChart.destroy();margeChart=new Chart(document.getElementById('margeChart').getContext('2d'),{type:'doughnut',data:{labels:['Coût d\'Achat HT','Marge Brute'],datasets:[{data:[c,m],backgroundColor:['#93C5FD','#3B82F6']}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}})}
+    [coutAchatInput,tauxMargeInput,tauxTVAInput].forEach(i=>i.addEventListener('input',calculatePrice));calculatePrice();
+    document.getElementById('show-coef-table').addEventListener('click', () => {
+        document.getElementById('modal-title').textContent = 'Tableau de Correspondance';
+        document.getElementById('modal-content').innerHTML = `<table class="w-full text-left"><thead><tr class="bg-gray-100"><th class="p-2">Coefficient Multiplicateur</th><th class="p-2">Taux de Marque Équivalent</th></tr></thead><tbody>
+        <tr><td class="p-2 border-t">1.5</td><td class="p-2 border-t">33.3%</td></tr><tr><td class="p-2 border-t">1.8</td><td class="p-2 border-t">44.4%</td></tr><tr><td class="p-2 border-t">2.0</td><td class="p-2 border-t">50.0%</td></tr><tr><td class="p-2 border-t">2.5</td><td class="p-2 border-t">60.0%</td></tr><tr><td class="p-2 border-t">3.0</td><td class="p-2 border-t">66.7%</td></tr></tbody></table>`;
+        infoModal.classList.remove('hidden');
+    });
+
+    // --- Prix Psychologique ---
+    const prixMinInput=document.getElementById('prixMin'),prixMaxInput=document.getElementById('prixMax'),psychoBtn=document.getElementById('psycho-btn'),psychoResult=document.getElementById('psycho-result');let psychoChart;
+    function updatePsychoChart(){const pMin=parseFloat(prixMinInput.value)||0,pMax=parseFloat(prixMaxInput.value)||0;if(pMin>=pMax){psychoResult.textContent="Prix min < Prix max";return}const range=pMax-pMin,points=Array.from({length:21},(_,i)=>(pMin-range*0.5+(range*2/20)*i));const nonAcheteursQualite=points.map(p=>100*(1-1/(1+Math.exp(-0.2*(p-pMin)))));const nonAcheteursPrix=points.map(p=>100/(1+Math.exp(-0.2*(p-pMax))));let minDiff=Infinity,intersectionIndex=-1;points.forEach((p,i)=>{const diff=Math.abs(nonAcheteursQualite[i]-nonAcheteursPrix[i]);if(diff<minDiff){minDiff=diff;intersectionIndex=i}});const optimalPrice=points[intersectionIndex];psychoResult.textContent=`Prix Optimal : ${optimalPrice.toFixed(2)} €`;if(psychoChart)psychoChart.destroy();psychoChart=new Chart(document.getElementById('psychoChart').getContext('2d'),{type:'line',data:{labels:points.map(p=>p.toFixed(0)),datasets:[{label:'% Rejet Qualité',data:nonAcheteursQualite,borderColor:'#f97316',tension:0.4,pointRadius:0},{label:'% Rejet Prix',data:nonAcheteursPrix,borderColor:'#ef4444',tension:0.4,pointRadius:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{text:'Croisement des courbes de rejet'},legend:{position:'bottom',labels:{boxWidth:12,font:{size:10}}},annotation:{annotations:{line1:{type:'line',xMin:optimalPrice,xMax:optimalPrice,borderColor:'#3B82F6',borderWidth:2,borderDash:[6,6]}}}},scales:{y:{max:100,min:0,title:{display:true,text:'% Non-Acheteurs'}},x:{title:{display:true,text:'Prix'}}}}})}
+    psychoBtn.addEventListener('click',updatePsychoChart);updatePsychoChart();
+
+    // --- Stratégies: Lancement ---
+    const strategyData={ecremage:{volume:200,prix:100,desc:"Maximise la marge unitaire au détriment du volume."},alignement:{volume:500,prix:60,desc:"S'aligner sur la concurrence, se différencier sur d'autres critères."},penetration:{volume:1000,prix:35,desc:"Maximise le volume pour conquérir rapidement le marché."}};let strategyChart;
+    function updateStrategyChart(key){document.getElementById('strategy-desc').textContent=strategyData[key].desc;if(strategyChart)strategyChart.destroy();strategyChart=new Chart(document.getElementById('strategyChart').getContext('2d'),{type:'bar',data:{labels:['Volume (unités)','Chiffre d\'Affaires (€)'],datasets:Object.keys(strategyData).map(k=>({label:k,data:[strategyData[k].volume,strategyData[k].volume*strategyData[k].prix],backgroundColor:k===key?'#3B82F6':'#E5E7EB'}))},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}}}})}
+    document.querySelectorAll('.strategy-btn').forEach(btn=>btn.addEventListener('click',e=>{document.querySelectorAll('.strategy-btn').forEach(b=>b.classList.replace('btn-primary','btn-secondary'));e.target.classList.replace('btn-secondary','btn-primary');updateStrategyChart(e.target.dataset.strategy)}));
+    updateStrategyChart('ecremage');
+
+    // --- Stratégies: Cycle de Vie ---
+    const cycleData={lancement:{title:"Phase de Lancement",scenario:"Vous lancez une innovation très attendue, sans concurrence directe.",options:[{text:"Prix d'écrémage (élevé)",correct:true},{text:"Prix de pénétration (bas)",correct:false}],feedback:{true:"Correct ! Sans concurrence, un prix élevé maximise les marges.",false:"Incorrect. Un prix bas n'est pas optimal sans pression concurrentielle."}},croissance:{title:"Phase de Croissance",scenario:"Vos ventes décollent, mais les premiers concurrents arrivent.",options:[{text:"Augmenter les prix",correct:false},{text:"Maintenir ou baisser légèrement les prix",correct:true}],feedback:{true:"Correct ! L'objectif est de soutenir la croissance face aux nouveaux entrants.",false:"Faux. Augmenter les prix freinerait la croissance."}},maturite:{title:"Phase de Maturité",scenario:"Le marché est saturé, la concurrence est intense et les ventes stagnent.",options:[{text:"Défendre sa part de marché avec des prix agressifs",correct:true},{text:"Ignorer la concurrence et maintenir un prix élevé",correct:false}],feedback:{true:"Bien joué. En phase de maturité, la guerre des prix est courante.",false:"Risqué. Les clients se tourneront vers des alternatives."}},declin:{title:"Phase de Déclin",scenario:"Les ventes chutent, de nouvelles technologies remplacent le produit.",options:[{text:"Maintenir le prix pour préserver l'image",correct:false},{text:"Baisser les prix pour liquider les stocks",correct:true}],feedback:{true:"Exact. L'objectif est de vider les stocks restants.",false:"Mauvaise stratégie. L'image est moins importante que le stock dormant."}}};
+    function displayCycle(key){const data=cycleData[key];document.getElementById('cycle-title').textContent=data.title;document.getElementById('cycle-scenario').textContent=data.scenario;const optionsContainer=document.getElementById('cycle-options');optionsContainer.innerHTML='';data.options.forEach(opt=>{const btn=document.createElement('button');btn.textContent=opt.text;btn.className='block w-full text-left p-2 border rounded hover:bg-gray-100';btn.onclick=()=>{document.getElementById('cycle-feedback').textContent=data.feedback[opt.correct];document.getElementById('cycle-feedback').className=`mt-4 font-medium p-2 rounded ${opt.correct?'bg-green-100 text-green-800':'bg-red-100 text-red-800'}`};optionsContainer.appendChild(btn)})};
+    document.querySelectorAll('#cycle-tabs button').forEach(tab=>{tab.addEventListener('click',e=>{document.querySelectorAll('#cycle-tabs button').forEach(b=>b.classList.replace('active','btn-secondary'));e.target.classList.replace('btn-secondary','active');document.getElementById('cycle-feedback').textContent='';displayCycle(e.target.dataset.cycle)})});
+    displayCycle('lancement');
+
+    // --- Stratégies: Omnicanal ---
+    document.querySelectorAll('.canal-btn').forEach(btn=>{btn.addEventListener('click',e=>{document.querySelectorAll('.canal-btn').forEach(b=>b.classList.replace('btn-primary','btn-secondary'));e.target.classList.replace('btn-secondary','btn-primary');const cost=parseFloat(e.target.dataset.cost);const name=e.target.dataset.name;const pvht=50/1.2;const marge=pvht-20-cost;document.getElementById('omni-canal-name').textContent=name;document.getElementById('omni-cost').textContent=`- ${cost.toFixed(2)} €`;document.getElementById('omni-marge').textContent=`${marge.toFixed(2)} €`;document.getElementById('omni-results').classList.remove('hidden')})});
+
+    // --- Optimisation: Promotion ---
+    const promoInputs={pv:document.getElementById('promo-pv'),margeUnit:document.getElementById('promo-marge-unit'),volume:document.getElementById('promo-volume'),reduc:document.getElementById('promo-reduc')};
+    function calculatePromotion(){const pv=parseFloat(promoInputs.pv.value)||0,margeUnit=parseFloat(promoInputs.margeUnit.value)||0,volume=parseFloat(promoInputs.volume.value)||0,reduc=parseFloat(promoInputs.reduc.value)||0;document.getElementById('promo-reduc-val').textContent=`${reduc.toFixed(0)} %`;const currentTotalMarge=margeUnit*volume;document.getElementById('current-total-marge').textContent=`${currentTotalMarge.toFixed(0)} €`;const newPv=pv*(1-reduc/100),coutAchat=pv-margeUnit,newMargeUnit=newPv-coutAchat;const resultCard=document.getElementById('result-card'),newTotalMargeEl=document.getElementById('new-total-marge'),resultLabelEl=document.getElementById('result-label');if(newMargeUnit<=0){document.getElementById('breakeven-volume').textContent='N/A';newTotalMargeEl.textContent='PERTE';resultCard.style.backgroundColor='#fee2e2';newTotalMargeEl.style.color='#991b1b';return}const breakevenVolume=currentTotalMarge/newMargeUnit;const newVolume=volume*(1+(reduc*1.5/100));const newTotalMarge=newMargeUnit*newVolume;document.getElementById('breakeven-volume').textContent=`${Math.ceil(breakevenVolume)} unités`;newTotalMargeEl.textContent=`${newTotalMarge.toFixed(0)} €`;const isProfitable=newTotalMarge>currentTotalMarge;resultCard.style.backgroundColor=isProfitable?'#dcfce7':'#fee2e2';newTotalMargeEl.style.color=isProfitable?'#166534':'#991b1b';resultLabelEl.textContent=isProfitable?"Promo Rentable":"Promo Non Rentable";}
+    Object.values(promoInputs).forEach(input=>input.addEventListener('input',calculatePromotion));calculatePromotion();
+
+    // --- Optimisation: Yield Management ---
+    let yieldChart;const yieldSimBtn=document.getElementById('yield-sim-btn');
+    function createYieldChart(){if(yieldChart)yieldChart.destroy();yieldChart=new Chart(document.getElementById('yieldChart').getContext('2d'),{type:'line',data:{labels:Array.from({length:30},(_,i)=>`J-${30-i}`),datasets:[{label:'Prix (€)',data:[],borderColor:'#3B82F6',tension:0.2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},title:{text:'Évolution du prix en fonction de la demande'}}}})}
+    function runYieldSimulation(){createYieldChart();yieldSimBtn.disabled=true;yieldSimBtn.textContent='Simulation...';let price=50,day=0;const interval=setInterval(()=>{price+=(Math.random()-0.4)*5+(day/10);if(day>25)price*=1.1;yieldChart.data.datasets[0].data.push(price);yieldChart.update();day++;if(day>=30){clearInterval(interval);yieldSimBtn.disabled=false;yieldSimBtn.textContent='Relancer'}},100)}
+    yieldSimBtn.addEventListener('click',runYieldSimulation);createYieldChart();
+
+    // --- Quiz ---
+    const quizQuestions = [
+        { q: "Quelle est la principale différence entre le taux de marge et le taux de marque ?", o: ["Le taux de marge est HT, le taux de marque est TTC", "Le taux de marge se base sur le Coût d'Achat, le taux de marque sur le PV HT", "Il n'y a aucune différence"], a: 1, hint: "L'un se calcule du point de vue de l'acheteur, l'autre du vendeur.", fc: "Exact ! La marge se rapporte à l'investissement (coût d'achat), la marque se rapporte au chiffre d'affaires (prix de vente).", fi: "Incorrect. La différence fondamentale réside dans la base de calcul : le taux de marge utilise le Coût d'Achat HT, tandis que le taux de marque utilise le Prix de Vente HT." },
+        { q: "Quelle stratégie de prix est la plus adaptée pour un produit innovant sans concurrence à son lancement ?", o: ["Pénétration", "Écrémage", "Alignement"], a: 1, hint: "Pensez aux premiers acheteurs prêts à payer plus cher pour la nouveauté.", fc: "Parfait ! La stratégie d'écrémage avec un prix élevé permet de maximiser la rentabilité sur les 'early adopters'.", fi: "Non. La stratégie la plus adaptée est l'écrémage. Un prix de pénétration (bas) est utilisé pour gagner des parts de marché face à une forte concurrence." },
+        { q: "L'interdiction de la revente à perte concerne...", o: ["Le prix de vente TTC", "Le prix de vente HT", "La marge brute"], a: 1, hint: "La TVA est collectée pour l'État et n'entre pas dans le calcul de la rentabilité de l'entreprise.", fc: "Correct ! La loi stipule que le Prix de Vente HT ne doit pas être inférieur au coût d'achat effectif HT.", fi: "Attention, le seuil de revente à perte se compare au Prix de Vente HT. La TVA est un impôt collecté qui n'appartient pas à l'entreprise." },
+        { q: "Le Yield Management consiste à faire varier les prix en fonction de :", o: ["La qualité du produit", "La capacité disponible et la demande", "Le coût de production"], a: 1, hint: "Pensez à un siège d'avion ou une chambre d'hôtel.", fc: "Exactement ! Le but est de maximiser le revenu en ajustant les prix à la demande pour une capacité fixe.", fi: "Incorrect. Le Yield Management ajuste les prix en fonction de la demande anticipée et de la capacité restante (ex: places dans un train)." },
+        { q: "Quelle réduction de prix est typiquement accordée en fin d'année pour récompenser la fidélité ?", o: ["Un rabais", "Une remise", "Une ristourne"], a: 2, hint: "Cette réduction se calcule sur le chiffre d'affaires total d'une période.", fc: "Très bien ! La ristourne est une réduction calculée sur le total des achats sur une longue période, souvent annuelle.", fi: "Non. Le rabais est pour un défaut, la remise pour un volume. La ristourne récompense la fidélité sur une longue période." },
+        { q: "Dans quelle phase du cycle de vie la concurrence sur les prix est-elle généralement la plus intense ?", o: ["Lancement", "Croissance", "Maturité"], a: 2, hint: "C'est la phase où le marché ne grandit plus et où il faut se battre pour chaque client.", fc: "Correct. La phase de maturité est caractérisée par un marché saturé où la guerre des prix est fréquente pour défendre ses parts de marché.", fi: "Incorrect. C'est en phase de maturité que la concurrence est la plus féroce, car la croissance du marché est faible ou nulle." },
+        { q: "Une méthode de fixation de prix basée uniquement sur les coûts est limitée car...", o: ["Elle est illégale", "Elle est trop compliquée à calculer", "Elle ignore la demande et la concurrence"], a: 2, hint: "Un prix 'juste' pour l'entreprise n'est pas forcément un prix 'acceptable' pour le client.", fc: "C'est exact ! Se baser sur les coûts est indispensable, mais ignorer ce que le client est prêt à payer et les prix des concurrents est une erreur stratégique.", fi: "Non, elle est légale et simple, mais dangereuse. Sa principale limite est qu'elle ignore complètement les facteurs du marché (demande et concurrence)." },
+        { q: "Le prix psychologique est déterminé par :", o: ["Les concurrents", "Les coûts de l'entreprise", "La perception des consommateurs"], a: 2, hint: "Cette méthode se base sur des enquêtes auprès des clients.", fc: "Oui ! Il est défini par le croisement des courbes de rejet pour 'qualité insuffisante' et 'prix trop élevé' dans l'esprit des consommateurs.", fi: "Faux. Le prix psychologique est une méthode basée sur la demande, c'est-à-dire la perception de la valeur par les consommateurs." },
+        { q: "Dans une stratégie omnicanale, si le prix de vente est unique partout, qu'est-ce qui varie ?", o: ["Le coût du produit", "La marge nette par canal", "La TVA"], a: 1, hint: "Vendre en direct sur son site coûte moins cher que de passer par un distributeur qui prend sa part.", fc: "Parfaitement compris ! Chaque canal a des coûts différents (logistique, commission, etc.), donc à prix de vente égal, la marge finale pour l'entreprise est différente.", fi: "Incorrect. Le coût du produit et la TVA sont les mêmes. C'est la marge nette qui change car chaque canal de vente a sa propre structure de coûts." },
+        { q: "Quelle est la seule opération commerciale qui autorise la revente à perte ?", o: ["Les promotions", "Les soldes", "Les ventes privées"], a: 1, hint: "Pensez aux deux grandes périodes de déstockage annuelles réglementées par l'État.", fc: "Correct ! Les soldes sont la seule exception légale, leur but étant de liquider rapidement les stocks invendus.", fi: "Faux. Les promotions, ventes privées, ou tout autre type de réduction n'autorisent jamais la revente à perte. Seuls les soldes le permettent." }
+    ];
+    let currentQuestionIndex = 0; let score = 0;
+    const quizStart = document.getElementById('quiz-start-screen'), quizMain = document.getElementById('quiz-main-screen'), quizEnd = document.getElementById('quiz-end-screen');
+    const startBtn = document.getElementById('start-quiz-btn'), nextBtn = document.getElementById('quiz-next-btn');
+
+    startBtn.addEventListener('click', startQuiz);
+    nextBtn.addEventListener('click', nextQuestion);
+    
+    function startQuiz() {
+        currentQuestionIndex = 0; score = 0;
+        quizStart.classList.add('hidden');
+        quizEnd.classList.add('hidden');
+        quizMain.classList.remove('hidden');
+        displayQuestion();
+    }
+
+    function displayQuestion() {
+        const q = quizQuestions[currentQuestionIndex];
+        document.getElementById('quiz-question-counter').textContent = `Question ${currentQuestionIndex + 1}/${quizQuestions.length}`;
+        document.getElementById('quiz-score').textContent = `Score : ${score}/${currentQuestionIndex}`;
+        document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex) / quizQuestions.length) * 100}%`;
+        document.getElementById('quiz-question-text').textContent = q.q;
+        const optionsContainer = document.getElementById('quiz-options-container');
+        optionsContainer.innerHTML = '';
+        q.o.forEach((option, index) => {
+            const button = document.createElement('button');
+            button.textContent = option;
+            button.className = 'block w-full text-left p-3 border rounded-lg hover:bg-gray-100 transition-colors';
+            button.onclick = () => selectAnswer(index, button);
+            optionsContainer.appendChild(button);
+        });
+        document.getElementById('quiz-feedback').innerHTML = '';
+        document.getElementById('quiz-hint-text').classList.add('hidden');
+        nextBtn.classList.add('hidden');
+    }
+
+    function selectAnswer(selectedIndex, btn) {
+        const q = quizQuestions[currentQuestionIndex];
+        const isCorrect = selectedIndex === q.a;
+        const feedbackEl = document.getElementById('quiz-feedback');
+        
+        if (isCorrect) {
+            score++;
+            feedbackEl.innerHTML = `<p class="font-bold text-green-700">✅ Bonne réponse !</p><p class="text-green-600">${q.fc}</p>`;
+            feedbackEl.className = 'mt-4 p-3 rounded-lg text-center bg-green-50';
+        } else {
+            feedbackEl.innerHTML = `<p class="font-bold text-red-700">❌ Incorrect.</p><p class="text-red-600">${q.fi}</p>`;
+            feedbackEl.className = 'mt-4 p-3 rounded-lg text-center bg-red-50';
+        }
+        
+        Array.from(document.getElementById('quiz-options-container').children).forEach((button, index) => {
+            button.disabled = true;
+            if (index === q.a) button.classList.add('bg-green-200', 'border-green-400');
+            else if (index === selectedIndex) button.classList.add('bg-red-200', 'border-red-400');
+        });
+        
+        nextBtn.classList.remove('hidden');
+        if (currentQuestionIndex === quizQuestions.length - 1) nextBtn.textContent = "Terminer";
+        else nextBtn.textContent = "Suivant";
+    }
+    
+    document.getElementById('quiz-hint-btn').addEventListener('click', () => {
+        const hintText = document.getElementById('quiz-hint-text');
+        hintText.textContent = `Indice : ${quizQuestions[currentQuestionIndex].hint}`;
+        hintText.classList.remove('hidden');
+    });
+
+    function nextQuestion() {
+        currentQuestionIndex++;
+        if (currentQuestionIndex < quizQuestions.length) displayQuestion();
+        else showResults();
+    }
+
+    function showResults() {
+        quizMain.classList.add('hidden');
+        quizEnd.classList.remove('hidden');
+        const finalScore = (score / quizQuestions.length) * 100;
+        document.getElementById('quiz-final-score').textContent = `${finalScore.toFixed(0)}%`;
+        const endMessage = document.getElementById('quiz-end-message');
+        const endButtons = document.getElementById('quiz-end-buttons');
+        endButtons.innerHTML = '';
+        const retryBtn = document.createElement('button');
+        retryBtn.textContent = 'Recommencer';
+        retryBtn.className = 'btn-secondary px-6 py-2';
+        retryBtn.onclick = startQuiz;
+        endButtons.appendChild(retryBtn);
+
+        if (finalScore >= 75) {
+            endMessage.textContent = "Félicitations ! Vous maîtrisez les concepts clés. Vous avez débloqué l'accès à la synthèse visuelle.";
+            const syntheseBtn = document.createElement('a');
+            syntheseBtn.textContent = 'Voir la Synthèse';
+            syntheseBtn.href = '#synthese';
+            syntheseBtn.className = 'btn-primary px-6 py-2';
+            endButtons.appendChild(syntheseBtn);
+        } else {
+            endMessage.textContent = "Vous y êtes presque ! N'hésitez pas à revoir les sections précédentes pour renforcer vos connaissances avant de retenter votre chance.";
+        }
+    }
+
+    // --- FAQ ---
+    const faqData = [
+        { q: "Expliquez le double rôle du prix pour un client.", a: "Pour un client, le prix a un double rôle contradictoire : d'une part, il représente un <b>coût</b>, un sacrifice monétaire à consentir. D'autre part, il agit comme un <b>indicateur de qualité</b> perçue. Un prix très bas peut susciter la méfiance, tandis qu'un prix élevé peut être interprété comme un gage de qualité supérieure." },
+        { q: "Quelle est la différence entre une stratégie de pénétration et d'écrémage ?", a: "La stratégie de <b>pénétration</b> consiste à fixer un prix bas pour conquérir rapidement une grande part de marché, souvent dans un environnement concurrentiel. La stratégie d'<b>écrémage</b> consiste à fixer un prix élevé pour cibler les clients à fort pouvoir d'achat ('early adopters'), maximisant la marge sur un volume de ventes plus faible, souvent pour un produit innovant." },
+        { q: "Pourquoi une méthode basée uniquement sur les coûts est-elle limitée ?", a: "Elle est limitée car elle ignore deux facteurs essentiels du marché : la <b>valeur perçue par le client</b> (le prix qu'il est prêt à payer) et les <b>prix pratiqués par la concurrence</b>. Un prix calculé uniquement sur les coûts peut être totalement déconnecté de la réalité du marché." },
+        { q: "Quelle est la distinction juridique entre les 'soldes' et les 'promotions' ?", a: "La distinction fondamentale est que les <b>soldes</b> sont la seule opération commerciale autorisée par la loi à pratiquer la <b>revente à perte</b>. Leur but est de déstocker. Les <b>promotions</b>, elles, peuvent avoir lieu toute l'année mais ne doivent jamais vendre un produit à un prix inférieur à son coût d'achat." },
+        { q: "Définissez le 'coefficient multiplicateur' et son utilité.", a: "Le coefficient multiplicateur est un chiffre simple qui, multiplié par le coût d'achat HT, donne directement le prix de vente TTC. Son utilité est purement pratique : il permet à un commerçant de fixer rapidement et facilement ses prix en incluant sa marge et la TVA en une seule opération. Formule : <code>PV TTC / Coût d'Achat HT</code>." },
+        { q: "En quoi consiste le 'yield management' ?", a: "Le 'yield management' est une technique de tarification dynamique qui consiste à faire varier les prix en temps réel en fonction de l'anticipation de la demande et de la capacité disponible, afin de maximiser les revenus. Les secteurs les plus connus sont le transport (aérien, ferroviaire) et l'hôtellerie." },
+        { q: "Quel est l'arbitrage stratégique dans un contexte omnicanal ?", a: "L'arbitrage principal est de choisir entre une politique de <b>prix unique</b> sur tous les canaux (plus simple pour le client mais générant des marges différentes pour l'entreprise) et une politique de <b>prix différenciés</b> par canal (plus complexe mais permettant de maintenir une marge équivalente partout)." },
+        { q: "Quelle est la différence entre le 'taux de marge' et le 'taux de marque' ?", a: "La base de calcul. Le <b>taux de marge</b> mesure la rentabilité par rapport au coût d'achat (<code>Marge / Coût d'Achat HT</code>). Le <b>taux de marque</b> mesure la part de la marge dans le prix de vente (<code>Marge / PV HT</code>)." },
+        { q: "Citez deux facteurs externes (hors concurrence) qui influencent les prix.", a: "Deux facteurs externes importants sont : la <b>réglementation</b> (ex: interdiction de la revente à perte) qui impose un cadre légal, et le <b>contexte économique</b> (inflation, crise) qui affecte le pouvoir d'achat des consommateurs et donc leur sensibilité au prix." },
+        { q: "Qu'est-ce que l'interdiction de la revente à perte ?", a: "C'est une obligation légale pour un commerçant de ne pas vendre un produit en l'état à un prix inférieur à son prix d'achat effectif. Son objectif est de protéger le petit commerce d'une concurrence déloyale de la part des grands distributeurs qui pourraient vendre à perte pour attirer les clients." }
+    ];
+    const faqContainer = document.getElementById('faq-container');
+    faqData.forEach(item => {
+        const faqItem = document.createElement('div');
+        faqItem.className = 'border rounded-lg bg-white';
+        faqItem.innerHTML = `
+            <button class="w-full text-left p-4 font-semibold flex justify-between items-center">
+                <span>${item.q}</span>
+                <span class="transform transition-transform duration-300">▼</span>
+            </button>
+            <div class="faq-answer text-gray-700"> <!-- Removed px-4 pb-4 from here -->
+                <p class="px-4 pb-4">${item.a}</p> <!-- Added px-4 pb-4 to the inner paragraph -->
+            </div>
+        `;
+        faqContainer.appendChild(faqItem);
+    });
+
+    // Corrected FAQ interaction logic
+    faqContainer.addEventListener('click', e => {
+        const button = e.target.closest('button');
+        if (button) {
+            const answer = button.nextElementSibling;
+            const icon = button.querySelector('span:last-child');
+            // Check if the clicked answer is currently open
+            const isCurrentlyOpen = answer.style.maxHeight !== '0px' && answer.style.maxHeight !== '';
+
+            // Close all other FAQ items
+            document.querySelectorAll('.faq-answer').forEach(el => {
+                if (el !== answer) { // Only close if it's not the current one
+                    el.style.maxHeight = '0px';
+                    el.previousElementSibling.querySelector('span:last-child').style.transform = 'rotate(0deg)';
+                }
+            });
+
+            // Toggle the clicked FAQ item
+            if (isCurrentlyOpen) {
+                answer.style.maxHeight = '0px';
+                icon.style.transform = 'rotate(0deg)';
+            } else {
+                // Set max-height to scrollHeight to allow smooth transition
+                answer.style.maxHeight = answer.scrollHeight + "px";
+                icon.style.transform = 'rotate(180deg)';
+            }
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>
