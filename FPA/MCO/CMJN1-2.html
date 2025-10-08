@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coach Contrat - Le Guide Interactif pour Manager BTS MCO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+        .section-title { color: #111827; }
+        
+        .nav-link { transition: color 0.3s ease, border-bottom-color 0.3s ease; padding-bottom: 4px; }
+        .active-nav-link { color: #3b82f6 !important; border-bottom-color: #3b82f6 !important; font-weight: 600; }
+        
+        .flip-card { perspective: 1000px; }
+        .flip-card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; }
+        .flip-card.is-flipped .flip-card-inner { transform: rotateY(180deg); }
+        .flip-card-front, .flip-card-back { position: absolute; width: 100%; height: 100%; -webkit-backface-visibility: hidden; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 1.5rem; border-radius: 0.5rem; border: 1px solid #e5e7eb; }
+        .flip-card-back { transform: rotateY(180deg); background-color: #eff6ff; }
+        
+        .glossary-term { color: #3b82f6; cursor: pointer; font-weight: 600; border-bottom: 2px dotted #93c5fd; }
+        
+        .content-hidden { max-height: 0; opacity: 0; overflow: hidden; transition: max-height 0.5s ease-out, opacity 0.3s ease-out, padding 0.5s ease-out; padding-top: 0; padding-bottom: 0; }
+        .content-visible { max-height: 1000px; opacity: 1; transition: max-height 0.7s ease-in, opacity 0.5s ease-in 0.2s, padding 0.7s ease-in; }
+        .active-tab { border-color: #3b82f6 !important; color: #3b82f6; font-weight: 600; background-color: #eff6ff; }
+
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+        
+        /* Quiz Styles */
+        #quiz-progress-bar { transition: width 0.3s ease-in-out; }
+        .quiz-option.selected { border-color: #3b82f6; background-color: #eff6ff; }
+        .quiz-option.correct { border-color: #16a34a; background-color: #dcfce7; }
+        .quiz-option.incorrect { border-color: #dc2626; background-color: #fee2e2; }
+        .quiz-feedback, .quiz-hint { max-height: 0; opacity: 0; overflow: hidden; transition: all 0.5s ease; }
+        .quiz-feedback.visible, .quiz-hint.visible { max-height: 500px; opacity: 1; margin-top: 1rem; }
+        
+        /* Aspect Ratio for embeds */
+        .aspect-ratio-16-9 { position: relative; width: 100%; padding-top: 56.25%; }
+        .aspect-ratio-16-9 iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="#" class="flex items-center"><span class="text-xl font-bold text-blue-600">Coach Contrat BTS MCO</span></a>
+                <!-- Desktop Menu -->
+                <nav id="desktop-nav" class="hidden lg:flex space-x-5 text-sm font-medium">
+                    <a href="#intro-video" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Intro Vidéo</a>
+                    <a href="#fondations" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Fondations</a>
+                    <a href="#genese" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Genèse</a>
+                    <a href="#architecture" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Architecture</a>
+                    <a href="#vigilance" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Vigilance</a>
+                    <a href="#vie-aleas" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Vie & Aléas</a>
+                    <a href="#lexique-faq" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Lexique/FAQ</a>
+                    <a href="#synthese" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Synthèse</a>
+                    <a href="#evaluation" class="nav-link text-gray-500 hover:text-blue-600 border-b-2 border-transparent">Évaluation</a>
+                </nav>
+                <!-- Mobile Menu Button -->
+                <div class="lg:hidden">
+                    <button id="mobile-menu-button" class="text-gray-600 hover:text-blue-600 focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden lg:hidden bg-white border-t border-gray-200">
+            <a href="#intro-video" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Intro Vidéo</a>
+            <a href="#fondations" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Fondations</a>
+            <a href="#genese" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Genèse du Contrat</a>
+            <a href="#architecture" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Architecture</a>
+            <a href="#vigilance" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Vigilance</a>
+            <a href="#vie-aleas" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Vie & Aléas</a>
+            <a href="#lexique-faq" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Lexique & FAQ</a>
+            <a href="#synthese" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Synthèse</a>
+            <a href="#evaluation" class="block py-3 px-4 text-sm text-gray-600 hover:bg-gray-50">Évaluation</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+        <section id="introduction" class="text-center mb-16 pt-4">
+            <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-800">L'intégration de l'entreprise dans son environnement</h1>
+            <h2 class="mt-2 text-2xl md:text-3xl font-semibold text-gray-600">| Droit</h2>
+        </div>
+            <h1 class="text-3xl md:text-5xl font-bold section-title mb-4">Devenez Maître de vos Contrats</h1>
+            <p class="text-lg text-gray-600 max-w-3xl mx-auto">Bonjour futurs managers ! Oubliez l'image du contrat comme une contrainte. Voyez-le comme votre meilleur outil stratégique. Ce coach interactif vous guide à travers le cycle de vie du contrat pour transformer chaque accord en un levier de performance.</p>
+        </section>
+
+        <section id="intro-video" class="mb-20 pt-20 -mt-20">
+            <h2 class="text-3xl font-bold text-center section-title mb-10">Vidéo d'Introduction</h2>
+            <div class="max-w-4xl mx-auto bg-white p-2 rounded-xl shadow-lg">
+                <div class="aspect-ratio-16-9 rounded-lg overflow-hidden">
+                    <iframe loading="lazy" src="https://www.canva.com/design/DAG1HBmZaCE/9YsYQwrlXP0ghlEwP70Kvg/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
+                </div>
+            </div>
+        </section>
+        
+        <!-- SECTIONS DE COURS (1 à 5) -->
+        <div id="course-content">
+             <section id="fondations" class="mb-20 p-6 md:p-8 rounded-lg bg-white shadow-sm pt-20 -mt-20">
+                <h2 class="text-3xl font-bold text-center section-title mb-2">Partie 1 : Les Fondations</h2>
+                <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">Pensez-y comme les règles du jeu. Ces 4 piliers garantissent que le commerce est équitable et prévisible. Cliquez pour explorer.</p>
+                <div class="grid md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm cursor-pointer" onclick="toggleContent('content1')"><h3 class="text-lg font-bold text-blue-700 flex justify-between items-center">Liberté Contractuelle <span id="icon-content1" class="transform transition-transform duration-300 text-xl font-light">+</span></h3></div>
+                    <div id="content-content1" class="md:col-span-2 content-hidden -mt-2"><div class="bg-white p-6 rounded-b-lg border"><p>Chacun est libre de contracter ou non, de choisir son partenaire et de définir le contenu du contrat. <br><div class="mt-3 bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg"><p class="font-bold">Point de Vigilance Manager :</p><p class="text-sm italic">Cette liberté n'est pas absolue. Vous ne pouvez déroger à l'<span class="glossary-term" data-term="ordre_public">ordre public</span> et le refus de vente à un consommateur est interdit sans motif légitime.</p></div></p></div></div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm cursor-pointer" onclick="toggleContent('content2')"><h3 class="text-lg font-bold text-blue-700 flex justify-between items-center">Force Obligatoire <span id="icon-content2" class="transform transition-transform duration-300 text-xl font-light">+</span></h3></div>
+                    <div id="content-content2" class="md:col-span-2 content-hidden -mt-2"><div class="bg-white p-6 rounded-b-lg border"><p>Selon l'article 1103 du Code civil, "les contrats légalement formés tiennent lieu de loi à ceux qui les ont faits". Une fois signé, le contrat s'impose et ne peut être modifié unilatéralement. C'est la garantie de la sécurité de vos transactions.</p></div></div>
+                    
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm cursor-pointer" onclick="toggleContent('content3')"><h3 class="text-lg font-bold text-blue-700 flex justify-between items-center">Bonne Foi <span id="icon-content3" class="transform transition-transform duration-300 text-xl font-light">+</span></h3></div>
+                    <div id="content-content3" class="md:col-span-2 content-hidden -mt-2"><div class="bg-white p-6 rounded-b-lg border"><p>L'article 1104 du Code civil impose la loyauté à toutes les étapes : négociation, formation et exécution. Ce principe implique un devoir de transparence et de coopération. Un comportement déloyal peut être sanctionné par le juge.</p></div></div>
+
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm cursor-pointer" onclick="toggleContent('content4')"><h3 class="text-lg font-bold text-blue-700 flex justify-between items-center">Consensualisme <span id="icon-content4" class="transform transition-transform duration-300 text-xl font-light">+</span></h3></div>
+                    <div id="content-content4" class="md:col-span-2 content-hidden -mt-2"><div class="bg-white p-6 rounded-b-lg border"><p>En principe, un contrat est formé par le seul accord des volontés. Une poignée de main peut suffire. <br><div class="mt-3 bg-green-50 border-l-4 border-green-500 text-green-800 p-4 rounded-r-lg"><p class="font-bold">Conseil Opérationnel :</p><p class="text-sm italic">Pour des raisons de preuve, formalisez toujours par écrit les engagements importants !</p></div></p></div></div>
+                </div>
+            </section>
+
+            <section id="genese" class="mb-20 p-6 md:p-8 rounded-lg bg-sky-50 pt-20 -mt-20">
+                <h2 class="text-3xl font-bold text-center section-title mb-10">Partie 2 : La Genèse du Contrat</h2>
+                
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg mb-10">
+                    <h3 class="text-2xl font-bold text-center section-title mb-2">Les Négociations ("Pourparlers")</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">La phase précontractuelle est une source de risques souvent sous-estimée. Une gestion rigoureuse est la première étape pour sécuriser une affaire.</p>
+                    <div class="grid md:grid-cols-3 gap-6 text-center">
+                        <div class="border p-4 rounded-lg bg-blue-50">
+                            <h4 class="font-bold text-lg text-blue-700">Liberté & Bonne Foi</h4>
+                            <p class="text-sm text-gray-600">Les parties sont libres de négocier et de rompre les discussions. Mais cette liberté est limitée par l'exigence de loyauté.</p>
+                        </div>
+                        <div class="border p-4 rounded-lg bg-red-50 border-red-200">
+                            <h4 class="font-bold text-lg text-red-700">Rupture Abusive</h4>
+                            <p class="text-sm text-gray-600">Rompre brutalement des négociations très avancées sans motif légitime est une faute qui peut être sanctionnée.</p>
+                        </div>
+                        <div class="border p-4 rounded-lg bg-blue-50">
+                            <h4 class="font-bold text-lg text-blue-700">Devoir de Confidentialité</h4>
+                            <p class="text-sm text-gray-600">Toute information confidentielle obtenue durant les négociations ne doit pas être divulguée ou utilisée.</p>
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg mt-6">
+                        <p class="font-bold">Mise en situation : La rupture abusive</p>
+                        <p class="text-sm italic">Une agence web engage des frais importants (maquettes, déplacements). Le client, après 3 mois de négociations avancées, rompt les pourparlers sans explication pour finalement choisir son cousin. L'agence peut demander en justice le remboursement des frais engagés (pertes subies), mais **jamais** les bénéfices qu'elle aurait réalisés si le contrat avait été signé (gains manqués).</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold text-center section-title mb-2">Les 3 Conditions de Validité</h3>
+                    <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Pour être valable, l'accord doit respecter 3 piliers. Un seul manquant, et le contrat peut être annulé.</p>
+                    <h4 class="text-xl font-bold section-title mb-6 text-center">Pilier 1 : Le Consentement - Un "OUI" Libre et Éclairé</h4>
+                    <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Le consentement est parfois "vicié". Cliquez sur chaque carte pour découvrir les 3 pièges qui peuvent annuler un contrat.</p>
+                    <div class="grid md:grid-cols-3 gap-8 mb-10">
+                        <div class="flip-card h-64 cursor-pointer" onclick="this.classList.toggle('is-flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front bg-white"><h4 class="text-2xl font-bold text-blue-600">L'Erreur</h4><p class="mt-2 text-gray-500">(Cliquez pour un exemple)</p></div>
+                                <div class="flip-card-back"><p class="text-center">"Vous achetez un tableau, persuadé qu'il est d'un artiste célèbre, mais ce n'est qu'une copie. C'est une erreur sur une qualité essentielle qui peut annuler la vente."</p></div>
+                            </div>
+                        </div>
+                        <div class="flip-card h-64 cursor-pointer" onclick="this.classList.toggle('is-flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front bg-white"><h4 class="text-2xl font-bold text-blue-600">Le Dol</h4><p class="mt-2 text-gray-500">(Cliquez pour un exemple)</p></div>
+                                <div class="flip-card-back"><p class="text-center">"Le vendeur d'une voiture d'occasion falsifie le compteur kilométrique. Ces manœuvres trompeuses constituent un <span class="glossary-term" data-term="dol">dol</span>. C'est une erreur provoquée."</p></div>
+                            </div>
+                        </div>
+                        <div class="flip-card h-64 cursor-pointer" onclick="this.classList.toggle('is-flipped')">
+                            <div class="flip-card-inner">
+                                <div class="flip-card-front bg-white"><h4 class="text-2xl font-bold text-blue-600">La Violence</h4><p class="mt-2 text-gray-500">(Cliquez pour un exemple)</p></div>
+                                <div class="flip-card-back"><p class="text-center">"Un fournisseur menace un commerçant de stopper toutes ses livraisons s'il ne signe pas un nouveau contrat très défavorable. C'est une violence économique."</p></div>
+                            </div>
+                        </div>
+                    </div>
+                     <hr class="my-8">
+                     <h4 class="text-xl font-bold section-title mb-6 text-center">Piliers 2 & 3 : La Capacité et le Contenu</h4>
+                     <div class="grid md:grid-cols-2 gap-6 text-left">
+                         <div class="bg-gray-50 p-4 rounded-lg">
+                            <h5 class="font-bold text-lg text-blue-700">2. La Capacité Juridique</h5>
+                            <p class="text-sm text-gray-600 mt-1">Pour s'engager, il faut en avoir le "pouvoir". C'est le cas des personnes majeures non protégées et des entreprises agissant via leur représentant légal.</p>
+                         </div>
+                          <div class="bg-gray-50 p-4 rounded-lg">
+                            <h5 class="font-bold text-lg text-blue-700">3. Un Contenu Licite et Certain</h5>
+                            <p class="text-sm text-gray-600 mt-1">L'objet du contrat doit être légal, et la prestation doit être clairement définie ou pouvoir l'être sans ambiguïté.</p>
+                         </div>
+                     </div>
+                </div>
+            </section>
+
+            <section id="architecture" class="mb-20 p-6 md:p-8 rounded-lg bg-white shadow-sm pt-20 -mt-20">
+                 <h2 class="text-3xl font-bold text-center section-title mb-2">Partie 3 : L'Architecture du Contrat</h2>
+                 <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">Les clauses sont les "briques" de votre contrat. Bien les choisir est un acte de management essentiel pour anticiper les problèmes et protéger votre entreprise.</p>
+                 <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg border">
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="md:w-1/3 border-b-2 md:border-b-0 md:border-r-2 border-gray-200 pb-4 md:pb-0 md:pr-6">
+                            <h3 class="text-xl font-bold mb-4 text-center md:text-left">Bibliothèque de Clauses</h3>
+                            <div id="clause-list" class="flex flex-row md:flex-col overflow-x-auto md:overflow-x-visible pb-2 md:pb-0"></div>
+                        </div>
+                        <div id="clause-details" class="md:w-2/3"></div>
+                    </div>
+                </div>
+            </section>
+            
+            <section id="vigilance" class="mb-20 p-6 md:p-8 rounded-lg bg-sky-50 pt-20 -mt-20">
+                <h2 class="text-3xl font-bold text-center section-title mb-10">Partie 4 : Le Point de Vigilance Absolu</h2>
+                 <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">Le risque N°1 : imposer une clause qui crée un <span class="glossary-term" data-term="desequilibre">déséquilibre significatif</span>. La loi protège la partie faible. Voici comment le risque se présente en B2C et en B2B.</p>
+                 <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-200 rounded-lg overflow-hidden border">
+                        <div class="p-4 bg-gray-100 font-bold hidden md:block">Critère</div>
+                        <div class="p-4 bg-gray-100 font-bold hidden md:block">Code de la Consommation (B2C)</div>
+                        <div class="p-4 bg-gray-100 font-bold hidden md:block">Code de Commerce (B2B)</div>
+
+                        <div class="p-4 bg-white"><strong class="md:hidden text-gray-500 text-sm">Critère : </strong>Champ d'application</div>
+                        <div class="p-4 bg-white"><strong class="md:hidden text-gray-500 text-sm">B2C : </strong>Contrats entre pro et consommateur, souvent dans un <span class="glossary-term" data-term="adhesion">contrat d'adhésion</span>.</div>
+                        <div class="p-4 bg-white"><strong class="md:hidden text-gray-500 text-sm">B2B : </strong>Contrats entre deux professionnels.</div>
+                        
+                        <div class="p-4 bg-white"><strong class="md:hidden text-gray-500 text-sm">Critère : </strong>Condition clé</div>
+                        <div class="p-4 bg-white"><strong class="md:hidden text-gray-500 text-sm">B2C : </strong>Crée un déséquilibre significatif.</div>
+                        <div class="p-4 bg-white"><strong class="md:hidden text-gray-500 text-sm">B2B : </strong>"Soumettre ou tenter de soumettre" l'autre à ce déséquilibre. Prouver le rapport de force est clé.</div>
+                        
+                        <div class="p-4 bg-red-50 font-bold md:text-lg"><strong class="md:hidden text-gray-500 text-sm">Critère : </strong>Sanction</div>
+                        <div class="p-4 bg-red-50 md:col-span-2 text-center text-red-700 font-bold md:text-lg">La clause est <span class="glossary-term" data-term="reputee">"Réputée non écrite"</span> : elle est effacée du contrat, qui reste applicable.</div>
+                    </div>
+                     <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-800 p-4 rounded-r-lg mt-6">
+                        <p class="font-bold">Mise en situation : Le déséquilibre significatif en B2B</p>
+                        <p class="text-sm italic">Un grand distributeur impose à un petit producteur une clause l'autorisant à retourner tous les invendus sans justification. Cette clause fait peser tout le risque commercial sur le petit producteur et pourrait être jugée abusive car elle crée un déséquilibre manifeste.</p>
+                    </div>
+                 </div>
+            </section>
+
+            <section id="vie-aleas" class="mb-20 p-6 md:p-8 rounded-lg bg-white shadow-sm pt-20 -mt-20">
+                <h2 class="text-3xl font-bold text-center section-title mb-2">Partie 5 : La Vie & les Aléas du Contrat</h2>
+                <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">La vie d'un contrat n'est pas toujours un long fleuve tranquille. Comprendre ces concepts vous aidera à gérer les imprévus et les manquements.</p>
+                <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg border">
+                    <div class="flex justify-center mb-8 border-b-2">
+                        <button class="execution-tab flex-1 md:flex-none active-tab px-4 md:px-6 py-3 text-base md:text-lg font-semibold border-b-4 transition-colors" onclick="showExecutionContent('concepts', this)">Concepts Clés</button>
+                        <button class="execution-tab flex-1 md:flex-none px-4 md:px-6 py-3 text-base md:text-lg font-semibold border-b-4 border-transparent transition-colors" onclick="showExecutionContent('sanctions', this)">Sanctions</button>
+                    </div>
+                    <div id="execution-content-container">
+                        <div id="concepts-content">
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <div>
+                                    <h4 class="text-xl font-bold text-blue-700 mb-3">Obligation de Moyens vs. de Résultat</h4>
+                                    <p>Cette distinction est cruciale pour déterminer la responsabilité en cas de problème.</p>
+                                    <ul class="list-disc list-inside mt-2 space-y-2 text-gray-700">
+                                        <li><strong>De Moyens :</strong> Le professionnel s'engage à tout mettre en œuvre pour atteindre un but, sans garantir le résultat (ex: un médecin). Pour engager sa responsabilité, il faut prouver sa faute.</li>
+                                        <li><strong>De Résultat :</strong> Le professionnel s'engage à atteindre un résultat précis (ex: un transporteur doit livrer un colis). Si le résultat n'est pas là, sa responsabilité est engagée (sauf <span class="glossary-term" data-term="force_majeure">force majeure</span>).</li>
+                                    </ul>
+                                </div>
+                                 <div>
+                                    <h4 class="text-xl font-bold text-blue-700 mb-3">Théorie de l'Imprévision (Art. 1195)</h4>
+                                    <p>Que faire si un événement imprévisible rend l'exécution du contrat excessivement chère pour une partie ?</p>
+                                    <p class="text-gray-700 mt-2">La loi permet à cette partie de demander une renégociation. En cas d'échec, le juge peut adapter ou mettre fin au contrat. C'est une protection contre les aléas économiques majeurs (ex: flambée soudaine du prix d'une matière première).</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="sanctions-content" class="hidden">
+                            <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">En cas d'<span class="glossary-term" data-term="inexecution">inexécution</span>, la loi offre un arsenal de 5 sanctions. Le choix dépend de la gravité du manquement et de votre objectif (poursuivre le contrat ou y mettre fin).</p>
+                            <div class="chart-container">
+                                <canvas id="sanctionsChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <section id="lexique-faq" class="mb-20 p-6 md:p-8 rounded-lg bg-sky-50 pt-20 -mt-20">
+            <h2 class="text-3xl font-bold text-center section-title mb-10">Partie 6 : Outils de Référence</h2>
+            <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg border">
+                <div class="flex justify-center mb-8 border-b-2">
+                    <button class="ref-tab flex-1 md:flex-none active-tab px-4 md:px-6 py-3 text-base md:text-lg font-semibold border-b-4 transition-colors" onclick="showRefContent('lexique', this)">Lexique Thématique</button>
+                    <button class="ref-tab flex-1 md:flex-none px-4 md:px-6 py-3 text-base md:text-lg font-semibold border-b-4 border-transparent transition-colors" onclick="showRefContent('faq', this)">Foire Aux Questions</button>
+                </div>
+                <div id="ref-content-container">
+                    <!-- Lexique Content -->
+                    <div id="lexique-content" class="space-y-8">
+                         <div>
+                            <h3 class="text-xl font-bold text-blue-700 mb-4 border-b pb-2">1.1. Principes Directeurs (Le Socle)</h3>
+                            <dl class="space-y-4 text-sm"><dt class="font-semibold text-base">Liberté Contractuelle</dt><dd class="ml-4 text-gray-700">Principe fondamental selon lequel chacun est libre de contracter ou non, de choisir son cocontractant, et de déterminer le contenu ainsi que la forme de son contrat.</dd><dt class="font-semibold text-base">Force Obligatoire</dt><dd class="ml-4 text-gray-700">Principe selon lequel les contrats légalement formés tiennent lieu de loi aux parties qui les ont conclus.</dd><dt class="font-semibold text-base">Bonne Foi</dt><dd class="ml-4 text-gray-700">Exigence d'un comportement loyal et honnête qui s'impose aux parties à toutes les étapes de la vie du contrat.</dd><dt class="font-semibold text-base">Consensualisme</dt><dd class="ml-4 text-gray-700">Principe selon lequel un contrat se forme par le seul échange des consentements, sans qu'un écrit soit nécessaire.</dd><dt class="font-semibold text-base">Contrat d'Adhésion</dt><dd class="ml-4 text-gray-700">Contrat dont les clauses ne sont pas négociables, déterminées à l'avance par une partie.</dd><dt class="font-semibold text-base">Contrat Synallagmatique</dt><dd class="ml-4 text-gray-700">Contrat dans lequel les parties s'obligent réciproquement (ex: la vente).</dd></dl>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-blue-700 mb-4 border-b pb-2">1.2. Formation du Contrat</h3>
+                            <dl class="space-y-4 text-sm"><dt class="font-semibold text-base">Pourparlers (Négociations)</dt><dd class="ml-4 text-gray-700">Période de discussion qui précède la conclusion d'un contrat.</dd><dt class="font-semibold text-base">Rupture Abusive</dt><dd class="ml-4 text-gray-700">Faute commise lors de la rupture des négociations, caractérisée par un comportement déloyal.</dd><dt class="font-semibold text-base">Vices du Consentement</dt><dd class="ml-4 text-gray-700">Faits (Erreur, Dol, Violence) qui altèrent la volonté d'une partie et peuvent entraîner la nullité du contrat.</dd><dt class="font-semibold text-base">Dol</dt><dd class="ml-4 text-gray-700">Tromperie (manœuvres, mensonges ou silence intentionnel) pour obtenir le consentement de l'autre.</dd><dt class="font-semibold text-base">Nullité</dt><dd class="ml-4 text-gray-700">Sanction de l'absence d'une condition de validité, entraînant l'anéantissement rétroactif du contrat.</dd></dl>
+                        </div>
+                        <div>
+                             <h3 class="text-xl font-bold text-blue-700 mb-4 border-b pb-2">1.3. Contenu et Clauses du Contrat</h3>
+                             <dl class="space-y-4 text-sm"><dt class="font-semibold text-base">Clause Pénale</dt><dd class="ml-4 text-gray-700">Clause qui fixe à l'avance un montant forfaitaire de dommages-intérêts en cas d'inexécution.</dd><dt class="font-semibold text-base">Clause Résolutoire</dt><dd class="ml-4 text-gray-700">Clause qui prévoit la fin automatique du contrat en cas de manquement grave.</dd><dt class="font-semibold text-base">Clause Limitative de Responsabilité</dt><dd class="ml-4 text-gray-700">Clause qui plafonne le montant des dommages-intérêts en cas de manquement.</dd><dt class="font-semibold text-base">Clause Abusive</dt><dd class="ml-4 text-gray-700">Clause créant un déséquilibre significatif entre les droits et obligations des parties.</dd></dl>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-blue-700 mb-4 border-b pb-2">1.4. Exécution et Sanctions</h3>
+                            <dl class="space-y-4 text-sm"><dt class="font-semibold text-base">Obligation de Résultat / de Moyens</dt><dd class="ml-4 text-gray-700"> Distinction sur la garantie du résultat : l'un s'engage à l'atteindre (Résultat), l'autre à tout mettre en œuvre pour (Moyens).</dd><dt class="font-semibold text-base">Exception d'Inexécution</dt><dd class="ml-4 text-gray-700">Permet de suspendre sa propre obligation tant que l'autre partie n'exécute pas la sienne.</dd><dt class="font-semibold text-base">Résolution du Contrat</dt><dd class="ml-4 text-gray-700">Sanction radicale qui met fin au contrat en raison d'une inexécution grave.</dd><dt class="font-semibold text-base">Théorie de l'Imprévision</dt><dd class="ml-4 text-gray-700">Permet de demander la renégociation d'un contrat devenu excessivement onéreux suite à un événement imprévisible.</dd></dl>
+                        </div>
+                    </div>
+                    <!-- FAQ Content -->
+                    <div id="faq-content" class="hidden space-y-4">
+                        <div>
+                            <div class="font-semibold p-4 bg-gray-50 rounded-lg cursor-pointer flex justify-between items-center" onclick="toggleContent('faq1')">Un accord oral a-t-il la même valeur qu'un contrat écrit ? <span id="icon-faq1" class="transform transition-transform duration-300 text-xl font-light">+</span></div>
+                            <div id="content-faq1" class="content-hidden"><div class="p-4 border-l-2 mt-1 ml-2"><p class="text-gray-700">Oui, en principe. Le droit français est basé sur le consensualisme : l'échange des consentements suffit. Cependant, pour prouver un acte de plus de 1500€, un écrit est obligatoire. De plus, certains contrats (vente immobilière, contrat de mariage) exigent un écrit pour être valides.</p></div></div>
+                        </div>
+                        <div>
+                            <div class="font-semibold p-4 bg-gray-50 rounded-lg cursor-pointer flex justify-between items-center" onclick="toggleContent('faq2')">Si je romps des négociations, est-ce que je risque quelque chose ? <span id="icon-faq2" class="transform transition-transform duration-300 text-xl font-light">+</span></div>
+                            <div id="content-faq2" class="content-hidden"><div class="p-4 border-l-2 mt-1 ml-2"><p class="text-gray-700">La rupture est libre, mais elle devient une faute si elle est abusive (brutale, tardive, déloyale). Dans ce cas, vous pouvez être condamné à rembourser les frais engagés par votre partenaire, mais jamais les gains qu'il espérait du contrat.</p></div></div>
+                        </div>
+                        <div>
+                            <div class="font-semibold p-4 bg-gray-50 rounded-lg cursor-pointer flex justify-between items-center" onclick="toggleContent('faq3')">J'ai signé un contrat, mais je réalise qu'une information cruciale m'a été cachée. Que puis-je faire ? <span id="icon-faq3" class="transform transition-transform duration-300 text-xl font-light">+</span></div>
+                            <div id="content-faq3" class="content-hidden"><div class="p-4 border-l-2 mt-1 ml-2"><p class="text-gray-700">C'est un "dol par rétention d'information". Ce vice du consentement vous permet de demander en justice l'annulation totale du contrat et potentiellement des dommages-intérêts.</p></div></div>
+                        </div>
+                        <div>
+                            <div class="font-semibold p-4 bg-gray-50 rounded-lg cursor-pointer flex justify-between items-center" onclick="toggleContent('faq4')">Mon fournisseur a inclus une clause qui me semble totalement déséquilibrée. Suis-je obligé de la respecter ? <span id="icon-faq4" class="transform transition-transform duration-300 text-xl font-light">+</span></div>
+                            <div id="content-faq4" class="content-hidden"><div class="p-4 border-l-2 mt-1 ml-2"><p class="text-gray-700">Pas forcément. Une clause créant un "déséquilibre significatif" peut être jugée abusive et "réputée non écrite" (effacée) par un juge. Cela s'applique aux contrats d'adhésion (non négociables) et aux relations commerciales où un rapport de force est prouvé.</p></div></div>
+                        </div>
+                        <div>
+                            <div class="font-semibold p-4 bg-gray-50 rounded-lg cursor-pointer flex justify-between items-center" onclick="toggleContent('faq5')">Mon cocontractant n'exécute pas parfaitement sa part du contrat. Suis-je obligé de le poursuivre en justice ? <span id="icon-faq5" class="transform transition-transform duration-300 text-xl font-light">+</span></div>
+                            <div id="content-faq5" class="content-hidden"><div class="p-4 border-l-2 mt-1 ml-2"><p class="text-gray-700">Non. La loi vous permet d'agir sans juge en amont : vous pouvez suspendre vos paiements (exception d'inexécution), proposer une réduction du prix, ou même mettre fin au contrat (résolution par notification) si le manquement est grave et après une mise en demeure.</p></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="synthese" class="mb-20 p-6 md:p-8 rounded-lg bg-sky-50 pt-20 -mt-20">
+            <h2 class="text-3xl font-bold text-center section-title mb-10">Partie 7 : Synthèse Visuelle</h2>
+            <div class="max-w-5xl mx-auto bg-white p-2 rounded-xl shadow-lg">
+                <div class="aspect-ratio-16-9">
+                    <iframe class="rounded-md" src='https://www.xmind.app/embed/QTiu6F/' frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluation" class="mb-12 p-6 md:p-8 rounded-lg bg-white shadow-sm pt-20 -mt-20">
+            <h2 class="text-3xl font-bold text-center section-title mb-2">Partie 8 : Évaluation Formative</h2>
+            <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">Testez vos connaissances ! Répondez à une question à la fois pour consolider votre apprentissage. Un score de 75% est requis pour réussir.</p>
+            
+            <div class="bg-white p-6 md:p-8 rounded-lg shadow-lg border">
+                <!-- Quiz Area -->
+                <div id="quiz-container">
+                    <!-- Progress Bar -->
+                    <div class="mb-8">
+                        <div class="flex justify-between mb-1">
+                            <span class="text-base font-medium text-blue-700">Progression</span>
+                            <span id="quiz-progress-text" class="text-sm font-medium text-blue-700">Question 1 / 12</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="quiz-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 8.33%"></div>
+                        </div>
+                    </div>
+                    <!-- Question Container -->
+                    <div id="question-container">
+                        <!-- Question will be injected here -->
+                    </div>
+                </div>
+                <!-- Results Container -->
+                <div id="quiz-results" class="hidden mt-10">
+                    <div id="quiz-feedback" class="p-6 rounded-lg mb-8 text-center">
+                        <h3 id="quiz-feedback-title" class="text-2xl font-bold"></h3>
+                        <p id="quiz-feedback-score" class="mt-2 text-lg"></p>
+                        <p id="quiz-feedback-message" class="mt-1 text-base"></p>
+                    </div>
+                    <div class="text-center">
+                        <button type="button" onclick="resetQuiz()" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors">Recommencer le Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </main>
+
+    <div id="glossary-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-[100] p-4">
+        <div class="bg-white rounded-lg shadow-xl p-6 max-w-md w-full">
+            <h3 id="glossary-title" class="text-2xl font-bold text-blue-600 mb-4"></h3>
+            <p id="glossary-content" class="text-gray-700"></p>
+            <button id="close-modal" class="mt-6 w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">Fermer</button>
+        </div>
+    </div>
+
+    <footer class="bg-gray-800 text-white mt-12"><div class="container mx-auto py-6 px-4 text-center text-sm"><p>&copy; 2025-2026 | Coach Contrat pour BTS MCO.</p></div></footer>
+
+    <script>
+        // --- DATA ---
+        const clauseData = [
+            { id: 'penale', name: 'Clause Pénale', title: 'Clause Pénale : Anticiper la Sanction', description: 'Fixe à l\'avance le montant des dommages et intérêts dus en cas d\'inexécution. Rôle : inciter à l\'exécution et simplifier l\'indemnisation.', example: 'En cas de retard de livraison, le fournisseur versera une pénalité de 150 € par jour de retard.' },
+            { id: 'limitative', name: 'Clause Limitative de Responsabilité', title: 'Clause Limitative : Encadrer le Risque', description: 'Plafonne le montant de l\'indemnisation en cas de mauvaise exécution. Outil majeur de gestion des risques entre professionnels.', example: 'En cas de perte de données, la responsabilité du prestataire est limitée au montant des prestations des 3 derniers mois.' },
+            { id: 'reserve', name: 'Clause de Réserve de Propriété', title: 'Clause de Réserve de Propriété : Sécuriser le Paiement', description: 'Le vendeur reste propriétaire du bien jusqu\'au paiement complet du prix. Garantie très efficace contre les impayés.', example: 'Le transfert de propriété des marchandises n\'interviendra qu\'après paiement intégral.' },
+            { id: 'resolutoire', name: 'Clause Résolutoire', title: 'Clause Résolutoire : Automatiser la Rupture', description: 'Prévoit que le contrat sera automatiquement résilié si un engagement précis n\'est pas respecté (ex: non-paiement).', example: 'Le contrat de bail sera résilié de plein droit 15 jours après une mise en demeure de payer restée sans effet.' },
+            { id: 'non_concurrence', name: 'Clause de Non-Concurrence', title: 'Clause de Non-Concurrence : Protéger son Marché', description: 'Interdit à une partie d\'exercer une activité concurrente après la fin du contrat. Doit être limitée dans le temps, l\'espace et le type d\'activité pour être valable.', example: 'Un franchisé s\'engage à ne pas ouvrir une sandwicherie concurrente dans un rayon de 5 km pendant 2 ans.' },
+            { id: 'confidentialite', name: 'Clause de Confidentialité', title: 'Clause de Confidentialité : Protéger l\'Information', description: 'Interdit aux parties de divulguer les informations sensibles (savoir-faire, données financières...) échangées dans le cadre du contrat.', example: 'Le consultant s\'engage à ne divulguer aucune information stratégique concernant l\'entreprise cliente.' },
+            { id: 'force_majeure_clause', name: 'Clause de Force Majeure', title: 'Clause de Force Majeure : Anticiper l\'Imprévisible', description: 'Définit les événements (catastrophes naturelles, guerres...) qui exonèrent les parties de leur responsabilité car ils sont imprévisibles, irrésistibles et extérieurs.', example: 'Une pandémie mondiale est explicitement listée comme un cas de force majeure suspendant les livraisons.' }
+        ];
+         const glossaryData = {
+            "ordre_public": { title: "Ordre Public", content: "Ensemble de règles impératives que la société juge essentielles à la protection de ses valeurs. Les contrats ne peuvent pas y déroger. Ex: interdiction de vendre des produits illicites." },
+            "dol": { title: "Dol (n.m.)", content: "Manœuvre frauduleuse (mensonge, silence intentionnel, mise en scène...) destinée à tromper une personne pour l'inciter à conclure un contrat. C'est une tromperie qui vicie le consentement." },
+            "desequilibre": { title: "Déséquilibre significatif", content: "Notion juridique clé désignant une situation où un contrat, souvent non négociable, impose à une partie des obligations bien plus lourdes que celles de son partenaire, sans justification. C'est le critère principal pour identifier une clause abusive." },
+            "reputee": { title: "Réputée non écrite", content: "Sanction juridique qui consiste à faire comme si une clause illégale n'avait jamais existé dans le contrat. Le reste du contrat demeure parfaitement valide et applicable." },
+            "adhesion": { title: "Contrat d'adhésion", content: "Contrat dont les conditions générales, non négociables, sont déterminées à l'avance par l'une des parties. Exemple typique : un contrat d'assurance ou les conditions d'utilisation d'un réseau social." },
+            "force_majeure": { title: "Force Majeure", content: "Événement exceptionnel, imprévisible, irrésistible et extérieur à la volonté des parties, qui les empêche d'exécuter leurs obligations (ex: catastrophe naturelle). Il peut suspendre ou annuler le contrat." },
+            "inexecution": { title: "Inexécution contractuelle", content: "Fait pour une partie de ne pas respecter ses engagements prévus au contrat. Elle peut être totale (rien n'est fait), partielle (une partie seulement est faite) ou défectueuse (le travail est mal fait)." }
+        };
+        const quizData = [
+            { question: "Le principe de consensualisme signifie qu'un contrat doit toujours être formalisé par un écrit pour être valide.", options: ["Vrai", "Faux"], answer: "Faux", index: "Pensez à la signification de \"consensus\".", feedback: "Le consensualisme signifie au contraire que le contrat se forme par le seul échange des consentements. L'exigence d'un écrit est une exception." },
+            { question: "Selon l'article 1103 du Code civil, la \"force obligatoire\" du contrat signifie que :", options: ["Le contrat peut être modifié unilatéralement si les circonstances changent.", "Le contrat tient lieu de loi aux parties qui l'ont conclu.", "Le contrat oblige même les tiers qui ne l'ont pas signé."], answer: "Le contrat tient lieu de loi aux parties qui l'ont conclu.", index: "L'adage latin est pacta sunt servanda.", feedback: "La force obligatoire signifie que les engagements pris doivent être respectés par les parties avec la même rigueur qu'une loi." },
+            { question: "Le devoir d'information précontractuelle oblige un vendeur à communiquer l'estimation de la juste valeur de sa prestation à l'acheteur.", options: ["Vrai", "Faux"], answer: "Faux", index: "L'article 1112-1 du Code civil pose une exclusion notable.", feedback: "L'article 1112-1 exclut explicitement l'obligation de communiquer \"l'estimation de la valeur de la prestation\". Chaque partie est responsable de sa propre évaluation économique." },
+            { question: "Laquelle de ces situations caractérise un \"dol\" en tant que vice du consentement ?", options: ["Un acheteur se trompe seul sur la couleur d'un véhicule.", "Un vendeur dissimule intentionnellement un défaut majeur.", "Une personne signe un contrat sous la menace physique."], answer: "Un vendeur dissimule intentionnellement un défaut majeur.", index: "Le dol est une erreur \"provoquée\" par un comportement malhonnête.", feedback: "Le dol est une tromperie. Le silence intentionnel sur une information déterminante (réticence dolosive) en est une forme." },
+            { question: "En cas de rupture abusive des pourparlers, la victime peut obtenir les bénéfices qu'elle espérait tirer du contrat.", options: ["Vrai", "Faux"], answer: "Faux", index: "La jurisprudence Manoukian a strictement limité le préjudice réparable.", feedback: "L'indemnisation couvre uniquement les pertes subies (frais engagés) et exclut la perte des avantages attendus du contrat non conclu." },
+            { question: "Une \"clause pénale\" a pour objet de :", options: ["Plafonner la responsabilité globale d'une partie.", "Fixer à l'avance un montant forfaitaire de dommages-intérêts.", "Permettre la résolution automatique du contrat."], answer: "Fixer à l'avance un montant forfaitaire de dommages-intérêts.", index: "Elle a un rôle à la fois dissuasif et indemnitaire.", feedback: "La clause pénale simplifie la réparation du préjudice en fixant un montant forfaitaire, ce qui a un effet dissuasif et indemnitaire." },
+            { question: "Qu'est-ce qu'une \"obligation de moyens\" ?", options: ["Une obligation où le débiteur garantit d'atteindre un résultat précis.", "Une obligation où le débiteur s'engage à tout mettre en œuvre pour atteindre un résultat, sans le garantir.", "Une obligation qui ne peut être exonérée qu'en cas de force majeure."], answer: "Une obligation où le débiteur s'engage à tout mettre en œuvre pour atteindre un résultat, sans le garantir.", index: "Pensez à la différence entre un médecin et un transporteur.", feedback: "Le débiteur promet d'agir avec prudence et diligence (ex: un médecin). Pour engager sa responsabilité, le créancier doit prouver sa faute." },
+            { question: "Une clause limitative de responsabilité est toujours valable entre professionnels.", options: ["Vrai", "Faux"], answer: "Faux", index: "Qu'arrive-t-il si la clause contredit l'\"obligation essentielle\" ?", feedback: "Une telle clause est invalide si elle vide de sa substance l'obligation essentielle du contrat ou en cas de faute lourde du débiteur." },
+            { question: "L'\"exception d'inexécution\" vous permet de :", options: ["Mettre fin définitivement au contrat.", "Suspendre l'exécution de votre propre obligation.", "Saisir le juge pour forcer l'autre à s'exécuter."], answer: "Suspendre l'exécution de votre propre obligation.", index: "C'est un mécanisme de justice privée et proportionnée.", feedback: "C'est un moyen de pression temporaire pour inciter l'autre partie à s'exécuter. Ce n'est pas une sanction définitive." },
+            { question: "La \"théorie de l'imprévision\" permet de renégocier un contrat devenu excessivement onéreux.", options: ["Vrai", "Faux"], answer: "Vrai", index: "C'est une innovation de la réforme de 2016.", feedback: "C'est une exception majeure au principe de force obligatoire, introduite pour gérer les aléas économiques majeurs." },
+            { question: "Laquelle n'est PAS une condition de validité d'un contrat ?", options: ["La capacité juridique des parties.", "L'enregistrement auprès d'un notaire.", "Un contenu licite et certain."], answer: "L'enregistrement auprès d'un notaire.", index: "Le principe est la simplicité de la formation (consensualisme).", feedback: "L'enregistrement notarié est une exigence de forme pour certains contrats spécifiques (ex: vente immobilière), mais pas une condition générale de validité." },
+            { question: "Une \"clause résolutoire\" nécessite généralement l'envoi préalable d'une mise en demeure.", options: ["Vrai", "Faux"], answer: "Vrai", index: "Pensez à l'exigence de bonne foi.", feedback: "Même si elle permet une fin de contrat automatique, la bonne foi impose le plus souvent de laisser une dernière chance au débiteur via une mise en demeure." }
+        ];
+
+        let chartInstance = null;
+        let currentQuestionIndex = 0;
+        let userScore = 0;
+        
+        window.toggleContent = (contentId) => {
+            const content = document.getElementById(`content-${contentId}`);
+            const icon = document.getElementById(`icon-${contentId}`);
+            if (content && icon) {
+                content.classList.toggle('content-visible');
+                content.classList.toggle('content-hidden');
+                icon.style.transform = content.classList.contains('content-visible') ? 'rotate(45deg)' : 'rotate(0deg)';
+            }
+        };
+        
+        window.showClauseDetails = (clauseId) => {
+            const clauseDetailsContainer = document.getElementById('clause-details');
+            if (!clauseDetailsContainer) return;
+            const clause = clauseData.find(c => c.id === clauseId);
+            if (clause) {
+                clauseDetailsContainer.innerHTML = `<h4 class="text-2xl font-bold text-blue-700 mb-4">${clause.title}</h4><p class="text-lg text-gray-700 mb-4">${clause.description}</p><div class="bg-blue-50 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg"><p class="font-semibold">Cas pratique :</p><p class="italic">${clause.example}</p></div>`;
+                document.querySelectorAll('.clause-btn').forEach(btn => {
+                    btn.classList.toggle('active-tab', btn.textContent === clause.name);
+                });
+            }
+        };
+
+        function createSanctionsChart() {
+            if (chartInstance) chartInstance.destroy();
+            const sanctionsCtx = document.getElementById('sanctionsChart');
+            if(!sanctionsCtx) return;
+            chartInstance = new Chart(sanctionsCtx.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Exception d\'inexécution', 'Exécution forcée', 'Réduction du prix', 'Dommages-intérêts', 'Résolution du contrat'],
+                    datasets: [{ label: 'Impact / Gravité', data: [20, 40, 50, 75, 95], backgroundColor: ['#fde047', '#67e8f9', '#c4b5fd', '#fdba74', '#fca5a5'], borderColor: ['#facc15', '#22d3ee', '#a78bfa', '#fb923c', '#f87171'], borderWidth: 1 }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, max: 100, title: { display: true, text: 'Niveau d\'impact sur la relation contractuelle' } } },
+                    plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) {
+                        let desc = '';
+                        switch(context.label) {
+                            case 'Exception d\'inexécution': desc = 'Suspendre sa propre obligation.'; break;
+                            case 'Exécution forcée': desc = 'Forcer l\'autre à faire ce qui était prévu.'; break;
+                            case 'Réduction du prix': desc = 'Diminuer le prix si la prestation est imparfaite.'; break;
+                            case 'Dommages-intérêts': desc = 'Obtenir une compensation financière.'; break;
+                            case 'Résolution du contrat': desc = 'Mettre fin au contrat pour faute grave.'; break;
+                        }
+                        return `${context.label}: ${desc}`;
+                    }}}}
+                }
+            });
+        }
+        window.showExecutionContent = (id, element) => {
+            const conceptsContent = document.getElementById('concepts-content');
+            const sanctionsContent = document.getElementById('sanctions-content');
+            if (!conceptsContent || !sanctionsContent) return;
+            
+            document.querySelectorAll('.execution-tab').forEach(tab => tab.classList.remove('active-tab'));
+            element.classList.add('active-tab');
+            if (id === 'concepts') {
+                conceptsContent.classList.remove('hidden');
+                sanctionsContent.classList.add('hidden');
+            } else {
+                conceptsContent.classList.add('hidden');
+                sanctionsContent.classList.remove('hidden');
+                setTimeout(createSanctionsChart, 50);
+            }
+        };
+        
+        window.showRefContent = (id, element) => {
+            const lexiqueContent = document.getElementById('lexique-content');
+            const faqContent = document.getElementById('faq-content');
+            if (!lexiqueContent || !faqContent) return;
+            document.querySelectorAll('.ref-tab').forEach(tab => tab.classList.remove('active-tab'));
+            element.classList.add('active-tab');
+            if (id === 'lexique') {
+                lexiqueContent.classList.remove('hidden');
+                faqContent.classList.add('hidden');
+            } else {
+                lexiqueContent.classList.add('hidden');
+                faqContent.classList.remove('hidden');
+            }
+        };
+        
+        function renderQuestion() {
+            const questionContainer = document.getElementById('question-container');
+            const q = quizData[currentQuestionIndex];
+            if (!q) return;
+
+            let optionsHTML = '';
+            q.options.forEach((option, index) => {
+                optionsHTML += `<label id="label-${currentQuestionIndex}-${index}" class="quiz-option flex items-center p-3 border-2 rounded-lg bg-white hover:bg-gray-100 cursor-pointer transition-colors">
+                                    <input type="radio" name="question${currentQuestionIndex}" value="${option}" class="h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500" onchange="enableValidation()">
+                                    <span class="ml-3 text-gray-700">${option}</span>
+                                 </label>`;
+            });
+
+            questionContainer.innerHTML = `<div id="q-${currentQuestionIndex}">
+                <p class="font-semibold text-lg">${currentQuestionIndex + 1}. ${q.question}</p>
+                <div class="mt-4 space-y-3">${optionsHTML}</div>
+                <div class="mt-4 text-right">
+                    <button type="button" onclick="toggleHint()" class="text-sm text-blue-600 hover:underline">💡 Afficher l'indice</button>
+                </div>
+                <div id="hint-${currentQuestionIndex}" class="quiz-hint p-3 bg-blue-50 border border-blue-200 rounded-lg text-sm text-blue-800"></div>
+                <div id="feedback-${currentQuestionIndex}" class="quiz-feedback"></div>
+                <div class="mt-6 text-center">
+                    <button id="validate-btn" type="button" onclick="validateAnswer()" class="bg-blue-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400" disabled>Valider</button>
+                    <button id="next-btn" type="button" onclick="nextQuestion()" class="hidden bg-gray-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-gray-800 transition-colors">Question Suivante</button>
+                </div>
+            </div>`;
+        }
+        
+        window.toggleHint = () => {
+            const q = quizData[currentQuestionIndex];
+            const hintContainer = document.getElementById(`hint-${currentQuestionIndex}`);
+            if (hintContainer) {
+                hintContainer.textContent = q.index;
+                hintContainer.classList.toggle('visible');
+            }
+        };
+
+        window.enableValidation = () => {
+            document.getElementById('validate-btn').disabled = false;
+        };
+
+        window.validateAnswer = () => {
+            const q = quizData[currentQuestionIndex];
+            const selectedOption = document.querySelector(`input[name="question${currentQuestionIndex}"]:checked`);
+            if (!selectedOption) return;
+
+            const isCorrect = selectedOption.value === q.answer;
+            if(isCorrect) {
+                userScore++;
+            }
+            
+            const feedbackContainer = document.getElementById(`feedback-${currentQuestionIndex}`);
+            feedbackContainer.innerHTML = `<div class="p-4 rounded-md ${isCorrect ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                <p class="font-bold">${isCorrect ? 'Bonne réponse !' : 'Réponse incorrecte.'}</p>
+                <p class="mt-2">${q.feedback}</p>
+            </div>`;
+            feedbackContainer.classList.add('visible');
+            
+            q.options.forEach((option, index) => {
+                const label = document.getElementById(`label-${currentQuestionIndex}-${index}`);
+                const radio = label.querySelector('input');
+                radio.disabled = true;
+                if (option === q.answer) {
+                    label.classList.add('correct');
+                } else if (radio.checked) {
+                    label.classList.add('incorrect');
+                }
+            });
+
+            document.getElementById('validate-btn').classList.add('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+        };
+        
+        window.nextQuestion = () => {
+            currentQuestionIndex++;
+            updateQuizProgress();
+            if (currentQuestionIndex < quizData.length) {
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        };
+        
+        function updateQuizProgress() {
+            const totalCount = quizData.length;
+            const progress = currentQuestionIndex + 1;
+            const percentage = Math.min((progress / totalCount) * 100, 100);
+            const progressBar = document.getElementById('quiz-progress-bar');
+            const progressText = document.getElementById('quiz-progress-text');
+
+            if(progressBar) progressBar.style.width = `${percentage}%`;
+            
+            if(progressText) {
+                if(currentQuestionIndex < totalCount) {
+                    progressText.textContent = `Question ${progress} / ${totalCount}`;
+                } else {
+                    progressText.textContent = `Quiz terminé`;
+                }
+            }
+        }
+        
+        function showResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            const resultsContainer = document.getElementById('quiz-results');
+            resultsContainer.classList.remove('hidden');
+            
+            const percentage = Math.round((userScore / quizData.length) * 100);
+            const feedbackTitle = document.getElementById('quiz-feedback-title');
+            const feedbackScore = document.getElementById('quiz-feedback-score');
+            const feedbackMessage = document.getElementById('quiz-feedback-message');
+            const feedbackContainer = document.getElementById('quiz-feedback');
+            
+            feedbackScore.textContent = `Votre score : ${userScore} / ${quizData.length} (${percentage}%)`;
+            if (percentage >= 75) {
+                feedbackTitle.textContent = `Félicitations !`;
+                feedbackMessage.textContent = `Vous maîtrisez les fondamentaux du droit des contrats.`;
+                feedbackContainer.className = 'p-6 rounded-lg mb-8 text-center bg-green-100 text-green-800';
+            } else {
+                feedbackTitle.textContent = `Continuez vos efforts !`;
+                feedbackMessage.textContent = `Vous êtes sur la bonne voie. N'hésitez pas à refaire le quiz pour consolider vos connaissances.`;
+                feedbackContainer.className = 'p-6 rounded-lg mb-8 text-center bg-amber-100 text-amber-800';
+            }
+        }
+        
+        window.resetQuiz = () => {
+            currentQuestionIndex = 0;
+            userScore = 0;
+            document.getElementById('quiz-container').classList.remove('hidden');
+            document.getElementById('quiz-results').classList.add('hidden');
+            updateQuizProgress();
+            renderQuestion();
+        };
+
+        // --- DOMContentLoaded INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile Menu Logic
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenuButton && mobileMenu) {
+                mobileMenuButton.addEventListener('click', () => {
+                    mobileMenu.classList.toggle('hidden');
+                });
+                document.querySelectorAll('#mobile-menu a').forEach(link => {
+                    link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+                });
+            }
+            
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+                });
+            });
+
+            // Nav link active state on scroll
+            const sections = document.querySelectorAll('main > section[id]');
+            const navLinks = document.querySelectorAll('#desktop-nav a');
+            if (sections.length > 0 && navLinks.length > 0) {
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const id = entry.target.getAttribute('id');
+                            navLinks.forEach(link => {
+                                link.classList.toggle('active-nav-link', link.getAttribute('href') === `#${id}`);
+                            });
+                        }
+                    });
+                }, { rootMargin: '-20% 0px -80% 0px' });
+                sections.forEach(section => { if (section.id) observer.observe(section); });
+            }
+
+            // Clause Library Initialization
+            const clauseListContainer = document.getElementById('clause-list');
+            if (clauseListContainer) {
+                clauseData.forEach((clause) => {
+                    const button = document.createElement('button');
+                    button.className = 'clause-btn whitespace-nowrap mr-2 md:mr-0 md:mb-2 text-left p-3 rounded-md border-2 border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200';
+                    button.textContent = clause.name;
+                    button.onclick = () => showClauseDetails(clause.id);
+                    clauseListContainer.appendChild(button);
+                });
+                showClauseDetails(clauseData[0].id);
+            }
+
+            // Glossary Modal Logic
+            const modal = document.getElementById('glossary-modal');
+            const modalTitle = document.getElementById('glossary-title');
+            const modalContent = document.getElementById('glossary-content');
+            const closeModal = document.getElementById('close-modal');
+            if (modal && modalTitle && modalContent && closeModal) {
+                document.body.addEventListener('click', (e) => {
+                    if (e.target.classList.contains('glossary-term')) {
+                        const termKey = e.target.dataset.term;
+                        const termData = glossaryData[termKey];
+                        if (termData) {
+                            modalTitle.textContent = termData.title;
+                            modalContent.textContent = termData.content;
+                            modal.style.display = 'flex';
+                        }
+                    }
+                });
+                const hideModal = () => modal.style.display = 'none';
+                closeModal.addEventListener('click', hideModal);
+                modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+                document.addEventListener('keydown', (e) => { if (e.key === "Escape") hideModal(); });
+            }
+            
+            // Render the first quiz question
+            renderQuestion();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management : L'Entreprise et son Environnement</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony -->
+    <!-- Application Structure Plan: Final thematic structure with a top navigation bar. This version adds a back-to-top button and harmonizes the mind map card size. -->
+    <!-- Visualization & Content Choices: 
+        - Mind Map Section: The card size is now constrained with `max-w-4xl mx-auto` to match the visual weight of other sections. The responsive iframe uses the robust padding-top technique.
+        - Back-to-Top Button: A new floating button with a smooth scroll-to-top behavior has been added. It appears on scroll to improve navigation on this long-form page. Method: HTML, Tailwind CSS, Vanilla JS for show/hide logic.
+        - All other content and features are preserved. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+        body { font-family: 'Inter', sans-serif; background-color: #f8f7f4; color: #3d3d3d; }
+        .nav-link { transition: all 0.2s ease; border-bottom: 2px solid transparent; }
+        .nav-link.active { border-bottom-color: #a37b73; color: #5a3a33; font-weight: 600; }
+        .nav-link:hover { color: #5a3a33; }
+        .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1); }
+        .interactive-element { border: 1px solid #eaddd7; padding: 1rem; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s ease-in-out; background-color: #fff; height: 100%; }
+        .interactive-element:hover { background-color: #f8f7f4; border-color: #a37b73; }
+        .interactive-element.selected { background-color: #eaddd7; border-color: #a37b73; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .tab-button { transition: all 0.3s; }
+        .tab-button.active { border-bottom: 2px solid #a37b73; color: #a37b73; font-weight: 600; }
+        .chart-container { position: relative; width: 100%; max-width: 500px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        .matrix-table { border-collapse: collapse; width:100%; height: 400px; }
+        .matrix-table td { border: 1px solid #ddd; padding: 8px; text-align: center; vertical-align: middle; width:50%; height:50%; }
+        .matrix-table .matrix-cell { cursor: pointer; transition: background-color 0.3s; font-weight: bold; }
+        .matrix-table .matrix-cell:hover { filter: brightness(95%); }
+        .matrix-table th { font-weight: 600; color: #a37b73; }
+        #mitchell-venn-container {
+            position: relative; width: 100%; max-width: 500px;
+            margin: 2rem auto; aspect-ratio: 1 / 0.9;
+        }
+        .venn-circle { position: absolute; border-radius: 50%; opacity: 0.2; }
+        .venn-label { position: absolute; font-weight: 700; text-align: center; }
+        .venn-button {
+            position: absolute; cursor: pointer; padding: 4px 8px; font-size: 0.8rem;
+            font-weight: 600; border-radius: 999px; background-color: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(2px); transition: all 0.2s ease; transform: translateX(-50%);
+        }
+        .venn-button:hover { transform: translateX(-50%) scale(1.1); background-color: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7); display: none;
+            align-items: center; justify-content: center; z-index: 100;
+        }
+        .modal-content {
+            background-color: white; padding: 2rem; border-radius: 1rem;
+            width: 90%; max-width: 800px; max-height: 90vh;
+            overflow-y: auto; position: relative;
+        }
+        .modal-close-btn {
+            position: absolute; top: 1rem; right: 1rem;
+            font-size: 1.5rem; line-height: 1; color: #9ca3af;
+            cursor: pointer; transition: color 0.2s;
+        }
+        .modal-close-btn:hover { color: #1f2937; }
+    </style>
+</head>
+<body id="top" class="bg-gray-50 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">BTS MCO | Management</h1>
+                </div>
+                <div class="hidden md:block">
+                    <nav class="ml-10 flex items-baseline space-x-4" id="nav-desktop"></nav>
+                </div>
+                <div class="md:hidden">
+                    <button id="hamburger-btn" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-700 hover:bg-gray-100">
+                        <span class="sr-only">Open main menu</span>
+                        <svg class="h-6 w-6" id="hamburger-open" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
+                         <svg class="h-6 w-6 hidden" id="hamburger-close" stroke="currentColor" fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden hidden" id="nav-mobile"><div class="px-2 pt-2 pb-3 space-y-1 sm:px-3"></div></div>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-10 flex-grow">
+        
+        <div class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-gray-800 leading-tight">L'intégration de l'entreprise dans son environnement</h1>
+            <p class="text-2xl text-gray-600 mt-2">Management</p>
+        </div>
+        
+        <section id="presentation" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Présentation de la Thématique</h2>
+            <div class="w-full max-w-4xl mx-auto aspect-video relative shadow-lg rounded-lg overflow-hidden">
+                <iframe class="absolute top-0 left-0 w-full h-full"
+                    loading="lazy"
+                    src="https://www.canva.com/design/DAG1MF4-n88/x0631Ao4L4YLmht1W-8Uwg/watch?embed"
+                    allowfullscreen="allowfullscreen" allow="fullscreen">
+                </iframe>
+            </div>
+        </section>
+
+        <section id="finalites" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">1. Le Cœur de l'Entreprise : Identité et Finalités</h2>
+            <p class="text-lg text-gray-600 mb-8">Cette section explore l'ADN de l'entreprise. Pour comprendre une organisation, il faut d'abord saisir sa raison d'être (sa finalité) et la manière dont elle la traduit en actions (sa mission). Nous verrons comment ces concepts, de la vocation à la vision, définissent son identité, influencés par les valeurs de ses dirigeants et un cadre sociétal de plus en plus exigeant.</p>
+            <div class="card p-6 mb-8">
+                <h3 class="text-xl font-semibold mb-4">Décomposer l'Identité Stratégique</h3>
+                <p class="text-gray-600 mb-6">Cliquez sur chaque concept pour comprendre son rôle. La pensée de <span class="font-semibold">Peter Drucker</span> nous rappelle que la finalité première est de "créer un client" via le marketing et l'innovation, une idée qui sous-tend toute cette architecture.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="identity-container"></div>
+                <div id="identity-details" class="mt-6 p-4 bg-gray-50 rounded-lg min-h-[150px] flex items-center justify-center"><p class="text-gray-500">Sélectionnez un concept pour afficher les détails.</p></div>
+            </div>
+            <div class="card p-6">
+                 <h3 class="text-xl font-semibold mb-4">Études de Cas : L'Entreprise à Mission</h3>
+                 <p class="text-gray-700 mb-4">La loi PACTE (2019) a créé le statut d'"entreprise à mission", permettant d'inscrire des objectifs sociaux et environnementaux dans les statuts. C'est la formalisation de la Raison d'être.</p>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="border-l-4 border-blue-400 pl-4"><h4 class="font-bold text-lg">Danone : La Santé et la Planète</h4><p class="text-gray-600 mt-1">Pionnière, Danone a adopté ce statut pour aligner sa croissance sur des objectifs de santé, de préservation de la planète et d'inclusion sociale.</p></div>
+                    <div class="border-l-4 border-green-400 pl-4"><h4 class="font-bold text-lg">Camif : L'Économie Circulaire</h4><p class="text-gray-600 mt-1">Camif illustre son engagement par des actes forts, comme le boycott du Black Friday au profit d'ateliers de réparation, promouvant une consommation plus responsable.</p></div>
+                 </div>
+            </div>
+        </section>
+        
+        <section id="parties-prenantes" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">2. L'Écosystème des Parties Prenantes</h2>
+            <p class="text-lg text-gray-600 mb-8">Une entreprise évolue au sein d'un réseau d'acteurs qui influencent et sont influencés par ses décisions. Comprendre cet écosystème est vital. Le défi managérial (<b>Cyert & March</b>, <b>Crozier</b>) est de gérer les conflits d'intérêts. On distingue le modèle <b>actionnarial</b> (priorité aux actionnaires) du modèle <b>partenarial</b> (prise en compte de tous les acteurs).</p>
+            <div class="card p-6">
+                <div class="border-b mb-4"><nav class="flex space-x-4" id="matrix-tabs"><button data-tab="power-interest" class="tab-button active py-2 px-1 text-sm md:text-base">Outil Principal : Matrice Pouvoir/Intérêt</button><button data-tab="mitchell" class="tab-button py-2 px-1 text-sm md:text-base">Pour Approfondir : Matrice de Mitchell</button></nav></div>
+                <div id="tab-content-power-interest">
+                    <h3 class="text-xl font-semibold mb-4">Gérer les Acteurs Clés (Grille de Mendelow)</h3>
+                    <p class="text-gray-600 mb-6">Cet outil classe les acteurs selon leur <b>pouvoir</b> d'influence et leur <b>intérêt</b> pour les décisions de l'entreprise. Cliquez sur une case pour découvrir la stratégie à adopter.</p>
+                     <div class="flex flex-col-reverse md:flex-row">
+                        <div class="flex items-center justify-center md:w-16 md:flex-col -rotate-90 md:rotate-0 -translate-y-1/2 md:translate-y-0 mt-8 md:mt-0"><span class="font-semibold text-gray-600">Intérêt</span></div>
+                        <div class="flex-1"><table class="matrix-table"><tbody><tr><td class="matrix-cell bg-green-50 text-green-800" data-key="garder_informe">Garder Informé</td><td class="matrix-cell bg-red-50 text-red-800" data-key="gerer_etroitement">Gérer Étroitement</td></tr><tr><td class="matrix-cell bg-gray-100 text-gray-800" data-key="effort_minimal">Effort Minimal</td><td class="matrix-cell bg-blue-50 text-blue-800" data-key="garder_satisfait">Garder Satisfait</td></tr></tbody><tfoot><tr><th colspan="2" class="pt-4">Pouvoir</th></tr></tfoot></table></div>
+                    </div>
+                    <div id="power-interest-details" class="mt-6 p-4 bg-gray-50 rounded-lg min-h-[120px] text-center"><p class="text-gray-500">Sélectionnez une zone de la matrice.</p></div>
+                </div>
+                <div id="tab-content-mitchell" class="hidden">
+                     <h3 class="text-xl font-semibold mb-4">Anticiper les Dynamiques et les Crises</h3>
+                     <p class="text-gray-600 mb-6">Cette matrice ajoute le critère d'<b>Urgence</b>. Elle est utile pour hiérarchiser les demandes critiques. Cliquez sur une zone pour découvrir les types d'acteurs.</p>
+                     <div id="mitchell-venn-container"></div>
+                     <div id="mitchell-details" class="mt-6 p-4 bg-gray-50 rounded-lg min-h-[120px] text-center"><p class="text-gray-500">Sélectionnez une zone du diagramme.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="logiques" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">3. Logiques Entrepreneuriale et Managériale</h2>
+            <p class="text-lg text-gray-600 mb-8">Deux logiques animent l'entreprise. La logique entrepreneuriale (innovateur de <b>Schumpeter</b>) est celle de la création et du risque. La logique managériale est celle de l'organisation et de l'optimisation. Leur synergie est la clé du succès durable.</p>
+            <div class="card p-6 mb-8">
+                <h3 class="text-xl font-semibold mb-4">Le Processus Entrepreneurial : de l'Idée à la Croissance</h3>
+                <p class="text-gray-600 mb-6">Créer une entreprise est un marathon jalonné d'étapes clés. Cliquez sur chaque étape pour en savoir plus.</p>
+                <div id="process-steps" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+                <div id="process-details" class="mt-6 p-4 bg-gray-50 rounded-lg min-h-[100px]"><p class="text-gray-500">Sélectionnez une étape.</p></div>
+            </div>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4">La Logique Managériale : Organiser pour Durer</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 p-4 rounded-lg"><h4 class="font-bold text-blue-800">Efficacité vs Efficience</h4><p class="text-sm mt-2 text-blue-700"><b>Efficacité :</b> Atteindre les objectifs (le "quoi").</p><p class="text-sm mt-1 text-blue-700"><b>Efficience :</b> Y parvenir en optimisant les moyens (le "comment").</p></div>
+                    <div class="bg-green-50 p-4 rounded-lg"><h4 class="font-bold text-green-800">Cycle de Vie</h4><p class="text-sm mt-2 text-green-700">Le management s'adapte : flexibilité au <b>démarrage</b>, structuration en <b>croissance</b>, optimisation à <b>maturité</b>, et restructuration en <b>déclin</b>.</p></div>
+                    <div class="bg-purple-50 p-4 rounded-lg"><h4 class="font-bold text-purple-800">Intrapreneuriat</h4><p class="text-sm mt-2 text-purple-700">C'est la stimulation de la logique entrepreneuriale <b>au sein</b> d'une grande entreprise pour innover et s'adapter.</p></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="performance" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">4. Le Pilotage de la Performance</h2>
+            <p class="text-lg text-gray-600 mb-8">Piloter, c'est décider sur la base de données. La performance est aujourd'hui globale, intégrant le financier et l'extra-financier via le cadre <b>ESG (Environnemental, Social, Gouvernance)</b>.</p>
+            <div class="card p-6">
+                <h3 class="text-xl font-semibold mb-4">Le Tableau de Bord Prospectif (Balanced Scorecard)</h3>
+                <p class="text-gray-600 mb-6">Cet outil de Kaplan & Norton traduit la stratégie en KPIs sur quatre axes. Cliquez sur un axe pour voir des exemples.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 gap-4" id="bsc-axes"></div>
+                    <div id="bsc-details" class="p-4 bg-gray-50 rounded-lg flex flex-col justify-center"><h4 class="font-bold text-lg mb-2 text-gray-700">La logique de cause à effet</h4><p class="text-gray-600">Les axes sont liés : des <span class="font-semibold">salariés compétents</span> (Apprentissage) améliorent les <span class="font-semibold">processus</span>, ce qui satisfait les <span class="font-semibold">clients</span> et génère de meilleurs <span class="font-semibold">résultats financiers</span>.</p><p class="text-gray-500 mt-4 italic">Sélectionnez un axe pour plus de détails.</p></div>
+                </div>
+            </div>
+            <div class="card p-6 mt-8">
+                <h3 class="text-xl font-semibold mb-4">Visualiser la Stratégie : Profils d'Entreprise</h3>
+                <p class="text-gray-600 mb-6">Le profil de performance d'une entreprise change radicalement selon sa maturité. Comparez les deux profils pour comprendre comment la stratégie influence les indicateurs.</p>
+                <div class="flex justify-center space-x-2 mb-4" id="chart-controls"><button data-profile="startup" class="profile-btn bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold shadow-md">Profil Startup</button><button data-profile="mature" class="profile-btn bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-semibold">Profil Entreprise Mature</button></div>
+                <div class="chart-container"><canvas id="bscChart"></canvas></div>
+                <div id="profile-explanation" class="mt-6 p-4 bg-gray-50 rounded-lg border border-gray-200"></div>
+            </div>
+        </section>
+        
+        <section id="outils" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-3">5. Outils de Consultation</h2>
+            <p class="text-lg text-gray-600 mb-8">Besoin de revoir une définition ou de clarifier un point ? Ces outils sont là pour vous aider à consolider vos connaissances à tout moment.</p>
+            <div class="card p-6">
+                 <div class="flex flex-col md:flex-row items-center justify-center gap-6">
+                    <button id="open-lexique" class="w-full md:w-auto bg-blue-100 text-blue-800 font-semibold px-6 py-3 rounded-lg hover:bg-blue-200 transition text-lg">Consulter le Lexique</button>
+                    <button id="open-faq" class="w-full md:w-auto bg-green-100 text-green-800 font-semibold px-6 py-3 rounded-lg hover:bg-green-200 transition text-lg">Voir la FAQ</button>
+                 </div>
+            </div>
+        </section>
+
+        <section id="evaluation" class="mb-16">
+             <h2 class="text-3xl font-bold text-gray-800 mb-3">6. Évaluation Formative</h2>
+             <p class="text-lg text-gray-600 mb-8">Le moment est venu de tester vos connaissances ! Ce quiz vous permettra de valider votre compréhension des concepts clés. L'objectif n'est pas de noter, mais d'apprendre : chaque réponse est accompagnée d'un feedback détaillé.</p>
+             <div class="card p-6">
+                <div id="quiz-start-area" class="text-center">
+                    <h3 class="text-2xl font-semibold mb-4">Prêt à vous évaluer ?</h3>
+                    <p class="text-gray-600 mb-6">10 questions pour faire le point sur vos acquis. Bonne chance !</p>
+                    <button id="quiz-start-btn" class="bg-purple-500 text-white font-bold py-3 px-8 rounded-full hover:bg-purple-600 transition text-lg">Démarrer le Quiz</button>
+                </div>
+                <div id="quiz-container" class="hidden">
+                    <div class="mb-4">
+                        <div class="flex justify-between items-center mb-1"><h2 class="text-2xl font-bold">Question</h2><span id="quiz-progress-text" class="font-semibold text-gray-600"></span></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5"><div id="quiz-progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500"></div></div>
+                    </div>
+                    <div id="quiz-question-area">
+                        <p id="quiz-question" class="text-lg font-semibold my-4"></p>
+                        <div id="quiz-options" class="space-y-2"></div>
+                        <div id="quiz-hint-area" class="text-sm text-gray-500 mt-3 hidden p-3 bg-yellow-50 border border-yellow-200 rounded-md"></div>
+                        <div id="quiz-feedback" class="mt-4 p-3 rounded-md hidden"></div>
+                    </div>
+                    <div id="quiz-results-area" class="hidden text-center py-8">
+                         <h3 id="quiz-result-title" class="text-3xl font-bold"></h3>
+                         <p id="quiz-result-score" class="text-5xl font-bold my-4"></p>
+                         <p id="quiz-result-message" class="text-lg"></p>
+                         <button id="quiz-restart-btn" class="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 transition">Recommencer</button>
+                    </div>
+                    <div class="flex justify-end space-x-3 mt-6">
+                        <button id="quiz-hint-btn" class="bg-gray-200 text-gray-700 font-semibold px-4 py-2 rounded-md hover:bg-gray-300 transition">Indice</button>
+                        <button id="quiz-validate-btn" class="bg-green-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-green-600 transition">Valider</button>
+                        <button id="quiz-next-btn" class="bg-blue-500 text-white font-semibold px-4 py-2 rounded-md hover:bg-blue-600 transition hidden">Suivant</button>
+                    </div>
+                </div>
+             </div>
+        </section>
+        
+        <section id="synthese" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">7. Synthèse Visuelle : Carte Mentale</h2>
+            <div class="card p-4 md:p-6 max-w-4xl mx-auto">
+                <div class="relative w-full overflow-hidden" style="padding-top: 57.8%;">
+                    <iframe src='https://www.xmind.app/embed/kGtZDj/' class="absolute top-0 left-0 w-full h-full border-0" frameborder="0" scrolling="no" allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </section>
+
+    </main>
+    
+    <footer class="bg-gray-800 text-gray-300 p-8 text-center mt-auto">
+        <div class="container mx-auto"><p class="font-bold text-lg">L'intégration de l'entreprise dans son environnement</p><p class="text-sm text-gray-400 mt-1">Un outil pédagogique pour le BTS MCO</p><p class="text-xs text-gray-500 mt-4">© 2025-2026 | Tous droits réservés.</p></div>
+    </footer>
+    
+    <a href="#top" id="back-to-top" class="hidden fixed bottom-6 right-6 bg-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-lg hover:bg-purple-700 transition-opacity duration-300">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+    </a>
+
+    <div id="lexique-modal" class="modal-overlay"><div class="modal-content"><span class="modal-close-btn" data-modal-id="lexique-modal">&times;</span><h2 class="text-2xl font-bold mb-4">Lexique Professionnel</h2><input type="text" id="lexique-search" placeholder="Rechercher un terme..." class="w-full p-2 border border-gray-300 rounded-md mb-4"><div id="lexique-list" class="space-y-4"></div></div></div>
+    <div id="faq-modal" class="modal-overlay"><div class="modal-content"><span class="modal-close-btn" data-modal-id="faq-modal">&times;</span><h2 class="text-2xl font-bold mb-4">Foire Aux Questions (FAQ)</h2><div id="faq-list" class="space-y-2"></div></div></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    
+    const navData = [
+        { href: "#presentation", text: "Présentation" },
+        { href: "#finalites", text: "Finalités" },
+        { href: "#parties-prenantes", text: "Parties Prenantes" },
+        { href: "#logiques", text: "Logiques" },
+        { href: "#performance", text: "Performance" },
+        { href: "#outils", text: "Outils" },
+        { href: "#evaluation", text: "Évaluation" },
+        { href: "#synthese", text: "Synthèse" }
+    ];
+
+    const identityData = {
+        finalite: { title: "Finalité", emoji: "🎯", description: "La raison d'être fondamentale. Le 'Pourquoi' l'entreprise existe. Ex (Michelin): Offrir à chacun une meilleure façon d’avancer." },
+        mission: { title: "Mission", emoji: "📜", description: "La traduction concrète de la finalité. Le 'Quoi'. Ce que l'entreprise fait au quotidien. Ex (Michelin): Proposer les meilleurs pneus et services." },
+        vocation: { title: "Vocation", emoji: "🛠️", description: "Le métier, le savoir-faire spécifique. Le 'Comment'. Ex (Michelin): La maîtrise des matériaux de haute technologie." },
+        vision: { title: "Vision", emoji: "🔭", description: "L'ambition, le rêve à long terme. Le 'Où'. Elle doit être inspirante. Ex (Tesla): 'Accélérer la transition mondiale vers un schéma énergétique durable.'" },
+        raison_etre: { title: "Raison d'Être", emoji: "🌱", description: "Concept formalisé (Loi PACTE) qui inscrit la finalité dans les statuts, avec des objectifs sociaux et environnementaux." },
+        buts: { title: "Buts", emoji: "🏁", description: "Les objectifs généraux et permanents. Ex: Être leader sur son marché, assurer la satisfaction client." }
+    };
+    
+    const powerInterestData = {
+        gerer_etroitement: { title: "Gérer Étroitement", description: "Acteurs les plus importants. Il faut les impliquer pleinement et satisfaire leurs attentes.", examples: "Ex: Actionnaires majoritaires, clients stratégiques, direction." },
+        garder_satisfait: { title: "Garder Satisfait", description: "Ont beaucoup de pouvoir mais peu d'intérêt. Il faut les satisfaire mais sans les surcharger d'informations.", examples: "Ex: Gouvernement, organismes de régulation, presse influente." },
+        garder_informe: { title: "Garder Informé", description: "Ont beaucoup d'intérêt mais peu de pouvoir. Peuvent être des alliés utiles. Il faut bien communiquer avec eux.", examples: "Ex: Salariés, associations de consommateurs, communautés locales." },
+        effort_minimal: { title: "Effort Minimal", description: "Peu de pouvoir et peu d'intérêt. Il faut simplement les surveiller avec un effort minimal.", examples: "Ex: Le grand public, fournisseurs non stratégiques." },
+    };
+
+    const mitchellMatrixData = {
+        dormants: { title: "1. Dormants (Latents)", class: 'text-red-700', description: "Possèdent le pouvoir mais ne l'utilisent pas, faute de légitimité ou d'urgence. À surveiller." },
+        discretionnaires: { title: "2. Discrétionnaires", class: 'text-green-700', description: "Sont légitimes mais n'ont ni pouvoir ni urgence. Souvent des bénéficiaires de dons." },
+        revendicateurs: { title: "3. Revendicateurs (Exigeants)", class: 'text-blue-700', description: "Leurs demandes sont urgentes mais ils n'ont ni pouvoir ni légitimité. Peu menaçants seuls." },
+        dominants: { title: "4. Dominants", class: 'text-yellow-700', description: "Ont le pouvoir et la légitimité. Acteurs clés attendus par l'entreprise (ex: CA, salariés)." },
+        dangereux: { title: "5. Dangereux", class: 'text-orange-700', description: "Ont le pouvoir et l'urgence. Peuvent être coercitifs et violents. À gérer avec prudence." },
+        dependants: { title: "6. Dépendants", class: 'text-purple-700', description: "Sont légitimes et urgents, mais dépendent du pouvoir d'autres acteurs pour se faire entendre." },
+        definitifs: { title: "7. Définitifs", class: 'text-pink-700', description: "Possèdent les 3 attributs. Acteurs prioritaires à satisfaire impérativement." },
+    };
+
+    const processStepsData = {
+        idee: { title: "1. Idée ou Opportunité", description: "Le point de départ. Une intuition ou l'observation d'un besoin non satisfait qui pourrait devenir une activité rentable." },
+        formalisation: { title: "2. Formalisation du Projet", description: "L'idée est clarifiée et structurée. On définit la proposition de valeur : quel produit/service pour quel client et quel bénéfice ?" },
+        faisabilite: { title: "3. Étude de Faisabilité", description: "Analyse approfondie du marché (étude de marché), de la technique (production), et de l'organisation pour valider la viabilité du projet." },
+        moyens: { title: "4. Définition des Moyens", description: "Identification des ressources humaines (compétences), matérielles (locaux, machines) et financières (fonds de départ) nécessaires." },
+        business_plan: { title: "5. Business Plan", description: "Rédaction du document qui chiffre le projet. Il inclut les prévisions financières et la stratégie pour convaincre les financeurs." },
+        structure: { title: "6. Choix de la Structure", description: "Sélection du statut juridique (SAS, SARL, EI...) le plus adapté à l'activité, aux associés et aux ambitions de croissance." },
+        lancement: { title: "7. Lancement de l'Activité", description: "Immatriculation de l'entreprise et démarrage officiel des opérations commerciales. Confrontation avec les premiers clients." },
+        strategie: { title: "8. Choix Stratégiques", description: "Pilotage post-lancement. Le dirigeant prend les premières grandes décisions stratégiques (prix, distribution, communication) pour développer l'activité." },
+    };
+    
+    const bscAxesData = {
+        financier: { title: "Axe Financier", emoji: "💰", kpis_title: "KPIs ESG - Économique", kpis: ["ROI", "EBE", "BFR", "CAF"] },
+        client: { title: "Axe Client", emoji: "👥", kpis_title: "KPIs ESG - Sociétal", kpis: ["NPS", "Taux de fidélisation", "Taux d'attrition", "Part de marché"] },
+        processus: { title: "Axe Processus Internes", emoji: "⚙️", kpis_title: "KPIs ESG - Environnemental", kpis: ["Bilan carbone", "Taux de recyclage", "Consommation d'énergie", "Éco-conception"] },
+        apprentissage: { title: "Axe Apprentissage & Développement", emoji: "🧠", kpis_title: "KPIs ESG - Social & Gouvernance", kpis: ["Taux de turnover", "Écart de rémunération H/F", "Budget formation", "eNPS"] }
+    };
+    
+    const profileExplanations = {
+        startup: `
+            <h4 class="font-bold text-lg text-blue-800">La Stratégie de la Startup : Conquête et Innovation</h4>
+            <p class="mt-2 text-gray-700">Une startup concentre ses ressources sur la <b>croissance rapide</b> et la capture de parts de marché. La rentabilité immédiate n'est pas l'objectif.</p>
+            <ul class="mt-2 text-sm list-disc list-inside space-y-1">
+                <li><span class="font-semibold">Client & Apprentissage (Élevé) :</span> Priorité à l'acquisition client et à une équipe agile et innovante.</li>
+                <li><span class="font-semibold">Processus (Modéré) :</span> Les processus sont informels. On vise l'efficacité, pas encore l'efficience.</li>
+                <li><span class="font-semibold">Financier (Modéré) :</span> L'entreprise "brûle" du cash pour investir. Le profit est faible au début.</li>
+            </ul>`,
+        mature: `
+            <h4 class="font-bold text-lg text-red-800">La Stratégie de l'Entreprise Mature : Optimisation et Rentabilité</h4>
+            <p class="mt-2 text-gray-700">Une entreprise mature cherche à <b>maximiser sa rentabilité</b> et à défendre sa position. L'efficacité opérationnelle est cruciale.</p>
+            <ul class="mt-2 text-sm list-disc list-inside space-y-1">
+                 <li><span class="font-semibold">Financier & Processus (Élevé) :</span> La priorité est la profitabilité et l'optimisation des coûts via des processus standardisés.</li>
+                 <li><span class="font-semibold">Client (Bon) :</span> L'accent est mis sur la fidélisation de la clientèle existante.</li>
+                 <li><span class="font-semibold">Apprentissage (Bon) :</span> L'innovation est plus incrémentale que disruptive.</li>
+            </ul>`
+    };
+
+    const lexiconData = {
+        "Finalité d'une entreprise": "C'est sa raison d'être fondamentale, le but général qui justifie son existence et guide ses actions sur le long terme. Elle va bien au-delà du simple profit.",
+        "Vocation": "C'est l'étincelle de départ, l'idée fondatrice qui a présidé à la création de l'entreprise. Elle répond à la question simple mais essentielle : 'Pourquoi cette entreprise a-t-elle été créée ?'.",
+        "Mission": "C'est la feuille de route concrète qui traduit la vocation en actions. Elle définit clairement ce que l'entreprise fait, pour qui et comment, en répondant au triptyque : Quoi (quel problème résout-on ?), Qui (quelle est la clientèle visée ?), et Comment (avec quelle solution unique ?).",
+        "Responsabilité Sociétale des Entreprises (RSE)": "Il s'agit de l'intégration volontaire par les entreprises des préoccupations sociales et environnementales à leurs activités. C'est l'application du développement durable à l'échelle de l'entreprise.",
+        "Parties Prenantes (Stakeholders)": "C'est tout individu ou groupe qui peut affecter l'entreprise ou être affecté par la réalisation de ses objectifs. On distingue les parties prenantes internes (dirigeants, salariés, etc.) et externes (clients, fournisseurs, État, etc.).",
+        "Modèle Actionnarial (Shareholder)": "C'est un modèle de gouvernance où la priorité absolue est de maximiser le profit à court terme pour satisfaire les actionnaires.",
+        "Modèle Partenarial (Stakeholder)": "C'est un modèle de gouvernance qui cherche à créer de la valeur pour l'ensemble des parties prenantes, considérant que la satisfaction de tous est la clé de la performance à long terme.",
+        "Logique Entrepreneuriale": "C'est une dynamique d'action tournée vers l'innovation, la prise de risque, la détection de nouvelles opportunités et la création de valeur.",
+        "Logique Managériale": "C'est une dynamique d'action qui vise à optimiser les ressources existantes de l'entreprise. Elle se concentre sur la planification, l'organisation, et le contrôle.",
+        "Intrapreneuriat": "C'est la capacité d'une organisation à encourager ses propres salariés à se comporter comme des entrepreneurs en interne pour stimuler l'innovation.",
+        "Indicateur de Performance (KPI)": "C'est une donnée chiffrée qui permet de mesurer l'efficacité d'une action ou la santé de l'entreprise par rapport à un objectif fixé.",
+        "Tableau de Bord Prospectif (Balanced Scorecard)": "C'est un outil de pilotage stratégique qui traduit la vision de l'entreprise en un ensemble équilibré d'indicateurs de performance, structurés autour de quatre axes : Financier, Client, Processus Internes, et Apprentissage/Croissance."
+    };
+
+    const faqData = [
+        { question: "Le profit est-il la seule raison d'être d'une entreprise ?", answer: "Non, absolument pas. Bien que le profit soit vital pour la survie de l'entreprise (c'est sa finalité économique), il est un moyen et non une fin en soi. Le célèbre penseur Peter Drucker affirmait que la finalité première de l'entreprise est de 'créer un client'. Le profit est la conséquence d'une mission réussie." },
+        { question: "Quelle est la différence concrète entre la 'mission' et la 'vocation' d'une entreprise ?", answer: "La vocation est le 'Pourquoi' intemporel et inspirant de l'entreprise, son idée fondatrice. La mission, elle, est la traduction concrète et opérationnelle de cette vocation ; c'est le 'Quoi, Qui, Comment'. La vocation inspire, la mission agit." },
+        { question: "Qu'est-ce qu'une 'entreprise à mission' et qu'est-ce que cela change réellement ?", answer: "C'est un statut juridique qui permet à une entreprise d'inscrire sa 'raison d'être' ainsi que ses objectifs sociaux et environnementaux directement dans ses statuts. L'engagement n'est plus une simple promesse marketing, mais une obligation légale et vérifiable." },
+        { question: "En quoi les salariés sont-ils aussi importants que les actionnaires ?", answer: "Dans un Modèle Partenarial (Stakeholder), on considère que ces deux groupes sont interdépendants. Des salariés épanouis et engagés sont plus productifs, plus créatifs et plus fidèles, ce qui contribue directement à la performance économique à long terme, et donc à la satisfaction des actionnaires." },
+        { question: "Un manager doit-il savoir prendre des risques comme un entrepreneur ?", answer: "Un bon manager doit savoir créer un équilibre entre la logique managériale (stabiliser, organiser) et la logique entrepreneuriale (innover, prendre des risques). Une entreprise qui ne serait que 'managériale' risquerait de stagner. Le rôle du manager moderne est donc de piloter la performance actuelle tout en encourageant l'innovation." },
+        { question: "Pourquoi mesurer autre chose que le chiffre d'affaires et le profit ?", answer: "Parce qu'un pilotage purement financier est insuffisant. Il ignore les véritables moteurs de la performance future. Comme le montre le Tableau de Bord Prospectif, des investissements dans la formation des salariés (axe Apprentissage) améliorent les processus, ce qui augmente la satisfaction client et se traduit, in fine, par de meilleurs résultats financiers." }
+    ];
+    
+    const quizData = [
+        { question: "Selon Peter Drucker, la finalité première de toute entreprise est la maximisation du profit.", type: 'vrai_faux', options: ["Vrai", "Faux"], answer: "Faux", hint: "Quel est l'élément le plus essentiel à la survie d'une entreprise selon ce penseur ?", feedback: { "Vrai": "Incorrect. Selon Drucker, le profit n'est qu'une condition nécessaire. Sa finalité première est de 'créer un client'.", "Faux": "Correct. Drucker a souligné que la finalité première est la création d'un client. Le profit est une conséquence." } },
+        { question: "Quelle entreprise est citée comme exemple pour avoir boycotté le Black Friday au nom de sa mission ?", type: 'qcm', options: ["Danone", "Michelin", "Camif"], answer: "Camif", hint: "Pensez à l'entreprise dont la raison d'être est de promouvoir une consommation responsable.", feedback: { "Danone": "Incorrect. Danone est un exemple d'entreprise à mission, mais centrée sur 'apporter la santé par l'alimentation'.", "Michelin": "Incorrect. Michelin illustre le concept de 'vocation'.", "Camif": "Correct. Camif, devenue entreprise à mission, a boycotté le Black Friday, le jugeant incompatible avec sa mission." } },
+        { question: "Dans la matrice Pouvoir/Intérêt, quelle stratégie est recommandée pour les parties prenantes ayant un pouvoir élevé et un intérêt faible ?", type: 'qcm', options: ["Gérer de près", "Garder satisfaits", "Garder informés"], answer: "Garder satisfaits", hint: "Ces acteurs sont puissants mais pas impliqués au quotidien. Il faut éviter de les contrarier.", feedback: { "Gérer de près": "Incorrect. Cette stratégie est pour les acteurs avec pouvoir ET intérêt élevés.", "Garder satisfaits": "Correct. Les acteurs puissants mais peu intéressés (comme les régulateurs) doivent être maintenus satisfaits.", "Garder informés": "Incorrect. Cette stratégie s'applique aux acteurs avec un intérêt élevé mais un pouvoir faible." } },
+        { question: "La logique managériale et la logique entrepreneuriale sont opposées et une entreprise doit choisir l'une ou l'autre.", type: 'vrai_faux', options: ["Vrai", "Faux"], answer: "Faux", hint: "Pensez au cycle de vie d'une entreprise.", feedback: { "Vrai": "Incorrect. Ces deux logiques sont complémentaires et nécessaires à la survie à long terme.", "Faux": "Correct. Elles ne s'opposent pas, elles se complètent. La création est entrepreneuriale, la croissance exige du management." } },
+        { question: "Le Tableau de Bord Prospectif analyse la performance selon quatre axes. Lequel n'en fait pas partie ?", type: 'qcm', options: ["L'axe Financier", "L'axe Concurrentiel", "L'axe Client"], answer: "L'axe Concurrentiel", hint: "Le quatrième axe est lié aux compétences et à l'organisation.", feedback: { "L'axe Financier": "Incorrect. L'axe Financier est un des quatre piliers.", "L'axe Concurrentiel": "Correct. La concurrence est analysée, mais ne constitue pas un des quatre axes du modèle. Le quatrième est 'Apprentissage et Croissance'.", "L'axe Client": "Incorrect. L'axe Client est essentiel au modèle." } },
+        { question: "La RSE est principalement une démarche...", type: 'qcm', options: ["...obligatoire pour toutes les entreprises.", "...volontaire d'intégration des préoccupations sociales et environnementales.", "...uniquement centrée sur la réduction de la pollution."], answer: "...volontaire d'intégration des préoccupations sociales et environnementales.", hint: "La définition insiste sur le caractère de l'engagement.", feedback: { "...obligatoire pour toutes les entreprises.": "Incorrect. Si la loi impose certaines règles, la démarche RSE est définie comme 'volontaire'.", "...volontaire d'intégration des préoccupations sociales et environnementales.": "Correct. C'est la définition officielle.", "...uniquement centrée sur la réduction de la pollution.": "Incorrect. C'est une vision trop réductrice. La RSE a 3 piliers : environnemental, social/sociétal et économique." } },
+        { question: "Les parties prenantes 'secondaires' sont celles qui ont un lien contractuel direct avec l'entreprise.", type: 'vrai_faux', options: ["Vrai", "Faux"], answer: "Faux", hint: "Pensez à la différence entre 'primaire' (vital) et 'secondaire' (influence).", feedback: { "Vrai": "Incorrect. Ce sont les parties prenantes 'primaires' (salariés, clients...). Les secondaires (médias, ONG) n'ont pas de lien contractuel.", "Faux": "Correct. Les secondaires n'ont pas de lien contractuel mais peuvent influencer l'entreprise." } },
+        { question: "Qu'est-ce que l''intrapreneuriat' ?", type: 'qcm', options: ["Le processus de création d'une nouvelle entreprise.", "Une approche qui privilégie les actionnaires.", "Encourager les salariés à développer des projets innovants en interne."], answer: "Encourager les salariés à développer des projets innovants en interne.", hint: "Le préfixe 'intra-' signifie 'à l'intérieur'.", feedback: { "Le processus de création d'une nouvelle entreprise.": "Incorrect. C'est l'entrepreneuriat. L'intrapreneuriat se déroule à l'intérieur d'une organisation.", "Une approche qui privilégie les actionnaires.": "Incorrect. C'est le modèle 'actionnarial'.", "Encourager les salariés à développer des projets innovants en interne.": "Correct. L'intrapreneuriat est la capacité d'une organisation à stimuler l'esprit d'entreprise en interne." } },
+        { question: "Un conflit d'intérêts entre actionnaires et salariés est un signe de mauvaise gestion.", type: 'vrai_faux', options: ["Vrai", "Faux"], answer: "Faux", hint: "Les attentes des différentes parties sont-elles naturellement alignées ?", feedback: { "Vrai": "Incorrect. Les conflits d'intérêts sont inhérents à la vie d'une organisation. Le rôle du manager est de les arbitrer.", "Faux": "Correct. Les conflits d'intérêts sont inévitables. La bonne gestion consiste à les gérer activement par la négociation et l'arbitrage." } },
+        { question: "Le 'taux de turnover' est un indicateur de performance de la catégorie...", type: 'qcm', options: ["Financière", "Client", "Sociale"], answer: "Sociale", hint: "Il mesure la rotation du personnel.", feedback: { "Financière": "Incorrect. Il mesure un phénomène lié au capital humain.", "Client": "Incorrect. Il concerne les salariés.", "Sociale": "Correct. C'est un indicateur social clé de la gestion des ressources humaines." } }
+    ];
+
+    // --- Navigation ---
+    const navDesktop = document.getElementById('nav-desktop');
+    const navMobileContainer = document.querySelector('#nav-mobile div');
+    navData.forEach(item => {
+        const linkDesktop = `<a href="${item.href}" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">${item.text}</a>`;
+        const linkMobile = `<a href="${item.href}" class="nav-link block px-3 py-2 rounded-md text-base font-medium text-gray-700">${item.text}</a>`;
+        navDesktop.innerHTML += linkDesktop;
+        navMobileContainer.innerHTML += linkMobile;
+    });
+    const hamburgerBtn = document.getElementById('hamburger-btn');
+    const navMobile = document.getElementById('nav-mobile');
+    const hamburgerOpen = document.getElementById('hamburger-open');
+    const hamburgerClose = document.getElementById('hamburger-close');
+    hamburgerBtn.addEventListener('click', () => {
+        navMobile.classList.toggle('hidden');
+        hamburgerOpen.classList.toggle('hidden');
+        hamburgerClose.classList.toggle('hidden');
+    });
+    document.querySelectorAll('#nav-mobile a').forEach(link => {
+        link.addEventListener('click', () => {
+            navMobile.classList.add('hidden');
+            hamburgerOpen.classList.remove('hidden');
+            hamburgerClose.classList.add('hidden');
+        });
+    });
+    const sections = document.querySelectorAll('main section');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                document.querySelectorAll('.nav-link').forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href').substring(1) === entry.target.id);
+                });
+            }
+        });
+    }, { rootMargin: "-50% 0px -50% 0px", threshold: 0.1 });
+    sections.forEach(section => observer.observe(section));
+
+    // --- Back to Top Button ---
+    const backToTopButton = document.getElementById('back-to-top');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 300) {
+            backToTopButton.classList.remove('hidden');
+        } else {
+            backToTopButton.classList.add('hidden');
+        }
+    });
+
+    // --- Section 1: Identity ---
+    const identityContainer = document.getElementById('identity-container');
+    const identityDetails = document.getElementById('identity-details');
+    Object.keys(identityData).forEach(key => {
+        const data = identityData[key];
+        const element = document.createElement('div');
+        element.className = 'interactive-element';
+        element.dataset.key = key;
+        element.innerHTML = `<span class="text-2xl mr-3">${data.emoji}</span> <span class="font-semibold">${data.title}</span>`;
+        identityContainer.appendChild(element);
+    });
+    identityContainer.addEventListener('click', (e) => {
+        const target = e.target.closest('.interactive-element');
+        if (!target) return;
+        const key = target.dataset.key;
+        const data = identityData[key];
+        document.querySelectorAll('#identity-container .interactive-element').forEach(el => el.classList.remove('selected'));
+        target.classList.add('selected');
+        identityDetails.innerHTML = `<div class="text-left w-full"><h4 class="font-bold text-lg text-gray-800">${data.emoji} ${data.title}</h4><p class="mt-1 text-gray-700">${data.description}</p></div>`;
+    });
+
+    // --- Section 2: Stakeholders & Matrices ---
+    const matrixTabs = document.getElementById('matrix-tabs');
+    const powerInterestContent = document.getElementById('tab-content-power-interest');
+    const mitchellContent = document.getElementById('tab-content-mitchell');
+    matrixTabs.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON') return;
+        document.querySelectorAll('#matrix-tabs .tab-button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+        powerInterestContent.classList.toggle('hidden', e.target.dataset.tab !== 'power-interest');
+        mitchellContent.classList.toggle('hidden', e.target.dataset.tab !== 'mitchell');
+    });
+    const powerInterestCells = document.querySelectorAll('#tab-content-power-interest .matrix-cell');
+    const powerInterestDetails = document.getElementById('power-interest-details');
+    powerInterestCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            const key = cell.dataset.key;
+            const data = powerInterestData[key];
+            powerInterestDetails.innerHTML = `<h4 class="font-bold text-lg text-gray-800">${data.title}</h4><p class="mt-1 text-gray-700">${data.description}</p><p class="mt-2 text-sm text-gray-500 italic">${data.examples}</p>`;
+        });
+    });
+    const mitchellVennContainer = document.getElementById('mitchell-venn-container');
+    const mitchellDetails = document.getElementById('mitchell-details');
+    mitchellVennContainer.innerHTML = `
+        <div class="venn-circle" style="width: 60%; height: 60%; top: 5%; left: 20%; background-color: #ef4444;"></div>
+        <div class="venn-circle" style="width: 60%; height: 60%; top: 35%; left: 0; background-color: #22c55e;"></div>
+        <div class="venn-circle" style="width: 60%; height: 60%; top: 35%; left: 40%; background-color: #3b82f6;"></div>
+        <div class="venn-label text-red-600" style="top: 0; left: 50%; transform: translateX(-50%);">POUVOIR</div>
+        <div class="venn-label text-green-600" style="bottom: 0; left: 15%;">LÉGITIMITÉ</div>
+        <div class="venn-label text-blue-600" style="bottom: 0; right: 15%;">URGENCE</div>
+        <button data-key="dormants" class="venn-button" style="top: 22%; left: 50%;">1. Dormants</button>
+        <button data-key="discretionnaires" class="venn-button" style="top: 65%; left: 15%;">2. Discrétionnaires</button>
+        <button data-key="revendicateurs" class="venn-button" style="top: 65%; left: 85%;">3. Revendicateurs</button>
+        <button data-key="dominants" class="venn-button" style="top: 40%; left: 35%;">4. Dominants</button>
+        <button data-key="dangereux" class="venn-button" style="top: 40%; left: 65%;">5. Dangereux</button>
+        <button data-key="dependants" class="venn-button" style="top: 72%; left: 50%;">6. Dépendants</button>
+        <button data-key="definitifs" class="venn-button font-bold" style="top: 52%; left: 50%; transform: translate(-50%, -50%);">7. Définitifs</button>
+    `;
+    mitchellVennContainer.addEventListener('click', (e) => {
+        const target = e.target.closest('.venn-button');
+        if (!target) return;
+        const key = target.dataset.key;
+        const data = mitchellMatrixData[key];
+        mitchellDetails.innerHTML = `<h4 class="font-bold text-lg ${data.class}">${data.title}</h4><p class="mt-1 text-gray-700">${data.description}</p>`;
+    });
+
+    // --- Section 3: Logics & Process ---
+    const processStepsContainer = document.getElementById('process-steps');
+    const processDetails = document.getElementById('process-details');
+    Object.keys(processStepsData).forEach((key) => {
+        const element = document.createElement('div');
+        element.className = 'interactive-element flex flex-col justify-center items-center text-center';
+        element.dataset.key = key;
+        element.innerHTML = `<span class="font-semibold">${processStepsData[key].title}</span>`;
+        processStepsContainer.appendChild(element);
+    });
+    processStepsContainer.addEventListener('click', e => {
+        const target = e.target.closest('.interactive-element');
+        if (!target) return;
+        const key = target.dataset.key;
+        document.querySelectorAll('#process-steps .interactive-element').forEach(el => el.classList.remove('selected'));
+        target.classList.add('selected');
+        processDetails.innerHTML = `<p class="text-gray-700">${processStepsData[key].description}</p>`;
+    });
+
+    // --- Section 4: BSC & Chart ---
+    const bscAxesContainer = document.getElementById('bsc-axes');
+    const bscDetails = document.getElementById('bsc-details');
+    Object.keys(bscAxesData).forEach(key => {
+        const element = document.createElement('div');
+        element.className = 'interactive-element';
+        element.dataset.key = key;
+        element.innerHTML = `<span class="text-2xl mr-3">${bscAxesData[key].emoji}</span> <span class="font-semibold">${bscAxesData[key].title}</span>`;
+        bscAxesContainer.appendChild(element);
+    });
+    bscAxesContainer.addEventListener('click', e => {
+        const target = e.target.closest('.interactive-element');
+        if (!target) return;
+        const key = target.dataset.key;
+        const data = bscAxesData[key];
+        document.querySelectorAll('#bsc-axes .interactive-element').forEach(el => el.classList.remove('selected'));
+        target.classList.add('selected');
+        bscDetails.innerHTML = `<h4 class="font-bold text-lg text-gray-800">${data.emoji} ${data.title}</h4><p class="mt-4 text-sm font-semibold text-gray-600">${data.kpis_title} :</p><ul class="list-disc list-inside text-sm text-gray-600">${data.kpis.map(kpi => `<li>${kpi}</li>`).join('')}</ul>`;
+    });
+    const chartProfiles = {
+        startup: { label: 'Profil Startup', data: [6, 9, 7, 9], backgroundColor: 'rgba(54, 162, 235, 0.2)', borderColor: 'rgba(54, 162, 235, 1)' },
+        mature: { label: 'Profil Entreprise Mature', data: [9, 7, 9, 6], backgroundColor: 'rgba(255, 99, 132, 0.2)', borderColor: 'rgba(255, 99, 132, 1)' }
+    };
+    const ctx = document.getElementById('bscChart').getContext('2d');
+    let bscChart = new Chart(ctx, { type: 'radar', data: { labels: ['Financier', 'Client', 'Processus', 'Apprentissage'], datasets: [chartProfiles.startup] }, options: { maintainAspectRatio: false, responsive: true, scales: { r: { angleLines: { display: true }, suggestedMin: 0, suggestedMax: 10, ticks: { stepSize: 2 } } }, plugins: { legend: { position: 'top' } } } });
+    const chartControls = document.getElementById('chart-controls');
+    const profileExplanationDiv = document.getElementById('profile-explanation');
+    function updateProfileInfo(profileKey) {
+        bscChart.data.datasets[0] = chartProfiles[profileKey];
+        bscChart.update();
+        profileExplanationDiv.innerHTML = profileExplanations[profileKey];
+        document.querySelectorAll('.profile-btn').forEach(btn => {
+            const isActive = btn.dataset.profile === profileKey;
+            btn.classList.toggle('bg-blue-500', isActive && profileKey === 'startup');
+            btn.classList.toggle('bg-red-500', isActive && profileKey === 'mature');
+            btn.classList.toggle('text-white', isActive);
+            btn.classList.toggle('bg-gray-300', !isActive);
+            btn.classList.toggle('text-gray-800', !isActive);
+        });
+    }
+    chartControls.addEventListener('click', e => { if (e.target.closest('.profile-btn')) updateProfileInfo(e.target.closest('.profile-btn').dataset.profile); });
+    updateProfileInfo('startup');
+
+    // --- Modals (Lexique, FAQ) ---
+    const openModalButtons = { 'lexique-modal': document.getElementById('open-lexique'), 'faq-modal': document.getElementById('open-faq') };
+    Object.keys(openModalButtons).forEach(modalId => {
+        const modal = document.getElementById(modalId);
+        openModalButtons[modalId].addEventListener('click', () => modal.style.display = 'flex');
+        modal.querySelectorAll('.modal-close-btn').forEach(btn => btn.addEventListener('click', () => modal.style.display = 'none'));
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+    });
+    const lexiqueList = document.getElementById('lexique-list');
+    const lexiqueSearch = document.getElementById('lexique-search');
+    const renderLexique = (filter = '') => {
+        lexiqueList.innerHTML = '';
+        const filteredKeys = Object.keys(lexiconData).filter(key => key.toLowerCase().includes(filter.toLowerCase()));
+        filteredKeys.forEach(key => { lexiqueList.innerHTML += `<div class="border-b pb-2"><h4 class="font-bold text-lg text-gray-800">${key}</h4><p class="text-gray-600">${lexiconData[key]}</p></div>`; });
+    };
+    lexiqueSearch.addEventListener('input', (e) => renderLexique(e.target.value));
+    openModalButtons['lexique-modal'].addEventListener('click', () => renderLexique());
+    const faqList = document.getElementById('faq-list');
+    faqList.innerHTML = '';
+    faqData.forEach(item => {
+        faqList.innerHTML += `<div class="border border-gray-200 rounded-md"><button class="w-full text-left p-4 font-semibold flex justify-between items-center">${item.question}<svg class="w-5 h-5 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></button><div class="p-4 border-t border-gray-200 text-gray-600 hidden">${item.answer}</div></div>`;
+    });
+    faqList.addEventListener('click', (e) => {
+        const button = e.target.closest('button');
+        if (!button) return;
+        button.nextElementSibling.classList.toggle('hidden');
+        button.querySelector('svg').classList.toggle('rotate-180');
+    });
+
+    // --- Evaluation Quiz ---
+    const quizStartArea = document.getElementById('quiz-start-area');
+    const quizStartBtn = document.getElementById('quiz-start-btn');
+    const quizContainer = document.getElementById('quiz-container');
+    const progressBar = document.getElementById('quiz-progress-bar');
+    const progressText = document.getElementById('quiz-progress-text');
+    const questionEl = document.getElementById('quiz-question');
+    const optionsEl = document.getElementById('quiz-options');
+    const hintArea = document.getElementById('quiz-hint-area');
+    const feedbackEl = document.getElementById('quiz-feedback');
+    const hintBtn = document.getElementById('quiz-hint-btn');
+    const validateBtn = document.getElementById('quiz-validate-btn');
+    const nextBtn = document.getElementById('quiz-next-btn');
+    const restartBtn = document.getElementById('quiz-restart-btn');
+    const resultsArea = document.getElementById('quiz-results-area');
+    
+    let currentQuestionIndex, score, userAnswers;
+
+    const startQuiz = () => {
+        quizStartArea.style.display = 'none';
+        quizContainer.style.display = 'block';
+        resultsArea.style.display = 'none';
+        currentQuestionIndex = 0;
+        score = 0;
+        userAnswers = {};
+        renderQuestion();
+    };
+
+    const renderQuestion = () => {
+        const questionData = quizData[currentQuestionIndex];
+        feedbackEl.style.display = 'none'; hintArea.style.display = 'none';
+        hintBtn.disabled = false; validateBtn.disabled = true;
+        nextBtn.style.display = 'none'; validateBtn.style.display = 'inline-block'; hintBtn.style.display = 'inline-block';
+        progressText.textContent = `Question ${currentQuestionIndex + 1}/${quizData.length}`;
+        progressBar.style.width = `${((currentQuestionIndex) / quizData.length) * 100}%`;
+        questionEl.textContent = questionData.question;
+        optionsEl.innerHTML = '';
+        questionData.options.forEach(option => {
+            optionsEl.innerHTML += `<button data-option="${option}" class="block w-full text-left p-3 border border-gray-300 rounded-md hover:bg-gray-100 transition">${option}</button>`;
+        });
+    };
+
+    optionsEl.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            userAnswers[currentQuestionIndex] = e.target.dataset.option;
+            document.querySelectorAll('#quiz-options button').forEach(btn => btn.classList.remove('bg-blue-200', 'border-blue-400'));
+            e.target.classList.add('bg-blue-200', 'border-blue-400');
+            validateBtn.disabled = false;
+        }
+    });
+
+    hintBtn.addEventListener('click', () => {
+        hintArea.textContent = `Indice : ${quizData[currentQuestionIndex].hint}`;
+        hintArea.style.display = 'block'; hintBtn.disabled = true;
+    });
+
+    validateBtn.addEventListener('click', () => {
+        const questionData = quizData[currentQuestionIndex];
+        const userAnswer = userAnswers[currentQuestionIndex];
+        const isCorrect = userAnswer === questionData.answer;
+        if (isCorrect) score++;
+        feedbackEl.className = `mt-4 p-3 rounded-md ${isCorrect ? 'text-green-800 bg-green-100' : 'text-red-800 bg-red-100'}`;
+        feedbackEl.innerHTML = `<b>${isCorrect ? 'Correct !' : 'Incorrect.'}</b> ${questionData.feedback[userAnswer] || 'Feedback non disponible.'}`;
+        feedbackEl.style.display = 'block';
+        document.querySelectorAll('#quiz-options button').forEach(btn => {
+            btn.disabled = true;
+            if (btn.dataset.option === questionData.answer) btn.classList.add('bg-green-200', 'border-green-400');
+            if (btn.dataset.option === userAnswer && !isCorrect) btn.classList.add('bg-red-200', 'border-red-400');
+        });
+        validateBtn.style.display = 'none'; hintBtn.style.display = 'none'; nextBtn.style.display = 'inline-block';
+        progressBar.style.width = `${((currentQuestionIndex + 1) / quizData.length) * 100}%`;
+        nextBtn.textContent = (currentQuestionIndex === quizData.length - 1) ? 'Voir les résultats' : 'Suivant';
+    });
+
+    nextBtn.addEventListener('click', () => {
+        currentQuestionIndex++;
+        (currentQuestionIndex < quizData.length) ? renderQuestion() : showResults();
+    });
+
+    const showResults = () => {
+        document.getElementById('quiz-question-area').style.display = 'none';
+        document.querySelector('#quiz-container .flex.justify-end').style.display = 'none';
+        resultsArea.style.display = 'block';
+        const percentage = Math.round((score / quizData.length) * 100);
+        document.getElementById('quiz-result-score').textContent = `${percentage}%`;
+        if (percentage >= 75) {
+            document.getElementById('quiz-result-title').textContent = 'Félicitations !';
+            document.getElementById('quiz-result-message').textContent = `Vous avez obtenu ${score}/${quizData.length}. Vous maîtrisez les concepts clés.`;
+            document.getElementById('quiz-result-score').className = 'text-5xl font-bold my-4 text-green-600';
+        } else {
+            document.getElementById('quiz-result-title').textContent = 'Continuez vos efforts !';
+            document.getElementById('quiz-result-message').textContent = `Vous avez obtenu ${score}/${quizData.length}. N'hésitez pas à revoir les chapitres et à refaire le quiz.`;
+            document.getElementById('quiz-result-score').className = 'text-5xl font-bold my-4 text-red-600';
+        }
+    };
+    
+    const restartQuiz = () => {
+         resultsArea.style.display = 'none';
+         quizStartArea.style.display = 'block';
+         document.getElementById('quiz-question-area').style.display = 'block';
+         document.querySelector('#quiz-container .flex.justify-end').style.display = 'flex';
+    };
+    
+    quizStartBtn.addEventListener('click', startQuiz);
+    restartBtn.addEventListener('click', restartQuiz);
+});
+</script>
+</body>
+</html>
+

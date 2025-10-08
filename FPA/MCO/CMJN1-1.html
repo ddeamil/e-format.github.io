@@ -1,0 +1,1485 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>L'intégration de l'entreprise dans son environnement | Économie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: La structure de l'en-tête et des titres de section est modifiée pour une meilleure hiérarchie et lisibilité. Le titre long est déplacé de l'en-tête (qui conserve une version courte) vers un bloc de titre principal proéminent au début de chaque section. Cette modification résout le problème de responsivité du menu et améliore la clarté visuelle. -->
+    <!-- Visualization & Content Choices: 
+    - Hiérarchie des Titres: (Goal: Améliorer la Lisibilité) Le titre principal de l'application est désormais un <h1> stylisé ("gros et coloré") au début du contenu, distinct du <h2> de chaque section. Cela résout le problème de l'en-tête et structure mieux l'information.
+    - Les autres visualisations et interactions sont conservées.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4A4A4A;
+        }
+        .nav-link {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #005A9C;
+            border-bottom-color: #005A9C;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .btn-primary {
+            background-color: #005A9C;
+            color: white;
+            transition: background-color 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #003D6B;
+        }
+        .btn-secondary {
+            background-color: #E2E8F0;
+            color: #4A4A4A;
+            transition: background-color 0.3s ease, opacity 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background-color: #CBD5E1;
+        }
+        .btn-secondary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 450px;
+        }
+        .interactive-diagram-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid #E2E8F0;
+        }
+        .interactive-diagram-node:hover {
+            border-color: #005A9C;
+            transform: scale(1.05);
+        }
+        .interactive-diagram-node.selected {
+            background-color: #E6F0F9;
+            border-color: #005A9C;
+        }
+        .case-solution, .faq-answer {
+            display: none;
+            border-left: 3px solid #005A9C;
+            background-color: #F8FAFC;
+        }
+        .faq-question {
+            cursor: pointer;
+        }
+        .faq-question .arrow {
+            transition: transform 0.3s ease;
+        }
+        .faq-question.open .arrow {
+            transform: rotate(90deg);
+        }
+        .tab-btn {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            border-bottom-color: #005A9C;
+            color: #005A9C;
+            font-weight: 600;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.5s ease-in-out; }
+        
+        .spectrum-point {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .spectrum-point:hover .spectrum-circle {
+             transform: scale(1.2);
+             background-color: #005A9C;
+        }
+        .spectrum-point.active .spectrum-label {
+            font-weight: 700;
+            color: #005A9C;
+        }
+        .spectrum-point.active .spectrum-circle {
+             transform: scale(1.2);
+             background-color: #005A9C;
+             border-color: #003D6B;
+        }
+        .spectrum-circle {
+            width: 1.25rem;
+            height: 1.25rem;
+            background-color: white;
+            border: 2px solid #9CA3AF;
+            border-radius: 9999px;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        .spectrum-label {
+            position: absolute;
+            top: 1.75rem;
+            white-space: normal;
+            font-size: 0.75rem;
+            text-align: center;
+            width: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        @media (min-width: 640px) {
+            .spectrum-label {
+                width: 150px;
+                font-size: 0.875rem;
+                white-space: nowrap;
+            }
+        }
+
+        .quiz-option {
+            display: block;
+            padding: 0.75rem 1rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-option:hover {
+            background-color: #F3F4F6;
+        }
+        .quiz-option.selected {
+            border-color: #005A9C;
+            background-color: #E6F0F9;
+        }
+        .quiz-option.correct {
+            border-color: #16A34A;
+            background-color: #D1FAE5;
+        }
+        .quiz-option.incorrect {
+            border-color: #DC2626;
+            background-color: #FEE2E2;
+        }
+    </style>
+</head>
+<body class="antialiased flex flex-col min-h-screen">
+
+    <header class="bg-white/80 backdrop-blur-lg sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex-shrink-0">
+                    <h1 class="text-xl font-bold text-gray-800">Manuel d'Économie</h1>
+                </div>
+                <div class="hidden lg:flex items-baseline space-x-4">
+                    <a data-section="introduction" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700 active">Introduction</a>
+                    <a data-section="ecosysteme" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Écosystème</a>
+                    <a data-section="marche" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Le Marché</a>
+                    <a data-section="limites" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Limites & Régulation</a>
+                    <a data-section="financement" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Financement</a>
+                    <a data-section="cas-pratiques" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Cas Pratiques</a>
+                    <a data-section="ressources" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Ressources</a>
+                    <a data-section="synthese" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Synthèse</a>
+                    <a data-section="evaluation" class="nav-link px-3 py-2 rounded-md text-sm font-medium text-gray-700">Évaluation</a>
+                </div>
+                <div class="lg:hidden">
+                    <button id="burger-btn" class="p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500">
+                        <span class="sr-only">Ouvrir le menu principal</span>
+                        <svg class="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        <!-- Mobile menu, show/hide based on menu state. -->
+        <div id="mobile-menu" class="lg:hidden hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+                <a data-section="introduction" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Introduction</a>
+                <a data-section="ecosysteme" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Écosystème</a>
+                <a data-section="marche" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Le Marché</a>
+                <a data-section="limites" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Limites & Régulation</a>
+                <a data-section="financement" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Financement</a>
+                <a data-section="cas-pratiques" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Cas Pratiques</a>
+                <a data-section="ressources" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Ressources</a>
+                <a data-section="synthese" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Synthèse</a>
+                <a data-section="evaluation" class="nav-link-mobile block px-3 py-2 rounded-md text-base font-medium text-gray-700">Évaluation</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 flex-grow">
+        
+        <div class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-blue-800">L'intégration de l'entreprise dans son environnement</h1>
+            <h2 class="mt-2 text-2xl md:text-3xl font-semibold text-gray-600">| Économie</h2>
+        </div>
+
+        <section id="introduction" class="content-section active">
+             <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Introduction Vidéo</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Pour commencer, cette vidéo vous présente les enjeux clés de la thématique. Un excellent point de départ pour notre parcours.</p>
+            </div>
+            <div class="card p-4 md:p-6 max-w-4xl mx-auto">
+                <div class="relative w-full overflow-hidden" style="padding-top: 56.25%;">
+                    <iframe loading="lazy" class="absolute top-0 left-0 w-full h-full border-0 rounded-md" src="https://www.canva.com/design/DAG0cWbu8o8/qBCJPZfw3Andj0usQiKI7w/watch?embed" allowfullscreen="allowfullscreen" allow="fullscreen"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section id="ecosysteme" class="content-section">
+            <!-- CONTENU ECOSYSTEME -->
+             <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">L'Écosystème Économique</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Une entreprise n'est jamais isolée. Elle évolue au sein d'un vaste réseau d'acteurs et de flux. Cette section vous aide à visualiser ces interdépendances fondamentales pour comprendre les forces qui influencent votre activité.</p>
+            </div>
+            
+            <div class="card p-6 md:p-8">
+                <h4 class="text-2xl font-bold mb-2 text-center text-gray-800">Le Circuit Économique Simplifié</h4>
+                <p class="text-center text-gray-600 mb-6">Cliquez sur un acteur pour isoler ses principaux échanges et comprendre son rôle.</p>
+                <div id="economic-circuit" class="relative">
+                     <div class="grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-16 items-center">
+                        <div data-agent="menages" class="interactive-diagram-node p-4 rounded-lg bg-white text-center shadow">
+                            <span class="text-4xl">🏠</span>
+                            <p class="font-bold mt-2">Ménages</p>
+                        </div>
+                        <div data-agent="entreprises" class="interactive-diagram-node p-4 rounded-lg bg-white text-center shadow selected">
+                             <span class="text-4xl">🏢</span>
+                            <p class="font-bold mt-2">Entreprises</p>
+                        </div>
+                        <div data-agent="etat" class="interactive-diagram-node p-4 rounded-lg bg-white text-center shadow">
+                             <span class="text-4xl">🏛️</span>
+                            <p class="font-bold mt-2">État</p>
+                        </div>
+                        <div data-agent="banques" class="interactive-diagram-node p-4 rounded-lg bg-white text-center shadow md:col-start-2">
+                             <span class="text-4xl">🏦</span>
+                            <p class="font-bold mt-2">Institutions Financières</p>
+                        </div>
+                        <div data-agent="rdm" class="interactive-diagram-node p-4 rounded-lg bg-white text-center shadow col-span-2 md:col-span-1">
+                             <span class="text-4xl">🌍</span>
+                            <p class="font-bold mt-2">Reste du Monde</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="circuit-info" class="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
+                    <h5 id="agent-title" class="text-xl font-bold mb-2 text-gray-800">Entreprises</h5>
+                    <p id="agent-description" class="text-gray-700">
+                        Leur fonction principale est la production de biens et services marchands. Pour cela, elles versent des salaires aux ménages en échange de leur travail, paient des impôts à l'État, et empruntent auprès des banques pour investir. Elles vendent leur production aux ménages, à l'État et au reste du monde.
+                    </p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="marche" class="content-section">
+             <!-- CONTENU MARCHE -->
+             <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Le Marché : Cœur des Échanges</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Le marché est l'arène de la concurrence. Comprendre son fonctionnement est une chose, mais maîtriser les différentes "règles du jeu" qui s'y appliquent est la clé de la stratégie.</p>
+            </div>
+            
+            <div class="flex justify-center border-b border-gray-200 mb-8">
+                <button data-tab="mecanisme" class="tab-btn active">2A. Le Mécanisme du Prix</button>
+                <button data-tab="structures" class="tab-btn">2B. Structures & Stratégies</button>
+            </div>
+
+            <div id="mecanisme" class="tab-content active">
+                <div class="card p-6 md:p-8">
+                    <h4 class="text-2xl font-bold mb-4 text-gray-800 text-center">Simulateur de Marché Guidé</h4>
+                    <div class="text-center mb-6">
+                        <p class="text-sm text-gray-600 mb-2 font-medium">Commencez par un scénario pour voir un choc économique en action :</p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            <button class="scenario-btn btn-secondary text-xs font-medium py-1 px-3 rounded-full" data-demand="30" data-supply="0">☀️ Vague de chaleur (Demande ↗)</button>
+                            <button class="scenario-btn btn-secondary text-xs font-medium py-1 px-3 rounded-full" data-demand="0" data-supply="30">💡 Innovation (Offre ↗)</button>
+                            <button class="scenario-btn btn-secondary text-xs font-medium py-1 px-3 rounded-full" data-demand="0" data-supply="-30">⛽️ Hausse des coûts (Offre ↘)</button>
+                            <button class="scenario-btn btn-secondary text-xs font-medium py-1 px-3 rounded-full" data-demand="0" data-supply="0">🔄 Réinitialiser</button>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="supplyDemandChart"></canvas>
+                    </div>
+                    <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="demand-shifter" class="block text-sm font-medium text-gray-700">Choc sur la Demande</label>
+                            <input id="demand-shifter" type="range" min="-30" max="30" value="0" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1"><span>Baisse</span><span>Hausse</span></div>
+                        </div>
+                        <div>
+                            <label for="supply-shifter" class="block text-sm font-medium text-gray-700">Choc sur l'Offre</label>
+                            <input id="supply-shifter" type="range" min="-30" max="30" value="0" step="5" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                             <div class="flex justify-between text-xs text-gray-500 mt-1"><span>Baisse</span><span>Hausse</span></div>
+                        </div>
+                        <div>
+                            <label for="price-slider" class="block text-sm font-medium text-gray-700">Votre Politique de Prix</label>
+                            <input id="price-slider" type="range" min="1" max="10" value="5.5" step="0.1" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer mt-2">
+                            <div class="flex justify-between text-xs text-gray-500 mt-1"><span>Prix Bas</span><span>Prix Élevé</span></div>
+                        </div>
+                    </div>
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg border">
+                         <h5 class="font-bold text-lg text-gray-800 text-center mb-2">Analyse de la Situation</h5>
+                         <div id="market-analysis-text" class="text-sm text-center text-gray-700 space-y-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="structures" class="tab-content">
+                <div class="card p-6 md:p-8">
+                    <h4 class="text-2xl font-bold text-gray-800 text-center">Le Spectre de la Concurrence</h4>
+                    <p class="text-center text-gray-600 mb-8 max-w-2xl mx-auto">Tous les marchés ne se ressemblent pas. Le niveau de concurrence détermine le pouvoir des entreprises et leurs stratégies. Cliquez sur un type de marché pour l'analyser.</p>
+                    
+                    <div class="w-full px-4 sm:px-8 mt-12 mb-8 sm:mt-8">
+                        <div class="relative h-2 bg-gradient-to-r from-green-300 via-yellow-300 to-red-400 rounded-full">
+                            <div id="spectrum-container" class="absolute inset-0">
+                                 <div data-structure="cpp" class="spectrum-point active" style="left: 0%;">
+                                    <div class="spectrum-circle"></div>
+                                    <span class="spectrum-label">Concurrence Pure & Parfaite</span>
+                                </div>
+                                <div data-structure="monopolistique" class="spectrum-point" style="left: 33.33%;">
+                                    <div class="spectrum-circle"></div>
+                                    <span class="spectrum-label">Concurrence Monopolistique</span>
+                                </div>
+                                 <div data-structure="oligopole" class="spectrum-point" style="left: 66.66%;">
+                                    <div class="spectrum-circle"></div>
+                                    <span class="spectrum-label">Oligopole</span>
+                                </div>
+                                 <div data-structure="monopole" class="spectrum-point" style="left: 100%;">
+                                    <div class="spectrum-circle"></div>
+                                    <span class="spectrum-label">Monopole</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="structure-info" class="mt-16 p-6 bg-gray-50 rounded-lg border border-gray-200 transition-all duration-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+                    <div class="card p-6">
+                        <h5 class="text-xl font-bold mb-4 text-center">🛡️ Les Barrières à l'Entrée</h5>
+                        <p class="text-sm text-gray-600 mb-4">Ce sont des obstacles qui protègent les entreprises déjà présentes sur un marché contre l'arrivée de nouveaux rivaux.</p>
+                        <div class="space-y-3">
+                            <p class="text-sm"><strong class="font-semibold">Structurelles :</strong> Liées à la nature du marché (ex: coûts fixes très élevés pour créer un réseau ferroviaire, économies d'échelle).</p>
+                            <p class="text-sm"><strong class="font-semibold">Stratégiques :</strong> Créées par les entreprises en place (ex: image de marque très forte, innovation constante, prix prédateurs).</p>
+                            <p class="text-sm"><strong class="font-semibold">Réglementaires :</strong> Imposées par l'État (ex: brevets, licences, normes complexes).</p>
+                        </div>
+                    </div>
+                     <div class="card p-6">
+                        <h5 class="text-xl font-bold mb-4 text-center">🤝 Stratégies de Coopération</h5>
+                        <p class="text-sm text-gray-600 mb-4">Parfois, les entreprises ont intérêt à coopérer plutôt qu'à s'affronter. Il faut distinguer les formes légales des pratiques illégales.</p>
+                        <div class="space-y-3">
+                             <p class="text-sm"><strong class="font-semibold text-green-700">Coopération légale :</strong> Alliances, R&D commune, "coopétition" (coopérer sur un projet tout en restant concurrents).</p>
+                             <p class="text-sm"><strong class="font-semibold text-red-700">Coopération illégale (Le Cartel) :</strong> Entente secrète entre concurrents pour fixer les prix, se répartir le marché et agir comme un monopole. C'est sévèrement puni par l'Autorité de la Concurrence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="limites" class="content-section">
+             <!-- CONTENU LIMITES -->
+             <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Limites & Régulation</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Parfois, le marché seul ne suffit pas à allouer les ressources de manière efficace. Ces "défaillances de marché" justifient souvent une intervention de l'État pour corriger le tir et piloter l'économie.</p>
+            </div>
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                 <div class="card p-6 md:p-8">
+                    <h4 class="text-2xl font-bold mb-4 text-gray-800">L'Asymétrie d'Information</h4>
+                    <p class="text-gray-600 mb-6">Il y a asymétrie d'information quand, dans un échange, un des acteurs en sait plus que l'autre. Cela peut mener à de mauvaises décisions et bloquer le marché.</p>
+                    <div class="space-y-4">
+                        <div>
+                            <h5 class="font-semibold text-lg">La Sélection Adverse</h5>
+                            <p class="text-gray-600">C'est l'asymétrie <span class="font-bold">avant</span> la signature du contrat. L'acheteur ne connaissant pas la qualité réelle du produit, les produits de mauvaise qualité risquent de chasser les bons.</p>
+                            <p class="mt-2 text-sm italic bg-yellow-100 p-3 rounded-lg"><strong>Exemple :</strong> Sur le marché des voitures d'occasion, un acheteur a du mal à distinguer une bonne voiture d'une "guimbarde". Il proposera un prix moyen, trop bas pour les vendeurs de bonnes voitures qui se retirent. À la fin, il ne reste que les mauvaises affaires.</p>
+                        </div>
+                         <div>
+                            <h5 class="font-semibold text-lg">L'Aléa Moral</h5>
+                            <p class="text-gray-600">C'est l'asymétrie <span class="font-bold">après</span> la signature du contrat. Une personne, se sentant protégée par le contrat, change de comportement et prend plus de risques.</p>
+                            <p class="mt-2 text-sm italic bg-green-100 p-3 rounded-lg"><strong>Exemple :</strong> Une personne assurée "tous risques" pour sa voiture pourrait être moins prudente au volant, sachant qu'en cas d'accident, l'assurance couvrira les frais.</p>
+                        </div>
+                    </div>
+                </div>
+                 <div class="card p-6 md:p-8">
+                    <h4 class="text-2xl font-bold mb-4 text-gray-800">Les Externalités : Une Analyse Guidée</h4>
+                    <p class="text-gray-600 mb-4 text-center">Cliquez sur un cas pour voir comment les actions d'un agent impactent les autres, et comment le coût (ou bénéfice) social diffère du coût privé.</p>
+                    <div class="text-center mb-4">
+                        <button id="neg-ext-btn" class="btn-secondary px-4 py-2 rounded-md text-sm font-medium">Analyser : L'Usine Polluante</button>
+                        <button id="pos-ext-btn" class="btn-secondary px-4 py-2 rounded-md text-sm font-medium ml-2">Analyser : L'Apiculteur</button>
+                    </div>
+                    <div class="chart-container" style="height:250px; max-height:300px;">
+                        <canvas id="externalitiesChart"></canvas>
+                    </div>
+                    <div id="externalities-analysis" class="mt-4 p-4 bg-gray-50 rounded-lg border min-h-[120px]">
+                        <p class="text-gray-500 text-center">Choisissez un scénario à analyser.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="card p-6 md:p-8">
+                <h4 class="text-2xl font-bold mb-4 text-gray-800 text-center">Le Pilotage de l'Économie par l'État</h4>
+                <p class="text-center text-gray-600 mb-6 max-w-3xl mx-auto">Pour atteindre ses objectifs (croissance, emploi, stabilité des prix), l'État ne se contente pas de réguler. Il dispose de deux grands leviers d'action pour influencer la conjoncture économique.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-6">
+                    <div class="p-6 rounded-lg bg-blue-50 border border-blue-200">
+                        <h5 class="font-bold text-xl text-blue-800 mb-2">💰 Politique Budgétaire</h5>
+                        <p class="text-sm text-blue-900 mb-3">Menée par le <strong>Gouvernement</strong>. Elle utilise le budget de l'État (dépenses et impôts) pour agir sur l'activité.</p>
+                        <p class="font-semibold">Relance :</p>
+                        <p class="text-sm mb-2">↗️ Dépenses publiques ou ↘️ Impôts pour stimuler la consommation et l'investissement.</p>
+                        <p class="font-semibold">Rigueur / Austérité :</p>
+                        <p class="text-sm">↘️ Dépenses publiques ou ↗️ Impôts pour freiner l'inflation et réduire la dette.</p>
+                    </div>
+                    <div class="p-6 rounded-lg bg-green-50 border border-green-200">
+                        <h5 class="font-bold text-xl text-green-800 mb-2">📈 Politique Monétaire</h5>
+                        <p class="text-sm text-green-900 mb-3">Menée par la <strong>Banque Centrale Européenne (BCE)</strong>. Elle utilise les taux d'intérêt pour réguler la quantité de monnaie en circulation.</p>
+                        <p class="font-semibold">Expansionniste :</p>
+                        <p class="text-sm mb-2">↘️ Taux d'intérêt pour rendre le crédit moins cher et encourager l'emprunt et l'investissement.</p>
+                        <p class="font-semibold">Restrictive :</p>
+                        <p class="text-sm">↗️ Taux d'intérêt pour rendre le crédit plus cher afin de lutter contre l'inflation.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="financement" class="content-section">
+            <!-- CONTENU FINANCEMENT -->
+             <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Le Financement de l'Économie</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Pour investir, innover et se développer, une entreprise a besoin de capitaux. Elle peut se les procurer de deux manières principales : en passant par les banques ou en s'adressant directement aux marchés financiers.</p>
+            </div>
+            <div class="card p-6 md:p-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 divide-y md:divide-y-0 md:divide-x divide-gray-200">
+                    <div class="pt-4 md:pt-0 pr-0 md:pr-8">
+                        <h4 class="text-2xl font-bold mb-4 text-gray-800 text-center"><span class="text-4xl mr-2">🏦</span>Financement Indirect</h4>
+                        <p class="text-gray-600 mb-4">Aussi appelé financement <span class="font-bold">intermédié</span>. L'entreprise ne rencontre pas directement les épargnants. Elle s'adresse à un intermédiaire, la banque, qui collecte l'épargne des ménages pour la transformer en crédits pour les entreprises.</p>
+                        <ul class="space-y-2 list-disc list-inside">
+                            <li><strong>Acteur clé :</strong> La banque.</li>
+                            <li><strong>Instrument principal :</strong> Le crédit bancaire.</li>
+                            <li><strong>Avantage :</strong> Accessible aux PME, analyse de risque par un expert.</li>
+                            <li><strong>Inconvénient :</strong> Coût (taux d'intérêt), garanties exigées.</li>
+                        </ul>
+                    </div>
+                    <div class="pt-8 md:pt-0 pl-0 md:pl-8">
+                        <h4 class="text-2xl font-bold mb-4 text-gray-800 text-center"><span class="text-4xl mr-2">📈</span>Financement Direct</h4>
+                         <p class="text-gray-600 mb-4">L'entreprise se finance directement sur les <span class="font-bold">marchés financiers</span> en émettant des titres (actions, obligations) que les épargnants (ménages, autres entreprises, investisseurs) peuvent acheter.</p>
+                         <div class="mt-4">
+                            <h5 class="font-bold">Émission d'Actions :</h5>
+                            <p class="text-sm text-gray-600">L'entreprise vend une partie de son capital. L'acheteur devient co-propriétaire et reçoit une part des bénéfices (dividendes).</p>
+                        </div>
+                         <div class="mt-4">
+                            <h5 class="font-bold">Émission d'Obligations :</h5>
+                            <p class="text-sm text-gray-600">L'entreprise emprunte de l'argent en vendant des titres de dette. L'acheteur est un créancier qui sera remboursé avec intérêts.</p>
+                        </div>
+                        <div class="mt-6 p-4 rounded-lg bg-gray-50 border">
+                           <h5 class="font-semibold text-center mb-2">Action vs. Obligation : Le couple Risque / Rendement</h5>
+                           <div class="text-xs grid grid-cols-2 gap-2 text-center">
+                               <div>
+                                   <p class="font-bold">ACTION</p>
+                                   <p class="text-red-600">Risque Élevé</p>
+                                   <p class="text-green-600">Rendement Potentiel Élevé</p>
+                               </div>
+                               <div>
+                                   <p class="font-bold">OBLIGATION</p>
+                                   <p class="text-green-600">Risque Faible</p>
+                                   <p class="text-red-600">Rendement Faible</p>
+                               </div>
+                           </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="cas-pratiques" class="content-section">
+            <!-- CONTENU CAS PRATIQUES -->
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Cas Pratiques : Le Cas du Manager</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">La théorie, c'est bien. La pratique, c'est mieux ! Mettez vos connaissances à l'épreuve avec ces mini-cas inspirés de situations réelles en unité commerciale.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                 <div class="card p-6 flex flex-col">
+                    <h4 class="text-lg font-bold mb-2">Cas 1 : L'impact d'une décision de l'État</h4>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Vous êtes manager d'un supermarché. Le gouvernement annonce une politique de relance en augmentant de 5% les allocations familiales et en versant une "prime énergie" aux ménages les plus modestes.</p>
+                    <div class="p-4 bg-blue-100 rounded-md text-blue-900 mb-4">
+                        <p class="font-semibold">Votre mission :</p>
+                        <p class="text-sm">Quel impact direct anticipez-vous sur votre chiffre d'affaires ? Sur quels rayons en particulier devriez-vous concentrer vos efforts (stocks, promotions) ?</p>
+                    </div>
+                    <button class="toggle-solution btn-secondary text-sm font-medium py-2 px-4 rounded-md w-full">Révéler l'analyse</button>
+                    <div class="case-solution mt-4 p-4 text-sm">
+                        <p><strong class="font-semibold">Analyse :</strong> C'est un exemple de <strong class="text-blue-700">politique budgétaire de relance</strong>. Le revenu disponible des ménages va augmenter, ce qui devrait stimuler la <strong class="text-red-700">demande</strong>.</p>
+                        <ul class="list-disc list-inside mt-2">
+                            <li><strong>Impact général :</strong> Hausse probable du CA.</li>
+                            <li><strong>Rayons à surveiller :</strong>
+                                <ul class="list-inside ml-4">
+                                    <li>- Produits de grande consommation (alimentation, hygiène).</li>
+                                    <li>- Rayon puériculture (liée aux allocations familiales).</li>
+                                    <li>- Produits plaisir/non essentiels qui pourraient bénéficier du surplus de revenu.</li>
+                                </ul>
+                            </li>
+                            <li><strong>Action :</strong> Anticiper les commandes, adapter les stocks et proposer des offres attractives sur ces rayons cibles.</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                 <div class="card p-6 flex flex-col">
+                    <h4 class="text-lg font-bold mb-2">Cas 2 : Réagir à la concurrence</h4>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Vous êtes gérant d'un fast-food "premium". Un nouveau concurrent s'installe à proximité et propose des menus similaires, mais 15% moins chers. Vous observez une légère baisse de votre fréquentation.</p>
+                    <div class="p-4 bg-blue-100 rounded-md text-blue-900 mb-4">
+                        <p class="font-semibold">Votre mission :</p>
+                        <p class="text-sm">Quelle est votre stratégie de prix ? Faut-il s'aligner ? Maintenir le prix ? Comment utiliser les concepts économiques pour décider ?</p>
+                    </div>
+                    <button class="toggle-solution btn-secondary text-sm font-medium py-2 px-4 rounded-md w-full">Révéler l'analyse</button>
+                    <div class="case-solution mt-4 p-4 text-sm">
+                        <p><strong class="font-semibold">Analyse :</strong> Vous êtes en situation de <strong class="text-blue-700">concurrence monopolistique</strong> (produits différenciés). La question clé est l'<strong class="text-red-700">élasticité-prix</strong> de votre demande.</p>
+                        <ul class="list-disc list-inside mt-2">
+                            <li><strong>Option 1 (s'aligner) :</strong> Risqué si vos coûts sont plus élevés. Vous risquez une guerre des prix destructrice.</li>
+                            <li><strong>Option 2 (maintenir) :</strong> La meilleure stratégie si votre demande est <strong class="text-red-700">inélastique</strong>. Pour cela, il faut renforcer la <strong class="text-blue-700">différenciation</strong>.</li>
+                            <li><strong>Action :</strong> Ne pas baisser les prix, mais communiquer agressivement sur vos points forts (qualité des ingrédients, expérience client, programme de fidélité). Le but est de justifier l'écart de prix et de rendre vos clients moins sensibles au prix du concurrent.</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card p-6 flex flex-col">
+                    <h4 class="text-lg font-bold mb-2">Cas 3 : Vaincre la méfiance du client</h4>
+                    <p class="text-sm text-gray-600 mb-4 flex-grow">Vous lancez une activité de vente de smartphones reconditionnés sur internet. Le marché est porteur, mais vous constatez que beaucoup de visiteurs hésitent à acheter, craignant des défauts cachés ou une batterie défaillante.</p>
+                    <div class="p-4 bg-blue-100 rounded-md text-blue-900 mb-4">
+                        <p class="font-semibold">Votre mission :</p>
+                        <p class="text-sm">Quel problème économique majeur rencontrez-vous ? Quelles actions concrètes mettre en place pour rassurer les clients et déclencher l'achat ?</p>
+                    </div>
+                    <button class="toggle-solution btn-secondary text-sm font-medium py-2 px-4 rounded-md w-full">Révéler l'analyse</button>
+                    <div class="case-solution mt-4 p-4 text-sm">
+                        <p><strong class="font-semibold">Analyse :</strong> C'est un cas typique d'<strong class="text-yellow-700">asymétrie d'information</strong> menant à la <strong class="text-yellow-700">sélection adverse</strong>. Le client ne peut pas vérifier la qualité avant l'achat, il a donc peur de tomber sur un mauvais produit.</p>
+                        <ul class="list-disc list-inside mt-2">
+                           <li><strong>Objectif :</strong> Réduire cette asymétrie en envoyant des signaux de qualité crédibles.</li>
+                           <li><strong>Actions concrètes :</strong>
+                                <ul class="list-inside ml-4">
+                                    <li>- Proposer une garantie longue (ex: 12 ou 24 mois).</li>
+                                    <li>- Mettre en place un label "Certifié Reconditionné" avec une checklist détaillée des points de contrôle.</li>
+                                    <li>- Offrir une politique de retour "satisfait ou remboursé" de 30 jours.</li>
+                                    <li>- Afficher de manière transparente les avis clients vérifiés.</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="ressources" class="content-section">
+            <!-- CONTENU RESSOURCES -->
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Ressources Pédagogiques</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Utilisez cette section pour rechercher rapidement une définition ou pour revoir les réponses aux questions les plus fréquentes sur les concepts économiques clés.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card p-6 md:p-8">
+                    <h4 class="text-2xl font-bold mb-4 text-gray-800">Glossaire Interactif</h4>
+                    <input type="text" id="glossary-search" placeholder="Rechercher un terme..." class="w-full px-4 py-2 border border-gray-300 rounded-md mb-6 focus:ring-blue-500 focus:border-blue-500">
+                    <div id="glossary-list" class="space-y-4 max-h-96 overflow-y-auto pr-2">
+                    </div>
+                </div>
+                <div class="card p-6 md:p-8">
+                    <h4 class="text-2xl font-bold mb-4 text-gray-800">Foire Aux Questions (FAQ)</h4>
+                    <div id="faq-container" class="space-y-4">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="synthese" class="content-section">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Synthèse : La Carte Mentale du Cours</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Voici une vue d'ensemble de tous les concepts abordés. Utilisez cette carte mentale interactive pour réviser les notions et visualiser les liens qui les unissent.</p>
+            </div>
+            <div class="card p-4 md:p-6">
+                 <div class="relative w-full overflow-hidden" style="padding-top: 62.5%;">
+                    <iframe src='https://www.xmind.app/embed/gUpSeP/' class="absolute top-0 left-0 w-full h-full border-0 rounded-md" frameborder='0' scrolling='no' allowfullscreen="true"></iframe>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluation" class="content-section">
+            <div class="text-center mb-12">
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900">Évaluation Formative</h3>
+                <p class="mt-4 max-w-2xl mx-auto text-lg text-gray-600">Le moment est venu de tester vos connaissances ! Répondez aux questions pour valider votre compréhension et ancrer les concepts clés.</p>
+            </div>
+
+            <div id="quiz-container" class="card p-6 md:p-8 max-w-4xl mx-auto">
+                <div id="quiz-start-screen">
+                    <h4 class="text-2xl font-bold text-center mb-4">Quiz : L'entreprise et son environnement</h4>
+                    <p class="text-center text-gray-600 mb-6">Ce quiz de 15 questions va vous permettre de faire le point sur vos acquis. L'objectif est d'atteindre un score de 75% de bonnes réponses. Bonne chance !</p>
+                    <div class="text-center">
+                        <button id="start-quiz-btn" class="btn-primary px-8 py-3 rounded-md font-semibold">Démarrer l'évaluation</button>
+                    </div>
+                </div>
+
+                <div id="quiz-main-screen" class="hidden">
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-2">
+                            <span id="quiz-progress-text" class="text-sm font-semibold text-gray-700">Question 1 / 15</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div id="quiz-progress-bar" class="bg-blue-600 h-2.5 rounded-full" style="width: 7%"></div>
+                        </div>
+                    </div>
+
+                    <div id="question-card">
+                        <div class="flex justify-between items-center mb-2">
+                            <h5 class="text-xl font-bold text-gray-800 mr-4" id="question-text"></h5>
+                            <span id="question-difficulty" class="text-xs font-medium px-2.5 py-0.5 rounded-full flex-shrink-0"></span>
+                        </div>
+                        <div class="mb-4">
+                             <button id="show-hint-btn" class="text-sm text-blue-600 hover:underline">💡 Afficher un indice</button>
+                             <div id="hint-container" class="hidden mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-sm text-yellow-800"></div>
+                        </div>
+                        
+                        <div id="answer-options" class="space-y-2"></div>
+                        
+                        <div id="feedback-container" class="mt-4 p-4 rounded-md text-sm hidden"></div>
+                    </div>
+                    
+                    <div class="mt-6 flex justify-end">
+                        <button id="check-answer-btn" class="btn-primary px-6 py-2 rounded-md font-semibold">Valider</button>
+                        <button id="next-question-btn" class="btn-primary px-6 py-2 rounded-md font-semibold hidden">Suivant</button>
+                    </div>
+                </div>
+
+                <div id="quiz-results-screen" class="hidden text-center">
+                    <h4 class="text-2xl font-bold mb-4">Résultats du Quiz</h4>
+                    <p class="text-lg mb-2">Votre score final est de :</p>
+                    <p id="final-score" class="text-5xl font-bold mb-4"></p>
+                    <div class="w-full bg-gray-200 rounded-full h-4 max-w-md mx-auto mb-4">
+                        <div id="final-score-bar" class="h-4 rounded-full" style="width: 0%;"></div>
+                    </div>
+                    <p id="results-feedback" class="text-gray-700 mb-6 max-w-xl mx-auto"></p>
+                    <button id="restart-quiz-btn" class="btn-secondary px-8 py-3 rounded-md font-semibold">Recommencer</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-gray-500">
+            <p>&copy; 2025-2026 Manuel Interactif d'Économie. Tous droits réservés.</p>
+        </div>
+    </footer>
+
+    <button id="back-to-top" class="hidden fixed bottom-5 right-5 bg-blue-600 text-white w-12 h-12 rounded-full shadow-lg flex items-center justify-center text-2xl hover:bg-blue-700 transition-all">
+        ↑
+    </button>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // LOGIQUE DE NAVIGATION ET CONTENU EXISTANT
+            const agentInfo = {
+                menages: { title: "Ménages", description: "Leur fonction principale est la consommation. Ils offrent leur travail aux entreprises et à l'État en échange d'un revenu (salaire, prestations). Ils utilisent ce revenu pour consommer, épargner (auprès des banques) et payer des impôts." },
+                entreprises: { title: "Entreprises", description: "Leur fonction principale est la production de biens et services marchands. Pour cela, elles versent des salaires aux ménages, paient des impôts à l'État, et empruntent auprès des banques pour investir. Elles vendent leur production aux autres agents." },
+                etat: { title: "État (Administrations Publiques)", description: "Il produit des services non marchands (éducation, sécurité), et redistribue les richesses (allocations). Il se finance par les prélèvements obligatoires (impôts, taxes) et peut également piloter l'économie via ses politiques budgétaire et monétaire." },
+                banques: { title: "Institutions Financières", description: "Leur rôle est l'intermédiation. Elles collectent l'épargne des agents à capacité de financement (ménages) et accordent des crédits aux agents à besoin de financement (entreprises, ménages)." },
+                rdm: { title: "Reste du Monde", description: "Cet agent regroupe tous les acteurs économiques étrangers. Il permet les échanges internationaux : les importations (achats de biens/services à l'étranger) et les exportations (ventes de biens/services à l'étranger)." }
+            };
+            const circuitNodes = document.querySelectorAll('.interactive-diagram-node');
+            const agentTitle = document.getElementById('agent-title');
+            const agentDescription = document.getElementById('agent-description');
+
+            circuitNodes.forEach(node => {
+                node.addEventListener('click', () => {
+                    circuitNodes.forEach(n => n.classList.remove('selected'));
+                    node.classList.add('selected');
+                    const agent = node.dataset.agent;
+                    agentTitle.textContent = agentInfo[agent].title;
+                    agentDescription.textContent = agentInfo[agent].description;
+                });
+            });
+
+
+            const sections = document.querySelectorAll('.content-section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            const burgerBtn = document.getElementById('burger-btn');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileNavLinks = document.querySelectorAll('.nav-link-mobile');
+
+            function showSection(sectionId) {
+                sections.forEach(section => { section.id === sectionId ? section.classList.add('active') : section.classList.remove('active'); });
+                navLinks.forEach(link => { link.dataset.section === sectionId ? link.classList.add('active') : link.classList.remove('active'); });
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            navLinks.forEach(link => { link.addEventListener('click', (e) => { e.preventDefault(); showSection(e.target.dataset.section); }); });
+            
+            burgerBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            mobileNavLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showSection(e.target.dataset.section);
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+            
+            const solutionToggles = document.querySelectorAll('.toggle-solution');
+            solutionToggles.forEach(button => {
+                button.addEventListener('click', () => {
+                    const solutionDiv = button.nextElementSibling;
+                    const isVisible = solutionDiv.style.display === 'block';
+                    solutionDiv.style.display = isVisible ? 'none' : 'block';
+                    button.textContent = isVisible ? "Révéler l'analyse" : "Cacher l'analyse";
+                });
+            });
+            
+            let supplyDemandChart;
+            const priceSlider = document.getElementById('price-slider');
+            const demandShifter = document.getElementById('demand-shifter');
+            const supplyShifter = document.getElementById('supply-shifter');
+            const marketAnalysisText = document.getElementById('market-analysis-text');
+            
+            function createSupplyDemandChart() {
+                if(!document.getElementById('supplyDemandChart')) return;
+                const ctx = document.getElementById('supplyDemandChart').getContext('2d');
+                
+                supplyDemandChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: Array.from({ length: 100 }, (_, i) => ((i + 1) * 0.1).toFixed(1)),
+                        datasets: [
+                            { label: 'Demande', borderColor: '#DC2626', fill: false, tension: 0.1, data: [] }, 
+                            { label: 'Offre', borderColor: '#16A34A', fill: false, tension: 0.1, data: [] }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { title: { display: true, text: 'Prix (€)' } }, y: { title: { display: true, text: 'Quantité' }, min: 0, max: 150 } },
+                        plugins: { tooltip: { mode: 'index', intersect: false }, legend: { position: 'top' }, annotation: { annotations: {} } }
+                    }
+                });
+                updateMarketChart();
+            }
+
+            function updateMarketChart() {
+                if(!supplyDemandChart || !marketAnalysisText) return;
+                const demandShift = parseFloat(demandShifter.value);
+                const supplyShift = parseFloat(supplyShifter.value);
+                const currentPrice = parseFloat(priceSlider.value);
+
+                const demandData = supplyDemandChart.data.labels.map(p => Math.max(0, 100 - (p * 9) + demandShift));
+                const supplyData = supplyDemandChart.data.labels.map(p => Math.max(0, 10 + (p * 9) - supplyShift));
+
+                supplyDemandChart.data.datasets[0].data = demandData;
+                supplyDemandChart.data.datasets[1].data = supplyData;
+
+                let equilibriumPrice = null, equilibriumQty = null;
+                for(let i = 0; i < demandData.length; i++) {
+                    if(demandData[i] <= supplyData[i]) {
+                        equilibriumPrice = parseFloat(supplyDemandChart.data.labels[i]);
+                        equilibriumQty = demandData[i];
+                        break;
+                    }
+                }
+                
+                let analysisHTML = '';
+                if (demandShift > 0) analysisHTML += `<p>📈 <strong>Choc de Demande Positif :</strong> La demande augmente (ex: produit à la mode). La courbe de demande se déplace à droite.</p>`;
+                else if (demandShift < 0) analysisHTML += `<p>📉 <strong>Choc de Demande Négatif :</strong> La demande baisse (ex: baisse du revenu). La courbe de demande se déplace à gauche.</p>`;
+
+                if (supplyShift > 0) analysisHTML += `<p>🏭 <strong>Choc d'Offre Positif :</strong> L'offre augmente (ex: baisse des coûts de production). La courbe d'offre se déplace à droite.</p>`;
+                else if (supplyShift < 0) analysisHTML += `<p>⚠️ <strong>Choc d'Offre Négatif :</strong> L'offre diminue (ex: hausse des matières premières). La courbe d'offre se déplace à gauche.</p>`;
+
+                if (demandShift === 0 && supplyShift === 0) analysisHTML += '<p>Situation de marché initiale sans choc externe.</p>';
+
+                if(equilibriumPrice !== null) {
+                    analysisHTML += `<p class="font-semibold text-blue-800 pt-2 border-t mt-2">Le nouvel équilibre du marché est un prix de <strong>${equilibriumPrice.toFixed(2)}€</strong> pour <strong>${Math.round(equilibriumQty)}</strong> unités.</p>`;
+                    
+                    const qtyAtCurrentPriceDemand = Math.max(0, 100 - (currentPrice * 9) + demandShift);
+                    const qtyAtCurrentPriceSupply = Math.max(0, 10 + (currentPrice * 9) - supplyShift);
+
+                    if (Math.abs(currentPrice - equilibriumPrice) < 0.1) {
+                        analysisHTML += `<p class="text-green-600 font-bold">Votre prix de ${currentPrice.toFixed(2)}€ est à l'équilibre. Le marché est satisfait.</p>`;
+                    } else if (currentPrice < equilibriumPrice) {
+                        analysisHTML += `<p class="text-red-600 font-bold">À votre prix de ${currentPrice.toFixed(2)}€, il y a une PÉNURIE. La demande (${Math.round(qtyAtCurrentPriceDemand)}) est plus forte que l'offre (${Math.round(qtyAtCurrentPriceSupply)}).</p>`;
+                    } else {
+                        analysisHTML += `<p class="text-yellow-700 font-bold">À votre prix de ${currentPrice.toFixed(2)}€, il y a un EXCÉDENT. L'offre (${Math.round(qtyAtCurrentPriceSupply)}) est plus forte que la demande (${Math.round(qtyAtCurrentPriceDemand)}).</p>`;
+                    }
+                    
+                    supplyDemandChart.options.plugins.annotation.annotations = {
+                        equilibriumPoint: { type: 'point', xValue: equilibriumPrice, yValue: equilibriumQty, backgroundColor: 'rgba(0, 90, 156, 0.8)', radius: 6, borderColor: 'white', borderWidth: 2 },
+                        priceLine: { type: 'line', xMin: 0, xMax: 10, yMin: equilibriumQty, yMax: equilibriumQty, borderColor: 'rgba(0, 90, 156, 0.5)', borderWidth: 1, borderDash: [6, 6] },
+                        currentPriceLine: { type: 'line', xMin: currentPrice, xMax: currentPrice, yMin: 0, yMax: 150, borderColor: '#4A4A4A', borderWidth: 2, label: { content: `Votre Prix: ${currentPrice.toFixed(2)}€`, enabled: true, position: 'start' } }
+                    };
+
+                } else {
+                     analysisHTML += `<p class="font-semibold text-red-800 pt-2 border-t mt-2">Pas de point d'équilibre trouvé dans cette configuration de marché.</p>`;
+                }
+                marketAnalysisText.innerHTML = analysisHTML;
+                supplyDemandChart.update();
+            }
+
+            if(priceSlider) priceSlider.addEventListener('input', updateMarketChart);
+            if(demandShifter) demandShifter.addEventListener('input', updateMarketChart);
+            if(supplyShifter) supplyShifter.addEventListener('input', updateMarketChart);
+
+            document.querySelectorAll('.scenario-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    demandShifter.value = btn.dataset.demand;
+                    supplyShifter.value = btn.dataset.supply;
+                    updateMarketChart();
+                });
+            });
+
+
+            let externalitiesChart;
+            const negExtBtn = document.getElementById('neg-ext-btn');
+            const posExtBtn = document.getElementById('pos-ext-btn');
+            const externalitiesAnalysis = document.getElementById('externalities-analysis');
+            let isAnimating = false;
+
+            function createExternalitiesChart() {
+                if(!document.getElementById('externalitiesChart')) return;
+                 const ctx = document.getElementById('externalitiesChart').getContext('2d');
+                 externalitiesChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: { labels: [], datasets: [] },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        scales: { x: { stacked: false }, y: { stacked: true, beginAtZero: true, title: {display: true, text: 'Coût / Bénéfice'} } },
+                        plugins: { title: { display: true, text: 'Analyse des Externalités' }, legend: { display: true } },
+                        animation: { duration: 800 }
+                    }
+                });
+            }
+            
+            function animateExternalitiesChart(type) {
+                if (isAnimating) return;
+                isAnimating = true;
+                negExtBtn.disabled = true;
+                posExtBtn.disabled = true;
+
+                if (type === 'negative') {
+                    setTimeout(() => {
+                        externalitiesChart.data = {
+                            labels: ['Coût pour l\'entreprise', 'Coût pour la société'],
+                            datasets: [{ label: 'Coût Privé (Production)', data: [100, 100], backgroundColor: '#3B82F6' }]
+                        };
+                        externalitiesChart.options.plugins.title.text = "Étape 1 : Le Coût Privé";
+                        externalitiesChart.update();
+                        externalitiesAnalysis.innerHTML = `<p class="font-semibold">1. L'usine calcule son coût de production (salaires, machines). C'est son <strong>coût privé</strong>, celui qu'elle prend en compte pour fixer son prix.</p>`;
+                    }, 0);
+
+                    setTimeout(() => {
+                        externalitiesChart.data.datasets.push({ label: 'Coût Externe (Pollution)', data: [0, 50], backgroundColor: '#EF4444' });
+                        externalitiesChart.options.plugins.title.text = "Étape 2 : Le Coût Externe apparaît";
+                        externalitiesChart.update();
+                        externalitiesAnalysis.innerHTML += `<p class="mt-2">2. Mais son activité génère de la pollution. C'est un <strong>coût externe</strong> supporté par la collectivité (santé, nettoyage) que l'usine, elle, ne paie pas.</p>`;
+                    }, 1200);
+
+                    setTimeout(() => {
+                        externalitiesChart.options.plugins.title.text = "Conclusion : Coût Social > Coût Privé";
+                        externalitiesChart.update();
+                        externalitiesAnalysis.innerHTML += `<p class="mt-2 font-bold text-blue-800">3. Le <strong>coût social</strong> (privé + externe) est donc supérieur au coût privé. Le marché, seul, conduit à une <strong>surproduction</strong> de pollution.</p>`;
+                        isAnimating = false; negExtBtn.disabled = false; posExtBtn.disabled = false;
+                    }, 2400);
+
+                } else { 
+                    setTimeout(() => {
+                        externalitiesChart.data = {
+                            labels: ['Bénéfice pour l\'apiculteur', 'Bénéfice pour l\'agriculteur'],
+                            datasets: [{ label: 'Bénéfice Privé (Vente de miel)', data: [100, 0], backgroundColor: '#10B981' }]
+                        };
+                        externalitiesChart.options.plugins.title.text = "Étape 1 : Le Bénéfice Privé";
+                        externalitiesChart.update();
+                        externalitiesAnalysis.innerHTML = `<p class="font-semibold">1. L'apiculteur vend son miel. C'est son <strong>bénéfice privé</strong>, le seul gain qu'il prend en compte.</p>`;
+                    }, 0);
+                    
+                    setTimeout(() => {
+                        externalitiesChart.data.datasets.push({ label: 'Bénéfice Externe (Pollinisation)', data: [0, 40], backgroundColor: '#FBBF24' });
+                        externalitiesChart.options.plugins.title.text = "Étape 2 : Le Bénéfice Externe apparaît";
+                        externalitiesChart.update();
+                        externalitiesAnalysis.innerHTML += `<p class="mt-2">2. Mais ses abeilles pollinisent gratuitement les vergers de son voisin. C'est un <strong>bénéfice externe</strong> pour lequel l'apiculteur n'est pas rémunéré.</p>`;
+                    }, 1200);
+
+                    setTimeout(() => {
+                        externalitiesChart.options.plugins.title.text = "Conclusion : Bénéfice Social > Bénéfice Privé";
+                        externalitiesChart.update();
+                        externalitiesAnalysis.innerHTML += `<p class="mt-2 font-bold text-green-800">3. Le <strong>bénéfice social</strong> (privé + externe) est donc supérieur au bénéfice privé. Le marché, seul, conduit à une <strong>sous-production</strong> de ruches.</p>`;
+                        isAnimating = false; negExtBtn.disabled = false; posExtBtn.disabled = false;
+                    }, 2400);
+                }
+            }
+
+
+            if(negExtBtn) negExtBtn.addEventListener('click', () => animateExternalitiesChart('negative'));
+            if(posExtBtn) posExtBtn.addEventListener('click', () => animateExternalitiesChart('positive'));
+
+
+            const glossaryData = [
+                { term: "Agent Économique", definition: "Individu ou groupe constituant un centre de décision économique. Catégories : Ménages, Entreprises, État, Institutions Financières, Reste du Monde." },
+                { term: "Aléa Moral", definition: "Défaillance de marché (ex-post) où une partie, protégée par un contrat, change de comportement au détriment de l'autre (ex: un assuré prenant plus de risques)." },
+                { term: "Asymétrie d'Information", definition: "Défaillance de marché où une partie détient plus d'informations que l'autre, minant la confiance." },
+                { term: "Barrières à l'Entrée", definition: "Obstacles qui protègent les entreprises en place de nouveaux concurrents. Peuvent être structurelles, stratégiques ou réglementaires." },
+                { term: "Cartel", definition: "Entente illégale entre concurrents pour fixer les prix et agir comme un monopole." },
+                { term: "Circuit Économique", definition: "Représentation des flux réels et monétaires entre les agents économiques." },
+                { term: "Concurrence Monopolistique", definition: "Structure de marché avec de nombreux vendeurs proposant des produits différenciés, leur donnant un certain pouvoir de prix." },
+                { term: "Concurrence Pure et Parfaite (CPP)", definition: "Modèle théorique de marché où les entreprises sont 'price takers' (preneuses de prix)." },
+                { term: "Création Monétaire", definition: "Pouvoir des banques de créer de la monnaie scripturale 'ex nihilo' en accordant des crédits." },
+                { term: "Externalité", definition: "Impact de l'action d'un agent sur un autre sans compensation monétaire (négative : pollution ; positive : innovation)." },
+                { term: "Financement Direct", definition: "Financement sur les marchés financiers par émission de titres (actions, obligations) sans intermédiaire bancaire." },
+                { term: "Financement Indirect", definition: "Financement via un intermédiaire bancaire qui collecte l'épargne et la transforme en crédits." },
+                { term: "Marché Primaire", definition: "Marché des titres neufs, servant au financement de l'économie." },
+                { term: "Marché Secondaire", definition: "Marché des titres d'occasion (la Bourse), assurant la liquidité et la découverte des prix." },
+                { term: "Monopole", definition: "Structure de marché avec un seul vendeur ('price maker')." },
+                { term: "Oligopole", definition: "Structure de marché avec un petit nombre de vendeurs dominants, caractérisée par l'interdépendance stratégique." },
+                { term: "Sélection Adverse", definition: "Défaillance de marché (ex-ante) où les mauvais produits chassent les bons à cause d'une information cachée sur la qualité." }
+            ];
+
+            const faqData = [
+                 { question: "Quelle est la différence entre un flux réel et un flux monétaire ?", answer: "Un flux réel est le mouvement d'un bien ou service (ex: une baguette de pain). Un flux monétaire est sa contrepartie en argent (ex: la pièce de 1€). À tout flux réel correspond un flux monétaire de sens opposé." },
+                 { question: "Pourquoi la courbe de la demande est-elle décroissante ?", answer: "Car lorsque le prix d'un bien augmente, les consommateurs en achètent moins. Cela est dû à l'effet de substitution (on achète un produit similaire moins cher) et à l'effet de revenu (notre pouvoir d'achat diminue)." },
+                 { question: "Qu'est-ce qui distingue un monopole d'un oligopole ?", answer: "Le monopole, c'est un seul vendeur sur le marché (ex: distribution d'eau). L'oligopole, c'est un petit nombre de vendeurs (ex: opérateurs téléphoniques). La grande différence est l'interdépendance stratégique dans l'oligopole : chaque décision doit anticiper la réaction des concurrents." },
+                 { question: "Sélection adverse vs. Aléa moral : comment ne pas les confondre ?", answer: "Pensez au timing ! La sélection adverse, c'est AVANT le contrat (on a peur de choisir un 'mauvais' produit). L'aléa moral, c'est APRÈS le contrat (on change de comportement car on se sent protégé)." },
+                 { question: "Comment les banques créent-elles de l'argent ?", answer: "Par le mécanisme 'les crédits font les dépôts'. En accordant un prêt, une banque ne puise pas dans un coffre, elle inscrit la somme sur le compte de l'emprunteur par une simple écriture comptable, créant ainsi de la nouvelle monnaie qui n'existait pas avant." }
+            ];
+
+            const glossaryList = document.getElementById('glossary-list');
+            const glossarySearch = document.getElementById('glossary-search');
+            
+            function renderGlossary(filter = '') {
+                if(!glossaryList) return;
+                glossaryList.innerHTML = '';
+                const filteredData = glossaryData.filter(item => item.term.toLowerCase().includes(filter.toLowerCase()));
+                filteredData.forEach(item => {
+                    const div = document.createElement('div');
+                    div.innerHTML = `<p class="font-bold text-gray-800">${item.term}</p><p class="text-sm text-gray-600">${item.definition}</p>`;
+                    glossaryList.appendChild(div);
+                });
+            }
+
+            if(glossarySearch) glossarySearch.addEventListener('input', (e) => renderGlossary(e.target.value));
+
+            const faqContainer = document.getElementById('faq-container');
+            function renderFaq() {
+                if(!faqContainer) return;
+                faqData.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'border-b border-gray-200 py-4';
+                    div.innerHTML = `
+                        <div class="faq-question flex justify-between items-center">
+                            <h5 class="font-semibold text-gray-800">${item.question}</h5>
+                            <span class="arrow text-blue-600 font-bold text-xl transform transition-transform duration-300">&#x276F;</span>
+                        </div>
+                        <div class="faq-answer mt-2 p-4 text-sm text-gray-700">
+                            ${item.answer}
+                        </div>
+                    `;
+                    faqContainer.appendChild(div);
+                });
+
+                faqContainer.addEventListener('click', (e) => {
+                    const questionHeader = e.target.closest('.faq-question');
+                    if (questionHeader) {
+                        const answer = questionHeader.nextElementSibling;
+                        const wasOpen = questionHeader.classList.contains('open');
+                        document.querySelectorAll('.faq-question').forEach(q => q.classList.remove('open'));
+                        document.querySelectorAll('.faq-answer').forEach(a => a.style.display = 'none');
+                        if(!wasOpen) {
+                            questionHeader.classList.add('open');
+                            answer.style.display = 'block';
+                        }
+                    }
+                });
+            }
+
+            const marketTabs = document.querySelectorAll('.tab-btn');
+            const marketTabContents = document.querySelectorAll('.tab-content');
+            marketTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    marketTabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    marketTabContents.forEach(content => {
+                        content.id === tab.dataset.tab ? content.classList.add('active') : content.classList.remove('active');
+                    });
+                });
+            });
+
+            const spectrumPoints = document.querySelectorAll('.spectrum-point');
+            const structureInfo = document.getElementById('structure-info');
+            const structureData = {
+                cpp: {
+                    title: "Concurrence Pure et Parfaite (CPP)",
+                    description: "Un modèle théorique de référence où la concurrence est maximale. Aucune entreprise ne peut influencer le prix du marché.",
+                    features: ["Grand nombre de vendeurs et d'acheteurs", "Produits identiques (homogènes)", "Entrée et sortie libres du marché", "Information parfaite"],
+                    power: "Nul. L'entreprise est 'Price Taker' (preneuse de prix).",
+                    example: "Marchés agricoles (blé, maïs), marchés financiers.",
+                    strategy: "Minimiser les coûts de production pour maximiser le profit."
+                },
+                monopolistique: {
+                    title: "Concurrence Monopolistique",
+                    description: "La structure la plus courante pour les commerces de proximité. De nombreuses entreprises se font concurrence avec des produits différenciés.",
+                    features: ["Grand nombre de vendeurs", "Produits différenciés (par la marque, qualité, service...)", "Entrée relativement facile"],
+                    power: "Limité. L'entreprise peut fixer son prix, mais il reste contraint par la concurrence.",
+                    example: "Restaurants, coiffeurs, magasins de vêtements.",
+                    strategy: "Différenciation, marketing, fidélisation client pour créer une 'niche'."
+                },
+                oligopole: {
+                    title: "Oligopole",
+                    description: "Un marché dominé par un petit nombre de grandes entreprises. Chaque décision doit anticiper la réaction des concurrents.",
+                    features: ["Quelques vendeurs dominants", "Produits similaires ou différenciés", "Barrières à l'entrée importantes"],
+                    power: "Élevé. Les entreprises sont 'Price Makers', mais interdépendantes.",
+                    example: "Opérateurs téléphoniques, constructeurs automobiles, grande distribution.",
+                    strategy: "Surveillance mutuelle, guerres des prix ou ententes (cartels, illégaux)."
+                },
+                monopole: {
+                    title: "Monopole",
+                    description: "La situation la plus extrême où un seul vendeur contrôle la totalité du marché, souvent en raison de barrières infranchissables.",
+                    features: ["Un seul vendeur", "Aucun produit de substitution proche", "Barrières à l'entrée totales"],
+                    power: "Maximum. L'entreprise est 'Price Maker', seule la demande des consommateurs limite son prix.",
+                    example: "SNCF (historiquement sur le réseau), distribution locale d'eau.",
+                    strategy: "Maximisation du profit en jouant sur les quantités produites et le prix."
+                }
+            };
+
+            function updateStructureInfo(structureId) {
+                const data = structureData[structureId];
+                structureInfo.innerHTML = `
+                    <h5 class="text-xl font-bold mb-2 text-blue-800">${data.title}</h5>
+                    <p class="text-sm text-gray-600 mb-4">${data.description}</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p class="font-semibold">Caractéristiques :</p>
+                            <ul class="list-disc list-inside text-gray-700">${data.features.map(f => `<li>${f}</li>`).join('')}</ul>
+                        </div>
+                        <div>
+                            <p><strong class="font-semibold">Pouvoir de Marché :</strong> ${data.power}</p>
+                            <p class="mt-2"><strong class="font-semibold">Exemples :</strong> ${data.example}</p>
+                            <p class="mt-2"><strong class="font-semibold">Stratégie Clé :</strong> ${data.strategy}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if(spectrumPoints.length > 0){
+                spectrumPoints.forEach(point => {
+                    point.addEventListener('click', () => {
+                        spectrumPoints.forEach(p => p.classList.remove('active'));
+                        point.classList.add('active');
+                        updateStructureInfo(point.dataset.structure);
+                    });
+                });
+                updateStructureInfo('cpp');
+            }
+            
+            // LOGIQUE DU QUIZ
+            const quizData = [
+                {
+                    question: "Le principal rôle des ménages dans le circuit économique est la production de biens marchands.",
+                    type: "VRAI/FAUX",
+                    difficulty: "Facile",
+                    hint: "Chaque agent économique a un rôle principal. Quel est celui qui consomme et celui qui produit pour vendre ?",
+                    options: ["Vrai", "Faux"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Exact ! Le rôle principal des ménages est la consommation de biens et services et l'offre de leur travail.",
+                        incorrect: "Incorrect. La production de biens marchands est la fonction principale des entreprises. Les ménages, eux, consomment."
+                    }
+                },
+                {
+                    question: "Quel agent économique a pour fonction principale la production de services non marchands (comme l'éducation ou la sécurité) ?",
+                    type: "QCU",
+                    difficulty: "Facile",
+                    hint: "Pensez aux services que vous utilisez sans les payer directement sur un marché, comme l'école publique.",
+                    options: ["Les entreprises", "L'État", "Les banques", "Le reste du monde"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Parfait ! L'État utilise les impôts pour financer des services publics qui ne sont pas vendus sur un marché.",
+                        incorrect: "Ce n'est pas la bonne réponse. C'est bien l'État qui fournit ces services essentiels non marchands."
+                    }
+                },
+                {
+                    question: "Sur un marché en concurrence pure et parfaite (CPP), une entreprise est considérée comme...",
+                    type: "QCU",
+                    difficulty: "Moyen",
+                    hint: "Quand la concurrence est maximale, une seule entreprise peut-elle décider du prix de vente ?",
+                    options: ["Price Maker (fixeuse de prix)", "Price Taker (preneuse de prix)", "Leader du marché", "Monopoleur"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Excellent ! En CPP, la concurrence est si intense qu'aucune entreprise seule ne peut influencer le prix du marché.",
+                        incorrect: "Incorrect. Une entreprise en CPP est 'Price Taker'. Le terme 'Price Maker' s'applique aux monopoles ou oligopoles."
+                    }
+                },
+                {
+                    question: "Quelles sont les caractéristiques principales de l'oligopole ? (Plusieurs réponses possibles)",
+                    type: "QCM",
+                    difficulty: "Moyen",
+                    hint: "Pensez au marché des opérateurs mobiles en France. Combien sont-ils et comment se comportent-ils ?",
+                    options: ["Un grand nombre de vendeurs", "Quelques vendeurs dominants", "Des produits toujours identiques", "Une forte interdépendance stratégique entre les concurrents"],
+                    correct: [1, 3],
+                    feedback: {
+                        correct: "Très bien ! L'oligopole se définit par un petit nombre d'acteurs qui doivent constamment surveiller et anticiper les actions de leurs rivaux.",
+                        incorrect: "Réponse incomplète ou incorrecte. Les deux traits majeurs de l'oligopole sont le petit nombre de vendeurs et l'interdépendance de leurs stratégies."
+                    }
+                },
+                {
+                    question: "Une externalité positive, comme l'innovation, conduit à une surproduction de ce bien par le marché.",
+                    type: "VRAI/FAUX",
+                    difficulty: "Moyen",
+                    hint: "Si une action bénéficie à tous sans que le producteur soit payé pour, le marché va-t-il en produire 'trop' ou 'pas assez' ?",
+                    options: ["Vrai", "Faux"],
+                    correct: [1],
+                    feedback: {
+                        correct: "C'est juste ! Le marché tend à sous-produire les biens à externalités positives car le producteur n'est pas récompensé pour tous les bénéfices qu'il génère pour la société.",
+                        incorrect: "Attention, c'est l'inverse. Le marché conduit à une SOUS-PRODUCTION des biens à externalités positives. Une externalité négative (pollution) conduit à une surproduction."
+                    }
+                },
+                {
+                    question: "En tant que manager d'un restaurant, vous décidez de refaire votre décoration et de créer une carte avec des plats uniques. À quelle structure de marché votre stratégie de différenciation correspond-elle le mieux ?",
+                    type: "QCU",
+                    difficulty: "Difficile",
+                    hint: "Dans quel type de marché trouve-t-on de nombreux vendeurs avec des produits similaires mais pas identiques (marques, qualité, etc.) ?",
+                    options: ["Monopole", "Concurrence Pure et Parfaite", "Concurrence Monopolistique", "Oligopole"],
+                    correct: [2],
+                    feedback: {
+                        correct: "Exactement ! Vous êtes sur un marché avec de nombreux concurrents (les autres restaurants), mais vous cherchez à vous différencier pour fidéliser une clientèle et avoir un certain pouvoir sur vos prix.",
+                        incorrect: "La bonne réponse est 'Concurrence Monopolistique'. C'est le modèle qui décrit un grand nombre d'acteurs vendant des produits similaires mais non identiques."
+                    }
+                },
+                {
+                    question: "Le financement direct se fait principalement via les crédits bancaires.",
+                    type: "VRAI/FAUX",
+                    difficulty: "Facile",
+                    hint: "Le mot 'direct' implique-t-il l'absence d'intermédiaire comme une banque ?",
+                    options: ["Vrai", "Faux"],
+                    correct: [1],
+                    feedback: {
+                        correct: "C'est bien ça ! Le financement direct se fait sur les marchés financiers (actions, obligations). Les crédits bancaires relèvent du financement indirect (intermédié).",
+                        incorrect: "Incorrect. Les crédits bancaires sont la principale forme de financement INDIRECT. Le financement direct se fait sur les marchés financiers."
+                    }
+                },
+                {
+                    question: "L'aléa moral est un problème d'asymétrie d'information qui se produit...",
+                    type: "QCU",
+                    difficulty: "Moyen",
+                    hint: "Ce problème apparaît-il à cause d'une information cachée sur le produit AVANT l'achat, ou à cause d'une action cachée APRÈS ?",
+                    options: ["Avant la signature d'un contrat", "Pendant la négociation", "Après la signature d'un contrat", "Uniquement sur les marchés financiers"],
+                    correct: [2],
+                    feedback: {
+                        correct: "Parfait ! L'aléa moral décrit un changement de comportement (prise de risque) une fois qu'on se sent protégé par le contrat (ex: assurance).",
+                        incorrect: "Ce n'est pas tout à fait ça. Le problème qui survient AVANT le contrat est la sélection adverse. L'aléa moral survient APRES."
+                    }
+                },
+                 {
+                    question: "Quels éléments suivants sont des exemples de barrières à l'entrée réglementaires ? (Plusieurs réponses possibles)",
+                    type: "QCM",
+                    difficulty: "Difficile",
+                    hint: "Le mot 'réglementaire' fait référence à ce qui est imposé par la loi ou les règlements de l'État.",
+                    options: ["Une image de marque très forte", "Un brevet protégeant une invention", "Des coûts de publicité élevés", "Une licence obligatoire pour exercer une activité (ex: pharmacie)"],
+                    correct: [1, 3],
+                    feedback: {
+                        correct: "Excellent ! Les barrières réglementaires sont celles imposées par la loi, comme les brevets ou les licences.",
+                        incorrect: "Attention à la distinction. Une image de marque forte ou des coûts publicitaires élevés sont des barrières stratégiques, créées par les entreprises elles-mêmes. Les brevets et licences sont des barrières réglementaires, imposées par l'État."
+                    }
+                },
+                {
+                    question: "Une politique monétaire restrictive de la Banque Centrale Européenne (BCE) consiste à baisser les taux d'intérêt.",
+                    type: "VRAI/FAUX",
+                    difficulty: "Moyen",
+                    hint: "'Restrictive' signifie que l'on veut freiner l'économie pour lutter contre l'inflation. Faut-il rendre le crédit plus cher ou moins cher ?",
+                    options: ["Vrai", "Faux"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Exact ! Une politique restrictive vise à lutter contre l'inflation en augmentant les taux d'intérêt pour freiner le crédit.",
+                        incorrect: "C'est l'inverse. Une politique restrictive consiste à AUGMENTER les taux d'intérêt. Baisser les taux correspond à une politique expansionniste."
+                    }
+                },
+                 {
+                    question: "Un cartel est une forme...",
+                    type: "QCU",
+                    difficulty: "Moyen",
+                    hint: "Pensez à une entente secrète sur les prix. Est-ce que cela favorise la concurrence et les consommateurs ?",
+                    options: ["Légale et encouragée de coopération", "Illégale de coopération entre concurrents", "De monopole naturel", "De concurrence pure et parfaite"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Très bien ! Les cartels (ententes sur les prix) sont sévèrement punis car ils nuisent aux consommateurs.",
+                        incorrect: "Incorrect. Un cartel est une entente illégale entre concurrents pour agir comme un monopole."
+                    }
+                },
+                {
+                    question: "Le salaire versé par une entreprise à un employé est un...",
+                    type: "QCU",
+                    difficulty: "Facile",
+                    hint: "Le travail est l'échange physique (réel). Quelle est sa contrepartie ?",
+                    options: ["Flux réel", "Flux monétaire", "Service non marchan", "Investissement en capital"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Parfait ! C'est la contrepartie monétaire du flux réel qu'est le travail fourni par l'employé.",
+                        incorrect: "Le salaire est bien un flux monétaire. Le travail fourni par l'employé est le flux réel correspondant."
+                    }
+                },
+                 {
+                    question: "Le marché secondaire (la Bourse) sert principalement à financer les nouvelles émissions d'actions des entreprises.",
+                    type: "VRAI/FAUX",
+                    difficulty: "Moyen",
+                    hint: "Le marché 'secondaire' est comme le marché de l'occasion. L'argent change-t-il de mains entre acheteurs/vendeurs ou va-t-il à l'entreprise qui a créé le produit ?",
+                    options: ["Vrai", "Faux"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Exactement ! Le marché secondaire assure la liquidité (revente des titres) mais ne finance pas directement l'entreprise. C'est le rôle du marché primaire.",
+                        incorrect: "Attention. Le financement des entreprises via de nouvelles actions se fait sur le marché PRIMAIRE. Le marché secondaire est celui de l'occasion."
+                    }
+                },
+                 {
+                    question: "Une politique budgétaire de relance peut inclure... (Plusieurs réponses possibles)",
+                    type: "QCM",
+                    difficulty: "Difficile",
+                    hint: "Pour 'relancer' l'économie, l'État doit-il injecter de l'argent ou en retirer ?",
+                    options: ["Une augmentation des impôts", "Une augmentation des dépenses publiques (ex: grands travaux)", "Une baisse des impôts sur le revenu", "Une hausse des taux d'intérêt"],
+                    correct: [1, 2],
+                    feedback: {
+                        correct: "Parfait ! Une politique de relance vise à injecter de l'argent dans l'économie, soit en dépensant plus (État), soit en laissant plus de revenus aux agents (baisse d'impôts).",
+                        incorrect: "Attention à ne pas confondre les politiques. La hausse des taux d'intérêt relève de la politique monétaire, et la hausse des impôts d'une politique de rigueur budgétaire."
+                    }
+                },
+                {
+                    question: "Le problème des voitures d'occasion de mauvaise qualité qui finissent par dominer le marché est un exemple typique de...",
+                    type: "QCU",
+                    difficulty: "Difficile",
+                    hint: "Le problème vient du fait que le vendeur connaît la qualité (information cachée) et l'acheteur non, AVANT la vente.",
+                    options: ["Externalité négative", "Sélection adverse", "Aléa moral", "Oligopole"],
+                    correct: [1],
+                    feedback: {
+                        correct: "Excellent ! C'est la définition même de la sélection adverse : l'asymétrie d'information avant l'achat conduit les bons produits à se retirer du marché.",
+                        incorrect: "La bonne réponse est 'Sélection adverse'. L'aléa moral concerne un changement de comportement APRES la transaction."
+                    }
+                }
+            ];
+
+            const quizStartScreen = document.getElementById('quiz-start-screen');
+            const quizMainScreen = document.getElementById('quiz-main-screen');
+            const quizResultsScreen = document.getElementById('quiz-results-screen');
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            
+            const progressText = document.getElementById('quiz-progress-text');
+            const progressBar = document.getElementById('quiz-progress-bar');
+            
+            const questionText = document.getElementById('question-text');
+            const questionDifficulty = document.getElementById('question-difficulty');
+            const showHintBtn = document.getElementById('show-hint-btn');
+            const hintContainer = document.getElementById('hint-container');
+            const answerOptionsContainer = document.getElementById('answer-options');
+            const feedbackContainer = document.getElementById('feedback-container');
+            
+            const checkAnswerBtn = document.getElementById('check-answer-btn');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            const restartQuizBtn = document.getElementById('restart-quiz-btn');
+            const backToTopBtn = document.getElementById('back-to-top');
+
+            window.onscroll = function() {
+                if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                    backToTopBtn.classList.remove('hidden');
+                } else {
+                    backToTopBtn.classList.add('hidden');
+                }
+            };
+            backToTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let questions = [];
+
+            startQuizBtn.addEventListener('click', startQuiz);
+            nextQuestionBtn.addEventListener('click', () => {
+                currentQuestionIndex++;
+                if(currentQuestionIndex < questions.length) {
+                    loadQuestion();
+                } else {
+                    showResults();
+                }
+            });
+            checkAnswerBtn.addEventListener('click', checkAnswer);
+            restartQuizBtn.addEventListener('click', () => {
+                 quizResultsScreen.classList.add('hidden');
+                 quizStartScreen.classList.remove('hidden');
+            });
+            showHintBtn.addEventListener('click', () => {
+                hintContainer.classList.remove('hidden');
+                showHintBtn.classList.add('hidden');
+            });
+
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            function startQuiz() {
+                quizStartScreen.classList.add('hidden');
+                quizMainScreen.classList.remove('hidden');
+                quizResultsScreen.classList.add('hidden');
+                
+                score = 0;
+                currentQuestionIndex = 0;
+                questions = [...quizData];
+                shuffleArray(questions);
+                
+                loadQuestion();
+            }
+
+            function loadQuestion() {
+                feedbackContainer.classList.add('hidden');
+                hintContainer.classList.add('hidden');
+                showHintBtn.classList.remove('hidden');
+                checkAnswerBtn.classList.remove('hidden');
+                nextQuestionBtn.classList.add('hidden');
+                
+                const question = questions[currentQuestionIndex];
+                
+                progressText.textContent = `Question ${currentQuestionIndex + 1} / ${questions.length}`;
+                progressBar.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+                
+                questionText.textContent = question.question;
+                questionDifficulty.textContent = question.difficulty;
+                if (question.difficulty === 'Facile') questionDifficulty.className = 'text-xs font-medium px-2.5 py-0.5 rounded-full bg-green-100 text-green-800 flex-shrink-0';
+                else if (question.difficulty === 'Moyen') questionDifficulty.className = 'text-xs font-medium px-2.5 py-0.5 rounded-full bg-yellow-100 text-yellow-800 flex-shrink-0';
+                else questionDifficulty.className = 'text-xs font-medium px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 flex-shrink-0';
+
+                hintContainer.textContent = question.hint;
+
+                answerOptionsContainer.innerHTML = '';
+                
+                question.options.forEach((option, index) => {
+                    const optionElement = document.createElement('label');
+                    optionElement.className = 'quiz-option';
+                    
+                    const inputType = question.type === 'QCM' ? 'checkbox' : 'radio';
+                    optionElement.innerHTML = `
+                        <input type="${inputType}" name="answer" value="${index}" class="mr-2 pointer-events-none">
+                        <span>${option}</span>
+                    `;
+                    answerOptionsContainer.appendChild(optionElement);
+                    optionElement.addEventListener('click', (e) => {
+                        if (checkAnswerBtn.classList.contains('hidden')) return; // Block click after check
+                        
+                        const input = optionElement.querySelector('input');
+                        if (inputType === 'radio') {
+                             document.querySelectorAll('.quiz-option').forEach(el => el.classList.remove('selected'));
+                             document.querySelectorAll('.quiz-option input').forEach(inp => inp.checked = false);
+                             optionElement.classList.add('selected');
+                             input.checked = true;
+                        } else {
+                            optionElement.classList.toggle('selected');
+                            input.checked = !input.checked;
+                        }
+                    });
+                });
+            }
+            
+            function checkAnswer() {
+                 const question = questions[currentQuestionIndex];
+                 const selectedOptions = Array.from(answerOptionsContainer.querySelectorAll('input:checked')).map(input => parseInt(input.value));
+                 
+                 if(selectedOptions.length === 0) return; // Prevent checking if no answer is selected
+
+                 let isCorrect = false;
+                 if(question.type === 'QCM') {
+                     isCorrect = selectedOptions.length === question.correct.length && selectedOptions.every(val => question.correct.includes(val));
+                 } else {
+                     isCorrect = selectedOptions.length === 1 && selectedOptions[0] === question.correct[0];
+                 }
+                 
+                 if(isCorrect) {
+                     score++;
+                     feedbackContainer.innerHTML = `<p class="font-bold text-green-700">Bonne réponse !</p><p>${question.feedback.correct}</p>`;
+                     feedbackContainer.className = 'mt-4 p-4 rounded-md text-sm bg-green-50 border border-green-200';
+                 } else {
+                     feedbackContainer.innerHTML = `<p class="font-bold text-red-700">Réponse incorrecte.</p><p>${question.feedback.incorrect}</p>`;
+                     feedbackContainer.className = 'mt-4 p-4 rounded-md text-sm bg-red-50 border border-red-200';
+                 }
+                 
+                 Array.from(answerOptionsContainer.children).forEach((label, index) => {
+                     const input = label.querySelector('input');
+                     if(question.correct.includes(index)){
+                         label.classList.add('correct');
+                     } else if (selectedOptions.includes(index)) {
+                         label.classList.add('incorrect');
+                     }
+                 });
+                 
+                 feedbackContainer.classList.remove('hidden');
+                 checkAnswerBtn.classList.add('hidden');
+                 showHintBtn.classList.add('hidden');
+                 nextQuestionBtn.classList.remove('hidden');
+                 if(currentQuestionIndex === questions.length - 1) {
+                     nextQuestionBtn.textContent = "Voir les résultats";
+                 }
+            }
+
+            function showResults() {
+                quizMainScreen.classList.add('hidden');
+                quizResultsScreen.classList.remove('hidden');
+                
+                const finalScore = document.getElementById('final-score');
+                const finalScoreBar = document.getElementById('final-score-bar');
+                const resultsFeedback = document.getElementById('results-feedback');
+
+                finalScore.textContent = `${score} / ${questions.length}`;
+                const percentage = (score / questions.length) * 100;
+                finalScoreBar.style.width = `${percentage}%`;
+
+                if(percentage >= 75) {
+                    finalScoreBar.className = 'h-4 rounded-full bg-green-500';
+                    resultsFeedback.innerHTML = `<strong class="text-green-700">Félicitations !</strong> Vous avez une excellente compréhension des concepts économiques clés. Continuez sur cette lancée !`;
+                } else {
+                    finalScoreBar.className = 'h-4 rounded-full bg-red-500';
+                    resultsFeedback.innerHTML = `<strong class="text-red-700">Continuez vos efforts !</strong> Vous avez bien progressé, mais certains points méritent d'être revus. N'hésitez pas à parcourir de nouveau le manuel et à retenter le quiz pour consolider vos acquis.`;
+                }
+            }
+
+            // Initialisation de toutes les fonctions
+            showSection('introduction');
+            createSupplyDemandChart();
+            createExternalitiesChart();
+            renderGlossary();
+            renderFaq();
+        });
+    </script>
+</body>
+</html>
+
