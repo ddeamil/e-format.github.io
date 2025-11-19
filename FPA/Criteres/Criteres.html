@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Outil d'Évaluation par Critères</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Cacher les flèches des inputs number */
+        input[type='number']::-webkit-inner-spin-button,
+        input[type='number']::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type='number'] {
+            -moz-appearance: textfield;
+        }
+        /* Style pour l'indicateur éditable */
+        .indicator-text.editable {
+            cursor: text;
+            width: 100%;
+            display: block;
+            padding: 2px 0;
+        }
+        .indicator-text.editable:hover {
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+
+        /* Styles pour le Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+        }
+        .modal-container {
+            background-color: white;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <!-- En-tête -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Outil d'Évaluation par Critères & Indicateurs</h1>
+            <p class="mt-2 text-lg text-gray-600">
+                Un outil pédagogique pour construire et démontrer une évaluation juste, basée sur des observables.
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Colonne de Gauche : Configuration de l'évaluation -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Section 1: Contexte de l'Évaluation -->
+                <section class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">1. Contexte de l'Évaluation</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="eval-date" class="block text-sm font-medium text-gray-700">Date de l'évaluation</label>
+                            <input type="date" id="eval-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="eval-type" class="block text-sm font-medium text-gray-700">Type d'évaluation</label>
+                            <select id="eval-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option>Prédictive</option>
+                                <option>Formative</option>
+                                <option>Sommative</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="eval-title" class="block text-sm font-medium text-gray-700">Intitulé de la séance / module</label>
+                            <input type="text" id="eval-title" placeholder="Ex: Construire son système de veille" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="evaluator-name" class="block text-sm font-medium text-gray-700">Nom de l'évaluateur</label>
+                            <input type="text" id="evaluator-name" placeholder="Ex: Jean Dupont" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="trainee-name" class="block text-sm font-medium text-gray-700">Nom du stagiaire / apprenant</label>
+                            <input type="text" id="trainee-name" placeholder="Ex: Alice Martin" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Section 1.5: Actions sur la Grille -->
+                <section class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">Actions sur la Grille</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                        <!-- Import -->
+                        <button id="import-csv-btn" class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Importer CSV...
+                        </button>
+                        <button id="import-md-btn" class="w-full px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                            Importer MD...
+                        </button>
+                        
+                        <!-- Export Trames -->
+                        <button id="export-csv-trame-btn" class="w-full px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Trame CSV
+                        </button>
+                        <button id="export-md-trame-btn" class="w-full px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2">
+                            Trame MD
+                        </button>
+
+                        <!-- Export Données -->
+                        <button id="export-json-btn" class="w-full px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                            Exporter JSON
+                        </button>
+
+                        <!-- Réinitialisation Globale -->
+                        <button id="reset-state-btn" class="w-full px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+                            Tout réinitialiser...
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-3">
+                        Note : "Tout réinitialiser" efface tout (contexte et grille). Pour effacer seulement les critères, utilisez le bouton "Vider la grille" ci-dessous.
+                    </p>
+                </section>
+
+                <!-- Section 2: Grille d'Évaluation -->
+                <section class="bg-white p-6 rounded-lg shadow-md">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-200 pb-3 mb-4 gap-4 sm:gap-0">
+                        <h2 class="text-xl font-semibold text-gray-800">
+                            2. Grille d'Évaluation (<span id="criteria-count" class="text-blue-600 font-bold">0</span>)
+                        </h2>
+                        <div class="flex space-x-3 w-full sm:w-auto">
+                            <!-- BOUTON VIDER LA GRILLE -->
+                            <button id="clear-grid-btn" class="flex-1 sm:flex-none px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 border border-red-200 text-sm font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">
+                                Vider la grille
+                            </button>
+                            <!-- BOUTON AJOUTER CRITÈRE -->
+                            <button id="add-criterion-btn" class="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                Ajouter un critère
+                            </button>
+                        </div>
+                    </div>
+                    <div id="criteria-list" class="space-y-4">
+                        <!-- Les critères ajoutés dynamiquement apparaîtront ici -->
+                    </div>
+                    
+                    <!-- BOUTON DU BAS : Pour éviter le scroll vers le haut -->
+                    <button id="add-criterion-bottom-btn" class="mt-4 w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 font-medium rounded-lg transition-colors flex items-center justify-center group">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400 group-hover:text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                        Ajouter un critère supplémentaire
+                    </button>
+
+                </section>
+
+                <!-- Section 3: Conditions et Feedbacks -->
+                <section class="bg-white p-6 rounded-lg shadow-md">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">3. Conditions de Réussite & Feedbacks</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label for="min-level-1" class="block text-sm font-medium text-gray-700">
+                                Min. critères <span class="font-bold text-blue-600">Niv. 1</span> requis
+                                <span id="total-L1-count" class="text-sm text-gray-500 font-normal ml-1">(sur 0)</span>
+                            </label>
+                            <input type="number" id="min-level-1" value="1" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="min-level-2" class="block text-sm font-medium text-gray-700">
+                                Min. critères <span class="font-bold text-green-600">Niv. 2</span>
+                                <span id="total-L2-count" class="text-sm text-gray-500 font-normal ml-1">(sur 0)</span>
+                            </label>
+                            <input type="number" id="min-level-2" value="0" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="min-level-3" class="block text-sm font-medium text-gray-700">
+                                Min. critères <span class="font-bold text-purple-600">Niv. 3</span>
+                                <span id="total-L3-count" class="text-sm text-gray-500 font-normal ml-1">(sur 0)</span>
+                            </label>
+                            <input type="number" id="min-level-3" value="0" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="feedback-success" class="block text-sm font-medium text-gray-700">Feedback constructif en cas de RÉUSSITE (Niveau 1 atteint)</label>
+                            <textarea id="feedback-success" rows="4" placeholder="Ex: Excellent travail sur les fondamentaux. La compétence est validée. Pour aller plus loin..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        </div>
+                        <div class="md:col-span-3">
+                            <label for="feedback-fail" class="block text-sm font-medium text-gray-700">Feedback constructif en cas d'ÉCHEC</label>
+                            <textarea id="feedback-fail" rows="4" placeholder="Ex: Les bases sont encore fragiles. Concentrons-nous sur les points suivants pour débloquer la situation..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Colonne de Droite : Bouton et Résultats -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Bouton Évaluer -->
+                <div class="bg-white p-6 rounded-lg shadow-md sticky top-8">
+                    <button id="evaluate-btn" class="w-full px-6 py-3 bg-green-600 text-white text-lg font-semibold rounded-md shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2">
+                        Évaluer
+                    </button>
+                </div>
+
+                <!-- Carte des Résultats -->
+                <div id="results-card" class="bg-white p-6 rounded-lg shadow-md hidden">
+                    <h2 class="text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-4">4. Résultat de l'Évaluation</h2>
+                    
+                    <section>
+                        <!-- Infos Stagiaire -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-500">Apprenant</label>
+                            <p id="result-trainee-name" class="text-lg font-semibold text-gray-900"></p>
+                            <p id="result-date-evaluator" class="text-xs text-gray-500"></p>
+                        </div>
+
+                        <!-- Résultat Global -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-500">Résultat</label>
+                            <p id="result-summary" class="text-3xl font-bold"></p>
+                        </div>
+                        
+                        <!-- Appréciation (Détail) -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-500">Appréciation (Critères validés)</label>
+                            <p id="result-details" class="text-sm text-gray-700"></p>
+                        </div>
+
+                        <!-- Feedback -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-500">Feedback Constructif</label>
+                            <div id="result-feedback" class="mt-1 p-3 bg-gray-50 rounded-md border border-gray-200 text-sm text-gray-800 whitespace-pre-wrap">
+                            </div>
+                        </div>
+
+                        <!-- Points à revoir (si échec) -->
+                        <div id="review-points-container" class="hidden">
+                            <label class="block text-sm font-medium text-red-700">Points de Niveau 1 à revoir</label>
+                            <ul id="review-points-list" class="mt-1 list-disc list-inside text-sm text-gray-800 space-y-1">
+                                <!-- Les points à revoir seront listés ici -->
+                            </ul>
+                        </div>
+                    </section>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal de Confirmation -->
+    <div id="confirmation-modal" class="modal-overlay hidden">
+        <div class="modal-container">
+            <h3 id="modal-title" class="text-lg font-semibold text-gray-900">Titre de la confirmation</h3>
+            <p id="modal-message" class="mt-2 text-sm text-gray-600">Message de la confirmation.</p>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button id="modal-cancel-btn" class="px-4 py-2 bg-white text-sm font-medium text-gray-700 border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                    Annuler
+                </button>
+                <button id="modal-confirm-btn" class="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    Confirmer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Template pour un critère -->
+    <template id="criterion-template">
+        <div class="criterion-card bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <!-- En-tête du Critère -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between border-b border-gray-300 pb-3 mb-3">
+                <div class="flex-grow">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Critère de réussite</label>
+                    <input type="text" class="criterion-title text-base font-semibold text-gray-900 border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500 w-full" placeholder="Intitulé du critère...">
+                </div>
+                <div class="flex items-center space-x-2 mt-2 md:mt-0 md:ml-4">
+                    <select class="criterion-level-select block w-auto text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        <option value="1" class="font-bold text-blue-600">Niveau 1 (Validation)</option>
+                        <option value="2" class="font-bold text-green-600">Niveau 2 (+ Value)</option>
+                        <option value="3" class="font-bold text-purple-600">Niveau 3 (Maîtrise)</option>
+                    </select>
+                    <button class="remove-criterion-btn px-2 py-1 text-red-600 hover:bg-red-100 rounded-md text-sm font-medium" aria-label="Supprimer le critère">
+                        Supprimer
+                    </button>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-200 pt-3">
+                <h4 class="text-sm font-medium text-gray-600 mb-2">
+                    Indicateurs observables (<span class="indicator-count font-bold text-gray-700">0</span>)
+                </h4>
+                <div class="indicators-list space-y-2">
+                    <!-- Indicateurs ajoutés ici -->
+                </div>
+                <!-- Ajout d'indicateur -->
+                <div class="flex space-x-2 mt-3">
+                    <input type="text" class="indicator-input flex-grow block w-full text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Ajouter un indicateur observable...">
+                    <button class="add-indicator-btn px-3 py-1.5 bg-white text-blue-600 border border-gray-300 text-sm font-medium rounded-md shadow-sm hover:bg-gray-50">
+                        Ajouter
+                    </button>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Template pour un indicateur -->
+    <template id="indicator-template">
+        <div class="indicator-item flex items-center justify-between p-2 bg-white rounded-md border border-gray-200" data-optional="false">
+            <label class="flex items-center space-x-3 text-sm text-gray-700 flex-grow cursor-pointer">
+                <input type="checkbox" class="indicator-checkbox form-checkbox h-4 w-4 rounded text-blue-600 focus:ring-blue-500 border-gray-300">
+                <span class="indicator-text editable"></span>
+                <input type="text" class="indicator-edit-input hidden flex-grow text-sm rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            </label>
+            
+            <!-- Bouton pour basculer Requis/Optionnel -->
+            <button class="indicator-type-toggle ml-2 px-2 py-1 text-[10px] font-bold uppercase rounded border border-gray-300 bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors" title="Cliquer pour changer (Requis / Optionnel)">
+                REQUIS
+            </button>
+
+            <button class="remove-indicator-btn ml-2 text-gray-400 hover:text-red-600 text-xs flex-shrink-0" aria-label="Supprimer l'indicateur">
+                <!-- SVG pour l'icône "X" (poubelle) -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </template>
+
+    <!-- Inputs de fichiers cachés -->
+    <input type="file" id="csv-importer" accept=".csv" class="hidden">
+    <input type="file" id="md-importer" accept=".md,.txt" class="hidden">
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            
+            // --- Références DOM ---
+            const criteriaList = document.getElementById('criteria-list');
+            const addCriterionBtn = document.getElementById('add-criterion-btn');
+            const addCriterionBottomBtn = document.getElementById('add-criterion-bottom-btn');
+            const clearGridBtn = document.getElementById('clear-grid-btn');
+            const evaluateBtn = document.getElementById('evaluate-btn');
+            const resultsCard = document.getElementById('results-card');
+            const criteriaCountEl = document.getElementById('criteria-count');
+
+            // Compteurs de niveau et inputs de seuil
+            const totalL1CountEl = document.getElementById('total-L1-count');
+            const totalL2CountEl = document.getElementById('total-L2-count');
+            const totalL3CountEl = document.getElementById('total-L3-count');
+            const minLevel1Input = document.getElementById('min-level-1');
+            const minLevel2Input = document.getElementById('min-level-2');
+            const minLevel3Input = document.getElementById('min-level-3');
+            
+            // Boutons d'action
+            const importCsvBtn = document.getElementById('import-csv-btn');
+            const importMdBtn = document.getElementById('import-md-btn');
+            const exportCsvTrameBtn = document.getElementById('export-csv-trame-btn');
+            const exportMdTrameBtn = document.getElementById('export-md-trame-btn');
+            const resetStateBtn = document.getElementById('reset-state-btn');
+            const csvImporter = document.getElementById('csv-importer');
+            const mdImporter = document.getElementById('md-importer');
+            const exportJsonBtn = document.getElementById('export-json-btn');
+
+            // Modal DOM
+            const modal = document.getElementById('confirmation-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+            const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+            // Templates
+            const criterionTemplate = document.getElementById('criterion-template');
+            const indicatorTemplate = document.getElementById('indicator-template');
+
+            // Clé pour le LocalStorage
+            const LOCAL_STORAGE_KEY = 'evaluationAppState';
+            
+            let modalConfirmCallback = null;
+
+            // --- Utilitaire Debounce ---
+            function debounce(func, delay) {
+                let timeout;
+                return function(...args) {
+                    const context = this;
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(context, args), delay);
+                };
+            }
+
+            // --- Logique d'Évaluation (Refactorisée avec Optionnels) ---
+
+            function performEvaluation() {
+                const results = {
+                    totalL1: 0, validatedL1: 0,
+                    totalL2: 0, validatedL2: 0,
+                    totalL3: 0, validatedL3: 0,
+                    failedL1Criteria: [],
+                    minL1Required: parseInt(minLevel1Input.value, 10) || 0,
+                    minL2Required: parseInt(minLevel2Input.value, 10) || 0,
+                    minL3Required: parseInt(minLevel3Input.value, 10) || 0,
+                };
+
+                document.querySelectorAll('.criterion-card').forEach(card => {
+                    const level = card.querySelector('.criterion-level-select').value;
+                    const allIndicators = Array.from(card.querySelectorAll('.indicator-item'));
+                    const criterionTitle = card.querySelector('.criterion-title').value.trim() || "Critère non-nommé";
+                    
+                    if (allIndicators.length === 0) return; // Ignore les critères sans indicateurs
+
+                    // Filtrer pour ne garder que les indicateurs REQUIS
+                    const requiredIndicators = allIndicators.filter(item => item.dataset.optional !== 'true');
+                    
+                    // Un critère est validé si tous les indicateurs REQUIS sont cochés.
+                    let isCriterionValidated = true;
+
+                    if (requiredIndicators.length > 0) {
+                        isCriterionValidated = requiredIndicators.every(item => item.querySelector('.indicator-checkbox').checked);
+                    } else {
+                        // Cas rare : que des optionnels. On valide le critère.
+                        isCriterionValidated = true; 
+                    }
+
+                    if (level === '1') {
+                        results.totalL1++;
+                        if (isCriterionValidated) {
+                            results.validatedL1++;
+                        } else {
+                            results.failedL1Criteria.push(criterionTitle);
+                        }
+                    } else if (level === '2') {
+                        results.totalL2++;
+                        if (isCriterionValidated) results.validatedL2++;
+                    } else if (level === '3') {
+                        results.totalL3++;
+                        if (isCriterionValidated) results.validatedL3++;
+                    }
+                });
+                
+                results.isL1Success = results.validatedL1 >= results.minL1Required;
+                results.isL2Success = results.isL1Success && (results.validatedL2 >= results.minL2Required);
+                results.isL3Success = results.isL1Success && results.isL2Success && (results.validatedL3 >= results.minL3Required);
+
+                return results;
+            }
+
+            function displayResults(results) {
+                // Construire l'appréciation détaillée
+                let appreciation = `Niveau 1: ${results.validatedL1}/${results.totalL1} (min: ${results.minL1Required})`;
+                if (results.totalL2 > 0 || results.minL2Required > 0) {
+                    appreciation += ` | Niv. 2: ${results.validatedL2}/${results.totalL2} (min: ${results.minL2Required})`;
+                }
+                if (results.totalL3 > 0 || results.minL3Required > 0) {
+                    appreciation += ` | Niv. 3: ${results.validatedL3}/${results.totalL3} (min: ${results.minL3Required})`;
+                }
+
+                // Déterminer le Résultat Global et le Feedback
+                const successFeedback = document.getElementById('feedback-success').value;
+                const failFeedback = document.getElementById('feedback-fail').value;
+                let feedbackText, resultText, resultClass;
+
+                if (!results.isL1Success) {
+                    resultText = "ÉCHEC";
+                    resultClass = "text-red-600";
+                    feedbackText = failFeedback || "Les objectifs de base (Niveau 1) ne sont pas encore atteints. Revoyons ensemble les points de blocage.";
+                } else if (results.isL3Success) {
+                    resultText = "RÉUSSITE (Niveau 3 atteint)";
+                    resultClass = "text-purple-600";
+                    feedbackText = successFeedback || "Excellent ! Le niveau d'expertise est démontré. La compétence est parfaitement maîtrisée.";
+                } else if (results.isL2Success) {
+                    resultText = "RÉUSSITE (Niveau 2 atteint)";
+                    resultClass = "text-green-600";
+                    feedbackText = successFeedback || "Très bien. La compétence est maîtrisée avec une réelle plus-value. Continuez comme ça.";
+                } else {
+                    resultText = "RÉUSSITE (Niveau 1 validé)";
+                    resultClass = "text-blue-700";
+                    feedbackText = successFeedback || "Félicitations, les fondamentaux sont validés. La compétence de base est acquise.";
+                }
+
+                // Remplir la carte
+                const traineeName = document.getElementById('trainee-name').value || "Apprenant";
+                const evaluatorName = document.getElementById('evaluator-name').value || "Évaluateur";
+                const evalDate = document.getElementById('eval-date').value || "Aujourd'hui";
+                
+                document.getElementById('result-trainee-name').textContent = traineeName;
+                document.getElementById('result-date-evaluator').textContent = `Évalué le ${evalDate} par ${evaluatorName}`;
+                
+                const resultSummaryEl = document.getElementById('result-summary');
+                resultSummaryEl.textContent = resultText;
+                resultSummaryEl.className = `text-3xl font-bold ${resultClass}`;
+
+                document.getElementById('result-details').textContent = appreciation;
+                document.getElementById('result-feedback').textContent = feedbackText;
+
+                // Gérer les "Points à revoir"
+                const reviewContainer = document.getElementById('review-points-container');
+                const reviewList = document.getElementById('review-points-list');
+                reviewList.innerHTML = '';
+
+                if (!results.isL1Success && results.failedL1Criteria.length > 0) {
+                    results.failedL1Criteria.forEach(criterionName => {
+                        const li = document.createElement('li');
+                        li.textContent = criterionName;
+                        reviewList.appendChild(li);
+                    });
+                    reviewContainer.classList.remove('hidden');
+                } else {
+                    reviewContainer.classList.add('hidden');
+                }
+
+                resultsCard.classList.remove('hidden');
+                resultsCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+
+            // --- Logique de Sauvegarde & Chargement (LocalStorage) ---
+
+            function getState() {
+                const state = {
+                    context: {},
+                    conditions: {},
+                    criteria: []
+                };
+                document.querySelectorAll('#eval-date, #eval-type, #eval-title, #evaluator-name, #trainee-name').forEach(el => {
+                    state.context[el.id] = el.value;
+                });
+                document.querySelectorAll('#min-level-1, #min-level-2, #min-level-3, #feedback-success, #feedback-fail').forEach(el => {
+                    state.conditions[el.id] = el.value;
+                });
+                document.querySelectorAll('.criterion-card').forEach(card => {
+                    const criterion = {
+                        title: card.querySelector('.criterion-title').value,
+                        level: card.querySelector('.criterion-level-select').value,
+                        indicators: []
+                    };
+                    card.querySelectorAll('.indicator-item').forEach(item => {
+                        criterion.indicators.push({
+                            text: item.querySelector('.indicator-text').textContent,
+                            checked: item.querySelector('.indicator-checkbox').checked,
+                            isOptional: item.dataset.optional === 'true'
+                        });
+                    });
+                    state.criteria.push(criterion);
+                });
+                return state;
+            }
+
+            const saveState = debounce(() => {
+                const state = getState();
+                try {
+                    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+                    console.log("État sauvegardé.");
+                } catch (e) {
+                    console.error("Erreur lors de la sauvegarde de l'état:", e);
+                }
+            }, 500);
+
+            function loadState() {
+                const savedState = localStorage.getItem(LOCAL_STORAGE_KEY);
+                if (!savedState) {
+                    console.log("Aucun état sauvegardé trouvé.");
+                    document.getElementById('eval-date').valueAsDate = new Date();
+                    updateAllCounts();
+                    return;
+                }
+
+                try {
+                    const state = JSON.parse(savedState);
+                    for (const id in state.context) {
+                        const el = document.getElementById(id);
+                        if (el) el.value = state.context[id];
+                    }
+                    for (const id in state.conditions) {
+                        const el = document.getElementById(id);
+                        if (el) el.value = state.conditions[id];
+                    }
+                    criteriaList.innerHTML = '';
+                    state.criteria.forEach(crit => {
+                        const newCriterion = criterionTemplate.content.cloneNode(true);
+                        newCriterion.querySelector('.criterion-title').value = crit.title;
+                        newCriterion.querySelector('.criterion-level-select').value = crit.level;
+                        
+                        const indicatorsListEl = newCriterion.querySelector('.indicators-list');
+                        crit.indicators.forEach(indic => {
+                            addIndicator(newCriterion.querySelector('.criterion-card'), indic.text, false, indic.isOptional, indic.checked);
+                        });
+                        
+                        criteriaList.appendChild(newCriterion);
+                        updateIndicatorCount(criteriaList.lastElementChild);
+                    });
+                    
+                    updateAllCounts(); 
+                    console.log("État chargé.");
+
+                } catch (e) {
+                    console.error("Erreur lors du chargement de l'état:", e);
+                    localStorage.removeItem(LOCAL_STORAGE_KEY);
+                }
+            }
+
+            function resetState() {
+                showModal(
+                    "Tout réinitialiser ?",
+                    "Toutes les données (contexte, noms, grille) seront effacées et la page rechargée. Cette action est irréversible.",
+                    () => {
+                        localStorage.removeItem(LOCAL_STORAGE_KEY);
+                        location.reload();
+                    }
+                );
+            }
+
+            function clearGrid() {
+                if (criteriaList.children.length === 0) return;
+                showModal(
+                    "Vider la grille ?",
+                    "Vous allez supprimer tous les critères et indicateurs actuels. Le contexte (date, noms, module) sera conservé.",
+                    () => {
+                        criteriaList.innerHTML = '';
+                        updateAllCounts();
+                        saveState();
+                    }
+                );
+            }
+
+            // --- Logique du Modal ---
+            function showModal(title, message, onConfirmCallback) {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                modalConfirmCallback = onConfirmCallback;
+                modal.classList.remove('hidden');
+            }
+
+            function hideModal() {
+                modalConfirmCallback = null;
+                modal.classList.add('hidden');
+            }
+
+            // --- Logique d'Import / Export ---
+            function downloadFile(filename, content, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            }
+
+            function exportCsvTrame() {
+                // NOUVEAU FORMAT : 4 colonnes, séparateur Point-Virgule pour Excel FR / Compatibilité
+                const headers = "Niveau;Critère de Réussite;Type;Indicateur";
+                const example = "1;Ex: Maîtrise des concepts;Requis;L'apprenant explique la différence...\n2;Ex: Centralisation;Optionnel;L'apprenant utilise un outil bonus...\n3;Ex: Création de contenu;Requis;L'expert produit et publie...\n";
+                downloadFile('trame-evaluation.csv', `${headers}\n${example}`, 'text/csv;charset=utf-8-bom;');
+            }
+
+            function exportMdTrame() {
+                // Markdown reste textuel (pas de colonnes)
+                const content = `## [N1] Intitulé du Critère de Niveau 1\n- Indicateur observable A (Requis)\n- [OPT] Indicateur observable B (Optionnel)\n\n## [N2] Intitulé du Critère de Niveau 2\n- Indicateur observable C\n\n## [N3] Intitulé du Critère de Niveau 3\n- Indicateur observable D\n`;
+                downloadFile('trame-evaluation.md', content, 'text/markdown;charset=utf-8;');
+            }
+
+            function exportJsonData() {
+                downloadFile('evaluation-export.json', JSON.stringify(getState(), null, 2), 'application/json;charset=utf-8;');
+            }
+            
+            function handleCsvImport(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const csvContent = e.target.result;
+                    const lines = csvContent.split('\n').filter(Boolean).slice(1); // Skip header
+                    const criteriaMap = new Map();
+
+                    lines.forEach(line => {
+                        // Support des colonnes séparées par ";"
+                        const parts = line.split(';');
+                        if (parts.length < 3) return;
+
+                        let level, criterion, type, indicator;
+                        let isOpt = false;
+
+                        if (parts.length >= 4) {
+                            // Format 4 colonnes (V4)
+                            [level, criterion, type, indicator] = parts.map(p => p.trim());
+                            if (type && type.toLowerCase().includes('optionnel')) {
+                                isOpt = true;
+                            }
+                        } else {
+                            // Format 3 colonnes (V3 Legacy)
+                            [level, criterion, indicator] = parts.map(p => p.trim());
+                            if (indicator.startsWith('[OPT]')) {
+                                isOpt = true;
+                                indicator = indicator.replace('[OPT]', '').trim();
+                            }
+                        }
+
+                        if (!criterion || !indicator) return;
+
+                        if (!criteriaMap.has(criterion)) {
+                            criteriaMap.set(criterion, { level: level || '1', indicators: [] });
+                        }
+                        
+                        criteriaMap.get(criterion).indicators.push({ text: indicator, isOptional: isOpt });
+                    });
+                    rebuildGridFromMap(criteriaMap);
+                    csvImporter.value = '';
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            function handleMdImport(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const mdContent = e.target.result;
+                    const lines = mdContent.split('\n');
+                    const criteriaMap = new Map();
+                    let currentCriterion = null;
+
+                    const critRegex = /^\s*##\s*\[N(\d)\]\s*(.*)/;
+                    const indRegex = /^\s*-\s*(.*)/;
+
+                    lines.forEach(line => {
+                        const critMatch = line.match(critRegex);
+                        if (critMatch) {
+                            const [, level, title] = critMatch;
+                            if (title) {
+                                currentCriterion = title.trim();
+                                criteriaMap.set(currentCriterion, { level, indicators: [] });
+                            }
+                        } else if (currentCriterion) {
+                            const indMatch = line.match(indRegex);
+                            if (indMatch) {
+                                let text = indMatch[1].trim();
+                                let isOpt = false;
+                                if (text.startsWith('[OPT]')) {
+                                    isOpt = true;
+                                    text = text.replace('[OPT]', '').trim();
+                                }
+                                if (text) criteriaMap.get(currentCriterion).indicators.push({ text, isOptional: isOpt });
+                            }
+                        }
+                    });
+                    rebuildGridFromMap(criteriaMap);
+                    mdImporter.value = '';
+                };
+                reader.readAsText(file, 'UTF-8');
+            }
+
+            function rebuildGridFromMap(criteriaMap) {
+                criteriaList.innerHTML = '';
+                for (const [title, data] of criteriaMap.entries()) {
+                    const newCriterion = criterionTemplate.content.cloneNode(true);
+                    newCriterion.querySelector('.criterion-title').value = title;
+                    newCriterion.querySelector('.criterion-level-select').value = data.level;
+                    
+                    const indicatorsListEl = newCriterion.querySelector('.indicators-list');
+                    data.indicators.forEach(indObj => {
+                        // indObj = { text, isOptional }
+                        addIndicator(newCriterion.querySelector('.criterion-card'), indObj.text, false, indObj.isOptional);
+                    });
+                    
+                    criteriaList.appendChild(newCriterion);
+                    updateIndicatorCount(criteriaList.lastElementChild);
+                }
+                updateAllCounts(); 
+                saveState();
+            }
+
+            // --- Logique d'ajout / suppression / édition ---
+            
+            // Mise à jour pour gérer l'état optionnel et coché lors de la création
+            function addIndicator(criterionCard, text, shouldSave = true, isOptional = false, isChecked = false) {
+                const indicatorListElement = criterionCard.querySelector('.indicators-list');
+                const newIndicator = indicatorTemplate.content.cloneNode(true);
+                const item = newIndicator.querySelector('.indicator-item');
+                const toggleBtn = newIndicator.querySelector('.indicator-type-toggle');
+                
+                newIndicator.querySelector('.indicator-text').textContent = text;
+                newIndicator.querySelector('.indicator-checkbox').checked = isChecked;
+                
+                // Appliquer l'état optionnel
+                setOptionalState(item, toggleBtn, isOptional);
+
+                indicatorListElement.appendChild(newIndicator);
+                updateIndicatorCount(criterionCard);
+                if (shouldSave) saveState();
+            }
+
+            function setOptionalState(item, btn, isOptional) {
+                if (isOptional) {
+                    item.dataset.optional = "true";
+                    btn.textContent = "OPTIONNEL";
+                    btn.className = "indicator-type-toggle ml-2 px-2 py-1 text-[10px] font-bold uppercase rounded border border-blue-200 bg-blue-50 text-blue-500 hover:bg-blue-100 transition-colors";
+                } else {
+                    item.dataset.optional = "false";
+                    btn.textContent = "REQUIS";
+                    btn.className = "indicator-type-toggle ml-2 px-2 py-1 text-[10px] font-bold uppercase rounded border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition-colors";
+                }
+            }
+
+            function toggleOptionalState(btn) {
+                const item = btn.closest('.indicator-item');
+                const isCurrentlyOptional = item.dataset.optional === 'true';
+                setOptionalState(item, btn, !isCurrentlyOptional);
+                saveState();
+            }
+
+            function startEditingIndicator(span) {
+                const input = span.nextElementSibling;
+                span.classList.add('hidden');
+                input.classList.remove('hidden');
+                input.value = span.textContent;
+                input.select();
+            }
+
+            function stopEditingIndicator(input) {
+                const span = input.previousElementSibling;
+                const newText = input.value.trim();
+                
+                if (newText) span.textContent = newText;
+                
+                input.classList.add('hidden');
+                span.classList.remove('hidden');
+                saveState();
+            }
+            
+            // --- Logique d'ajout de critère (factorisée) ---
+            function createNewCriterion() {
+                const newCriterion = criterionTemplate.content.cloneNode(true);
+                criteriaList.appendChild(newCriterion);
+                updateAllCounts();
+                saveState();
+            }
+
+            // --- Fonctions de comptage et de mise à jour ---
+            function updateAllCounts() {
+                updateCriteriaCount();
+                updateLevelCountsAndRequirements();
+            }
+
+            function updateCriteriaCount() {
+                criteriaCountEl.textContent = document.querySelectorAll('.criterion-card').length;
+            }
+
+            function updateIndicatorCount(criterionCard) {
+                const count = criterionCard.querySelectorAll('.indicator-item').length;
+                criterionCard.querySelector('.indicator-count').textContent = count;
+            }
+
+            function updateLevelCountsAndRequirements() {
+                let l1 = 0, l2 = 0, l3 = 0;
+                document.querySelectorAll('.criterion-level-select').forEach(select => {
+                    if (select.value === '1') l1++;
+                    else if (select.value === '2') l2++;
+                    else if (select.value === '3') l3++;
+                });
+
+                totalL1CountEl.textContent = `(sur ${l1})`;
+                totalL2CountEl.textContent = `(sur ${l2})`;
+                totalL3CountEl.textContent = `(sur ${l3})`;
+                
+                // Plafonner les inputs de seuil pour éviter les erreurs de configuration
+                minLevel1Input.max = l1;
+                minLevel2Input.max = l2;
+                minLevel3Input.max = l3;
+
+                if (parseInt(minLevel1Input.value) > l1) minLevel1Input.value = l1;
+                if (parseInt(minLevel2Input.value) > l2) minLevel2Input.value = l2;
+                if (parseInt(minLevel3Input.value) > l3) minLevel3Input.value = l3;
+            }
+
+            // --- Initialisation et Écouteurs d'Événements ---
+            function setupEventListeners() {
+                // Actions globales
+                addCriterionBtn.addEventListener('click', createNewCriterion);
+                addCriterionBottomBtn.addEventListener('click', createNewCriterion);
+                clearGridBtn.addEventListener('click', clearGrid); 
+                
+                evaluateBtn.addEventListener('click', () => {
+                    const results = performEvaluation();
+                    displayResults(results);
+                });
+
+                // DÉLÉGATION D'ÉVÉNEMENTS sur la liste des critères
+                criteriaList.addEventListener('click', (e) => {
+                    const target = e.target;
+                    const criterionCard = target.closest('.criterion-card');
+                    if (!criterionCard) return;
+
+                    if (target.closest('.remove-criterion-btn')) {
+                        criterionCard.remove();
+                        updateAllCounts();
+                        saveState();
+                    } else if (target.closest('.add-indicator-btn')) {
+                        const input = criterionCard.querySelector('.indicator-input');
+                        if (input.value.trim()) {
+                            addIndicator(criterionCard, input.value.trim());
+                            input.value = '';
+                            input.focus();
+                        }
+                    } else if (target.closest('.remove-indicator-btn')) {
+                        target.closest('.indicator-item')?.remove();
+                        updateIndicatorCount(criterionCard);
+                        saveState();
+                    } else if (target.closest('.indicator-type-toggle')) {
+                        toggleOptionalState(target.closest('.indicator-type-toggle'));
+                    } else if (target.classList.contains('indicator-text')) {
+                        startEditingIndicator(target);
+                    }
+                });
+
+                criteriaList.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        if (e.target.classList.contains('indicator-input')) {
+                            e.preventDefault();
+                            const criterionCard = e.target.closest('.criterion-card');
+                            if (e.target.value.trim() && criterionCard) {
+                                addIndicator(criterionCard, e.target.value.trim());
+                                e.target.value = '';
+                            }
+                        } else if (e.target.classList.contains('indicator-edit-input')) {
+                            stopEditingIndicator(e.target);
+                        }
+                    } else if (e.key === 'Escape' && e.target.classList.contains('indicator-edit-input')) {
+                        e.target.value = e.target.previousElementSibling.textContent; // Annuler les changements
+                        stopEditingIndicator(e.target);
+                    }
+                });
+
+                criteriaList.addEventListener('focusout', (e) => {
+                    if (e.target.classList.contains('indicator-edit-input')) {
+                        stopEditingIndicator(e.target);
+                    }
+                });
+
+                criteriaList.addEventListener('change', (e) => {
+                    if (e.target.classList.contains('criterion-level-select')) {
+                        updateLevelCountsAndRequirements();
+                        saveState();
+                    }
+                });
+
+                // Sauvegarde automatique sur la plupart des inputs
+                document.body.addEventListener('input', saveState);
+                document.body.addEventListener('change', saveState);
+
+                // Modal
+                modalConfirmBtn.addEventListener('click', () => {
+                    if (typeof modalConfirmCallback === 'function') modalConfirmCallback();
+                    hideModal();
+                });
+                modalCancelBtn.addEventListener('click', hideModal);
+                modal.addEventListener('click', (e) => e.target === modal && hideModal());
+                
+                // Boutons d'action
+                exportCsvTrameBtn.addEventListener('click', exportCsvTrame);
+                exportMdTrameBtn.addEventListener('click', exportMdTrame);
+                exportJsonBtn.addEventListener('click', exportJsonData);
+                resetStateBtn.addEventListener('click', resetState);
+
+                importCsvBtn.addEventListener('click', () => csvImporter.click());
+                importMdBtn.addEventListener('click', () => mdImporter.click());
+                
+                csvImporter.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        showModal("Confirmer l'import CSV ?", `Remplacer la grille actuelle par le contenu de "${file.name}" ? Cette action est irréversible.`, () => handleCsvImport(file));
+                    }
+                });
+                
+                mdImporter.addEventListener('change', (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        showModal("Confirmer l'import Markdown ?", `Remplacer la grille actuelle par le contenu de "${file.name}" ? Cette action est irréversible.`, () => handleMdImport(file));
+                    }
+                });
+            }
+
+            // Lancement de l'application
+            setupEventListeners();
+            loadState();
+        });
+    </script>
+</body>
+</html>
