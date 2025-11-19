@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,70 +26,184 @@
         - All choices prioritize interactivity and practical assistance. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .nav-link { transition: all 0.3s ease; }
-        .nav-link.active { color: #0d9488; border-bottom-color: #0d9488; font-weight: 600; }
-        .content-section { display: none; }
-        .content-section.active { display: block; }
-        .tool-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .tool-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
-        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
-        @media (min-width: 768px) { .chart-container { height: 400px; } }
-        .step-item.active .step-circle { background-color: #0d9488; color: white; }
-        .step-item.active .step-text { font-weight: 700; color: #0d9488; }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.5s ease-in-out; }
-        .loader { width: 24px; height: 24px; border: 3px solid #f3f3f3; border-top: 3px solid #0d9488; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        audio { width: 100%; margin-top: 1rem; }
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+        }
+
+        .nav-link.active {
+            color: #0d9488;
+            border-bottom-color: #0d9488;
+            font-weight: 600;
+        }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .tool-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+
+        .step-item.active .step-circle {
+            background-color: #0d9488;
+            color: white;
+        }
+
+        .step-item.active .step-text {
+            font-weight: 700;
+            color: #0d9488;
+        }
+
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-in-out;
+        }
+
+        .loader {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0d9488;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+        }
+
         .copy-btn {
-            background-color: #e0f2f7; /* teal-50 */
-            color: #115e59; /* teal-800 */
+            background-color: #e0f2f7;
+            /* teal-50 */
+            color: #115e59;
+            /* teal-800 */
             padding: 0.25rem 0.75rem;
-            border-radius: 0.375rem; /* rounded-md */
-            font-weight: 500; /* font-medium */
-            font-size: 0.875rem; /* text-sm */
+            border-radius: 0.375rem;
+            /* rounded-md */
+            font-weight: 500;
+            /* font-medium */
+            font-size: 0.875rem;
+            /* text-sm */
             transition: background-color 0.2s ease;
         }
+
         .copy-btn:hover {
-            background-color: #ccfbf1; /* teal-100 */
+            background-color: #ccfbf1;
+            /* teal-100 */
         }
     </style>
 </head>
+
 <body class="bg-stone-50 text-slate-800">
 
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         <header class="text-center mb-12">
             <h1 class="text-4xl md:text-5xl font-bold text-teal-800 mb-2">Concevoir votre Capsule Pédagogique FPA</h1>
-            <p class="text-lg text-slate-600 max-w-3xl mx-auto">Un guide interactif pour structurer votre projet, maîtriser votre storyboard et convaincre le jury, maintenant avec l'assistance de l'IA Gemini.</p>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">Un guide interactif pour structurer votre projet,
+                maîtriser votre storyboard et convaincre le jury, maintenant avec l'assistance de l'IA Gemini.</p>
         </header>
 
         <nav class="flex justify-center border-b border-slate-200 mb-12">
-            <a href="#comprendre" class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Comprendre</a>
-            <a href="#concevoir" class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Concevoir</a>
-            <a href="#storyboarder" class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Storyboarder</a>
-            <a href="#outils" class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Outils</a>
-            <a href="#presenter" class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Présenter</a>
+            <a href="#comprendre"
+                class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Comprendre</a>
+            <a href="#concevoir"
+                class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Concevoir</a>
+            <a href="#storyboarder"
+                class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Storyboarder</a>
+            <a href="#outils"
+                class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Outils</a>
+            <a href="#presenter"
+                class="nav-link text-slate-600 py-4 px-6 border-b-2 border-transparent hover:text-teal-600 hover:border-teal-600">Présenter</a>
         </nav>
 
         <main>
             <section id="comprendre" class="content-section">
                 <div class="text-center mb-10">
                     <h2 class="text-3xl font-bold mb-2">Partie 1: Décoder les Attentes du Jury</h2>
-                    <p class="text-slate-600 max-w-2xl mx-auto">La première étape est de comprendre précisément ce que le jury évalue. Votre projet doit répondre aux critères des référentiels officiels (REAC & REV), en particulier sur la compétence clé de la **multimodalité**.</p>
+                    <p class="text-slate-600 max-w-2xl mx-auto">La première étape est de comprendre précisément ce que
+                        le jury évalue. Votre projet doit répondre aux critères des référentiels officiels (REAC & REV),
+                        en particulier sur la compétence clé de la **multimodalité**.</p>
                 </div>
                 <div class="max-w-4xl mx-auto space-y-4">
                     <div class="accordion-item bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                        <button class="accordion-header w-full text-left flex justify-between items-center" aria-expanded="false" aria-controls="accordion-content-1"><h3 class="text-xl font-semibold text-teal-700">Compétence 1: Élaborer la progression pédagogique</h3><span class="text-2xl text-teal-600">＋</span></button>
-                        <div id="accordion-content-1" class="accordion-content" role="region" aria-hidden="true"><p class="mt-4 text-slate-700">Le jury vérifie votre capacité à structurer une progression logique à partir d'une demande, en articulant différentes modalités (présentiel, à distance, synchrone, asynchrone) pour créer un parcours d'apprentissage cohérent.</p></div>
+                        <button class="accordion-header w-full text-left flex justify-between items-center"
+                            aria-expanded="false" aria-controls="accordion-content-1">
+                            <h3 class="text-xl font-semibold text-teal-700">Compétence 1: Élaborer la progression
+                                pédagogique</h3><span class="text-2xl text-teal-600">＋</span>
+                        </button>
+                        <div id="accordion-content-1" class="accordion-content" role="region" aria-hidden="true">
+                            <p class="mt-4 text-slate-700">Le jury vérifie votre capacité à structurer une progression
+                                logique à partir d'une demande, en articulant différentes modalités (présentiel, à
+                                distance, synchrone, asynchrone) pour créer un parcours d'apprentissage cohérent.</p>
+                        </div>
                     </div>
                     <div class="accordion-item bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                        <button class="accordion-header w-full text-left flex justify-between items-center" aria-expanded="false" aria-controls="accordion-content-2"><h3 class="text-xl font-semibold text-teal-700">Compétence 2: Concevoir un scénario pédagogique</h3><span class="text-2xl text-teal-600">＋</span></button>
-                        <div id="accordion-content-2" class="accordion-content" role="region" aria-hidden="true"><p class="mt-4 text-slate-700">Vous devez détailler les étapes, les activités, les ressources et les durées. Le scénario doit être réaliste, prendre en compte les besoins du public et prévoir des solutions de remédiation. Votre capsule n'est qu'un élément de ce scénario global.</p></div>
+                        <button class="accordion-header w-full text-left flex justify-between items-center"
+                            aria-expanded="false" aria-controls="accordion-content-2">
+                            <h3 class="text-xl font-semibold text-teal-700">Compétence 2: Concevoir un scénario
+                                pédagogique</h3><span class="text-2xl text-teal-600">＋</span>
+                        </button>
+                        <div id="accordion-content-2" class="accordion-content" role="region" aria-hidden="true">
+                            <p class="mt-4 text-slate-700">Vous devez détailler les étapes, les activités, les
+                                ressources et les durées. Le scénario doit être réaliste, prendre en compte les besoins
+                                du public et prévoir des solutions de remédiation. Votre capsule n'est qu'un élément de
+                                ce scénario global.</p>
+                        </div>
                     </div>
                     <div class="accordion-item bg-white p-6 rounded-lg shadow-sm border border-slate-200">
-                        <button class="accordion-header w-full text-left flex justify-between items-center" aria-expanded="false" aria-controls="accordion-content-3"><h3 class="text-xl font-semibold text-teal-700">Compétence 3: Concevoir des activités et évaluations</h3><span class="text-2xl text-teal-600">＋</span></button>
-                        <div id="accordion-content-3" class="accordion-content" role="region" aria-hidden="true"><p class="mt-4 text-slate-700">Le critère clé ici est que **les capsules sont produites à partir d'un storyboard**. Le jury comparera votre plan (storyboard) à votre réalisation (capsule) pour évaluer votre professionnalisme. Le respect de la propriété intellectuelle est également évalué.</p></div>
+                        <button class="accordion-header w-full text-left flex justify-between items-center"
+                            aria-expanded="false" aria-controls="accordion-content-3">
+                            <h3 class="text-xl font-semibold text-teal-700">Compétence 3: Concevoir des activités et
+                                évaluations</h3><span class="text-2xl text-teal-600">＋</span>
+                        </button>
+                        <div id="accordion-content-3" class="accordion-content" role="region" aria-hidden="true">
+                            <p class="mt-4 text-slate-700">Le critère clé ici est que **les capsules sont produites à
+                                partir d'un storyboard**. Le jury comparera votre plan (storyboard) à votre réalisation
+                                (capsule) pour évaluer votre professionnalisme. Le respect de la propriété
+                                intellectuelle est également évalué.</p>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -96,49 +211,140 @@
             <section id="concevoir" class="content-section">
                 <div class="text-center mb-10">
                     <h2 class="text-3xl font-bold mb-2">Partie 2: Le Processus de Conception</h2>
-                    <p class="text-slate-600 max-w-2xl mx-auto">Créer une capsule efficace suit un processus rigoureux. Chaque étape est essentielle pour garantir la qualité pédagogique et technique de votre production. Suivez le guide, étape par étape.</p>
+                    <p class="text-slate-600 max-w-2xl mx-auto">Créer une capsule efficace suit un processus rigoureux.
+                        Chaque étape est essentielle pour garantir la qualité pédagogique et technique de votre
+                        production. Suivez le guide, étape par étape.</p>
                 </div>
                 <div class="flex flex-col md:flex-row md:space-x-8">
                     <div class="md:w-1/3 mb-8 md:mb-0">
                         <ul class="space-y-4" role="tablist">
-                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="1" role="tab" aria-selected="false" aria-controls="step-content-1"><div class="flex items-center"><div class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">1</div><div class="step-text text-lg font-medium text-slate-700">Idéation & Script</div></div></a></li>
-                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="2" role="tab" aria-selected="false" aria-controls="step-content-2"><div class="flex items-center"><div class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">2</div><div class="step-text text-lg font-medium text-slate-700">Storyboard</div></div></a></li>
-                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="3" role="tab" aria-selected="false" aria-controls="step-content-3"><div class="flex items-center"><div class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">3</div><div class="step-text text-lg font-medium text-slate-700">Ressources & Voix</div></div></a></li>
-                             <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="4" role="tab" aria-selected="false" aria-controls="step-content-4"><div class="flex items-center"><div class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">4</div><div class="step-text text-lg font-medium text-slate-700">Production & Test</div></div></a></li>
+                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="1"
+                                    role="tab" aria-selected="false" aria-controls="step-content-1">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">
+                                            1</div>
+                                        <div class="step-text text-lg font-medium text-slate-700">Idéation & Script
+                                        </div>
+                                    </div>
+                                </a></li>
+                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="2"
+                                    role="tab" aria-selected="false" aria-controls="step-content-2">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">
+                                            2</div>
+                                        <div class="step-text text-lg font-medium text-slate-700">Storyboard</div>
+                                    </div>
+                                </a></li>
+                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="3"
+                                    role="tab" aria-selected="false" aria-controls="step-content-3">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">
+                                            3</div>
+                                        <div class="step-text text-lg font-medium text-slate-700">Ressources & Voix
+                                        </div>
+                                    </div>
+                                </a></li>
+                            <li><a href="#" class="step-item p-4 block rounded-lg hover:bg-teal-50" data-step="4"
+                                    role="tab" aria-selected="false" aria-controls="step-content-4">
+                                    <div class="flex items-center">
+                                        <div
+                                            class="step-circle flex-shrink-0 bg-slate-200 rounded-full w-10 h-10 flex items-center justify-center font-bold text-slate-600 mr-4">
+                                            4</div>
+                                        <div class="step-text text-lg font-medium text-slate-700">Production & Test
+                                        </div>
+                                    </div>
+                                </a></li>
                         </ul>
                     </div>
                     <div class="md:w-2/3 bg-white p-8 rounded-lg shadow-md border border-slate-200">
                         <div id="step-content">
-                            <div class="step-details" data-step-content="1" id="step-content-1" role="tabpanel" tabindex="0"><h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 1: Idéation & Script</h3><p class="mb-3">Tout commence par une idée claire. La règle d'or : **1 capsule = 1 idée**. Utilisez des méthodes comme le brainstorming (post-it, tableau blanc) pour définir votre sujet. Ensuite, formulez un objectif pédagogique précis avec la méthode **SMART** ou des **3C** (Comportement, Conditions, Critères).</p><p>Rédigez ensuite l'intégralité de votre script (voix-off). C'est non-négociable. Cela garantit la clarté de votre message et vous permet de maîtriser la durée (comptez environ 150 mots/minute).</p></div>
-                             <div class="step-details hidden" data-step-content="2" id="step-content-2" role="tabpanel" tabindex="0"><h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 2: Storyboard</h3><p>Le storyboard est votre plan de montage détaillé. Il transforme votre script en un plan visuel, scène par scène. C'est la preuve de votre professionnalisme en ingénierie pédagogique. Nous le détaillerons dans la section suivante.</p></div>
-                             <div class="step-details hidden" data-step-content="3" id="step-content-3" role="tabpanel" tabindex="0"><h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 3: Collecte des Ressources & Enregistrement Voix</h3><p class="mb-3">Rassemblez tous vos médias (images, icônes, musiques) dans un dossier. Assurez-vous qu'ils sont libres de droits. Ensuite, enregistrez votre voix-off. Utilisez un micro externe pour une qualité optimale et enregistrez dans un environnement calme. Le logiciel gratuit Audacity est parfait pour ça.</p></div>
-                             <div class="step-details hidden" data-step-content="4" id="step-content-4" role="tabpanel" tabindex="0"><h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 4: Production & Test</h3><p class="mb-3">Assemblez vos visuels et votre audio avec un logiciel de montage (ex: Canva, Camtasia). La clarté prime sur les effets superflus. N'oubliez pas les sous-titres pour l'accessibilité.</p><p>Enfin, testez ! Faites visionner votre capsule à un tiers et demandez-lui ce qu'il a retenu. Si sa réponse correspond à votre objectif, c'est un succès. Sinon, itérez.</p></div>
+                            <div class="step-details" data-step-content="1" id="step-content-1" role="tabpanel"
+                                tabindex="0">
+                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 1: Idéation & Script</h3>
+                                <p class="mb-3">Tout commence par une idée claire. La règle d'or : **1 capsule = 1
+                                    idée**. Utilisez des méthodes comme le brainstorming (post-it, tableau blanc) pour
+                                    définir votre sujet. Ensuite, formulez un objectif pédagogique précis avec la
+                                    méthode **SMART** ou des **3C** (Comportement, Conditions, Critères).</p>
+                                <p>Rédigez ensuite l'intégralité de votre script (voix-off). C'est non-négociable. Cela
+                                    garantit la clarté de votre message et vous permet de maîtriser la durée (comptez
+                                    environ 150 mots/minute).</p>
+                            </div>
+                            <div class="step-details hidden" data-step-content="2" id="step-content-2" role="tabpanel"
+                                tabindex="0">
+                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 2: Storyboard</h3>
+                                <p>Le storyboard est votre plan de montage détaillé. Il transforme votre script en un
+                                    plan visuel, scène par scène. C'est la preuve de votre professionnalisme en
+                                    ingénierie pédagogique. Nous le détaillerons dans la section suivante.</p>
+                            </div>
+                            <div class="step-details hidden" data-step-content="3" id="step-content-3" role="tabpanel"
+                                tabindex="0">
+                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 3: Collecte des Ressources &
+                                    Enregistrement Voix</h3>
+                                <p class="mb-3">Rassemblez tous vos médias (images, icônes, musiques) dans un dossier.
+                                    Assurez-vous qu'ils sont libres de droits. Ensuite, enregistrez votre voix-off.
+                                    Utilisez un micro externe pour une qualité optimale et enregistrez dans un
+                                    environnement calme. Le logiciel gratuit Audacity est parfait pour ça.</p>
+                            </div>
+                            <div class="step-details hidden" data-step-content="4" id="step-content-4" role="tabpanel"
+                                tabindex="0">
+                                <h3 class="text-2xl font-bold text-teal-700 mb-4">Étape 4: Production & Test</h3>
+                                <p class="mb-3">Assemblez vos visuels et votre audio avec un logiciel de montage (ex:
+                                    Canva, Camtasia). La clarté prime sur les effets superflus. N'oubliez pas les
+                                    sous-titres pour l'accessibilité.</p>
+                                <p>Enfin, testez ! Faites visionner votre capsule à un tiers et demandez-lui ce qu'il a
+                                    retenu. Si sa réponse correspond à votre objectif, c'est un succès. Sinon, itérez.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="mt-12 bg-teal-50/50 p-8 rounded-lg border border-teal-200">
                     <h3 class="text-2xl font-bold text-teal-800 mb-4 text-center">✨ Assistant de Conception IA</h3>
-                    <p class="text-center text-slate-600 mb-6 max-w-2xl mx-auto">Bloqué sur la formulation ? Laissez Gemini vous aider à définir un objectif pédagogique clair, puis à générer un premier jet de script pour votre capsule.</p>
+                    <p class="text-center text-slate-600 mb-6 max-w-2xl mx-auto">Bloqué sur la formulation ? Laissez
+                        Gemini vous aider à définir un objectif pédagogique clair, puis à générer un premier jet de
+                        script pour votre capsule.</p>
                     <div class="max-w-xl mx-auto space-y-8">
                         <div>
-                            <label for="topic-input" class="block font-medium text-slate-700 mb-2">1. Sujet de votre capsule :</label>
-                            <input type="text" id="topic-input" class="w-full p-2 border border-slate-300 rounded-md" placeholder="Ex: Le cycle de l'eau">
-                            <button id="generate-objective-btn" class="mt-4 w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center space-x-2"><span>Générer un Objectif Pédagogique (3C)</span><div id="objective-loader" class="loader hidden"></div></button>
-                            <div id="objective-result" class="mt-4 p-4 bg-white rounded-md border border-slate-200 hidden relative">
+                            <label for="topic-input" class="block font-medium text-slate-700 mb-2">1. Sujet de votre
+                                capsule :</label>
+                            <input type="text" id="topic-input" class="w-full p-2 border border-slate-300 rounded-md"
+                                placeholder="Ex: Le cycle de l'eau">
+                            <button id="generate-objective-btn"
+                                class="mt-4 w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center space-x-2"><span>Générer
+                                    un Objectif Pédagogique (3C)</span>
+                                <div id="objective-loader" class="loader hidden"></div>
+                            </button>
+                            <div id="objective-result"
+                                class="mt-4 p-4 bg-white rounded-md border border-slate-200 hidden relative">
                                 <!-- Changed: Made objective-text-display a paragraph and the copy button static -->
-                                <p id="objective-text-display" class="mb-2 text-slate-700"></p> 
-                                <button class="copy-btn absolute top-2 right-2" data-target="objective-text-display">Copier</button>
+                                <p id="objective-text-display" class="mb-2 text-slate-700"></p>
+                                <button class="copy-btn absolute top-2 right-2"
+                                    data-target="objective-text-display">Copier</button>
                             </div>
                         </div>
                         <div>
-                            <label for="objective-for-script-input" class="block font-medium text-slate-700 mb-2">2. Objectif Pédagogique (copiez-collez le résultat précédent) :</label>
-                            <textarea id="objective-for-script-input" rows="4" class="w-full p-2 border border-slate-300 rounded-md" placeholder="Collez ici l'objectif généré pour guider la création du script..."></textarea>
-                            <button id="generate-script-btn" class="mt-4 w-full bg-teal-700 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-800 flex items-center justify-center space-x-2"><span>Générer un Brouillon de Script</span><div id="script-loader" class="loader hidden"></div></button>
+                            <label for="objective-for-script-input" class="block font-medium text-slate-700 mb-2">2.
+                                Objectif Pédagogique (copiez-collez le résultat précédent) :</label>
+                            <textarea id="objective-for-script-input" rows="4"
+                                class="w-full p-2 border border-slate-300 rounded-md"
+                                placeholder="Collez ici l'objectif généré pour guider la création du script..."></textarea>
+                            <button id="generate-script-btn"
+                                class="mt-4 w-full bg-teal-700 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-800 flex items-center justify-center space-x-2"><span>Générer
+                                    un Brouillon de Script</span>
+                                <div id="script-loader" class="loader hidden"></div>
+                            </button>
                             <div class="mt-4 hidden" id="script-result-container">
-                                <label for="script-result" class="block font-medium text-slate-700 mb-2">3. Script généré (éditable) :</label>
-                                <textarea id="script-result" rows="10" class="w-full p-2 bg-white rounded-md border border-slate-200"></textarea>
-                                <p class="text-sm text-slate-600 mt-2">N'oubliez pas de relire et d'ajuster ce brouillon de script pour qu'il corresponde parfaitement à vos attentes et à votre ton pédagogique.</p>
+                                <label for="script-result" class="block font-medium text-slate-700 mb-2">3. Script
+                                    généré (éditable) :</label>
+                                <textarea id="script-result" rows="10"
+                                    class="w-full p-2 bg-white rounded-md border border-slate-200"></textarea>
+                                <p class="text-sm text-slate-600 mt-2">N'oubliez pas de relire et d'ajuster ce brouillon
+                                    de script pour qu'il corresponde parfaitement à vos attentes et à votre ton
+                                    pédagogique.</p>
                                 <button class="copy-btn mt-2" data-target="script-result">Copier le script</button>
                             </div>
                         </div>
@@ -149,22 +355,50 @@
             <section id="storyboarder" class="content-section">
                 <div class="text-center mb-10">
                     <h2 class="text-3xl font-bold mb-2">Partie 3: L'Anatomie d'un Storyboard Professionnel</h2>
-                    <p class="text-slate-600 max-w-3xl mx-auto">Le storyboard n'est pas un brouillon, c'est votre document de conception principal. Il doit être clair, détaillé et fonctionnel. Explorez ses 7 composantes essentielles en cliquant sur chaque élément.</p>
+                    <p class="text-slate-600 max-w-3xl mx-auto">Le storyboard n'est pas un brouillon, c'est votre
+                        document de conception principal. Il doit être clair, détaillé et fonctionnel. Explorez ses 7
+                        composantes essentielles en cliquant sur chaque élément.</p>
                 </div>
                 <div class="grid md:grid-cols-2 gap-8 items-center">
                     <!-- Début des modifications pour l'alignement des boutons -->
                     <div class="grid grid-cols-3 gap-4 text-center">
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-visuels" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Visuels</button></div>
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-id" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">ID Scène</button></div>
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-duree" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Durée</button></div>
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-visuels"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Visuels</button>
+                        </div>
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-id"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">ID
+                                Scène</button></div>
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-duree"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Durée</button>
+                        </div>
 
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-texte" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Texte Écran</button></div>
-                        <div class="storyboard-item-container flex items-center justify-center"><div class="p-4 bg-teal-600 text-white rounded-full aspect-square flex items-center justify-center font-bold text-lg">Storyboard</div></div>
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-audio" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Audio</button></div>
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-texte"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Texte
+                                Écran</button></div>
+                        <div class="storyboard-item-container flex items-center justify-center">
+                            <div
+                                class="p-4 bg-teal-600 text-white rounded-full aspect-square flex items-center justify-center font-bold text-lg">
+                                Storyboard</div>
+                        </div>
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-audio"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Audio</button>
+                        </div>
 
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-anim" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Animation</button></div>
-                        <div class="storyboard-item-container flex items-center justify-center"></div> <!-- Case vide pour l'alignement -->
-                        <div class="storyboard-item-container flex items-center justify-center"><button data-modal-target="sb-intention" class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Intention</button></div>
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-anim"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Animation</button>
+                        </div>
+                        <div class="storyboard-item-container flex items-center justify-center"></div>
+                        <!-- Case vide pour l'alignement -->
+                        <div class="storyboard-item-container flex items-center justify-center"><button
+                                data-modal-target="sb-intention"
+                                class="storyboard-item w-full bg-teal-100 text-teal-800 p-3 rounded-lg font-semibold hover:bg-teal-200">Intention</button>
+                        </div>
                     </div>
                     <!-- Fin des modifications pour l'alignement des boutons -->
 
@@ -188,34 +422,47 @@
                                         <td class="p-3 font-medium">1.2</td>
                                         <td class="p-3">15s</td>
                                         <td class="p-3">Icône "livre de recettes" + flèche vers icône "caméra"</td>
-                                        <td class="p-3">"Imaginez que votre capsule est un plat... Le storyboard, c'est votre recette !"</td>
+                                        <td class="p-3">"Imaginez que votre capsule est un plat... Le storyboard, c'est
+                                            votre recette !"</td>
                                         <!-- Début de la modification pour la colonne Intention Pédagogique -->
-                                        <td class="p-3 text-xs italic">Accrocher l'attention et introduire le concept de storyboard par une analogie.</td>
+                                        <td class="p-3 text-xs italic">Accrocher l'attention et introduire le concept de
+                                            storyboard par une analogie.</td>
                                         <!-- Fin de la modification -->
                                     </tr>
                                 </tbody>
                             </table>
                         </div>
-                        <p class="mt-4 text-sm text-slate-600">Un format tabulaire est parfait pour un storyboard textuel. Il est clair, structuré et facile à partager.</p>
+                        <p class="mt-4 text-sm text-slate-600">Un format tabulaire est parfait pour un storyboard
+                            textuel. Il est clair, structuré et facile à partager.</p>
                     </div>
                 </div>
-                
+
                 <div class="mt-12 bg-teal-50/50 p-8 rounded-lg border border-teal-200">
-                    <h3 class="text-2xl font-bold text-teal-800 mb-4 text-center">✨ Générateur de Storyboard & Voix-Off IA</h3>
-                    <p class="text-center text-slate-600 mb-6 max-w-2xl mx-auto">Collez votre script de voix-off (généré ou écrit par vous), créez un storyboard tabulaire, puis générez la piste audio correspondante.</p>
+                    <h3 class="text-2xl font-bold text-teal-800 mb-4 text-center">✨ Générateur de Storyboard & Voix-Off
+                        IA</h3>
+                    <p class="text-center text-slate-600 mb-6 max-w-2xl mx-auto">Collez votre script de voix-off (généré
+                        ou écrit par vous), créez un storyboard tabulaire, puis générez la piste audio correspondante.
+                    </p>
                     <div class="max-w-2xl mx-auto">
                         <!-- Nouveaux champs pour les options visuelles -->
                         <div class="mt-4 p-6 bg-white rounded-lg border border-slate-200">
                             <h4 class="text-xl font-bold text-teal-700 mb-4">Options Visuelles pour l'Image IA</h4>
                             <div class="space-y-4">
                                 <div>
-                                    <label for="character-description-input" class="block font-medium text-slate-700 mb-2">Description des personnages (pour cohérence) :</label>
-                                    <textarea id="character-description-input" rows="3" class="w-full p-2 border border-slate-300 rounded-md" placeholder="Ex: Un formateur homme, la quarantaine, chemise bleue; une apprenante femme, jeune, cheveux bruns."></textarea>
-                                    <p class="text-sm text-slate-500 mt-1">Ces descriptions seront utilisées pour maintenir la cohérence des personnages dans chaque image générée.</p>
+                                    <label for="character-description-input"
+                                        class="block font-medium text-slate-700 mb-2">Description des personnages (pour
+                                        cohérence) :</label>
+                                    <textarea id="character-description-input" rows="3"
+                                        class="w-full p-2 border border-slate-300 rounded-md"
+                                        placeholder="Ex: Un formateur homme, la quarantaine, chemise bleue; une apprenante femme, jeune, cheveux bruns."></textarea>
+                                    <p class="text-sm text-slate-500 mt-1">Ces descriptions seront utilisées pour
+                                        maintenir la cohérence des personnages dans chaque image générée.</p>
                                 </div>
                                 <div>
-                                    <label for="image-style-select" class="block font-medium text-slate-700 mb-2">Style Visuel :</label>
-                                    <select id="image-style-select" class="w-full p-2 border border-slate-300 rounded-md">
+                                    <label for="image-style-select" class="block font-medium text-slate-700 mb-2">Style
+                                        Visuel :</label>
+                                    <select id="image-style-select"
+                                        class="w-full p-2 border border-slate-300 rounded-md">
                                         <option value="">(Par défaut)</option>
                                         <option value="realistic photo">Photo réaliste</option>
                                         <option value="cartoon style">Dessin animé (Cartoon)</option>
@@ -225,8 +472,10 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="camera-angle-select" class="block font-medium text-slate-700 mb-2">Type de Plan / Angle de Caméra :</label>
-                                    <select id="camera-angle-select" class="w-full p-2 border border-slate-300 rounded-md">
+                                    <label for="camera-angle-select" class="block font-medium text-slate-700 mb-2">Type
+                                        de Plan / Angle de Caméra :</label>
+                                    <select id="camera-angle-select"
+                                        class="w-full p-2 border border-slate-300 rounded-md">
                                         <option value="">(Par défaut)</option>
                                         <option value="wide shot">Plan large</option>
                                         <option value="medium shot">Plan moyen</option>
@@ -236,8 +485,10 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="ambiance-lighting-select" class="block font-medium text-slate-700 mb-2">Ambiance / Éclairage :</label>
-                                    <select id="ambiance-lighting-select" class="w-full p-2 border border-slate-300 rounded-md">
+                                    <label for="ambiance-lighting-select"
+                                        class="block font-medium text-slate-700 mb-2">Ambiance / Éclairage :</label>
+                                    <select id="ambiance-lighting-select"
+                                        class="w-full p-2 border border-slate-300 rounded-md">
                                         <option value="">(Par défaut)</option>
                                         <option value="bright and clear lighting">Lumineux et clair</option>
                                         <option value="soft natural lighting">Éclairage naturel doux</option>
@@ -249,16 +500,30 @@
                         </div>
                         <!-- Fin des nouveaux champs pour les options visuelles -->
 
-                        <label for="script-input" class="block font-medium text-slate-700 mb-2 mt-6">Collez votre script ici :</label>
-                        <textarea id="script-input" rows="8" class="w-full p-2 border border-slate-300 rounded-md" placeholder="Bonjour et bienvenue dans cette capsule..."></textarea>
+                        <label for="script-input" class="block font-medium text-slate-700 mb-2 mt-6">Collez votre script
+                            ici :</label>
+                        <textarea id="script-input" rows="8" class="w-full p-2 border border-slate-300 rounded-md"
+                            placeholder="Bonjour et bienvenue dans cette capsule..."></textarea>
                         <div class="flex flex-col sm:flex-row gap-4 mt-4">
-                            <button id="generate-storyboard-btn" class="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center space-x-2"><span>Générer le Storyboard</span><div id="storyboard-loader" class="loader hidden"></div></button>
-                            <button id="generate-tts-btn" class="w-full bg-teal-800 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-900 flex items-center justify-center space-x-2"><span>Générer la Voix-Off</span><div id="tts-loader" class="loader hidden"></div></button>
+                            <button id="generate-storyboard-btn"
+                                class="w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center space-x-2"><span>Générer
+                                    le Storyboard</span>
+                                <div id="storyboard-loader" class="loader hidden"></div>
+                            </button>
+                            <button id="generate-tts-btn"
+                                class="w-full bg-teal-800 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-900 flex items-center justify-center space-x-2"><span>Générer
+                                    la Voix-Off</span>
+                                <div id="tts-loader" class="loader hidden"></div>
+                            </button>
                         </div>
                         <!-- Nouveaux boutons d'export -->
                         <div id="export-buttons-container" class="flex flex-col sm:flex-row gap-4 mt-4 hidden">
-                            <button id="export-json-btn" class="w-full bg-slate-600 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-700">Exporter JSON</button>
-                            <button id="export-md-btn" class="w-full bg-slate-700 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-800">Exporter Markdown</button>
+                            <button id="export-json-btn"
+                                class="w-full bg-slate-600 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-700">Exporter
+                                JSON</button>
+                            <button id="export-md-btn"
+                                class="w-full bg-slate-700 text-white font-bold py-2 px-4 rounded-md hover:bg-slate-800">Exporter
+                                Markdown</button>
                         </div>
                         <!-- Fin des nouveaux boutons d'export -->
                         <div id="storyboard-result" class="mt-4 overflow-x-auto hidden"></div>
@@ -270,44 +535,89 @@
             <section id="outils" class="content-section">
                 <div class="text-center mb-10">
                     <h2 class="text-3xl font-bold mb-2">Partie 4: La Boîte à Outils du Formateur Moderne</h2>
-                    <p class="text-slate-600 max-w-2xl mx-auto">Choisir le bon outil est une décision stratégique que vous devrez justifier. Filtrez par catégorie pour explorer une sélection d'outils pertinents pour chaque étape de votre projet.</p>
+                    <p class="text-slate-600 max-w-2xl mx-auto">Choisir le bon outil est une décision stratégique que
+                        vous devrez justifier. Filtrez par catégorie pour explorer une sélection d'outils pertinents
+                        pour chaque étape de votre projet.</p>
                 </div>
                 <div class="flex justify-center space-x-2 mb-8">
-                    <button class="tool-filter-btn bg-teal-600 text-white px-4 py-2 rounded-full" data-filter="all">Tous</button>
-                    <button class="tool-filter-btn bg-white text-slate-700 px-4 py-2 rounded-full border" data-filter="storyboard">Storyboard</button>
-                    <button class="tool-filter-btn bg-white text-slate-700 px-4 py-2 rounded-full border" data-filter="production">Production</button>
-                    <button class="tool-filter-btn bg-white text-slate-700 px-4 py-2 rounded-full border" data-filter="ia">IA</button>
+                    <button class="tool-filter-btn bg-teal-600 text-white px-4 py-2 rounded-full"
+                        data-filter="all">Tous</button>
+                    <button class="tool-filter-btn bg-white text-slate-700 px-4 py-2 rounded-full border"
+                        data-filter="storyboard">Storyboard</button>
+                    <button class="tool-filter-btn bg-white text-slate-700 px-4 py-2 rounded-full border"
+                        data-filter="production">Production</button>
+                    <button class="tool-filter-btn bg-white text-slate-700 px-4 py-2 rounded-full border"
+                        data-filter="ia">IA</button>
                 </div>
                 <div id="tool-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="storyboard production"><h3 class="text-xl font-bold mb-2">Canva</h3><p class="text-slate-600">Idéal pour créer rapidement des visuels de qualité et monter des vidéos simples. Parfait pour les non-designers.</p></div>
-                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="storyboard production"><h3 class="text-xl font-bold mb-2">Genially</h3><p class="text-slate-600">La référence pour l'interactivité. Permet d'intégrer des quiz, des zones cliquables et de rendre l'apprenant actif.</p></div>
-                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="storyboard"><h3 class="text-xl font-bold mb-2">Miro</h3><p class="text-slate-600">Un tableau blanc collaboratif parfait pour la phase d'idéation, le brainstorming et la cartographie de votre scénario.</p></div>
-                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="production"><h3 class="text-xl font-bold mb-2">Camtasia</h3><p class="text-slate-600">Logiciel puissant et simple pour la capture d'écran (tutoriels) et le montage vidéo avancé.</p></div>
-                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="production"><h3 class="text-xl font-bold mb-2">Audacity</h3><p class="text-slate-600">L'outil gratuit incontournable pour enregistrer et nettoyer votre piste audio avec un rendu professionnel.</p></div>
-                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="ia"><h3 class="text-xl font-bold mb-2">Gemini API</h3><p class="text-slate-600">Votre co-pilote IA. Utile pour brainstormer, reformuler, générer des storyboards et des voix-off, mais à utiliser de manière éthique et justifiée.</p></div>
+                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6"
+                        data-category="storyboard production">
+                        <h3 class="text-xl font-bold mb-2">Canva</h3>
+                        <p class="text-slate-600">Idéal pour créer rapidement des visuels de qualité et monter des
+                            vidéos simples. Parfait pour les non-designers.</p>
+                    </div>
+                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6"
+                        data-category="storyboard production">
+                        <h3 class="text-xl font-bold mb-2">Genially</h3>
+                        <p class="text-slate-600">La référence pour l'interactivité. Permet d'intégrer des quiz, des
+                            zones cliquables et de rendre l'apprenant actif.</p>
+                    </div>
+                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="storyboard">
+                        <h3 class="text-xl font-bold mb-2">Miro</h3>
+                        <p class="text-slate-600">Un tableau blanc collaboratif parfait pour la phase d'idéation, le
+                            brainstorming et la cartographie de votre scénario.</p>
+                    </div>
+                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="production">
+                        <h3 class="text-xl font-bold mb-2">Camtasia</h3>
+                        <p class="text-slate-600">Logiciel puissant et simple pour la capture d'écran (tutoriels) et le
+                            montage vidéo avancé.</p>
+                    </div>
+                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="production">
+                        <h3 class="text-xl font-bold mb-2">Audacity</h3>
+                        <p class="text-slate-600">L'outil gratuit incontournable pour enregistrer et nettoyer votre
+                            piste audio avec un rendu professionnel.</p>
+                    </div>
+                    <div class="tool-card bg-white rounded-lg shadow-sm border p-6" data-category="ia">
+                        <h3 class="text-xl font-bold mb-2">Gemini API</h3>
+                        <p class="text-slate-600">Votre co-pilote IA. Utile pour brainstormer, reformuler, générer des
+                            storyboards et des voix-off, mais à utiliser de manière éthique et justifiée.</p>
+                    </div>
                 </div>
             </section>
 
             <section id="presenter" class="content-section">
                 <div class="text-center mb-10">
                     <h2 class="text-3xl font-bold mb-2">Partie 5: Convaincre le Jury à l'Oral</h2>
-                    <p class="text-slate-600 max-w-2xl mx-auto">Votre présentation de 20 minutes est une argumentation. Vous devez démontrer votre professionnalisme en structurant votre discours, en justifiant vos choix et en respectant le temps.</p>
+                    <p class="text-slate-600 max-w-2xl mx-auto">Votre présentation de 20 minutes est une argumentation.
+                        Vous devez démontrer votre professionnalisme en structurant votre discours, en justifiant vos
+                        choix et en respectant le temps.</p>
                 </div>
                 <div>
                     <h3 class="text-2xl font-bold text-center mb-4">Visualisation du Plan de Présentation (20 min)</h3>
-                    <div class="chart-container bg-white p-4 rounded-lg shadow-md border"><canvas id="presentationChart"></canvas></div>
+                    <div class="chart-container bg-white p-4 rounded-lg shadow-md border"><canvas
+                            id="presentationChart"></canvas></div>
                 </div>
-                 <div class="mt-12 bg-teal-50/50 p-8 rounded-lg border border-teal-200">
+                <div class="mt-12 bg-teal-50/50 p-8 rounded-lg border border-teal-200">
                     <h3 class="text-2xl font-bold text-teal-800 mb-4 text-center">✨ Assistant d'Argumentation IA</h3>
-                    <p class="text-center text-slate-600 mb-6 max-w-2xl mx-auto">Préparez votre oral. Décrivez un de vos choix pédagogiques ou techniques, et laissez Gemini vous aider à construire une justification solide et professionnelle pour le jury.</p>
+                    <p class="text-center text-slate-600 mb-6 max-w-2xl mx-auto">Préparez votre oral. Décrivez un de vos
+                        choix pédagogiques ou techniques, et laissez Gemini vous aider à construire une justification
+                        solide et professionnelle pour le jury.</p>
                     <div class="max-w-xl mx-auto">
-                        <label for="choice-input" class="block font-medium text-slate-700 mb-2">Votre choix à justifier :</label>
-                        <input type="text" id="choice-input" class="w-full p-2 border border-slate-300 rounded-md" placeholder="Ex: J'ai utilisé Canva pour le montage vidéo">
-                        <button id="generate-argument-btn" class="mt-4 w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center space-x-2"><span>Aidez-moi à justifier</span><div id="argument-loader" class="loader hidden"></div></button>
-                        <div id="argument-result" class="mt-4 p-4 bg-white rounded-md border border-slate-200 hidden relative">
+                        <label for="choice-input" class="block font-medium text-slate-700 mb-2">Votre choix à justifier
+                            :</label>
+                        <input type="text" id="choice-input" class="w-full p-2 border border-slate-300 rounded-md"
+                            placeholder="Ex: J'ai utilisé Canva pour le montage vidéo">
+                        <button id="generate-argument-btn"
+                            class="mt-4 w-full bg-teal-600 text-white font-bold py-2 px-4 rounded-md hover:bg-teal-700 flex items-center justify-center space-x-2"><span>Aidez-moi
+                                à justifier</span>
+                            <div id="argument-loader" class="loader hidden"></div>
+                        </button>
+                        <div id="argument-result"
+                            class="mt-4 p-4 bg-white rounded-md border border-slate-200 hidden relative">
                             <!-- Changed: Made argument-text-display a paragraph and the copy button static -->
                             <p id="argument-text-display" class="mb-2 text-slate-700"></p>
-                            <button class="copy-btn absolute top-2 right-2" data-target="argument-text-display">Copier</button>
+                            <button class="copy-btn absolute top-2 right-2"
+                                data-target="argument-text-display">Copier</button>
                         </div>
                     </div>
                 </div>
@@ -315,9 +625,12 @@
         </main>
     </div>
 
-    <div id="storyboard-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-content">
+    <div id="storyboard-modal"
+        class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4" role="dialog"
+        aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-content">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full p-8 relative">
-            <button id="close-modal" class="absolute top-4 right-4 text-3xl text-slate-500 hover:text-slate-800" aria-label="Fermer la modale">&times;</button>
+            <button id="close-modal" class="absolute top-4 right-4 text-3xl text-slate-500 hover:text-slate-800"
+                aria-label="Fermer la modale">&times;</button>
             <h3 id="modal-title" class="text-2xl font-bold text-teal-700 mb-4"></h3>
             <p id="modal-content" class="text-slate-700"></p>
         </div>
@@ -328,459 +641,461 @@
         <p>&copy; 2025.2026 - d.de amil | IRP. Tous droits réservés.</p>
     </footer>
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM Content Loaded. Initializing...');
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('DOM Content Loaded. Initializing...');
 
-    const navLinks = document.querySelectorAll('.nav-link');
-    const sections = document.querySelectorAll('.content-section');
-    const stepItems = document.querySelectorAll('.step-item');
-    const stepContents = document.querySelectorAll('.step-details');
-    const accordionItems = document.querySelectorAll('.accordion-item');
-    const toolFilterBtns = document.querySelectorAll('.tool-filter-btn');
-    const toolGrid = document.getElementById('tool-grid');
-    const toolCards = toolGrid.querySelectorAll('.tool-card');
-    const modal = document.getElementById('storyboard-modal');
-    const closeModalBtn = document.getElementById('close-modal');
-    const modalTitle = document.getElementById('modal-title');
-    const modalContent = document.getElementById('modal-content');
-    const storyboardButtons = document.querySelectorAll('button[data-modal-target]');
-    const copyButtons = document.querySelectorAll('.copy-btn'); // This now correctly selects all static copy buttons
+            const navLinks = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('.content-section');
+            const stepItems = document.querySelectorAll('.step-item');
+            const stepContents = document.querySelectorAll('.step-details');
+            const accordionItems = document.querySelectorAll('.accordion-item');
+            const toolFilterBtns = document.querySelectorAll('.tool-filter-btn');
+            const toolGrid = document.getElementById('tool-grid');
+            const toolCards = toolGrid.querySelectorAll('.tool-card');
+            const modal = document.getElementById('storyboard-modal');
+            const closeModalBtn = document.getElementById('close-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const storyboardButtons = document.querySelectorAll('button[data-modal-target]');
+            const copyButtons = document.querySelectorAll('.copy-btn'); // This now correctly selects all static copy buttons
 
-    console.log(`Found ${navLinks.length} nav links and ${sections.length} content sections.`);
+            console.log(`Found ${navLinks.length} nav links and ${sections.length} content sections.`);
 
-    let lastFocusedElement = null; // Pour la gestion du focus de la modale
+            let lastFocusedElement = null; // Pour la gestion du focus de la modale
 
-    const modalData = {
-        'sb-id': { title: '1. ID Scène', content: 'Un numéro unique pour chaque plan (ex: 1.1, 1.2). C\'est la colonne vertébrale de votre organisation, essentielle pour le suivi et les discussions.' },
-        'sb-duree': { title: '2. Durée', content: 'L\'estimation du temps pour chaque scène en secondes. Cela vous aide à maîtriser le rythme global de votre capsule et à respecter la durée cible.' },
-        'sb-visuels': { title: '3. Visuels', content: 'Description de ce qui est à l\'écran : un croquis, une image, ou une description textuelle précise des éléments graphiques (icônes, schémas, etc.).' },
-        'sb-texte': { title: '4. Texte à l\'écran', content: 'La retranscription exacte de tous les textes visibles : titres, mots-clés, définitions. Assure la clarté et l\'accessibilité.' },
-        'sb-audio': { title: '5. Script Audio / Narration', content: 'Le texte complet de la voix-off pour cette scène. Garantit une élocution fluide et un message maîtrisé.' },
-        'sb-anim': { title: '6. Notes d\'Animation', content: 'Instructions techniques pour le montage : "fondu", "apparition mot par mot", "transition en balayage". Guide la production.' },
-        'sb-intention': { title: '7. Intention Pédagogique', content: 'Le champ le plus important ! Expliquez en une phrase le *pourquoi* de cette scène. Ex: "Accrocher l\'attention", "Illustrer un concept", "Vérifier la compréhension".' }
-    };
+            const modalData = {
+                'sb-id': { title: '1. ID Scène', content: 'Un numéro unique pour chaque plan (ex: 1.1, 1.2). C\'est la colonne vertébrale de votre organisation, essentielle pour le suivi et les discussions.' },
+                'sb-duree': { title: '2. Durée', content: 'L\'estimation du temps pour chaque scène en secondes. Cela vous aide à maîtriser le rythme global de votre capsule et à respecter la durée cible.' },
+                'sb-visuels': { title: '3. Visuels', content: 'Description de ce qui est à l\'écran : un croquis, une image, ou une description textuelle précise des éléments graphiques (icônes, schémas, etc.).' },
+                'sb-texte': { title: '4. Texte à l\'écran', content: 'La retranscription exacte de tous les textes visibles : titres, mots-clés, définitions. Assure la clarté et l\'accessibilité.' },
+                'sb-audio': { title: '5. Script Audio / Narration', content: 'Le texte complet de la voix-off pour cette scène. Garantit une élocution fluide et un message maîtrisé.' },
+                'sb-anim': { title: '6. Notes d\'Animation', content: 'Instructions techniques pour le montage : "fondu", "apparition mot par mot", "transition en balayage". Guide la production.' },
+                'sb-intention': { title: '7. Intention Pédagogique', content: 'Le champ le plus important ! Expliquez en une phrase le *pourquoi* de cette scène. Ex: "Accrocher l\'attention", "Illustrer un concept", "Vérifier la compréhension".' }
+            };
 
-    function updateActiveContent(hash) {
-        const targetHash = hash || window.location.hash || '#comprendre';
-        console.log('updateActiveContent called for hash:', targetHash);
+            function updateActiveContent(hash) {
+                const targetHash = hash || window.location.hash || '#comprendre';
+                console.log('updateActiveContent called for hash:', targetHash);
 
-        navLinks.forEach(link => {
-            const isActive = link.hash === targetHash;
-            link.classList.toggle('active', isActive);
-            // console.log(`Nav link ${link.hash} active: ${isActive}`); // Décommenter si besoin de plus de détails
-        });
+                navLinks.forEach(link => {
+                    const isActive = link.hash === targetHash;
+                    link.classList.toggle('active', isActive);
+                    // console.log(`Nav link ${link.hash} active: ${isActive}`); // Décommenter si besoin de plus de détails
+                });
 
-        sections.forEach(section => {
-            const isActive = section.id === targetHash.substring(1);
-            section.classList.toggle('active', isActive);
-            // console.log(`Section ${section.id} active: ${isActive}`); // Décommenter si besoin de plus de détails
-        });
+                sections.forEach(section => {
+                    const isActive = section.id === targetHash.substring(1);
+                    section.classList.toggle('active', isActive);
+                    // console.log(`Section ${section.id} active: ${isActive}`); // Décommenter si besoin de plus de détails
+                });
 
-        const activeSection = document.querySelector('.content-section.active');
-        if (activeSection) {
-            console.log('Currently active section after update:', activeSection.id);
-        } else {
-            console.log('No content section is active after update.');
-        }
-    }
+                const activeSection = document.querySelector('.content-section.active');
+                if (activeSection) {
+                    console.log('Currently active section after update:', activeSection.id);
+                } else {
+                    console.log('No content section is active after update.');
+                }
+            }
 
-    navLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetHash = e.currentTarget.hash;
-            history.pushState(null, null, targetHash);
-            updateActiveContent(targetHash);
-        });
-    });
-
-    stepItems.forEach(item => {
-        item.addEventListener('click', e => {
-            e.preventDefault();
-            const step = e.currentTarget.dataset.step;
-            stepItems.forEach(i => {
-                i.classList.remove('active');
-                i.setAttribute('aria-selected', 'false');
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetHash = e.currentTarget.hash;
+                    history.pushState(null, null, targetHash);
+                    updateActiveContent(targetHash);
+                });
             });
-            e.currentTarget.classList.add('active');
-            e.currentTarget.setAttribute('aria-selected', 'true');
-            stepContents.forEach(content => {
-                const isActive = content.dataset.stepContent === step;
-                content.classList.toggle('hidden', !isActive);
-                content.setAttribute('aria-hidden', !isActive);
-                if (isActive) {
-                    content.focus(); // Déplace le focus vers le contenu actif
+
+            stepItems.forEach(item => {
+                item.addEventListener('click', e => {
+                    e.preventDefault();
+                    const step = e.currentTarget.dataset.step;
+                    stepItems.forEach(i => {
+                        i.classList.remove('active');
+                        i.setAttribute('aria-selected', 'false');
+                    });
+                    e.currentTarget.classList.add('active');
+                    e.currentTarget.setAttribute('aria-selected', 'true');
+                    stepContents.forEach(content => {
+                        const isActive = content.dataset.stepContent === step;
+                        content.classList.toggle('hidden', !isActive);
+                        content.setAttribute('aria-hidden', !isActive);
+                        if (isActive) {
+                            content.focus(); // Déplace le focus vers le contenu actif
+                        }
+                    });
+                });
+                item.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        item.click();
+                    }
+                });
+            });
+
+            accordionItems.forEach(item => {
+                const header = item.querySelector('.accordion-header');
+                const content = item.querySelector('.accordion-content');
+                const icon = header.querySelector('span');
+                const contentId = content.id; // Récupère l'ID du contenu
+
+                // Initialise l'état ARIA
+                header.setAttribute('aria-expanded', 'false');
+                header.setAttribute('aria-controls', contentId);
+                content.setAttribute('aria-hidden', 'true');
+
+                const toggleAccordion = () => {
+                    const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+                    document.querySelectorAll('.accordion-content').forEach(el => {
+                        el.style.maxHeight = '0px';
+                        el.setAttribute('aria-hidden', 'true');
+                    });
+                    document.querySelectorAll('.accordion-header span').forEach(el => el.textContent = '＋');
+                    document.querySelectorAll('.accordion-header').forEach(el => el.setAttribute('aria-expanded', 'false'));
+
+                    if (!isOpen) {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.textContent = '−';
+                        header.setAttribute('aria-expanded', 'true');
+                        content.setAttribute('aria-hidden', 'false');
+                    }
+                };
+
+                header.addEventListener('click', toggleAccordion);
+                header.addEventListener('keydown', e => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        toggleAccordion();
+                    }
+                });
+            });
+
+            toolFilterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const filter = btn.dataset.filter;
+                    toolFilterBtns.forEach(b => {
+                        b.classList.remove('bg-teal-600', 'text-white');
+                        b.classList.add('bg-white', 'text-slate-700');
+                    });
+                    btn.classList.add('bg-teal-600', 'text-white');
+                    btn.classList.remove('bg-white', 'text-slate-700');
+                    toolCards.forEach(card => {
+                        const categories = card.dataset.category.split(' ');
+                        card.style.display = (filter === 'all' || categories.includes(filter)) ? 'block' : 'none';
+                    });
+                });
+            });
+
+            storyboardButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    lastFocusedElement = document.activeElement; // Sauvegarde l'élément focusé
+                    const target = button.dataset.modalTarget;
+                    if (modalData[target]) {
+                        modalTitle.textContent = modalData[target].title;
+                        modalContent.textContent = modalData[target].content;
+                        modal.classList.remove('hidden');
+                        modal.focus(); // Déplace le focus sur la modale
+                    }
+                });
+            });
+
+            const hideModal = () => {
+                modal.classList.add('hidden');
+                if (lastFocusedElement) {
+                    lastFocusedElement.focus(); // Restaure le focus
+                }
+            };
+            closeModalBtn.addEventListener('click', hideModal);
+            closeModalBtn.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    hideModal();
                 }
             });
-        });
-        item.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                item.click();
-            }
-        });
-    });
-
-    accordionItems.forEach(item => {
-        const header = item.querySelector('.accordion-header');
-        const content = item.querySelector('.accordion-content');
-        const icon = header.querySelector('span');
-        const contentId = content.id; // Récupère l'ID du contenu
-
-        // Initialise l'état ARIA
-        header.setAttribute('aria-expanded', 'false');
-        header.setAttribute('aria-controls', contentId);
-        content.setAttribute('aria-hidden', 'true');
-
-        const toggleAccordion = () => {
-            const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
-            document.querySelectorAll('.accordion-content').forEach(el => {
-                el.style.maxHeight = '0px';
-                el.setAttribute('aria-hidden', 'true');
+            modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    hideModal();
+                }
             });
-            document.querySelectorAll('.accordion-header span').forEach(el => el.textContent = '＋');
-            document.querySelectorAll('.accordion-header').forEach(el => el.setAttribute('aria-expanded', 'false'));
 
-            if (!isOpen) {
-                content.style.maxHeight = content.scrollHeight + 'px';
-                icon.textContent = '−';
-                header.setAttribute('aria-expanded', 'true');
-                content.setAttribute('aria-hidden', 'false');
-            }
-        };
+            // Gestion des boutons "Copier" - Cette fonction est maintenant déclenchée par un bouton statique
+            copyButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const targetId = button.dataset.target;
+                    const targetElement = document.getElementById(targetId);
+                    let textToCopy = '';
 
-        header.addEventListener('click', toggleAccordion);
-        header.addEventListener('keydown', e => {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                toggleAccordion();
-            }
-        });
-    });
+                    if (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT') {
+                        textToCopy = targetElement.value;
+                    } else {
+                        // For divs/paragraphs, get the innerText
+                        textToCopy = targetElement.innerText;
+                    }
 
-    toolFilterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const filter = btn.dataset.filter;
-            toolFilterBtns.forEach(b => {
-                b.classList.remove('bg-teal-600', 'text-white');
-                b.classList.add('bg-white', 'text-slate-700');
+                    try {
+                        await navigator.clipboard.writeText(textToCopy);
+                        const originalText = button.textContent;
+                        button.textContent = 'Copié !';
+                        setTimeout(() => {
+                            button.textContent = originalText;
+                        }, 2000);
+                    } catch (err) {
+                        console.error('Erreur lors de la copie: ', err);
+                        alert('Échec de la copie. Veuillez copier manuellement.');
+                    }
+                });
             });
-            btn.classList.add('bg-teal-600', 'text-white');
-            btn.classList.remove('bg-white', 'text-slate-700');
-            toolCards.forEach(card => {
-                const categories = card.dataset.category.split(' ');
-                card.style.display = (filter === 'all' || categories.includes(filter)) ? 'block' : 'none';
+
+
+            const ctx = document.getElementById('presentationChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Plan de Présentation (20 minutes)'],
+                    datasets: [
+                        { label: 'Intro (1 min)', data: [1], backgroundColor: '#ccfbf1' },
+                        { label: 'Analyse Demande (3 min)', data: [3], backgroundColor: '#99f6e4' },
+                        { label: 'Scénario Multimodal (4 min)', data: [4], backgroundColor: '#5eead4' },
+                        { label: 'Diffusion Capsule (4 min)', data: [4], backgroundColor: '#2dd4bf' },
+                        { label: 'Analyse Réflexive (6 min)', data: [6], backgroundColor: '#14b8a6' },
+                        { label: 'Conclusion (2 min)', data: [2], backgroundColor: '#0d9488' }
+                    ]
+                },
+                options: {
+                    indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                    plugins: { title: { display: false }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.raw} min` } } },
+                    scales: { x: { stacked: true, title: { display: true, text: 'Minutes' } }, y: { stacked: true, ticks: { display: false } } }
+                }
             });
-        });
-    });
 
-    storyboardButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            lastFocusedElement = document.activeElement; // Sauvegarde l'élément focusé
-            const target = button.dataset.modalTarget;
-            if (modalData[target]) {
-                modalTitle.textContent = modalData[target].title;
-                modalContent.textContent = modalData[target].content;
-                modal.classList.remove('hidden');
-                modal.focus(); // Déplace le focus sur la modale
-            }
-        });
-    });
+            window.addEventListener('popstate', () => updateActiveContent());
+            updateActiveContent(); // Cette ligne devrait rendre la section #comprendre active initialement
+            console.log('Initial content update attempted.');
 
-    const hideModal = () => {
-        modal.classList.add('hidden');
-        if (lastFocusedElement) {
-            lastFocusedElement.focus(); // Restaure le focus
-        }
-    };
-    closeModalBtn.addEventListener('click', hideModal);
-    closeModalBtn.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            hideModal();
-        }
-    });
-    modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-            hideModal();
-        }
-    });
+            // TEMPORAIREMENT COMMENTÉ POUR LE DIAGNOSTIC :
+            // document.querySelector('.step-item[data-step="1"]').click(); // Cette ligne active la première étape de la section 'concevoir'
+            // console.log('First step click commented out for diagnosis.');
 
-    // Gestion des boutons "Copier" - Cette fonction est maintenant déclenchée par un bouton statique
-    copyButtons.forEach(button => {
-        button.addEventListener('click', async () => {
-            const targetId = button.dataset.target;
-            const targetElement = document.getElementById(targetId);
-            let textToCopy = '';
+            // Gemini API Integration
+            const apiKey = "AIzaSyB_-uZAoNQkf-4hGB6Iarv5I2NBP2Ma_7w"; // REMPLACER PAR VOTRE CLÉ API GEMINI
+            const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+            const ttsApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
 
-            if (targetElement.tagName === 'TEXTAREA' || targetElement.tagName === 'INPUT') {
-                textToCopy = targetElement.value;
-            } else {
-                // For divs/paragraphs, get the innerText
-                textToCopy = targetElement.innerText;
-            }
+            const generateObjectiveBtn = document.getElementById('generate-objective-btn');
+            const topicInput = document.getElementById('topic-input');
+            const objectiveResult = document.getElementById('objective-result');
+            const objectiveTextDisplay = document.getElementById('objective-text-display'); // New element
+            const objectiveLoader = document.getElementById('objective-loader');
 
-            try {
-                await navigator.clipboard.writeText(textToCopy);
-                const originalText = button.textContent;
-                button.textContent = 'Copié !';
-                setTimeout(() => {
-                    button.textContent = originalText;
-                }, 2000);
-            } catch (err) {
-                console.error('Erreur lors de la copie: ', err);
-                alert('Échec de la copie. Veuillez copier manuellement.');
-            }
-        });
-    });
+            generateObjectiveBtn.addEventListener('click', async () => {
+                const topic = topicInput.value;
+                if (!topic) {
+                    objectiveTextDisplay.innerHTML = `<p class="text-red-600">Veuillez entrer un sujet.</p>`;
+                    objectiveResult.classList.remove('hidden');
+                    return;
+                }
+                objectiveLoader.classList.remove('hidden');
+                generateObjectiveBtn.disabled = true;
+                const prompt = `En tant qu'ingénieur pédagogique expert, formule un objectif pédagogique clair et précis pour une capsule vidéo de 5 minutes sur le sujet suivant : "${topic}". Utilise impérativement la méthode des 3C en structurant ta réponse comme suit :\n- **Comportement observable :** [Décrire l'action que l'apprenant doit pouvoir faire]\n- **Conditions de réalisation :** [Décrire le contexte et les outils disponibles]\n- **Critères de réussite :** [Décrire les indicateurs de succès mesurables]`;
+                try {
+                    const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
 
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API Error Response:", errorData);
+                        throw new Error(errorData.error?.message || response.statusText);
+                    }
 
-    const ctx = document.getElementById('presentationChart').getContext('2d');
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: ['Plan de Présentation (20 minutes)'],
-            datasets: [
-                { label: 'Intro (1 min)', data: [1], backgroundColor: '#ccfbf1' },
-                { label: 'Analyse Demande (3 min)', data: [3], backgroundColor: '#99f6e4' },
-                { label: 'Scénario Multimodal (4 min)', data: [4], backgroundColor: '#5eead4' },
-                { label: 'Diffusion Capsule (4 min)', data: [4], backgroundColor: '#2dd4bf' },
-                { label: 'Analyse Réflexive (6 min)', data: [6], backgroundColor: '#14b8a6' },
-                { label: 'Conclusion (2 min)', data: [2], backgroundColor: '#0d9488' }
-            ]
-        },
-        options: {
-            indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-            plugins: { title: { display: false }, tooltip: { callbacks: { label: (c) => `${c.dataset.label}: ${c.raw} min` } } },
-            scales: { x: { stacked: true, title: { display: true, text: 'Minutes' } }, y: { stacked: true, ticks: { display: false } } }
-        }
-    });
+                    const result = await response.json();
+                    if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
+                        console.error("Unexpected API response structure:", result);
+                        throw new Error("La structure de la réponse de l'API est inattendue.");
+                    }
 
-    window.addEventListener('popstate', () => updateActiveContent());
-    updateActiveContent(); // Cette ligne devrait rendre la section #comprendre active initialement
-    console.log('Initial content update attempted.');
+                    const text = result.candidates[0].content.parts[0].text;
+                    // Changed: Update the new text display element
+                    objectiveTextDisplay.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*/g, '<strong>');
+                } catch (error) {
+                    console.error("Detailed error:", error);
+                    objectiveTextDisplay.innerHTML = `<p class="text-red-600">Une erreur est survenue. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
+                } finally {
+                    objectiveResult.classList.remove('hidden');
+                    objectiveLoader.classList.add('hidden');
+                    generateObjectiveBtn.disabled = false;
+                }
+            });
 
-    // TEMPORAIREMENT COMMENTÉ POUR LE DIAGNOSTIC :
-    // document.querySelector('.step-item[data-step="1"]').click(); // Cette ligne active la première étape de la section 'concevoir'
-    // console.log('First step click commented out for diagnosis.');
+            const generateScriptBtn = document.getElementById('generate-script-btn');
+            const objectiveForScriptInput = document.getElementById('objective-for-script-input');
+            const scriptResultContainer = document.getElementById('script-result-container');
+            const scriptResult = document.getElementById('script-result');
+            const scriptLoader = document.getElementById('script-loader');
 
-    // Gemini API Integration
-    const apiKey = "AIzaSyB_-uZAoNQkf-4hGB6Iarv5I2NBP2Ma_7w"; // REMPLACER PAR VOTRE CLÉ API GEMINI
-    const textApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
-    const ttsApiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+            generateScriptBtn.addEventListener('click', async () => {
+                const topic = topicInput.value;
+                const objective = objectiveForScriptInput.value;
+                if (!topic || !objective) {
+                    alert("Veuillez renseigner le sujet et l'objectif pédagogique.");
+                    return;
+                }
+                scriptLoader.classList.remove('hidden');
+                generateScriptBtn.disabled = true;
+                const prompt = `En tant qu'ingénieur pédagogique, rédige un brouillon de script complet pour une capsule vidéo de 3 à 5 minutes. Le sujet est : "${topic}". L'objectif pédagogique à atteindre est : "${objective}". Le script doit avoir un ton engageant et clair, adapté à des formateurs. Structure le script avec une introduction (accroche), un développement en 2 ou 3 points clés, et une conclusion (résumé et appel à l'action).`;
+                try {
+                    const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
 
-    const generateObjectiveBtn = document.getElementById('generate-objective-btn');
-    const topicInput = document.getElementById('topic-input');
-    const objectiveResult = document.getElementById('objective-result');
-    const objectiveTextDisplay = document.getElementById('objective-text-display'); // New element
-    const objectiveLoader = document.getElementById('objective-loader');
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API Error Response:", errorData);
+                        throw new Error(errorData.error?.message || response.statusText);
+                    }
 
-    generateObjectiveBtn.addEventListener('click', async () => {
-        const topic = topicInput.value;
-        if (!topic) {
-            objectiveTextDisplay.innerHTML = `<p class="text-red-600">Veuillez entrer un sujet.</p>`;
-            objectiveResult.classList.remove('hidden');
-            return;
-        }
-        objectiveLoader.classList.remove('hidden');
-        generateObjectiveBtn.disabled = true;
-        const prompt = `En tant qu'ingénieur pédagogique expert, formule un objectif pédagogique clair et précis pour une capsule vidéo de 5 minutes sur le sujet suivant : "${topic}". Utilise impérativement la méthode des 3C en structurant ta réponse comme suit :\n- **Comportement observable :** [Décrire l'action que l'apprenant doit pouvoir faire]\n- **Conditions de réalisation :** [Décrire le contexte et les outils disponibles]\n- **Critères de réussite :** [Décrire les indicateurs de succès mesurables]`;
-        try {
-            const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error Response:", errorData);
-                throw new Error(errorData.error?.message || response.statusText);
-            }
+                    const result = await response.json();
+                    if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
+                        console.error("Unexpected API response structure:", result);
+                        throw new Error("La structure de la réponse de l'API est inattendue.");
+                    }
 
-            const result = await response.json();
-            if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
-                console.error("Unexpected API response structure:", result);
-                throw new Error("La structure de la réponse de l'API est inattendue.");
-            }
+                    const text = result.candidates[0].content.parts[0].text;
+                    scriptResult.value = text;
+                    scriptResultContainer.classList.remove('hidden');
+                } catch (error) {
+                    console.error("Detailed error:", error);
+                    scriptResult.value = `Une erreur est survenue. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}`;
+                    scriptResultContainer.classList.remove('hidden');
+                } finally {
+                    scriptLoader.classList.add('hidden');
+                    generateScriptBtn.disabled = false;
+                }
+            });
 
-            const text = result.candidates[0].content.parts[0].text;
-            // Changed: Update the new text display element
-            objectiveTextDisplay.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*/g, '<strong>');
-        } catch (error) {
-            console.error("Detailed error:", error);
-            objectiveTextDisplay.innerHTML = `<p class="text-red-600">Une erreur est survenue. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
-        } finally {
-            objectiveResult.classList.remove('hidden');
-            objectiveLoader.classList.add('hidden');
-            generateObjectiveBtn.disabled = false;
-        }
-    });
+            const generateStoryboardBtn = document.getElementById('generate-storyboard-btn');
+            const scriptInput = document.getElementById('script-input');
+            const storyboardResult = document.getElementById('storyboard-result');
+            const storyboardLoader = document.getElementById('storyboard-loader');
 
-    const generateScriptBtn = document.getElementById('generate-script-btn');
-    const objectiveForScriptInput = document.getElementById('objective-for-script-input');
-    const scriptResultContainer = document.getElementById('script-result-container');
-    const scriptResult = document.getElementById('script-result');
-    const scriptLoader = document.getElementById('script-loader');
+            // Nouveaux éléments pour les options visuelles
+            const characterDescriptionInput = document.getElementById('character-description-input');
+            const imageStyleSelect = document.getElementById('image-style-select');
+            const cameraAngleSelect = document.getElementById('camera-angle-select');
+            const ambianceLightingSelect = document.getElementById('ambiance-lighting-select');
 
-    generateScriptBtn.addEventListener('click', async () => {
-        const topic = topicInput.value;
-        const objective = objectiveForScriptInput.value;
-        if (!topic || !objective) {
-            alert("Veuillez renseigner le sujet et l'objectif pédagogique.");
-            return;
-        }
-        scriptLoader.classList.remove('hidden');
-        generateScriptBtn.disabled = true;
-        const prompt = `En tant qu'ingénieur pédagogique, rédige un brouillon de script complet pour une capsule vidéo de 3 à 5 minutes. Le sujet est : "${topic}". L'objectif pédagogique à atteindre est : "${objective}". Le script doit avoir un ton engageant et clair, adapté à des formateurs. Structure le script avec une introduction (accroche), un développement en 2 ou 3 points clés, et une conclusion (résumé et appel à l'action).`;
-        try {
-            const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error Response:", errorData);
-                throw new Error(errorData.error?.message || response.statusText);
+            // Nouveaux éléments pour l'export
+            const exportButtonsContainer = document.getElementById('export-buttons-container');
+            const exportJsonBtn = document.getElementById('export-json-btn');
+            const exportMdBtn = document.getElementById('export-md-btn');
+            let currentStoryboardData = null; // Variable pour stocker les données du storyboard
+
+            // Fonction utilitaire pour télécharger un fichier
+            function downloadFile(filename, content, mimeType) {
+                const blob = new Blob([content], { type: mimeType });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
             }
 
-            const result = await response.json();
-            if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
-                console.error("Unexpected API response structure:", result);
-                throw new Error("La structure de la réponse de l'API est inattendue.");
-            }
+            generateStoryboardBtn.addEventListener('click', async () => {
+                const script = scriptInput.value;
+                if (!script) {
+                    storyboardResult.innerHTML = `<p class="text-red-600">Veuillez coller un script.</p>`;
+                    storyboardResult.classList.remove('hidden');
+                    exportButtonsContainer.classList.add('hidden'); // Cacher les boutons si pas de script
+                    return;
+                }
+                storyboardLoader.classList.remove('hidden');
+                generateStoryboardBtn.disabled = true;
+                exportButtonsContainer.classList.add('hidden'); // Cacher les boutons pendant la génération
 
-            const text = result.candidates[0].content.parts[0].text;
-            scriptResult.value = text;
-            scriptResultContainer.classList.remove('hidden');
-        } catch (error) {
-            console.error("Detailed error:", error);
-            scriptResult.value = `Une erreur est survenue. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}`;
-            scriptResultContainer.classList.remove('hidden');
-        } finally {
-            scriptLoader.classList.add('hidden');
-            generateScriptBtn.disabled = false;
-        }
-    });
+                // Récupérer les options visuelles
+                const characterDescription = characterDescriptionInput.value.trim();
+                const imageStyle = imageStyleSelect.value.trim();
+                const cameraAngle = cameraAngleSelect.value.trim();
+                const ambianceLighting = ambianceLightingSelect.value.trim();
 
-    const generateStoryboardBtn = document.getElementById('generate-storyboard-btn');
-    const scriptInput = document.getElementById('script-input');
-    const storyboardResult = document.getElementById('storyboard-result');
-    const storyboardLoader = document.getElementById('storyboard-loader');
-    
-    // Nouveaux éléments pour les options visuelles
-    const characterDescriptionInput = document.getElementById('character-description-input');
-    const imageStyleSelect = document.getElementById('image-style-select');
-    const cameraAngleSelect = document.getElementById('camera-angle-select');
-    const ambianceLightingSelect = document.getElementById('ambiance-lighting-select');
+                let visualModifiers = [];
+                if (imageStyle) visualModifiers.push(imageStyle);
+                if (cameraAngle) visualModifiers.push(cameraAngle);
+                if (ambianceLighting) visualModifiers.push(ambianceLighting);
+                const visualModifiersString = visualModifiers.length > 0 ? visualModifiers.join(', ') : '';
 
-    // Nouveaux éléments pour l'export
-    const exportButtonsContainer = document.getElementById('export-buttons-container');
-    const exportJsonBtn = document.getElementById('export-json-btn');
-    const exportMdBtn = document.getElementById('export-md-btn');
-    let currentStoryboardData = null; // Variable pour stocker les données du storyboard
+                let characterPrompt = characterDescription ? `Personnages principaux : ${characterDescription}. ` : '';
+                let stylePrompt = visualModifiersString ? `Le style visuel et la composition doivent être : ${visualModifiersString}. ` : '';
 
-    // Fonction utilitaire pour télécharger un fichier
-    function downloadFile(filename, content, mimeType) {
-        const blob = new Blob([content], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-    }
-
-    generateStoryboardBtn.addEventListener('click', async () => {
-        const script = scriptInput.value;
-        if (!script) {
-            storyboardResult.innerHTML = `<p class="text-red-600">Veuillez coller un script.</p>`;
-            storyboardResult.classList.remove('hidden');
-            exportButtonsContainer.classList.add('hidden'); // Cacher les boutons si pas de script
-            return;
-        }
-        storyboardLoader.classList.remove('hidden');
-        generateStoryboardBtn.disabled = true;
-        exportButtonsContainer.classList.add('hidden'); // Cacher les boutons pendant la génération
-
-        // Récupérer les options visuelles
-        const characterDescription = characterDescriptionInput.value.trim();
-        const imageStyle = imageStyleSelect.value.trim();
-        const cameraAngle = cameraAngleSelect.value.trim();
-        const ambianceLighting = ambianceLightingSelect.value.trim();
-
-        let visualModifiers = [];
-        if (imageStyle) visualModifiers.push(imageStyle);
-        if (cameraAngle) visualModifiers.push(cameraAngle);
-        if (ambianceLighting) visualModifiers.push(ambianceLighting);
-        const visualModifiersString = visualModifiers.length > 0 ? visualModifiers.join(', ') : '';
-
-        let characterPrompt = characterDescription ? `Personnages principaux : ${characterDescription}. ` : '';
-        let stylePrompt = visualModifiersString ? `Le style visuel et la composition doivent être : ${visualModifiersString}. ` : '';
-
-        // MODIFICATION ICI : Instructions claires pour les langues de chaque champ et les nouveaux prompts
-        const prompt = `Analyse le script suivant pour une capsule vidéo. Découpe-le en scènes logiques et cohérentes. Pour chaque scène, fournis un ID de scène (ex: 1, 2, 3), une suggestion de visuel simple et clair, la partie du script correspondante, une estimation de la durée en secondes, une brève intention pédagogique (en français, une phrase expliquant le but de la scène), et un prompt descriptif pour une IA de génération d'images statiques (en anglais, concis et optimisé pour la génération d'image). Ce prompt d'image doit intégrer les informations sur les personnages et le style visuel général pour assurer la cohérence.
+                // MODIFICATION ICI : Instructions claires pour les langues de chaque champ et les nouveaux prompts
+                const prompt = `Analyse le script suivant pour une capsule vidéo. Découpe-le en scènes logiques et cohérentes. Pour chaque scène, fournis un ID de scène (ex: 1, 2, 3), une suggestion de visuel simple et clair, la partie du script correspondante, une estimation de la durée en secondes, une brève intention pédagogique (en français, une phrase expliquant le but de la scène), et un prompt descriptif pour une IA de génération d'images statiques (en anglais, concis et optimisé pour la génération d'image). Ce prompt d'image doit intégrer les informations sur les personnages et le style visuel général pour assurer la cohérence.
         De plus, pour chaque scène, génère deux prompts supplémentaires :
         1. prompt_scals (en français) : Un prompt structuré pour la génération d'image, suivant le cadre SCALS (Sujet, Composition, Action, Lieu, Style) pour cette scène. Intègre les descriptions de personnages et le style visuel général.
         2. prompt_json (en JSON) : Un prompt JSON structuré pour cette scène, optimisé pour la génération d'image déterministe. Il doit contenir les clés 'sujet' (avec 'description' et 'attributs_cles' si pertinent), 'composition' (avec 'type_plan' et 'angle'), 'lieu' (avec 'description' et 'eclairage'), et 'style'. Intègre les descriptions de personnages et le style visuel général pour maintenir la cohérence.
 
         ${characterPrompt}${stylePrompt}
         Script: "${script}"`;
-        
-        const payload = {
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: "OBJECT", properties: {
-                        scenes: { type: "ARRAY", items: {
+
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: {
                             type: "OBJECT", properties: {
-                                id: { type: "STRING" }, 
-                                duree_sec: { type: "NUMBER" }, 
-                                visuel: { type: "STRING" }, 
-                                narration: { type: "STRING" }, 
-                                intention: { type: "STRING" }, 
-                                image_prompt: { type: "STRING" },
-                                prompt_scals: { type: "STRING" }, // Nouvelle propriété
-                                prompt_json: { type: "STRING" }   // Nouvelle propriété
-                            }, required: ["id", "duree_sec", "visuel", "narration", "intention", "image_prompt", "prompt_scals", "prompt_json"] // Mettre à jour les champs requis
-                        }}
+                                scenes: {
+                                    type: "ARRAY", items: {
+                                        type: "OBJECT", properties: {
+                                            id: { type: "STRING" },
+                                            duree_sec: { type: "NUMBER" },
+                                            visuel: { type: "STRING" },
+                                            narration: { type: "STRING" },
+                                            intention: { type: "STRING" },
+                                            image_prompt: { type: "STRING" },
+                                            prompt_scals: { type: "STRING" }, // Nouvelle propriété
+                                            prompt_json: { type: "STRING" }   // Nouvelle propriété
+                                        }, required: ["id", "duree_sec", "visuel", "narration", "intention", "image_prompt", "prompt_scals", "prompt_json"] // Mettre à jour les champs requis
+                                    }
+                                }
+                            }
+                        }
                     }
-                }
-            }
-        };
-        try {
-            const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error Response:", errorData);
-                throw new Error(errorData.error?.message || response.statusText);
-            }
-
-            const result = await response.json();
-            if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
-                console.error("Unexpected API response structure:", result);
-                throw new Error("La structure de la réponse de l'API est inattendue.");
-            }
-
-            const jsonText = result.candidates[0].content.parts[0].text;
-            const data = JSON.parse(jsonText);
-            currentStoryboardData = data.scenes; // Stocker les données pour l'export
-
-            let tableHTML = `<table class="w-full text-sm text-left bg-white rounded-lg shadow-md"><thead class="bg-slate-100"><tr><th class="p-3">ID</th><th class="p-3">Durée</th><th class="p-3">Visuel Suggéré</th><th class="p-3">Narration</th><th class="p-3">Intention</th><th class="p-3">Image Prompt (EN)</th><th class="p-3">Prompt SCALS (FR)</th><th class="p-3">Prompt JSON</th></tr></thead><tbody>`; // Nouvelle colonne
-            currentStoryboardData.forEach(scene => {
-                // Tentative de formater le JSON pour l'affichage
-                let formattedJson = 'N/A';
+                };
                 try {
-                    if (scene.prompt_json) {
-                        // Assurez-vous que scene.prompt_json est bien une chaîne JSON valide
-                        const parsedJson = JSON.parse(scene.prompt_json);
-                        formattedJson = `<pre class="bg-slate-50 p-1 rounded-sm overflow-auto max-h-24">${JSON.stringify(parsedJson, null, 2)}</pre>`;
-                    }
-                } catch (e) {
-                    formattedJson = `<span class="text-red-500">JSON invalide ou mal formé</span>`;
-                    console.error("Erreur de parsing JSON pour le storyboard:", e, scene.prompt_json);
-                }
+                    const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
 
-                tableHTML += `<tr class="border-b">
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API Error Response:", errorData);
+                        throw new Error(errorData.error?.message || response.statusText);
+                    }
+
+                    const result = await response.json();
+                    if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
+                        console.error("Unexpected API response structure:", result);
+                        throw new Error("La structure de la réponse de l'API est inattendue.");
+                    }
+
+                    const jsonText = result.candidates[0].content.parts[0].text;
+                    const data = JSON.parse(jsonText);
+                    currentStoryboardData = data.scenes; // Stocker les données pour l'export
+
+                    let tableHTML = `<table class="w-full text-sm text-left bg-white rounded-lg shadow-md"><thead class="bg-slate-100"><tr><th class="p-3">ID</th><th class="p-3">Durée</th><th class="p-3">Visuel Suggéré</th><th class="p-3">Narration</th><th class="p-3">Intention</th><th class="p-3">Image Prompt (EN)</th><th class="p-3">Prompt SCALS (FR)</th><th class="p-3">Prompt JSON</th></tr></thead><tbody>`; // Nouvelle colonne
+                    currentStoryboardData.forEach(scene => {
+                        // Tentative de formater le JSON pour l'affichage
+                        let formattedJson = 'N/A';
+                        try {
+                            if (scene.prompt_json) {
+                                // Assurez-vous que scene.prompt_json est bien une chaîne JSON valide
+                                const parsedJson = JSON.parse(scene.prompt_json);
+                                formattedJson = `<pre class="bg-slate-50 p-1 rounded-sm overflow-auto max-h-24">${JSON.stringify(parsedJson, null, 2)}</pre>`;
+                            }
+                        } catch (e) {
+                            formattedJson = `<span class="text-red-500">JSON invalide ou mal formé</span>`;
+                            console.error("Erreur de parsing JSON pour le storyboard:", e, scene.prompt_json);
+                        }
+
+                        tableHTML += `<tr class="border-b">
                     <td class="p-3 font-medium">${scene.id}</td>
                     <td class="p-3">${scene.duree_sec}s</td>
                     <td class="p-3">${scene.visuel}</td>
@@ -790,167 +1105,167 @@ document.addEventListener('DOMContentLoaded', () => {
                     <td class="p-3 text-xs max-w-xs overflow-hidden text-ellipsis">${scene.prompt_scals || 'N/A'}</td>
                     <td class="p-3 text-xs max-w-xs whitespace-pre-wrap">${formattedJson}</td>
                 </tr>`; // Affichage des nouvelles colonnes
-            });
-            tableHTML += `</tbody></table>`;
-            storyboardResult.innerHTML = tableHTML;
-            exportButtonsContainer.classList.remove('hidden'); // Afficher les boutons après succès
-        } catch (error) {
-            console.error("Detailed error:", error);
-            storyboardResult.innerHTML = `<p class="text-red-600">Une erreur est survenue lors de la génération du storyboard. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
-            currentStoryboardData = null; // Réinitialiser les données
-            exportButtonsContainer.classList.add('hidden'); // Cacher les boutons en cas d'erreur
-        } finally {
-            storyboardResult.classList.remove('hidden');
-            storyboardLoader.classList.add('hidden');
-            generateStoryboardBtn.disabled = false;
-        }
-    });
-
-    // Gestion de l'export JSON
-    exportJsonBtn.addEventListener('click', () => {
-        if (currentStoryboardData) {
-            const jsonContent = JSON.stringify(currentStoryboardData, null, 2); // null, 2 pour un JSON lisible
-            downloadFile('storyboard.json', jsonContent, 'application/json');
-        } else {
-            alert("Veuillez d'abord générer un storyboard.");
-        }
-    });
-
-    // Gestion de l'export Markdown
-    exportMdBtn.addEventListener('click', () => {
-        if (currentStoryboardData) {
-            let mdContent = "";
-            const headers = ["ID", "Durée", "Visuel Suggéré", "Narration", "Intention", "Image Prompt (EN)", "Prompt SCALS (FR)", "Prompt JSON"]; // Nouvelle en-tête
-            
-            // Ligne d'en-tête Markdown
-            mdContent += "| " + headers.join(" | ") + " |\n";
-            // Ligne de séparation Markdown
-            mdContent += "| " + headers.map(() => "---").join(" | ") + " |\n";
-
-            // Lignes de données
-            currentStoryboardData.forEach(scene => {
-                let jsonForMarkdown = 'N/A';
-                try {
-                    if (scene.prompt_json) {
-                        // Assurez-vous que scene.prompt_json est bien une chaîne JSON valide
-                        const parsedJson = JSON.parse(scene.prompt_json);
-                        jsonForMarkdown = '`' + JSON.stringify(parsedJson) + '`'; // Aplatir le JSON en une seule ligne et l'entourer de backticks simples
-                    }
-                } catch (e) {
-                    jsonForMarkdown = 'JSON invalide ou mal formé';
+                    });
+                    tableHTML += `</tbody></table>`;
+                    storyboardResult.innerHTML = tableHTML;
+                    exportButtonsContainer.classList.remove('hidden'); // Afficher les boutons après succès
+                } catch (error) {
+                    console.error("Detailed error:", error);
+                    storyboardResult.innerHTML = `<p class="text-red-600">Une erreur est survenue lors de la génération du storyboard. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
+                    currentStoryboardData = null; // Réinitialiser les données
+                    exportButtonsContainer.classList.add('hidden'); // Cacher les boutons en cas d'erreur
+                } finally {
+                    storyboardResult.classList.remove('hidden');
+                    storyboardLoader.classList.add('hidden');
+                    generateStoryboardBtn.disabled = false;
                 }
-
-                const row = [
-                    String(scene.id || ''),
-                    String(scene.duree_sec ? scene.duree_sec + 's' : ''),
-                    String(scene.visuel || ''),
-                    String(scene.narration || ''),
-                    String(scene.intention || ''),
-                    String(scene.image_prompt || 'N/A'),
-                    String(scene.prompt_scals || 'N/A'),
-                    jsonForMarkdown
-                ].map(col => col.replace(/\|/g, '\\|')); // Échapper les barres verticales dans le contenu
-                mdContent += "| " + row.join(" | ") + " |\n";
             });
 
-            downloadFile('storyboard.md', mdContent, 'text/markdown');
-        } else {
-            alert("Veuillez d'abord générer un storyboard.");
-        }
-    });
+            // Gestion de l'export JSON
+            exportJsonBtn.addEventListener('click', () => {
+                if (currentStoryboardData) {
+                    const jsonContent = JSON.stringify(currentStoryboardData, null, 2); // null, 2 pour un JSON lisible
+                    downloadFile('storyboard.json', jsonContent, 'application/json');
+                } else {
+                    alert("Veuillez d'abord générer un storyboard.");
+                }
+            });
 
-    const generateTtsBtn = document.getElementById('generate-tts-btn');
-    const ttsResult = document.getElementById('tts-result');
-    const ttsLoader = document.getElementById('tts-loader'); // Corrected typo here
+            // Gestion de l'export Markdown
+            exportMdBtn.addEventListener('click', () => {
+                if (currentStoryboardData) {
+                    let mdContent = "";
+                    const headers = ["ID", "Durée", "Visuel Suggéré", "Narration", "Intention", "Image Prompt (EN)", "Prompt SCALS (FR)", "Prompt JSON"]; // Nouvelle en-tête
 
-    generateTtsBtn.addEventListener('click', async () => {
-        const script = scriptInput.value;
-        if (!script) {
-            ttsResult.innerHTML = `<p class="text-red-600">Veuillez coller un script pour générer la voix-off.</p>`;
-            ttsResult.classList.remove('hidden');
-            return;
-        }
-        ttsLoader.classList.remove('hidden');
-        generateTtsBtn.disabled = true;
-        ttsResult.innerHTML = '';
-        const payload = {
-            contents: [{ parts: [{ text: `Lisez le texte suivant avec un ton pédagogique, clair et engageant: ${script}` }] }],
-            generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } },
-            model: "gemini-2.5-flash-preview-tts"
-        };
-        try {
-            const response = await fetch(ttsApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error Response:", errorData);
-                throw new Error(errorData.error?.message || response.statusText);
-            }
+                    // Ligne d'en-tête Markdown
+                    mdContent += "| " + headers.join(" | ") + " |\n";
+                    // Ligne de séparation Markdown
+                    mdContent += "| " + headers.map(() => "---").join(" | ") + " |\n";
 
-            const result = await response.json();
-            const part = result?.candidates?.[0]?.content?.parts?.[0];
-            const audioData = part?.inlineData?.data;
-            const mimeType = part?.inlineData?.mimeType;
+                    // Lignes de données
+                    currentStoryboardData.forEach(scene => {
+                        let jsonForMarkdown = 'N/A';
+                        try {
+                            if (scene.prompt_json) {
+                                // Assurez-vous que scene.prompt_json est bien une chaîne JSON valide
+                                const parsedJson = JSON.parse(scene.prompt_json);
+                                jsonForMarkdown = '`' + JSON.stringify(parsedJson) + '`'; // Aplatir le JSON en une seule ligne et l'entourer de backticks simples
+                            }
+                        } catch (e) {
+                            jsonForMarkdown = 'JSON invalide ou mal formé';
+                        }
 
-            if (audioData && mimeType && mimeType.startsWith("audio/")) {
-                const audioUrl = `data:${mimeType};base64,${audioData}`;
-                ttsResult.innerHTML = `<audio controls src="${audioUrl}"></audio>`;
-            } else {
-                throw new Error("Réponse audio invalide de l'API ou format non supporté.");
-            }
-        } catch (error) {
-            console.error("Detailed error:", error);
-            ttsResult.innerHTML = `<p class="text-red-600">Une erreur est survenue lors de la génération de la voix-off. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
-        } finally {
-            ttsResult.classList.remove('hidden');
-            ttsLoader.classList.add('hidden');
-            generateTtsBtn.disabled = false;
-        }
-    });
-    
-    const generateArgumentBtn = document.getElementById('generate-argument-btn');
-    const choiceInput = document.getElementById('choice-input');
-    const argumentResult = document.getElementById('argument-result');
-    const argumentTextDisplay = document.getElementById('argument-text-display'); // New element
-    const argumentLoader = document.getElementById('argument-loader');
+                        const row = [
+                            String(scene.id || ''),
+                            String(scene.duree_sec ? scene.duree_sec + 's' : ''),
+                            String(scene.visuel || ''),
+                            String(scene.narration || ''),
+                            String(scene.intention || ''),
+                            String(scene.image_prompt || 'N/A'),
+                            String(scene.prompt_scals || 'N/A'),
+                            jsonForMarkdown
+                        ].map(col => col.replace(/\|/g, '\\|')); // Échapper les barres verticales dans le contenu
+                        mdContent += "| " + row.join(" | ") + " |\n";
+                    });
 
-    generateArgumentBtn.addEventListener('click', async () => {
-        const choice = choiceInput.value;
-        if (!choice) {
-            argumentTextDisplay.innerHTML = `<p class="text-red-600">Veuillez décrire votre choix.</p>`;
-            argumentResult.classList.remove('hidden');
-            return;
-        }
-        argumentLoader.classList.remove('hidden');
-        generateArgumentBtn.disabled = true;
-        const prompt = `En tant qu'expert formateur FPA, j'accompagne un candidat pour sa certification. Il doit justifier son choix suivant : "${choice}". Rédige une argumentation professionnelle et concise pour le jury. La justification doit utiliser le vocabulaire de l'ingénierie pédagogique, lier le choix à un bénéfice clair pour l'apprenant, et démontrer une réflexion stratégique.`;
-        try {
-            const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
-            
-            if (!response.ok) {
-                const errorData = await response.json();
-                console.error("API Error Response:", errorData);
-                throw new Error(errorData.error?.message || response.statusText);
-            }
+                    downloadFile('storyboard.md', mdContent, 'text/markdown');
+                } else {
+                    alert("Veuillez d'abord générer un storyboard.");
+                }
+            });
 
-            const result = await response.json();
-            if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
-                console.error("Unexpected API response structure:", result);
-                throw new Error("La structure de la réponse de l'API est inattendue.");
-            }
+            const generateTtsBtn = document.getElementById('generate-tts-btn');
+            const ttsResult = document.getElementById('tts-result');
+            const ttsLoader = document.getElementById('tts-loader'); // Corrected typo here
 
-            const text = result.candidates[0].content.parts[0].text;
-            argumentTextDisplay.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*/g, '<strong>');
-        } catch (error) {
-            console.error("Detailed error:", error);
-            argumentTextDisplay.innerHTML = `<p class="text-red-600">Une erreur est survenue. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
-        } finally {
-            argumentResult.classList.remove('hidden');
-            argumentLoader.classList.add('hidden');
-            generateArgumentBtn.disabled = false;
-        }
-    });
-});
-</script>
+            generateTtsBtn.addEventListener('click', async () => {
+                const script = scriptInput.value;
+                if (!script) {
+                    ttsResult.innerHTML = `<p class="text-red-600">Veuillez coller un script pour générer la voix-off.</p>`;
+                    ttsResult.classList.remove('hidden');
+                    return;
+                }
+                ttsLoader.classList.remove('hidden');
+                generateTtsBtn.disabled = true;
+                ttsResult.innerHTML = '';
+                const payload = {
+                    contents: [{ parts: [{ text: `Lisez le texte suivant avec un ton pédagogique, clair et engageant: ${script}` }] }],
+                    generationConfig: { responseModalities: ["AUDIO"], speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } } }
+                };
+                try {
+                    const response = await fetch(ttsApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API Error Response:", errorData);
+                        throw new Error(errorData.error?.message || response.statusText);
+                    }
+
+                    const result = await response.json();
+                    const part = result?.candidates?.[0]?.content?.parts?.[0];
+                    const audioData = part?.inlineData?.data;
+                    const mimeType = part?.inlineData?.mimeType;
+
+                    if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                        const audioUrl = `data:${mimeType};base64,${audioData}`;
+                        ttsResult.innerHTML = `<audio controls src="${audioUrl}"></audio>`;
+                    } else {
+                        throw new Error("Réponse audio invalide de l'API ou format non supporté.");
+                    }
+                } catch (error) {
+                    console.error("Detailed error:", error);
+                    ttsResult.innerHTML = `<p class="text-red-600">Une erreur est survenue lors de la génération de la voix-off. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
+                } finally {
+                    ttsResult.classList.remove('hidden');
+                    ttsLoader.classList.add('hidden');
+                    generateTtsBtn.disabled = false;
+                }
+            });
+
+            const generateArgumentBtn = document.getElementById('generate-argument-btn');
+            const choiceInput = document.getElementById('choice-input');
+            const argumentResult = document.getElementById('argument-result');
+            const argumentTextDisplay = document.getElementById('argument-text-display'); // New element
+            const argumentLoader = document.getElementById('argument-loader');
+
+            generateArgumentBtn.addEventListener('click', async () => {
+                const choice = choiceInput.value;
+                if (!choice) {
+                    argumentTextDisplay.innerHTML = `<p class="text-red-600">Veuillez décrire votre choix.</p>`;
+                    argumentResult.classList.remove('hidden');
+                    return;
+                }
+                argumentLoader.classList.remove('hidden');
+                generateArgumentBtn.disabled = true;
+                const prompt = `En tant qu'expert formateur FPA, j'accompagne un candidat pour sa certification. Il doit justifier son choix suivant : "${choice}". Rédige une argumentation professionnelle et concise pour le jury. La justification doit utiliser le vocabulaire de l'ingénierie pédagogique, lier le choix à un bénéfice clair pour l'apprenant, et démontrer une réflexion stratégique.`;
+                try {
+                    const response = await fetch(textApiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        console.error("API Error Response:", errorData);
+                        throw new Error(errorData.error?.message || response.statusText);
+                    }
+
+                    const result = await response.json();
+                    if (!result.candidates || !result.candidates[0] || !result.candidates[0].content || !result.candidates[0].content.parts || !result.candidates[0].content.parts[0] || !result.candidates[0].content.parts[0].text) {
+                        console.error("Unexpected API response structure:", result);
+                        throw new Error("La structure de la réponse de l'API est inattendue.");
+                    }
+
+                    const text = result.candidates[0].content.parts[0].text;
+                    argumentTextDisplay.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*/g, '<strong>');
+                } catch (error) {
+                    console.error("Detailed error:", error);
+                    argumentTextDisplay.innerHTML = `<p class="text-red-600">Une erreur est survenue. Veuillez réessayer. Détails: ${error.message || 'Erreur inconnue. Voir la console pour plus d\'informations.'}</p>`;
+                } finally {
+                    argumentResult.classList.remove('hidden');
+                    argumentLoader.classList.add('hidden');
+                    generateArgumentBtn.disabled = false;
+                }
+            });
+        });
+    </script>
 </body>
+
 </html>
