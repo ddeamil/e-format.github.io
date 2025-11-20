@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guide Interactif de Certification FPA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals with Teal Accent -->
+    <!-- Application Structure Plan: A tab-based SPA design is used to manage the dense information of the FPA guide. The structure is task-oriented, allowing candidates to focus on one area at a time: 1. "Vue d'Ensemble" (now with hero banner and official resources), 2. "Dossier Professionnel", 3. "Dossier Technique", 4. "L'Oral", 5. "Quiz", 6. "Lexique", and 7. "FAQ". This non-linear structure is more user-friendly than a long document. Interactive elements like charts, accordions, the quiz, a searchable lexicon, and a FAQ are used to break down complex information and engage the user. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Hero Image. Goal: Engage. Viz: Hero Banner. Justification: Creates a professional and welcoming first impression. Library: HTML/CSS.
+        - Report Info: Official documents. Goal: Inform/Provide resource. Viz: Linked resource cards. Justification: Centralizes essential documents for easy access. Library: HTML/CSS.
+        - Report Info: DT vs DP distinction. Goal: Compare. Viz: Two interactive cards. Justification: Clearly separates the two core documents. Library: HTML/CSS/JS.
+        - Report Info: REAC Activities & Competencies. Goal: Organize/Inform. Viz: Donut Chart + dynamic list. Justification: Interactively visualizes the certification's structure. Library: Chart.js.
+        - Report Info: DT Chapter page counts. Goal: Inform. Viz: Bar Chart. Justification: Provides a quick, scannable reference for key constraints. Library: Chart.js.
+        - Report Info: Oral Exam Structure. Goal: Organize. Viz: Interactive timeline. Justification: Clearly shows the final exam's sequence. Library: HTML/CSS/JS.
+        - Report Info: Quiz questions. Goal: Assess/Inform. Viz: Interactive Quiz Interface with optional hints. Justification: Allows self-assessment. Library: HTML/CSS/JS.
+        - Report Info: Key terminology. Goal: Inform/Clarify. Viz: Searchable list. Justification: Provides a quick reference for jargon. Library: HTML/CSS/JS.
+        - Report Info: Frequent questions. Goal: Inform/Clarify. Viz: Accordion list. Justification: Provides clear answers to common questions. Library: HTML/CSS/JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+            border-bottom: 4px solid transparent;
+        }
+        .nav-button.active {
+            border-bottom-color: #14B8A6;
+            color: #0F766E;
+        }
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out;
+            padding: 0 1.5rem;
+        }
+        .accordion-button.open + .accordion-content {
+            max-height: 2000px;
+            padding: 1.5rem;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 300px;
+            width: 100%;
+            max-width: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+                max-width: 500px;
+            }
+        }
+        .quiz-option {
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        .quiz-option.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+        }
+        .quiz-option.incorrect {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+        }
+        .quiz-option:disabled {
+            cursor: not-allowed;
+        }
+        .lexicon-item:not(:last-child) {
+            border-bottom: 1px solid #e5e7eb;
+        }
+    </style>
+</head>
+<body class="text-slate-800 flex flex-col min-h-screen">
+
+    <header class="bg-white shadow-sm py-6">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Guide Interactif de Certification FPA</h1>
+            <p class="text-slate-600 mt-2">Votre feuille de route visuelle pour maîtriser les livrables et réussir l'examen.</p>
+        </div>
+    </header>
+
+    <nav class="bg-white sticky top-0 z-10 shadow-md">
+        <div class="container mx-auto flex justify-center items-center flex-wrap">
+            <button class="nav-button active text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="vue-ensemble">Vue d'Ensemble</button>
+            <button class="nav-button text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="dp">Dossier Professionnel</button>
+            <button class="nav-button text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="dt">Dossier Technique</button>
+            <button class="nav-button text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="oral">L'Épreuve Orale</button>
+            <button class="nav-button text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="quiz">Quiz</button>
+            <button class="nav-button text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="lexique">Lexique</button>
+            <button class="nav-button text-slate-600 font-semibold py-4 px-3 md:px-6" data-target="faq">FAQ</button>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 md:p-8 flex-grow">
+
+        <!-- Vue d'Ensemble Section -->
+        <section id="vue-ensemble" class="content-section active">
+            <div class="mb-12 rounded-xl overflow-hidden shadow-lg">
+                <img src="https://placehold.co/1200x400/14B8A6/FFFFFF?text=Bienvenue+Futur+Formateur" alt="Bannière de présentation" class="w-full h-auto md:h-64 object-cover">
+            </div>
+            <div class="bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-lg mb-12 shadow">
+                <h3 class="font-bold text-xl mb-3 text-teal-800">🎙️ Podcast de la section</h3>
+                <p class="text-teal-700 mb-4">Écoutez un résumé et les points clés de cette section pour bien démarrer.</p>
+                <audio controls class="w-full">
+                    <source src="" type="audio/mpeg">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+            </div>
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Le Duo Stratégique : DT vs DP</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">Pour réussir, vous devez comprendre la complémentarité de vos deux livrables principaux. Le Dossier Technique (DT) est votre "chef-d'œuvre", il démontre la profondeur de votre expertise sur un projet. Le Dossier Professionnel (DP) est votre "boîte à outils", prouvant la largeur de vos compétences.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-16">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="font-bold text-xl mb-3 text-slate-800">Dossier Technique (DT) 📖</h3>
+                    <p class="text-slate-600 mb-4">C'est votre **démonstration principale**. Un rapport structuré et approfondi sur un projet de formation majeur. Il est au cœur de l'épreuve de "Questionnement à partir de production(s)".</p>
+                    <span class="inline-block bg-teal-100 text-teal-800 text-sm font-semibold px-3 py-1 rounded-full">Profondeur & Analyse</span>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="font-bold text-xl mb-3 text-slate-800">Dossier Professionnel (DP) 🛠️</h3>
+                    <p class="text-slate-600 mb-4">C'est votre **filet de sécurité**. Un document officiel qui compile des preuves variées de votre pratique. Le jury s'y réfère pour valider des compétences non visibles dans le DT.</p>
+                    <span class="inline-block bg-amber-100 text-amber-800 text-sm font-semibold px-3 py-1 rounded-full">Largeur & Preuves</span>
+                </div>
+            </div>
+            
+            <div class="bg-slate-50 p-6 md:p-8 rounded-xl shadow-lg border border-slate-200 mb-16">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-2">Ressources Officielles & Utiles</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">Accédez aux documents de référence indispensables pour votre certification.</p>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
+                    <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+                        <div>
+                            <span class="text-3xl">🔗</span>
+                            <h3 class="font-semibold text-lg mt-2 mb-1">Fiche RNCP37275</h3>
+                            <p class="text-sm text-slate-500 mb-4">Consultez la fiche officielle du titre FPA.</p>
+                        </div>
+                        <a href="https://www.francecompetences.fr/recherche/rncp/37275/" target="_blank" class="inline-block bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm mt-auto">Consulter</a>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+                        <div>
+                            <span class="text-3xl">📄</span>
+                            <h3 class="font-semibold text-lg mt-2 mb-1">Dossier Professionnel</h3>
+                            <p class="text-sm text-slate-500 mb-4">Téléchargez le modèle officiel du DP.</p>
+                        </div>
+                        <a href="https://travail-emploi.gouv.fr/formation-professionnelle/certification-professionnelle-titres-professionnels-cqp/article/modeles-de-dossier-professionnel-dp" target="_blank" class="inline-block bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm mt-auto">Télécharger</a>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+                        <div>
+                            <span class="text-3xl">🧭</span>
+                            <h3 class="font-semibold text-lg mt-2 mb-1">Référentiel (REAC)</h3>
+                            <p class="text-sm text-slate-500 mb-4">Votre document guide pour les compétences.</p>
+                        </div>
+                        <a href="https://travail-emploi.gouv.fr/formation-professionnelle/certification-professionnelle-titres-professionnels-cqp/titre-professionnel-ministere-charge-emploi" target="_blank" class="inline-block bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm mt-auto">Consulter</a>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-md flex flex-col justify-between">
+                        <div>
+                            <span class="text-3xl">📥</span>
+                            <h3 class="font-semibold text-lg mt-2 mb-1">PDF Récapitulatif</h3>
+                            <p class="text-sm text-slate-500 mb-4">Téléchargez une synthèse de ce guide.</p>
+                        </div>
+                        <a href="#" target="_blank" class="inline-block bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg transition-colors text-sm mt-auto">Télécharger</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-teal-700 mb-2">Le REAC : Votre Boussole</h2>
+                    <p class="max-w-3xl mx-auto text-slate-600">Le Référentiel Emploi Activités Compétences (REAC) structure tout le titre FPA. Explorez les 4 Activités-Types (AT) pour voir les 13 Compétences Professionnelles (CP) associées.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="chart-container">
+                        <canvas id="reacChart"></canvas>
+                    </div>
+                    <div>
+                        <h3 id="cp-title" class="font-bold text-xl mb-4 text-slate-800">Compétences de l'AT1</h3>
+                        <ul id="cp-list" class="space-y-3 list-disc list-inside text-slate-700">
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dossier Professionnel Section -->
+        <section id="dp" class="content-section">
+            <div class="bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-lg mb-12 shadow">
+                <h3 class="font-bold text-xl mb-3 text-teal-800">🎙️ Podcast de la section</h3>
+                <p class="text-teal-700 mb-4">Écoutez les conseils et astuces pour rédiger un Dossier Professionnel percutant.</p>
+                <audio controls class="w-full">
+                    <source src="" type="audio/mpeg">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+            </div>
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Construire votre Dossier Professionnel (DP)</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">Le DP est un document officiel à la trame standardisée. Il est votre portfolio de preuves, essentiel pour convaincre le jury de la diversité de votre pratique. Chaque section doit être complétée avec rigueur.</p>
+            </div>
+            <div class="max-w-4xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div id="dp-accordion" class="space-y-4">
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>Structure Officielle du DP</span>
+                            <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                            <ul class="list-disc list-inside space-y-2 text-slate-600">
+                                <li>**Informations personnelles et administratives** : Identité, titre visé, modalité d'accès.</li>
+                                <li>**Sommaire** : Pré-rempli, il structure le document.</li>
+                                <li>**Exemples de pratique professionnelle** : Le cœur du dossier, à remplir pour chaque AT.</li>
+                                <li>**Titres, diplômes, CQP** : Section facultative pour valoriser d'autres certifications.</li>
+                                <li>**Déclaration sur l'honneur** : À signer pour attester de l'authenticité.</li>
+                                <li>**Documents illustrant la pratique** : Facultatif mais stratégique pour apporter des preuves visuelles.</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>Rédiger un Exemple de Pratique Efficace</span>
+                             <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                           <p class="mb-4 text-slate-600">Utilisez la méthode suivante pour chaque exemple, en utilisant la première personne ("J'ai...") et en mettant en gras les mots-clés du métier.</p>
+                            <ol class="list-decimal list-inside space-y-3">
+                                <li>**Intitulé de l’exemple** : Soyez précis et orienté compétence.</li>
+                                <li>**Décrivez les tâches** : Racontez votre action de manière factuelle, étape par étape.</li>
+                                <li>**Précisez les moyens utilisés** : Listez les outils, logiciels, méthodes et concepts mobilisés.</li>
+                                <li>**Avec qui avez-vous travaillé ?** : Clarifiez les interactions (autonomie, collaboration, supervision).</li>
+                                <li>**Contexte** : Ancrez votre action dans un cadre professionnel identifiable (organisme, période).</li>
+                            </ol>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>L'Astuce Stratégique : Les Preuves Visuelles</span>
+                             <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                           <p class="text-slate-600">La section "Documents illustrant la pratique" transforme vos affirmations en démonstrations. Une capture d'écran d'une grille d'évaluation que vous avez créée est plus puissante qu'une simple phrase. Adoptez une démarche de "collecte de preuves" durant votre stage : photos, captures d'écran, extraits de documents (anonymisés). Chaque visuel doit avoir une légende expliquant sa pertinence.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Dossier Technique Section -->
+        <section id="dt" class="content-section">
+            <div class="bg-teal-50 border-l-4 border-teal-500 p-6 rounded-r-lg mb-12 shadow">
+                <h3 class="font-bold text-xl mb-3 text-teal-800">🎙️ Podcast de la section</h3>
+                <p class="text-teal-700 mb-4">Plongez dans la structure et les exigences de votre "chef-d'œuvre" avec ce guide audio.</p>
+                <audio controls class="w-full">
+                    <source src="" type="audio/mpeg">
+                    Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+            </div>
+             <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Le Dossier Technique (DT) : Votre Chef-d'Œuvre</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">Le DT est votre production écrite majeure. Sa structure en 4 chapitres est imposée et correspond aux 4 Activités-Types du REAC. Le respect des contraintes (pagination, format) est un signe de votre professionnalisme.</p>
+            </div>
+            
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div class="text-center mb-6">
+                    <h3 class="text-xl font-bold text-slate-800">Pagination Recommandée par Chapitre</h3>
+                    <p class="text-slate-500 text-sm">Visualisez les exigences de longueur pour structurer votre rédaction.</p>
+                </div>
+                <div class="w-full max-w-4xl mx-auto h-64 md:h-80">
+                    <canvas id="dtPagesChart"></canvas>
+                </div>
+            </div>
+
+            <div class="max-w-5xl mx-auto mt-12">
+                 <div id="dt-accordion" class="space-y-4">
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>Chapitre 1 : Concevoir et Préparer la Formation</span>
+                            <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                            <p class="font-semibold text-slate-700 mb-3">Compétence évaluée : Élaborer la progression pédagogique d'une formation multimodale à partir d'une demande.</p>
+                            <p class="mb-4 text-slate-600">Démontrez votre capacité à traduire une demande brute en architecture pédagogique.</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li>**Analyse de la demande** : Contexte, besoins, public cible, objectifs.</li>
+                                <li>**Progression pédagogique** : Structure des modules, enchaînement, modalités, durées.</li>
+                                <li>**Justification des choix** : Argumentez chaque décision pédagogique.</li>
+                            </ul>
+                            <p class="font-bold text-amber-700 bg-amber-100 p-3 rounded-md">📋 Annexe obligatoire : Scénario pédagogique global ET storyboard d'une capsule.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>Chapitre 2 : Animer et Évaluer</span>
+                            <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                            <p class="font-semibold text-slate-700 mb-3">Compétence évaluée : Remédier aux difficultés individuelles d'apprentissage.</p>
+                             <p class="mb-4 text-slate-600">Montrez votre capacité à gérer les aléas et à individualiser votre approche.</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li>**Description d'un cas concret** : Un apprenant en difficulté.</li>
+                                <li>**Démarche d'analyse** : Indicateurs observés, diagnostic, causes identifiées.</li>
+                                <li>**Stratégie de remédiation** : Action corrective mise en place, justification et évaluation de son efficacité.</li>
+                            </ul>
+                            <p class="font-bold text-amber-700 bg-amber-100 p-3 rounded-md">📋 Annexe obligatoire : Scénario pédagogique détaillé de la séance concernée.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>Chapitre 3 : Accompagner les Apprenants</span>
+                            <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                            <p class="font-semibold text-slate-700 mb-3">Compétence évaluée : Accompagner le développement professionnel des apprenants.</p>
+                            <p class="mb-4 text-slate-600">Illustrez comment vous articulez formation et projet professionnel.</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li>**Articulation des temps** : Montrez comment s'articulent apprentissage et accompagnement.</li>
+                                <li>**Exemples de situations** : Évaluation diagnostique, situation d'apprentissage pour l'employabilité.</li>
+                                <li>**Outils et modalités** : Ateliers CV, simulations d'entretiens.</li>
+                                <li>**Entretiens d'accompagnement** : Types d'entretiens, phases clés.</li>
+                            </ul>
+                            <p class="font-bold text-amber-700 bg-amber-100 p-3 rounded-md">📋 Annexe obligatoire : Synthèse anonymisée d'un entretien d'accompagnement.</p>
+                        </div>
+                    </div>
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>Chapitre 4 : Démarche Qualité et Veille</span>
+                            <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                            <p class="font-semibold text-slate-700 mb-3">Compétence évaluée : Réaliser une veille pour maintenir son expertise.</p>
+                            <p class="mb-4 text-slate-600">Présentez un dossier de veille complet et structuré. Aucune annexe n'est admise.</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li>**Dispositif de veille personnel** : Votre méthodologie, vos axes, vos outils.</li>
+                                <li>**Cartographie des acteurs locaux** : Schéma des acteurs de l'insertion et de la formation sur votre territoire.</li>
+                                <li>**Veille sur votre spécialité** : Un sujet métier et son impact sur vos contenus de formation.</li>
+                                <li>**Veille sur la formation professionnelle** : Un sujet transversal et son impact sur votre pratique de formateur.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- L'Épreuve Orale Section -->
+        <section id="oral" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Réussir l'Épreuve Orale</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">L'oral est le moment où vous incarnez le professionnel réflexif. Une bonne préparation et la maîtrise de votre posture sont les clés du succès.</p>
+            </div>
+
+            <div class="bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200 mb-12">
+                <h3 class="text-xl font-bold text-center text-slate-800 mb-6">Déroulé de l'Examen (3 heures)</h3>
+                <div class="flex flex-col md:flex-row justify-center items-stretch gap-4 text-center">
+                    <div class="flex-1 bg-slate-50 p-4 rounded-lg">
+                        <p class="font-bold text-teal-600 text-2xl">55<span class="text-base">min</span></p>
+                        <p class="font-semibold">Mise en Situation</p>
+                        <p class="text-xs text-slate-500">(45min prépa + 10min oral)</p>
+                    </div>
+                     <div class="flex-1 bg-slate-50 p-4 rounded-lg">
+                        <p class="font-bold text-teal-600 text-2xl">20<span class="text-base">min</span></p>
+                        <p class="font-semibold">Entretien Technique</p>
+                         <p class="text-xs text-slate-500">(Sur AT3 : accueil & tutorat)</p>
+                    </div>
+                     <div class="flex-1 bg-slate-50 p-4 rounded-lg">
+                        <p class="font-bold text-teal-600 text-2xl">95<span class="text-base">min</span></p>
+                        <p class="font-semibold">Soutenance du DT</p>
+                         <p class="text-xs text-slate-500">(Questionnement sur les 4 chapitres)</p>
+                    </div>
+                     <div class="flex-1 bg-slate-50 p-4 rounded-lg">
+                        <p class="font-bold text-teal-600 text-2xl">10<span class="text-base">min</span></p>
+                        <p class="font-semibold">Entretien Final</p>
+                         <p class="text-xs text-slate-500">(Vision du métier & consultation du DP)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="font-bold text-lg mb-4 text-green-600">✅ À Faire</h3>
+                    <ul class="space-y-3 text-slate-600">
+                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span><span>Utiliser un support visuel aéré (mots-clés, schémas).</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span><span>S'entraîner en se chronométrant pour respecter le temps.</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span><span>Anticiper les questions du jury en vous demandant "Pourquoi ?".</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span><span>Adopter une tenue et une posture professionnelles.</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-green-500">✔</span><span>Regarder le jury et établir un contact visuel.</span></li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-slate-200">
+                    <h3 class="font-bold text-lg mb-4 text-red-600">❌ À Éviter</h3>
+                    <ul class="space-y-3 text-slate-600">
+                        <li class="flex items-start"><span class="mr-2 text-red-500">✖</span><span>Lire ses notes ou son diaporama mot pour mot.</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-red-500">✖</span><span>Dépasser le temps imparti pour chaque épreuve.</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-red-500">✖</span><span>Se montrer sur la défensive face aux questions.</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-red-500">✖</span><span>Avoir un discours non structuré, sans transitions claires.</span></li>
+                        <li class="flex items-start"><span class="mr-2 text-red-500">✖</span><span>Négliger l'importance de l'entretien final et du DP.</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="quiz" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Testez vos Connaissances</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">Ce quiz vous permet de vérifier votre compréhension des concepts clés pour la certification FPA. Bonne chance !</p>
+            </div>
+            <div id="quiz-container" class="max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-xl shadow-lg border border-slate-200">
+                <div id="quiz-start-screen">
+                    <button id="start-quiz-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg transition-colors">Commencer le Quiz</button>
+                </div>
+                <div id="quiz-main-screen" class="hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold text-slate-800">Question <span id="question-number"></span>/<span id="total-questions"></span></h3>
+                        <p class="font-semibold text-slate-800">Score: <span id="score">0</span></p>
+                    </div>
+                    <div id="question-container" class="mb-6">
+                        <p id="question-text" class="text-lg font-semibold text-slate-900 mb-2"></p>
+                        <div id="hint-container" class="mt-2"></div>
+                    </div>
+                    <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="feedback-container" class="mt-6 p-4 rounded-lg text-sm hidden"></div>
+                    <div class="mt-6 text-right">
+                        <button id="next-question-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-6 rounded-lg transition-colors hidden">Suivant</button>
+                    </div>
+                </div>
+                 <div id="quiz-end-screen" class="hidden text-center">
+                    <h3 class="text-2xl font-bold text-slate-800 mb-4">Quiz Terminé !</h3>
+                    <p class="text-lg mb-6">Votre score final est de <span id="final-score" class="font-bold"></span> sur <span id="total-score" class="font-bold"></span>.</p>
+                    <button id="restart-quiz-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-lg transition-colors">Recommencer</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lexique Section -->
+        <section id="lexique" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Lexique des Termes Clés</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">Retrouvez ici les définitions des acronymes et du jargon technique de la formation professionnelle pour adultes.</p>
+            </div>
+            <div class="max-w-3xl mx-auto">
+                <input type="text" id="lexicon-search" placeholder="Rechercher un terme..." class="w-full p-3 mb-8 border-2 border-slate-200 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none">
+                <div id="lexicon-list" class="space-y-4"></div>
+                <div id="lexicon-no-results" class="text-center text-slate-500 hidden">
+                    <p>Aucun terme ne correspond à votre recherche.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-2xl font-bold text-teal-700 mb-2">Foire Aux Questions (FAQ)</h2>
+                <p class="max-w-3xl mx-auto text-slate-600">Les réponses aux questions les plus fréquentes sur la certification et les livrables du titre FPA.</p>
+            </div>
+            <div class="max-w-4xl mx-auto">
+                <div id="faq-accordion" class="space-y-4">
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-800 text-center py-6 mt-auto">
+        <p class="text-slate-300 text-sm">d.de amil - IRP 2025-2026</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const navButtons = document.querySelectorAll('.nav-button');
+            const contentSections = document.querySelectorAll('.content-section');
+            const accordionButtons = document.querySelectorAll('.accordion-button');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetId = button.dataset.target;
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+                    contentSections.forEach(section => {
+                        section.classList.toggle('active', section.id === targetId);
+                    });
+                });
+            });
+
+            function setupAccordion(groupSelector) {
+                const accordionGroup = document.querySelector(groupSelector);
+                if (accordionGroup) {
+                    accordionGroup.addEventListener('click', function(e) {
+                        const button = e.target.closest('.accordion-button');
+                        if (!button) return;
+
+                        const isOpening = !button.classList.contains('open');
+                        
+                        accordionGroup.querySelectorAll('.accordion-button').forEach(btn => {
+                            btn.classList.remove('open');
+                            const icon = btn.querySelector('span:last-child');
+                            if (icon) {
+                                icon.style.transform = 'rotate(0deg)';
+                                icon.textContent = '+';
+                            }
+                        });
+
+                        if (isOpening) {
+                            button.classList.add('open');
+                            const icon = button.querySelector('span:last-child');
+                             if (icon) {
+                                icon.style.transform = 'rotate(45deg)';
+                                icon.textContent = '×';
+                            }
+                        }
+                    });
+                }
+            }
+            
+            setupAccordion('#dp-accordion');
+            setupAccordion('#dt-accordion');
+            setupAccordion('#faq-accordion');
+
+
+            const reacData = {
+                labels: ['AT1: Concevoir', 'AT2: Animer', 'AT3: Accompagner', 'AT4: Qualité'],
+                datasets: [{
+                    data: [3, 3, 4, 3],
+                    backgroundColor: ['#14B8A6', '#F59E0B', '#3B82F6', '#8B5CF6'],
+                    hoverOffset: 4
+                }]
+            };
+            const competencies = [
+                ["1. Élaborer la progression pédagogique d'une formation multimodale à partir d'une demande.", "2. Concevoir un scénario pédagogique et d'accompagnement en intégrant la multimodalité.", "3. Concevoir des activités d'apprentissage et d'évaluation en intégrant la multimodalité."],
+                ["4. Animer une formation et faciliter les apprentissages selon différentes modalités.", "5. Évaluer les acquis de formation des apprenants.", "6. Remédier aux difficultés individuelles d'apprentissage."],
+                ["7. Accompagner les apprenants dans leur parcours de formation.", "8. Accueillir un apprenant en formation et co-construire son parcours.", "9. Tutorer les apprenants à distance.", "10. Accompagner le développement professionnel des apprenants."],
+                ["11. Respecter et faire respecter la règlementation en vigueur.", "12. Réaliser une veille pour maintenir son expertise.", "13. Analyser ses pratiques professionnelles."]
+            ];
+            const dtPagesData = {
+                labels: ['Chap. 1', 'Chap. 2', 'Chap. 3', 'Chap. 4'],
+                datasets: [{
+                    label: 'Pages min',
+                    data: [8, 5, 7, 10],
+                    backgroundColor: '#A7F3D0',
+                    borderColor: '#10B981',
+                    borderWidth: 1
+                }, {
+                    label: 'Pages max',
+                    data: [12, 8, 10, 15],
+                    backgroundColor: '#BAE6FD',
+                    borderColor: '#3B82F6',
+                    borderWidth: 1
+                }]
+            };
+
+            if (document.getElementById('reacChart')) {
+                const reacCtx = document.getElementById('reacChart').getContext('2d');
+                new Chart(reacCtx, {
+                    type: 'doughnut', data: reacData, options: {
+                        responsive: true, maintainAspectRatio: false, plugins: {
+                            legend: { position: 'bottom' },
+                            tooltip: { callbacks: { label: c => `${c.raw} compétences` } }
+                        },
+                        onClick: (e, el) => { if (el.length > 0) updateCompetencyList(el[0].index); }
+                    }
+                });
+                const cpTitle = document.getElementById('cp-title');
+                const cpList = document.getElementById('cp-list');
+                function updateCompetencyList(index) {
+                    cpTitle.textContent = `Compétences de l'${reacData.labels[index]}`;
+                    cpList.innerHTML = competencies[index].map(cp => `<li>${cp}</li>`).join('');
+                }
+                updateCompetencyList(0);
+            }
+
+            if (document.getElementById('dtPagesChart')) {
+                const dtPagesCtx = document.getElementById('dtPagesChart').getContext('2d');
+                new Chart(dtPagesCtx, {
+                    type: 'bar', data: dtPagesData, options: {
+                        responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } },
+                        scales: { y: { beginAtZero: true, title: { display: true, text: 'Nombre de pages' } } }
+                    }
+                });
+            }
+
+            const quizData = [
+                { question: "Un candidat prépare son Dossier Professionnel (DP). Quelle est la fonction stratégique principale de ce document lors de l'évaluation par le jury ?", hint: "Pensez à ce que le jury ferait s'il avait un doute sur une compétence après avoir étudié votre projet principal.", answerOptions: [ { text: "Présenter en détail le projet le plus significatif de sa période en entreprise.", rationale: "Cette description correspond davantage au rôle du Dossier Technique, qui est la démonstration approfondie d'un projet majeur.", isCorrect: false }, { text: "Servir de support principal pour la présentation orale durant la soutenance.", rationale: "Le support de présentation (type PowerPoint) est créé pour la soutenance, mais le DP lui-même est un document de référence consulté par le jury, pas un support de présentation directe.", isCorrect: false }, { text: "Compiler des exemples variés de sa pratique pour prouver l'étendue de ses compétences, notamment celles peu visibles dans le Dossier Technique.", rationale: "Le DP fonctionne comme un 'filet de sécurité' ou une 'boîte à outils', offrant des preuves complémentaires qui couvrent la largeur des compétences du REAC.", isCorrect: true }, { text: "Uniquement lister les diplômes et certifications obtenus avant la formation FPA.", rationale: "Bien qu'une section existe pour cela, ce n'est qu'une partie mineure et facultative du DP, dont le cœur est la description de la pratique professionnelle.", isCorrect: false } ] },
+                { question: "Lors de la rédaction du chapitre 2 du Dossier Technique (DT), sur quel aspect de l'animation de formation le candidat doit-il impérativement se concentrer ?", hint: "Ce chapitre ne demande pas de décrire une séance parfaite, mais plutôt de montrer comment vous gérez les imprévus humains.", answerOptions: [ { text: "La description détaillée d'une séquence d'animation de groupe réussie du début à la fin.", rationale: "Le REAC demande spécifiquement de se focaliser sur l'analyse et la gestion d'une situation problématique, pas seulement sur une réussite.", isCorrect: false }, { text: "L'analyse d'une difficulté d'apprentissage rencontrée par un apprenant et la stratégie de remédiation mise en place.", rationale: "Ceci correspond précisément à l'exigence de l'évaluation pour ce chapitre, qui vise à valider la compétence 'Remédier aux difficultés individuelles d'apprentissage'.", isCorrect: true }, { text: "La présentation de l'ensemble des outils d'évaluation formative utilisés durant la formation.", rationale: "Les outils d'évaluation sont importants, mais le cœur du chapitre 2 est l'analyse d'un cas spécifique de difficulté et la solution apportée.", isCorrect: false }, { text: "La comparaison de différentes méthodes pédagogiques (expositive, démonstrative, active).", rationale: "La justification des méthodes pédagogiques relève davantage du chapitre 1, lors de la conception de la progression.", isCorrect: false } ] },
+                { question: "Un formateur stagiaire a mené un projet très complet qui illustre parfaitement 10 des 13 compétences du REAC. Comment doit-il aborder la rédaction de son Dossier Professionnel (DP) ?", hint: "Le DP et le DT ne doivent pas être des copies conformes. Comment peuvent-ils se compléter ?", answerOptions: [ { text: "Il doit décrire à nouveau le même projet dans le DP pour renforcer son argumentation.", rationale: "Redonder l'information est une mauvaise stratégie ; cela ne montre pas l'étendue des compétences et fait perdre une opportunité au candidat.", isCorrect: false }, { text: "Il doit choisir des exemples de pratique complètement différents de son projet principal, en se concentrant sur les 3 compétences non couvertes par son DT.", rationale: "C'est la stratégie la plus efficace. Le DP doit compléter le DT en apportant des preuves pour les compétences qui y sont moins ou pas du tout visibles.", isCorrect: true }, { text: "Il peut laisser vides les sections du DP correspondant aux compétences déjà traitées dans le DT.", rationale: "Le DP est un document obligatoire qui doit être complétée pour chaque activité-type ; le laisser vide serait une erreur.", isCorrect: false }, { text: "Il doit inventer des situations pour les 3 compétences manquantes afin de remplir le dossier.", rationale: "La déclaration sur l'honneur engage le candidat sur la véracité des faits ; inventer des situations est proscrit et contraire à l'éthique.", isCorrect: false } ] },
+                { question: "Quelle est la structure imposée pour les quatre chapitres du Dossier Technique (DT) ?", hint: "Le document qui définit le métier de FPA est aussi celui qui structure votre 'chef-d'œuvre'.", answerOptions: [ { text: "Une structure chronologique suivant le déroulement de la période en entreprise.", rationale: "Bien que les exemples soient issus de la période en entreprise, la structure du DT n'est pas un journal de bord mais une démonstration de compétences.", isCorrect: false }, { text: "Une structure libre laissée à l'appréciation du candidat pour valoriser son projet.", rationale: "Au contraire, la structure est très normée et son respect est un critère d'évaluation de la rigueur du candidat.", isCorrect: false }, { text: "Chaque chapitre correspond à l'une des quatre activités-types définies dans le Référentiel Emploi Activités Compétences (REAC).", rationale: "C'est l'exigence fondamentale. Le DT est le miroir des 4 grandes missions du formateur telles que décrites dans le REAC.", isCorrect: true }, { text: "Une structure en deux parties : la première sur la conception, la seconde sur l'animation.", rationale: "Cette vision est trop simplifiée et ne couvre pas les activités d'accompagnement (AT3) et de démarche qualité (AT4), qui ont leurs propres chapitres.", isCorrect: false } ] },
+                { question: "Pour le chapitre 4 du Dossier Technique, qui porte sur la démarche qualité, que doit impérativement produire le candidat ?", hint: "Ce chapitre doit prouver que vous êtes un professionnel qui se tient informé et qui analyse son environnement.", answerOptions: [ { text: "Uniquement un rapport sur le respect de la certification Qualiopi dans son organisme d'accueil.", rationale: "Qualiopi est un élément important, mais le chapitre attend une production de veille personnelle et structurée, bien plus large que ce seul aspect.", isCorrect: false }, { text: "Un dossier de veille complet incluant son dispositif personnel, une cartographie des acteurs et l'analyse de deux sujets spécifiques.", rationale: "Cette structure en quatre parties (dispositif, cartographie, veille métier, veille pédagogique) est précisément celle exigée pour ce chapitre.", isCorrect: true }, { text: "Une analyse de ses propres pratiques professionnelles basée sur les retours des apprenants.", rationale: "L'analyse de pratique est une compétence (CP13), mais le livrable attendu pour le chapitre 4 est spécifiquement un dossier de veille (CP12).", isCorrect: false }, { text: "La liste des formations qu'il a suivies pour maintenir son expertise.", rationale: "Se former fait partie du maintien de l'expertise, mais le dossier doit démontrer une démarche de veille active, organisée et continue, pas seulement une liste de stages.", isCorrect: false } ] },
+                { question: "Lors de la soutenance orale, le jury cherche avant tout à évaluer une posture professionnelle spécifique. Laquelle ?", hint: "Le jury ne veut pas seulement savoir CE QUE vous avez fait, mais surtout POURQUOI vous l'avez fait et ce que vous en avez retiré.", answerOptions: [ { text: "La posture d'un expert technique maîtrisant parfaitement son domaine de spécialité.", rationale: "L'expertise est nécessaire, mais la certification FPA évalue avant tout les compétences pédagogiques et la capacité d'analyse, pas seulement le savoir technique.", isCorrect: false }, { text: "La posture d'un commercial capable de vendre un projet de formation.", rationale: "Bien que la conviction soit utile, le jury n'évalue pas des compétences de vente mais des compétences de formateur.", isCorrect: false }, { text: "La posture d'un professionnel réflexif, capable d'analyser ses pratiques pour les améliorer.", rationale: "C'est la compétence transversale la plus importante. Le jury veut voir votre capacité à prendre du recul sur vos actions, à les justifier et à en tirer des leçons.", isCorrect: true }, { text: "La posture d'un gestionnaire de projet respectant les délais et le budget.", rationale: "Ces compétences sont utiles mais secondaires par rapport à la capacité d'analyse de la pratique pédagogique, qui est au cœur du métier de formateur.", isCorrect: false } ] },
+                { question: "Quel document est considéré comme la 'colonne vertébrale' ou la 'boussole' pour la préparation de tous les livrables et des épreuves du titre FPA ?", hint: "C'est le document officiel qui décrit en détail le métier, ses missions et les savoir-faire attendus.", answerOptions: [ { text: "Le Dossier Professionnel (DP).", rationale: "Le DP est un livrable à produire en se basant sur le référentiel, mais il n'est pas le référentiel lui-même.", isCorrect: false }, { text: "La fiche RNCP (Répertoire National des Certifications Professionnelles).", rationale: "La fiche RNCP est une description synthétique de la certification, mais le document de référence pour l'évaluation est plus détaillé.", isCorrect: false }, { text: "Le Référentiel Emploi Activités Compétences (REAC).", rationale: "Le REAC est le document fondamental qui définit toutes les activités et compétences que le candidat doit démontrer. Tout le processus de certification s'articule autour de lui.", isCorrect: true }, { text: "Le support de cours fourni par l'organisme de formation.", rationale: "Le support de cours est une ressource pédagogique utile, mais le document officiel qui fait foi pour la certification est le REAC.", isCorrect: false } ] },
+                { question: "Lors de la présentation orale de son Dossier Technique, quelle est l'une des erreurs les plus pénalisantes qu'un candidat puisse commettre ?", hint: "Pensez à ce qui rompt immédiatement la communication et montre un manque de maîtrise de son propre travail.", answerOptions: [ { text: "Utiliser un support de présentation (PowerPoint) avec beaucoup de visuels.", rationale: "Au contraire, un support visuel, clair et aéré est recommandé pour guider le jury et appuyer le discours.", isCorrect: false }, { text: "Lire ses notes ou son support de présentation mot pour mot.", rationale: "Cette attitude montre un manque de maîtrise du sujet et d'aisance professionnelle, et empêche tout véritable échange avec le jury.", isCorrect: true }, { text: "Terminer sa présentation avec quelques minutes d'avance.", rationale: "Tant que le contenu est traité, finir un peu en avance n'est pas pénalisant et peut même montrer une bonne gestion du temps.", isCorrect: false }, { text: "Poser une question au jury pour clarifier un point.", rationale: "Bien que ce soit le jury qui mène l'entretien, une question pertinente et ponctuelle peut montrer un souci de bien comprendre et n'est pas une erreur en soi.", isCorrect: false } ] },
+                { question: "Pour un candidat visant le titre FPA complet via un parcours de formation, quelle est la durée minimale obligatoire de la période en entreprise ?", hint: "Cette durée est significative et représente plusieurs centaines d'heures de pratique.", answerOptions: [ { text: "70 heures.", rationale: "Cette durée correspond plutôt à la période requise pour la validation d'un seul Certificat de Compétences Professionnelles (CCP), pas le titre complet.", isCorrect: false }, { text: "140 heures.", rationale: "Ce chiffre ne correspond pas à une durée standard requise dans le cadre du référentiel FPA.", isCorrect: false }, { text: "315 heures.", rationale: "C'est la durée minimale requise pour la période en entreprise pour un candidat en parcours de formation visant le titre professionnel complet.", isCorrect: true }, { text: "Il n'y a pas de durée minimale, cela dépend du projet du candidat.", rationale: "Le référentiel impose une durée minimale précise pour garantir une expérience pratique suffisante et significative.", isCorrect: false } ] },
+                { question: "En quoi l'ajout de 'Documents illustrant la pratique professionnelle' dans le Dossier Professionnel (DP) est-il stratégique, bien que cette section soit marquée comme facultative ?", hint: "Comment passer d'une simple affirmation à une preuve concrète ?", answerOptions: [ { text: "Cela permet de dépasser la limite de pages des descriptions.", rationale: "Le but n'est pas de contourner les règles de format mais de renforcer la crédibilité des exemples décrits.", isCorrect: false }, { text: "Cela rend le dossier plus esthétique et agréable à lire pour le jury.", rationale: "L'esthétique peut être un plus, mais la fonction première de ces documents est de fournir des preuves tangibles, pas de décorer.", isCorrect: false }, { text: "Cela transforme une affirmation en une démonstration, en apportant une preuve visuelle et irréfutable de la production du candidat.", rationale: "C'est la valeur principale : le jury ne se contente pas de lire ce que vous avez fait, il le voit, ce qui ancre vos affirmations dans la réalité.", isCorrect: true }, { text: "Cela est obligatoire pour les candidats en VAE mais pas pour ceux en formation.", rationale: "La section est facultative pour tous les candidats, quelle que soit leur modalité d'accès, mais elle est stratégique pour tous.", isCorrect: false } ] }
+            ];
+
+            const quizStartScreen = document.getElementById('quiz-start-screen');
+            const quizMainScreen = document.getElementById('quiz-main-screen');
+            const quizEndScreen = document.getElementById('quiz-end-screen');
+            
+            const startQuizBtn = document.getElementById('start-quiz-btn');
+            const questionNumberEl = document.getElementById('question-number');
+            const totalQuestionsEl = document.getElementById('total-questions');
+            const scoreEl = document.getElementById('score');
+            const questionTextEl = document.getElementById('question-text');
+            const hintContainer = document.getElementById('hint-container');
+            const optionsContainer = document.getElementById('options-container');
+            const feedbackContainer = document.getElementById('feedback-container');
+            const nextQuestionBtn = document.getElementById('next-question-btn');
+            
+            const finalScoreEl = document.getElementById('final-score');
+            const totalScoreEl = document.getElementById('total-score');
+            const restartQuizBtn = document.getElementById('restart-quiz-btn');
+
+            let currentQuestionIndex = 0;
+            let score = 0;
+
+            if (startQuizBtn) {
+                function startQuiz() {
+                    quizStartScreen.classList.add('hidden');
+                    quizEndScreen.classList.add('hidden');
+                    quizMainScreen.classList.remove('hidden');
+                    currentQuestionIndex = 0;
+                    score = 0;
+                    scoreEl.textContent = score;
+                    totalQuestionsEl.textContent = quizData.length;
+                    showQuestion();
+                }
+
+                function showQuestion() {
+                    resetState();
+                    const currentQuestion = quizData[currentQuestionIndex];
+                    questionNumberEl.textContent = currentQuestionIndex + 1;
+                    questionTextEl.textContent = currentQuestion.question;
+
+                    hintContainer.innerHTML = '';
+                    if (currentQuestion.hint) {
+                        const hintButton = document.createElement('button');
+                        hintButton.innerHTML = '💡 <span class="underline">Afficher l\'indice</span>';
+                        hintButton.classList.add('text-sm', 'text-teal-600', 'hover:text-teal-800', 'font-semibold');
+                        
+                        const hintText = document.createElement('p');
+                        hintText.textContent = currentQuestion.hint;
+                        hintText.classList.add('text-sm', 'text-slate-500', 'italic', 'mt-2', 'p-3', 'bg-slate-50', 'rounded-lg', 'hidden');
+
+                        hintButton.addEventListener('click', () => {
+                            hintText.classList.remove('hidden');
+                            hintButton.classList.add('hidden');
+                        }, { once: true });
+
+                        hintContainer.appendChild(hintButton);
+                        hintContainer.appendChild(hintText);
+                    }
+
+                    currentQuestion.answerOptions.forEach(option => {
+                        const button = document.createElement('button');
+                        button.textContent = option.text;
+                        button.classList.add('quiz-option', 'w-full', 'p-4', 'text-left', 'bg-white', 'hover:bg-slate-50', 'rounded-lg', 'border-2', 'border-slate-200');
+                        button.dataset.correct = option.isCorrect;
+                        button.dataset.rationale = option.rationale;
+                        button.addEventListener('click', selectAnswer);
+                        optionsContainer.appendChild(button);
+                    });
+                }
+
+                function resetState() {
+                    nextQuestionBtn.classList.add('hidden');
+                    feedbackContainer.classList.add('hidden');
+                    while (optionsContainer.firstChild) {
+                        optionsContainer.removeChild(optionsContainer.firstChild);
+                    }
+                }
+
+                function selectAnswer(e) {
+                    const selectedButton = e.target;
+                    const isCorrect = selectedButton.dataset.correct === 'true';
+                    
+                    if (isCorrect) {
+                        score++;
+                        scoreEl.textContent = score;
+                        selectedButton.classList.add('correct');
+                        feedbackContainer.innerHTML = `<p class="font-semibold text-green-700">Bonne réponse !</p><p class="text-green-600">${selectedButton.dataset.rationale}</p>`;
+                        feedbackContainer.classList.remove('bg-red-100', 'text-red-700');
+                        feedbackContainer.classList.add('bg-green-100', 'text-green-700');
+                    } else {
+                        selectedButton.classList.add('incorrect');
+                         feedbackContainer.innerHTML = `<p class="font-semibold text-red-700">Mauvaise réponse.</p><p class="text-red-600">${selectedButton.dataset.rationale}</p>`;
+                        feedbackContainer.classList.remove('bg-green-100', 'text-green-700');
+                        feedbackContainer.classList.add('bg-red-100', 'text-red-700');
+                    }
+
+                    Array.from(optionsContainer.children).forEach(button => {
+                        if (button.dataset.correct === 'true') {
+                            button.classList.add('correct');
+                        }
+                        button.disabled = true;
+                    });
+                    
+                    feedbackContainer.classList.remove('hidden');
+                    nextQuestionBtn.classList.remove('hidden');
+                }
+                
+                function showResults() {
+                    quizMainScreen.classList.add('hidden');
+                    quizEndScreen.classList.remove('hidden');
+                    finalScoreEl.textContent = score;
+                    totalScoreEl.textContent = quizData.length;
+                }
+
+                nextQuestionBtn.addEventListener('click', () => {
+                    currentQuestionIndex++;
+                    if (currentQuestionIndex < quizData.length) {
+                        showQuestion();
+                    } else {
+                        showResults();
+                    }
+                });
+                
+                startQuizBtn.addEventListener('click', startQuiz);
+                restartQuizBtn.addEventListener('click', startQuiz);
+            }
+
+            // Lexicon
+            const lexiconData = [
+                { term: "AT", definition: "Activité-Type. Le REAC est structuré en 4 Activités-Types qui représentent les grandes missions du métier de formateur." },
+                { term: "CP", definition: "Compétence Professionnelle. Chaque Activité-Type regroupe plusieurs compétences que le candidat doit démontrer." },
+                { term: "DP", definition: "Dossier Professionnel. Document officiel et standardisé qui compile des preuves variées de la pratique du candidat. Il sert de 'filet de sécurité' au jury." },
+                { term: "DT", definition: "Dossier Technique. Production écrite majeure du candidat, structurée en 4 chapitres, qui analyse en profondeur un projet de formation mené en entreprise." },
+                { term: "FPA", definition: "Formateur Professionnel d'Adultes. Intitulé du Titre Professionnel de niveau 5." },
+                { term: "Ingénierie Pédagogique", definition: "Démarche structurée qui consiste à analyser, concevoir, réaliser et évaluer un dispositif de formation pour atteindre des objectifs pédagogiques." },
+                { term: "Multimodalité", definition: "Fait de combiner différentes modalités pédagogiques (présentiel, distanciel, synchrone, asynchrone, etc.) au sein d'un même parcours de formation." },
+                { term: "Qualiopi", definition: "Certification unique des organismes de formation en France, attestant de la qualité de leurs processus." },
+                { term: "REAC", definition: "Référentiel Emploi Activités Compétences. Document officiel qui décrit précisément le métier, ses activités et les compétences requises. C'est la 'boussole' de la certification." },
+                { term: "RNCP", definition: "Répertoire National des Certifications Professionnelles. Il répertorie toutes les formations et titres reconnus par l'État français." },
+                { term: "VAE", definition: "Validation des Acquis de l'Expérience. Modalité d'accès à la certification qui permet de faire reconnaître son expérience professionnelle pour obtenir un titre ou un diplôme." }
+            ];
+
+            const lexiconSearch = document.getElementById('lexicon-search');
+            const lexiconList = document.getElementById('lexicon-list');
+            const lexiconNoResults = document.getElementById('lexicon-no-results');
+
+            function displayLexicon(filter = '') {
+                lexiconList.innerHTML = '';
+                const lowerCaseFilter = filter.toLowerCase();
+                const filteredData = lexiconData.filter(item => 
+                    item.term.toLowerCase().includes(lowerCaseFilter) || 
+                    item.definition.toLowerCase().includes(lowerCaseFilter)
+                );
+
+                if (filteredData.length === 0) {
+                    lexiconNoResults.classList.remove('hidden');
+                } else {
+                    lexiconNoResults.classList.add('hidden');
+                }
+
+                filteredData.forEach(item => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.classList.add('lexicon-item', 'bg-white', 'p-4', 'rounded-lg', 'shadow-sm');
+                    itemDiv.innerHTML = `
+                        <dt class="font-bold text-teal-700">${item.term}</dt>
+                        <dd class="text-slate-600 mt-1">${item.definition}</dd>
+                    `;
+                    lexiconList.appendChild(itemDiv);
+                });
+            }
+
+            if (lexiconSearch) {
+                lexiconSearch.addEventListener('input', (e) => {
+                    displayLexicon(e.target.value);
+                });
+                displayLexicon();
+            }
+
+            // FAQ
+            const faqData = [
+                { question: "Quelle est la différence fondamentale entre le Dossier Technique (DT) et le Dossier Professionnel (DP) ?", answer: "Le DT est votre 'démonstration principale', un rapport approfondi sur un projet majeur. Le DP est votre 'boîte à outils', un portfolio qui prouve l'étendue de vos compétences avec des exemples variés. Le DP complète le DT et sert de 'filet de sécurité' si le jury a des doutes sur une compétence." },
+                { question: "Dois-je mettre les mêmes exemples dans le DT et le DP ?", answer: "Non, c'est une erreur stratégique. Le DT doit se concentrer sur un projet riche et complexe qui illustre de nombreuses compétences. Le DP doit être utilisé pour présenter d'autres exemples de pratique qui couvrent les compétences moins visibles ou absentes dans votre DT." },
+                { question: "La période en entreprise est-elle obligatoire ?", answer: "Oui, pour les candidats issus d'un parcours de formation, une période en entreprise est obligatoire. Sa durée minimale est de 315 heures pour le titre complet. C'est cette expérience qui sert de base à la rédaction de vos dossiers." },
+                { question: "Puis-je modifier la structure du Dossier Professionnel (DP) ?", answer: "Absolument pas. Le DP est un document officiel dont la trame est standardisée par le Ministère du Travail. Vous devez la respecter scrupuleusement." },
+                { question: "Le jury lit-il vraiment les dossiers en entier ?", answer: "Oui. Le jury étudie attentivement vos dossiers avant la session d'examen. Un dossier bien rédigé, clair et professionnel est un signe de votre rigueur et de votre motivation. Le DP est particulièrement consulté lors de l'entretien final pour prendre la décision." },
+                { question: "Que se passe-t-il si je rate une partie de l'examen ?", answer: "Le titre professionnel est composé de blocs de compétences (les CCP - Certificats de Compétences Professionnelles). Si vous ne validez pas le titre complet, vous pouvez valider un ou plusieurs CCP. Vous pourrez ensuite vous présenter à une session ultérieure pour valider les CCP manquants." }
+            ];
+
+            const faqAccordion = document.getElementById('faq-accordion');
+            if (faqAccordion) {
+                faqAccordion.innerHTML = faqData.map(item => `
+                    <div>
+                        <button class="accordion-button w-full text-left font-semibold text-lg p-4 bg-slate-50 hover:bg-slate-100 rounded-lg flex justify-between items-center">
+                            <span>${item.question}</span>
+                            <span class="text-teal-500 text-2xl transform transition-transform duration-300">+</span>
+                        </button>
+                        <div class="accordion-content bg-white rounded-b-lg">
+                            <p class="text-slate-600">${item.answer}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        });
+    </script>
+</body>
+</html>

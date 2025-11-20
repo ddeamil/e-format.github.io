@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application d'Auto-Évaluation : Compétences FPA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Professional Harmony -->
+    <!-- Application Structure Plan: Inspired by the user-provided example, this version adopts a guided, single-page flow. It starts with an interactive "Keys to Reading" section explaining the 4 mastery levels. The "Exploration" section groups the 13 competencies under their 4 Activity-Types, with clicks revealing details in a dedicated "Deep Dive" area below. The core is the "Self-Assessment" section, where users select descriptive cards for each competency level. Submitting generates a personalized radar chart and a textual summary. A new Gemini-powered feature generates a personalized development plan based on the assessment results. -->
+    <!-- Visualization & Content Choices: 
+        - Goal: Organize & Explore -> Presentation: Four-column layout for the 4 Activity-Types, containing interactive cards for each competency (HTML/Tailwind). Interaction: JS click events populate a detail section. Justification: Clearly presents the FPA's structure.
+        - Goal: Enable Self-Assessment -> Presentation: An interactive form with clickable cards detailing each of the 4 mastery levels per competency. Justification: Provides necessary context for an informed self-evaluation.
+        - Goal: Visualize Profile -> Presentation: Radar Chart (Chart.js/Canvas). Interaction: JS updates the chart based on the user's selections. Justification: Offers a powerful, dynamic visualization of a multi-axial skill profile.
+        - Goal: Provide Actionable Feedback -> Presentation: A new section populated by a Gemini API call. Interaction: A button triggers the API call after assessment. Justification: Adds significant value by transforming assessment data into a concrete development plan.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', sans-serif; background-color: #F8F9FA; color: #343A40; }
+        .activity-1 { border-left-color: #3b82f6; }
+        .activity-2 { border-left-color: #16a34a; }
+        .activity-3 { border-left-color: #f97316; }
+        .activity-4 { border-left-color: #6d28d9; }
+        .item-card { transition: all 0.3s ease-in-out; cursor: pointer; }
+        .item-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
+        .item-card.selected { background-color: #e0f2fe; border-color: #0284c7 !important; transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(2, 132, 199, 0.2), 0 4px 6px -2px rgba(2, 132, 199, 0.1); }
+        .chart-container { position: relative; width: 100%; max-width: 700px; margin-left: auto; margin-right: auto; height: 400px; max-height: 500px; }
+        @media (min-width: 768px) { .chart-container { height: 500px; } }
+        .assessment-card { cursor: pointer; border: 2px solid #e5e7eb; background-color: #ffffff; transition: all 0.2s ease-in-out; display: flex; flex-direction: column; }
+        .assessment-card:hover { border-color: #9ca3af; transform: translateY(-2px); }
+        .assessment-card.selected { background-color: #dbeafe; border-color: #2563eb; transform: scale(1.02); box-shadow: 0 10px 20px rgba(0,0,0,0.15); }
+        .btn { transition: all 0.2s ease-in-out; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        @media print { 
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { size: A4; margin: 1.5cm; } 
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <div id="main-container" class="container mx-auto p-4 md:p-8">
+        
+        <header class="mb-12">
+            <div class="bg-blue-600 text-white p-8 rounded-2xl shadow-lg flex items-center justify-center space-x-6">
+                <div class="flex-shrink-0 bg-white/20 w-20 h-20 rounded-full flex items-center justify-center">
+                    <span class="text-4xl">🗺️</span>
+                </div>
+                <div class="text-left">
+                    <h1 class="text-4xl md:text-5xl font-bold">Carte de Compétences FPA</h1>
+                    <p class="text-lg text-blue-100 max-w-3xl">Explorez le référentiel FPA, évaluez votre profil et suivez votre progression.</p>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section id="introduction-vis" class="mb-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-gray-700">Clés de Lecture de la Carte</h2>
+                    <p class="text-md text-gray-500 mt-1">Comprendre les 4 niveaux de maîtrise avant de commencer.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Niveaux de maîtrise générés par JS -->
+                </div>
+            </section>
+
+            <section id="dashboard" class="mb-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Exploration des 13 Compétences</h2>
+                    <p class="text-md text-gray-500 mt-1">Cliquez sur une compétence pour voir le détail de ses indicateurs.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="activities-container">
+                    <!-- Conteneurs d'activités générés par JS -->
+                </div>
+            </section>
+
+            <section id="deep-dive" class="relative bg-white p-6 md:p-8 rounded-2xl shadow-lg min-h-[200px] mb-12">
+                 <div id="deep-dive-content" class="transition-opacity duration-500">
+                    <p class="text-gray-500 text-center">Sélectionnez une compétence ci-dessus pour afficher les détails ici.</p>
+                 </div>
+            </section>
+
+            <section id="self-assessment-section" class="mt-12">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Mon Auto-Évaluation</h2>
+                    <p class="text-md text-gray-500 mt-1">Pour chaque compétence, lisez les 4 descriptions et cliquez sur celle qui vous correspond le mieux.</p>
+                </div>
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                        <div>
+                            <label for="user-lastname" class="block text-sm font-medium text-gray-700">Nom</label>
+                            <input type="text" id="user-lastname" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="user-firstname" class="block text-sm font-medium text-gray-700">Prénom</label>
+                            <input type="text" id="user-firstname" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                        <div>
+                            <label for="evaluation-stage" class="block text-sm font-medium text-gray-700">Étape d'évaluation</label>
+                            <select id="evaluation-stage" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                <option value="Évaluation Initiale">Évaluation Initiale</option>
+                                <option value="Évaluation Intermédiaire">Évaluation Intermédiaire</option>
+                                <option value="Évaluation Finale">Évaluation Finale</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="evaluation-date" class="block text-sm font-medium text-gray-700">Date de l'évaluation</label>
+                            <input type="date" id="evaluation-date" class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        </div>
+                    </div>
+                    <div id="assessment-items-container" class="space-y-12"></div>
+                    <div class="text-center mt-8">
+                        <button id="update-radar-btn" class="btn bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 text-lg">
+                            Générer Mon Profil
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+             <section id="results-section" class="mt-12 hidden">
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-bold text-gray-700">Votre Profil de Compétences</h2>
+                    <p class="text-md text-gray-500 mt-1">Le graphique et le récapitulatif illustrent votre auto-évaluation.</p>
+                </div>
+                <div class="bg-white p-4 md:p-8 rounded-2xl shadow-lg">
+                    <div class="chart-container">
+                        <canvas id="competencyRadarChart"></canvas>
+                    </div>
+                    <div id="summary-content-wrapper" class="mt-12"></div>
+                    <div id="development-plan-container" class="mt-12 hidden"></div>
+                    <div class="text-center mt-6 flex flex-wrap justify-center gap-4">
+                        <button id="print-summary-btn" class="btn bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-800">
+                            Imprimer le Bilan
+                        </button>
+                        <button id="development-plan-btn" class="btn bg-purple-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-purple-700">
+                           ✨ Obtenir un Plan de Développement
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="bg-gray-800 text-white mt-16 py-6">
+        <div class="container mx-auto text-center text-gray-400">
+            <p>Application FPA - Inspirée par le référentiel officiel</p>
+        </div>
+    </footer>
+
+    <div id="validation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <span class="text-2xl">⚠️</span>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Évaluation Incomplète</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                    Veuillez sélectionner un niveau pour toutes les 13 compétences avant de générer le profil. Les compétences non complétées sont surlignées.
+                    </p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                    Compris
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="print-section" class="hidden"></div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const FPA_DATA = {
+                levels: [
+                    { level: 1, title: "Novice", description: "Possède des savoirs fondamentaux mais requiert un encadrement. Applique des procédures standards à des tâches simples.", color: "bg-gray-100", textColor: "text-gray-800" },
+                    { level: 2, title: "Compétent", description: "Fait preuve d'autonomie opérationnelle. Gère les situations courantes et assume la responsabilité de ses tâches. (Cible TP FPA)", color: "bg-blue-100", textColor: "text-blue-800" },
+                    { level: 3, title: "Performant", description: "Démontre une grande maîtrise dans des situations complexes. Adapte et optimise les procédures et guide ses pairs.", color: "bg-green-100", textColor: "text-green-800" },
+                    { level: 4, title: "Stratège", description: "Opère à un niveau de méta-compétence. Fait évoluer le métier, pilote des initiatives innovantes et a un impact large.", color: "bg-purple-100", textColor: "text-purple-800" }
+                ],
+                activities: [
+                    { id: 'act1', title: '1. Concevoir et préparer la formation', color: 'activity-1' },
+                    { id: 'act2', title: '2. Animer et évaluer', color: 'activity-2' },
+                    { id: 'act3', title: '3. Accompagner les apprenants', color: 'activity-3' },
+                    { id: 'act4', title: '4. Inscrire sa pratique dans une démarche qualité', color: 'activity-4' }
+                ],
+                competencies: [
+                    { id: 'c1', activityId: 'act1', title: "C1. Élaborer la progression pédagogique" },
+                    { id: 'c2', activityId: 'act1', title: "C2. Concevoir un scénario pédagogique" },
+                    { id: 'c3', activityId: 'act1', title: "C3. Concevoir des activités d'apprentissage" },
+                    { id: 'c4', activityId: 'act2', title: "C4. Animer une formation" },
+                    { id: 'c5', activityId: 'act2', title: "C5. Évaluer les acquis" },
+                    { id: 'c6', activityId: 'act2', title: "C6. Remédier aux difficultés" },
+                    { id: 'c7', activityId: 'act3', title: "C7. Accompagner les apprenants" },
+                    { id: 'c8', activityId: 'act3', title: "C8. Accueillir et co-construire" },
+                    { id: 'c9', activityId: 'act3', title: "C9. Tutorer les apprenants à distance" },
+                    { id: 'c10', activityId: 'act3', title: "C10. Accompagner le développement pro." },
+                    { id: 'c11', activityId: 'act4', title: "C11. Respecter la règlementation" },
+                    { id: 'c12', activityId: 'act4', title: "C12. Réaliser une veille" },
+                    { id: 'c13', activityId: 'act4', title: "C13. Analyser ses pratiques" }
+                ],
+                details: {
+                    c1: { indicators: [{ name: "Analyse de la demande", levels: ["Applique une grille d'analyse fournie pour décoder un cahier des charges simple et structuré.", "Analyse de manière autonome une demande formelle pour identifier les compétences, le public et les besoins.", "Gère des demandes complexes ou ambiguës et mène des entretiens pour co-construire le besoin réel.", "Conseille les commanditaires sur la formulation de leur besoin en lien avec leurs enjeux stratégiques."] }, { name: "Traduction en objectifs", levels: ["Traduit la demande en objectifs de formation simples (savoir, savoir-faire).", "Rédige des objectifs de formation clairs et mesurables, en distinguant objectifs de formation et pédagogiques.", "Formule des objectifs à différents niveaux de complexité (Bloom, Anderson), assurant leur alignement.", "Définit des objectifs de performance (impact sur le poste) en lien avec les indicateurs de l'entreprise."] }] },
+                    c2: { indicators: [{ name: "Structuration du scénario", levels: ["Rédige un scénario linéaire pour une seule modalité en suivant un modèle.", "Structure un scénario multimodal précisant étapes, articulation, durées et modalités.", "Conçoit des scénarios complexes articulant de multiples modalités (classe inversée, projet).", "Développe des matrices de scénarisation (templates) pour l'organisation."] }, { name: "Flexibilité et anticipation", levels: ["A des difficultés à gérer les écarts par rapport au plan.", "Prévoit des scénarii alternatifs pour les difficultés potentielles ou aléas logistiques.", "Conçoit des scénarios intrinsèquement flexibles et modulaires pour une individualisation en temps réel.", "Construit des scénarios 'agiles' modifiables en cours de formation avec les apprenants."] }] },
+                    c3: { indicators: [{ name: "Création de ressources", levels: ["Crée des supports simples (diaporama) en suivant des modèles.", "Conçoit des activités et capsules pédagogiques originales à partir d'un storyboard.", "Crée des gammes complètes de ressources multimodales réutilisables et modulaires.", "Pilote des projets de conception de ressources complexes avec des experts et prestataires."] }, { name: "Conception d'évaluations", levels: ["Utilise des questionnaires d'évaluation existants.", "Conçoit des activités d'évaluation alignées sur les objectifs et rédige les corrigés.", "Conçoit des outils d'évaluation par compétences (grilles critériées) et d'auto-évaluation.", "Conçoit et valide des banques d'items et met en place des systèmes d'évaluation adaptative."] }] },
+                    c4: { indicators: [{ name: "Posture et gestion", levels: ["Anime en suivant le scénario de manière rigide.", "Anime avec aisance, justifiant les modifications selon les réactions du groupe.", "Adapte son animation en temps réel pour saisir les opportunités d'apprentissage.", "Co-construit une partie du déroulé avec les apprenants."] }, { name: "Gestion de la dynamique de groupe", levels: ["Se concentre sur la transmission du contenu.", "Facilite la participation, encourage les échanges et maintient une dynamique positive.", "Gère des groupes difficiles et transforme les tensions en apprentissage.", "Anime des communautés d'apprentissage sur le long terme."] }] },
+                    c5: { indicators: [{ name: "Analyse et feedback", levels: ["Communique un résultat (note) avec un commentaire succinct.", "Restitue et analyse les résultats avec les apprenants pour identifier acquis et progrès.", "Fournit des feedbacks différenciés et actionnables pour aider à comprendre les erreurs.", "Utilise les données d'évaluation pour ajuster la stratégie pédagogique en temps réel."] }, { name: "Posture face à l'erreur", levels: ["Corrige les erreurs en indiquant la bonne réponse.", "Valorise les erreurs comme des opportunités d'apprentissage.", "Analyse les erreurs avec les apprenants pour développer leur métacognition.", "Conçoit des activités basées sur l'analyse d'erreurs ('productive failure')."] }] },
+                    c6: { indicators: [{ name: "Repérage et diagnostic", levels: ["Réagit à une difficulté explicitement exprimée.", "Repère les difficultés et met en œuvre une démarche diagnostique pour en identifier les causes.", "Repère les signaux faibles et utilise l'entretien d'explicitation pour affiner le diagnostic.", "Anticipe les nœuds d'apprentissage et met en place des outils de diagnostic précoce."] }, { name: "Stratégie de remédiation", levels: ["Réexplique la notion de la même manière.", "Co-construit une stratégie de remédiation avec l'apprenant.", "Propose un éventail de stratégies de remédiation différenciées.", "Conçoit des parcours de remédiation complets et modulaires."] }] },
+                    c7: { indicators: [{ name: "Conduite d'entretiens", levels: ["Mène des entretiens informels.", "Conduit des entretiens d'accompagnement structurés (écoute active, questionnement).", "Maîtrise différentes techniques d'entretien (explicitation, motivationnel).", "Forme et supervise d'autres formateurs à la conduite d'entretiens."] }, { name: "Orientation et réseau", levels: ["Connaît mal les acteurs relais.", "Oriente les apprenants vers les acteurs appropriés quand nécessaire.", "Entretient un répertoire opérationnel d'acteurs et collabore activement avec eux.", "Met en place des partenariats stratégiques avec des acteurs clés du territoire."] }] },
+                    c8: { indicators: [{ name: "Accueil et positionnement", levels: ["Fait passer un test de positionnement standard.", "Met en œuvre une démarche d'évaluation diagnostique (positionnement).", "Adapte les outils de positionnement et utilise une combinaison de méthodes.", "Conçoit et valide les outils et processus de positionnement pour l'organisme."] }, { name: "Co-construction du parcours", levels: ["Présente un parcours prédéfini.", "Valide avec l'apprenant les objectifs et modalités, puis formalise (contrat pédagogique).", "Négocie et co-construit réellement le parcours en proposant des choix et options.", "Conçoit des architectures de formation 'à la carte'."] }] },
+                    c9: { indicators: [{ name: "Animation de communauté", levels: ["Le forum de discussion est peu animé.", "Anime et modère les échanges sur les outils collaboratifs.", "Crée et entretient une véritable dynamique de groupe à distance.", "Met en place et pilote des stratégies de 'community management'."] }, { name: "Interventions tutorales", levels: ["Fournit des réponses écrites réactives.", "Met en œuvre un tutorat proactif et réactif avec l'outil adapté.", "Maîtrise une large gamme d'interventions (feedback vidéo, co-développement).", "Conçoit et automatise une partie des interventions tutorales."] }] },
+                    c10: { indicators: [{ name: "Développement de l'employabilité", levels: ["Donne des conseils généraux sur le CV.", "Accompagne la recherche de stage/emploi (ciblage, outils, réseaux).", "Met en œuvre un coaching à l'insertion (pitch, préparation aux entretiens).", "Développe un programme complet d'accompagnement à l'employabilité."] }, { name: "Suivi de l'alternance/stage", levels: ["Assure un contact administratif.", "Suit l'apprenant en entreprise et dialogue avec le tuteur.", "Prépare la période en entreprise avec le tuteur et l'apprenant.", "Met en place des partenariats solides et forme les tuteurs."] }] },
+                    c11: { indicators: [{ name: "Conformité administrative", levels: ["Applique les procédures de base (émargement).", "Complète les documents de suivi et collecte les preuves pour Qualiopi.", "Participe à l'amélioration des outils de suivi et de preuve qualité.", "Pilote la démarche qualité pour un dispositif et participe aux audits."] }, { name: "Gestion des situations à risque", levels: ["Est démuni face à un conflit ou une discrimination.", "Repère et prévient les situations discriminatoires et connaît les procédures d'incident.", "Intervient avec calme et méthode pour réguler les conflits.", "Forme ses pairs à la prévention et à la gestion des situations à risque."] }] },
+                    c12: { indicators: [{ name: "Application de la veille", levels: ["Applique rarement les informations de sa veille.", "Actualise ses contenus et pratiques en fonction de sa veille.", "Innove en expérimentant de nouvelles approches identifiées par sa veille.", "Utilise sa veille pour concevoir de nouvelles offres de formation."] }, { name: "Réseau et partage", levels: ["Participe peu aux réseaux professionnels.", "Partage ponctuellement sa veille avec son organisation.", "Participe activement à des communautés professionnelles.", "Anime une communauté de pratique."] }] },
+                    c13: { indicators: [{ name: "Posture réflexive", levels: ["Revit la situation sur un mode émotionnel.", "Adopte une posture de remise en cause, en se distanciant de ses émotions.", "Pratique l'auto-évaluation systématique et sollicite le feedback.", "Fait preuve d'une grande lucidité sur ses propres schémas de pensée."] }, { name: "Méthodologie d'analyse", levels: ["Raconte la situation sans l'analyser.", "Suit une démarche d'analyse formalisée (faits, opinions, sentiments).", "S'appuie sur des références théoriques pour approfondir l'analyse.", "Développe ses propres grilles d'analyse et les partage."] }] }
+                }
+            };
+
+            const selfAssessmentScores = {};
+            let radarChart = null;
+
+            function initIntro() {
+                const container = document.getElementById('introduction-vis').querySelector('.grid');
+                container.innerHTML = FPA_DATA.levels.map(level => `
+                    <div class="p-6 rounded-lg shadow-md ${level.color}">
+                        <h3 class="text-xl font-bold ${level.textColor}">Niveau ${level.level}: ${level.title}</h3>
+                        <p class="mt-2 text-sm ${level.textColor.replace('800', '700')}">${level.description}</p>
+                    </div>
+                `).join('');
+            }
+
+            function initDashboard() {
+                const container = document.getElementById('activities-container');
+                container.innerHTML = FPA_DATA.activities.map(activity => `
+                    <div>
+                        <h3 class="text-xl font-semibold text-center mb-4 text-gray-700">${activity.title}</h3>
+                        <div id="${activity.id}-container" class="space-y-3"></div>
+                    </div>
+                `).join('');
+
+                FPA_DATA.competencies.forEach(comp => {
+                    const poleContainer = document.getElementById(`${comp.activityId}-container`);
+                    const activityColor = FPA_DATA.activities.find(a => a.id === comp.activityId).color;
+                    const card = document.createElement('div');
+                    card.className = `item-card bg-white p-4 rounded-lg shadow border-l-4 ${activityColor}`;
+                    card.dataset.id = comp.id;
+                    card.innerHTML = `<p class="font-semibold text-gray-800"><span class="font-bold">${comp.title.split('.')[0]}:</span> ${comp.title.split('. ')[1]}</p>`;
+                    poleContainer.appendChild(card);
+                });
+
+                document.querySelectorAll('.item-card').forEach(card => card.addEventListener('click', handleSelection));
+            }
+
+            function handleSelection(event) {
+                const selectedCard = event.currentTarget;
+                const id = selectedCard.dataset.id;
+                const deepDiveContent = document.getElementById('deep-dive-content');
+
+                document.querySelectorAll('.item-card').forEach(c => c.classList.remove('selected'));
+                selectedCard.classList.add('selected');
+                
+                deepDiveContent.style.opacity = 0;
+                setTimeout(() => {
+                    const comp = FPA_DATA.competencies.find(c => c.id == id);
+                    const details = FPA_DATA.details[id];
+                    let content = `<h3 class="text-2xl font-bold mb-4 text-gray-800">${comp.title}</h3>`;
+                    
+                    if (details) {
+                        const tableHeaders = ["Indicateur", "Niveau 1: Novice", "Niveau 2: Compétent", "Niveau 3: Performant", "Niveau 4: Stratège"];
+                        let tableHTML = '<div class="overflow-x-auto"><table class="min-w-full border-collapse">';
+                        tableHTML += '<thead><tr>' + tableHeaders.map(h => `<th class="p-2 border text-left bg-gray-100 font-semibold">${h}</th>`).join('') + '</tr></thead><tbody>';
+                        details.indicators.forEach(indicator => {
+                            tableHTML += `<tr><td class="p-2 border font-medium">${indicator.name}</td>`;
+                            indicator.levels.forEach(level => { tableHTML += `<td class="p-2 border">${level}</td>`; });
+                            tableHTML += '</tr>';
+                        });
+                        tableHTML += '</tbody></table></div>';
+                        content += tableHTML;
+                    } else {
+                        content += '<p>Détails non disponibles.</p>';
+                    }
+                    
+                    deepDiveContent.innerHTML = content;
+                    deepDiveContent.style.opacity = 1;
+                    
+                    document.getElementById('deep-dive').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 300);
+            }
+
+            function initSelfAssessment() {
+                const container = document.getElementById('assessment-items-container');
+                FPA_DATA.competencies.forEach(comp => {
+                    selfAssessmentScores[comp.id] = null; 
+
+                    const item = document.createElement('div');
+                    item.className = 'border-t pt-8 assessment-item-wrapper';
+                    item.id = `assessment-comp-${comp.id}`;
+                    
+                    let cardsHTML = '<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">';
+                    const details = FPA_DATA.details[comp.id];
+
+                    FPA_DATA.levels.forEach(level => {
+                        let levelDescription = level.description;
+                        if (details && details.indicators.length > 0) {
+                            levelDescription = details.indicators.map(ind => `<li>${ind.levels[level.level - 1]}</li>`).join('');
+                            levelDescription = `<ul class="list-disc list-inside text-sm text-gray-600 space-y-1">${levelDescription}</ul>`;
+                        }
+
+                        cardsHTML += `
+                            <div class="assessment-card rounded-lg p-4" data-comp-id="${comp.id}" data-level="${level.level}">
+                                <h5 class="font-bold text-lg mb-2 ${level.textColor}">Niveau ${level.level}: ${level.title}</h5>
+                                <div class="flex-grow">${levelDescription}</div>
+                            </div>`;
+                    });
+                    cardsHTML += '</div>';
+
+                    item.innerHTML = `
+                        <div>
+                            <h4 class="text-xl font-semibold text-gray-800">${comp.title}</h4>
+                        </div>
+                        ${cardsHTML}
+                    `;
+                    container.appendChild(item);
+                });
+
+                document.querySelectorAll('.assessment-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        const target = e.currentTarget;
+                        const compId = target.dataset.compId;
+                        const level = parseInt(target.dataset.level, 10);
+                        
+                        selfAssessmentScores[compId] = level;
+
+                        document.querySelectorAll(`.assessment-card[data-comp-id="${compId}"]`).forEach(btn => btn.classList.remove('selected'));
+                        target.classList.add('selected');
+                        
+                        document.getElementById(`assessment-comp-${compId}`).classList.remove('bg-red-50', 'p-4', 'rounded-lg');
+                    });
+                });
+            }
+            
+            function formatLabel(str, maxWidth) {
+                const words = str.split(' ');
+                let lines = [];
+                let currentLine = words[0];
+                for (let i = 1; i < words.length; i++) {
+                    if ((currentLine + " " + words[i]).length > maxWidth) {
+                        lines.push(currentLine);
+                        currentLine = words[i];
+                    } else { currentLine += " " + words[i]; }
+                }
+                lines.push(currentLine);
+                return lines;
+            }
+
+            function createOrUpdateRadarChart() {
+                const scores = FPA_DATA.competencies.map(comp => selfAssessmentScores[comp.id] || 0);
+                const ctx = document.getElementById('competencyRadarChart').getContext('2d');
+                
+                if (radarChart) {
+                    radarChart.data.datasets[0].data = scores;
+                    radarChart.update();
+                    return;
+                }
+                
+                radarChart = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: FPA_DATA.competencies.map(comp => formatLabel(`${comp.title.split('.')[0]}`, 15)),
+                        datasets: [{
+                            label: 'Mon Auto-Évaluation',
+                            data: scores,
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: 'rgba(59, 130, 246, 1)',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: { r: { angleLines: { color: 'rgba(0, 0, 0, 0.1)' }, grid: { color: 'rgba(0, 0, 0, 0.1)' }, pointLabels: { font: { size: 11 }, color: '#4b5563' }, ticks: { beginAtZero: true, max: 4, stepSize: 1, backdropColor: 'rgba(255, 255, 255, 0.75)' } } },
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: (context) => FPA_DATA.competencies[context[0].dataIndex].title,
+                                    label: (context) => `Niveau: ${context.raw} - ${FPA_DATA.levels.find(l => l.level == context.raw)?.title || ''}`
+                                }
+                            },
+                            legend: { display: false }
+                        }
+                    }
+                });
+            }
+
+            async function handleGetDevelopmentPlan() {
+                const devPlanContainer = document.getElementById('development-plan-container');
+                devPlanContainer.classList.remove('hidden');
+                devPlanContainer.innerHTML = `
+                    <div class="text-center p-8 border-2 border-dashed rounded-lg">
+                        <h3 class="text-xl font-bold text-gray-700 mb-4">Génération de votre plan de développement...</h3>
+                        <div class="animate-pulse text-gray-500">
+                            <p>L'IA analyse votre profil pour vous proposer des actions concrètes.</p>
+                            <p>Veuillez patienter quelques instants.</p>
+                        </div>
+                    </div>
+                `;
+                devPlanContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+                const firstName = document.getElementById('user-firstname').value || 'l\'utilisateur';
+                
+                let profileText = '';
+                FPA_DATA.competencies.forEach(comp => {
+                    const score = selfAssessmentScores[comp.id];
+                    const levelInfo = FPA_DATA.levels.find(l => l.level === score);
+                    if (score && levelInfo) {
+                        profileText += `- ${comp.title}: Niveau ${score} (${levelInfo.title})\n`;
+                    }
+                });
+
+                const prompt = `En tant qu'expert en ingénierie de la formation et coach pour formateurs, analyse le profil de compétences FPA suivant pour ${firstName}. Le score va de 1 (Novice) à 4 (Stratège).
+Voici le profil :
+${profileText}
+En te basant principalement sur les compétences avec les scores les plus faibles (1 ou 2), propose un plan de développement personnalisé et actionnable. Le plan doit être structuré avec :
+1. Un bref diagnostic (2-3 phrases) des points forts et des axes prioritaires d'amélioration.
+2. Pour chaque compétence à améliorer (maximum 3), propose 2 ou 3 actions concrètes (ex: lectures d'articles ou de livres, formations en ligne à suivre, micro-projets à réaliser, nouvelles pratiques à expérimenter).
+Adopte un ton encourageant et professionnel. Formate ta réponse en HTML simple avec des titres (<h3>), des sous-titres (<h4>), des listes (<ul>, <li>) et du gras (<strong>) pour une lisibilité maximale. N'inclus pas de balises <html>, <head>, ou <body>. Commence directement par un titre <h3>.`;
+
+                try {
+                    let chatHistory = [];
+                    chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                    const payload = { contents: chatHistory };
+                    const apiKey = "";
+                    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+                    
+                    let response;
+                    let retries = 3;
+                    let delay = 1000;
+                    for (let i = 0; i < retries; i++) {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                        if (response.ok) break;
+                        await new Promise(res => setTimeout(res, delay));
+                        delay *= 2;
+                    }
+
+                    if (!response.ok) {
+                        throw new Error(`API request failed with status ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    let generatedText = "Désolé, une erreur est survenue lors de la génération de la réponse.";
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0) {
+                        generatedText = result.candidates[0].content.parts[0].text;
+                    }
+
+                    devPlanContainer.innerHTML = `
+                        <div class="p-6 bg-purple-50 border border-purple-200 rounded-lg">
+                            ${generatedText}
+                        </div>
+                    `;
+
+                } catch (error) {
+                    console.error("Error calling Gemini API:", error);
+                    devPlanContainer.innerHTML = `
+                        <div class="p-6 bg-red-50 border border-red-200 rounded-lg text-center">
+                            <h3 class="text-xl font-bold text-red-700">Erreur de Génération</h3>
+                            <p class="text-red-600 mt-2">Impossible de générer le plan de développement pour le moment. Veuillez réessayer plus tard.</p>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('update-radar-btn').addEventListener('click', () => {
+                document.querySelectorAll('.assessment-item-wrapper').forEach(item => item.classList.remove('bg-red-50', 'p-4', 'rounded-lg'));
+                const incompleteComps = FPA_DATA.competencies.filter(comp => selfAssessmentScores[comp.id] === null);
+
+                if (incompleteComps.length > 0) {
+                    incompleteComps.forEach(comp => {
+                        document.getElementById(`assessment-comp-${comp.id}`).classList.add('bg-red-50', 'p-4', 'rounded-lg');
+                    });
+                    document.getElementById(`assessment-comp-${incompleteComps[0].id}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    document.getElementById('validation-modal').classList.remove('hidden');
+                    return;
+                }
+
+                createOrUpdateRadarChart();
+                const resultsSection = document.getElementById('results-section');
+                resultsSection.classList.remove('hidden');
+                
+                const summaryContainer = document.getElementById('summary-content-wrapper');
+                let summaryHTML = '<h3 class="text-2xl font-bold text-gray-700 mb-4">Récapitulatif de votre évaluation</h3><ul class="space-y-4">';
+                FPA_DATA.competencies.forEach(comp => {
+                    const score = selfAssessmentScores[comp.id];
+                    const levelInfo = FPA_DATA.levels.find(l => l.level === score);
+                    summaryHTML += `<li class="flex justify-between items-center border-b pb-2"><span class="text-gray-700">${comp.title}</span><span class="font-bold text-blue-600">Niveau ${score}: ${levelInfo.title}</span></li>`;
+                });
+                summaryHTML += '</ul>';
+                summaryContainer.innerHTML = summaryHTML;
+
+                resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+            
+            document.getElementById('close-modal-btn').addEventListener('click', () => {
+                document.getElementById('validation-modal').classList.add('hidden');
+            });
+
+            document.getElementById('print-summary-btn').addEventListener('click', () => {
+                const mainContainer = document.getElementById('main-container');
+                const footer = document.querySelector('footer');
+                const printSection = document.getElementById('print-section');
+                
+                const lastName = document.getElementById('user-lastname').value || 'Non renseigné';
+                const firstName = document.getElementById('user-firstname').value || 'Non renseigné';
+                const stage = document.getElementById('evaluation-stage').value;
+                const evaluationDateValue = document.getElementById('evaluation-date').value;
+                let testDate = new Date().toLocaleDateString('fr-FR');
+                if (evaluationDateValue) {
+                    const date = new Date(evaluationDateValue);
+                    const userTimezoneOffset = date.getTimezoneOffset() * 60000;
+                    testDate = new Date(date.getTime() + userTimezoneOffset).toLocaleDateString('fr-FR');
+                }
+                
+                const summaryContent = document.getElementById('summary-content-wrapper').innerHTML;
+                const devPlanContainer = document.getElementById('development-plan-container');
+                const devPlanContent = devPlanContainer.classList.contains('hidden') ? '' : devPlanContainer.innerHTML;
+                const chartImage = radarChart.toBase64Image();
+
+                printSection.innerHTML = `
+                    <div style="font-family: 'Inter', sans-serif; color: #343A40; padding: 1rem;">
+                        <h1 style="font-size: 24px; font-weight: bold; text-align: center; margin-bottom: 2rem;">Bilan de Compétences FPA</h1>
+                        <div style="margin-bottom: 2rem; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem;">
+                            <p><strong>Nom :</strong> ${lastName}</p>
+                            <p><strong>Prénom :</strong> ${firstName}</p>
+                            <p><strong>Bilan :</strong> ${stage} du ${testDate}</p>
+                        </div>
+                        <h2 style="font-size: 20px; font-weight: bold; margin-top: 2rem; margin-bottom: 1rem;">Profil Radar</h2>
+                        <img src="${chartImage}" style="max-width: 600px; margin: 0 auto; display: block;">
+                        <div style="page-break-before: always;">
+                            ${summaryContent}
+                        </div>
+                        ${devPlanContent ? `<div style="page-break-before: always;">${devPlanContent}</div>` : ''}
+                    </div>
+                `;
+                
+                mainContainer.style.display = 'none';
+                footer.style.display = 'none';
+                printSection.classList.remove('hidden');
+
+                const afterPrint = () => {
+                    mainContainer.style.display = 'block';
+                    footer.style.display = 'block';
+                    printSection.classList.add('hidden');
+                    window.removeEventListener('afterprint', afterPrint);
+                };
+
+                window.addEventListener('afterprint', afterPrint);
+
+                window.print();
+            });
+
+            function setDefaultDate() {
+                const dateInput = document.getElementById('evaluation-date');
+                const today = new Date();
+                dateInput.value = today.toISOString().split('T')[0];
+            }
+
+            initIntro();
+            initDashboard();
+            initSelfAssessment();
+            setDefaultDate();
+
+            document.getElementById('development-plan-btn').addEventListener('click', handleGetDevelopmentPlan);
+        });
+    </script>
+
+</body>
+</html>
