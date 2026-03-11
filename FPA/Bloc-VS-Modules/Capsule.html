@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulateur FPA 2026 : Ingénierie & Autonomie</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        // CONFIGURATION TAILWIND POUR LE MODE CLASSE (INDISPENSABLE)
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .glass {
+            background: rgba(248, 250, 252, 0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .node-active {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 35px rgba(59, 130, 246, 0.15);
+        }
+
+        .connector-line {
+            transition: stroke 0.4s ease, stroke-width 0.4s ease, opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .progress-fill {
+            transition: width 1s cubic-bezier(0.65, 0, 0.35, 1);
+        }
+
+        .cp-badge {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .lvl-1 {
+            background-color: #d1fae5 !important;
+            color: #065f46 !important;
+            border-color: #10b981 !important;
+        }
+
+        .lvl-2 {
+            background-color: #10b981 !important;
+            color: white !important;
+            border-color: #047857 !important;
+        }
+
+        .lvl-3 {
+            background-color: #059669 !important;
+            color: white !important;
+            border-color: #064e3b !important;
+        }
+
+        .lvl-4 {
+            background-color: #4f46e5 !important;
+            color: white !important;
+            border-color: #3730a3 !important;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .dark .lvl-1 {
+            background-color: rgba(16, 185, 129, 0.2) !important;
+            color: #34d399 !important;
+            border-color: #10b981 !important;
+        }
+
+        .dark .lvl-2 {
+            background-color: #10b981 !important;
+            color: white !important;
+        }
+
+        .dark .lvl-3 {
+            background-color: #059669 !important;
+            color: white !important;
+        }
+
+        .dark .lvl-4 {
+            background-color: #6366f1 !important;
+            color: white !important;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .nav-btn.active {
+            background-color: #2563eb;
+            color: white;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        /* removed sticky */
+        .x {
+            position: sticky;
+            top: 20px;
+            z-index: 50;
+            margin-bottom: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+        }
+
+        .sticky-dashboard.scrolled {
+            top: 10px;
+            transform: scale(0.99);
+        }
+
+        .video-placeholder {
+            aspect-ratio: 16 / 9;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-radius: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-placeholder::after {
+            content: "";
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(rgba(59, 130, 246, 0.1), transparent);
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Styles spécifiques pour l'accordéon (Details/Summary) */
+        details>summary {
+            list-style: none;
+        }
+
+        details>summary::-webkit-details-marker {
+            display: none;
+        }
+
+        /* Animations pour le SVG interactif */
+        .node {
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+            transition: opacity 0.3s ease;
+        }
+
+        .anim-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 1.5s forwards;
+            transition: stroke 0.3s, stroke-width 0.3s;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 0.6;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.6;
+            }
+        }
+
+        /* Transition douce pour les interactions de chemins */
+        path {
+            transition: all 0.3s ease;
+        }
+    </style>
+</head>
+
+<body
+    class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-500 min-h-screen">
+
+    <!-- Nav Principal -->
+    <nav
+        class="fixed top-0 w-full z-[100] px-6 py-4 flex justify-between items-center glass border-b border-slate-200 dark:border-slate-800">
+        <div class="flex items-center gap-3">
+            <div class="p-2 bg-blue-600 rounded-xl shadow-lg shadow-blue-600/30">
+                <i data-lucide="award" class="text-white w-5 h-5"></i>
+            </div>
+            <div>
+                <span
+                    class="font-black text-sm block leading-none text-slate-900 dark:text-white uppercase tracking-wider">Simulateur
+                    Architecte <span class="text-blue-600 font-black">FPA</span></span>
+            </div>
+        </div>
+
+        <div
+            class="hidden md:flex items-center bg-slate-100 dark:bg-slate-900 p-1 rounded-2xl border border-slate-200 dark:border-slate-800">
+            <button onclick="switchView('concept')" id="btn-concept"
+                class="nav-btn active px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Le
+                Concept</button>
+            <button onclick="switchView('simulator')" id="btn-simulator"
+                class="nav-btn px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all">Le
+                Simulateur</button>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <button id="themeToggle" onclick="toggleTheme()"
+                class="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-800">
+                <i data-lucide="sun" id="sunIcon" class="block dark:hidden"></i>
+                <i data-lucide="moon" id="moonIcon" class="hidden dark:block"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- VIEW: CONCEPT (ACCUEIL) -->
+    <main id="view-concept" class="pt-32 pb-24 px-6 max-w-[1400px] mx-auto">
+
+        <!-- Hero & Intro from B.html -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div class="space-y-8">
+                <div
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
+                    <span class="w-2 h-2 rounded-full bg-blue-600 pulse"></span>
+                    <span
+                        class="text-[10px] font-black uppercase tracking-widest text-blue-700 dark:text-blue-400">Séquence
+                        Pédagogique FPA</span>
+                </div>
+                <h1
+                    class="text-6xl font-black tracking-tighter text-slate-900 dark:text-white uppercase leading-none italic">
+                    Ingénierie vs Certification : <span class="text-blue-600">L'Autonomie</span>
+                </h1>
+                <p class="text-lg text-slate-700 dark:text-slate-400 leading-relaxed font-medium">
+                    Bienvenue dans ce module interactif dédié à la distinction entre les <strong>blocs de compétences
+                        (RNCP)</strong> et les <strong>modules de formation</strong>.
+                    Comprendre que la certification est un objet de résultat alors que l'ingénierie est un objet de
+                    processus est la clé d'un parcours réussi.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                    <div
+                        class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <h4 class="text-xs font-black uppercase mb-2 text-blue-600">Objectif 1</h4>
+                        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400">Distinguer les registres de
+                            certification et de pédagogie.</p>
+                    </div>
+                    <div
+                        class="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+                        <h4 class="text-xs font-black uppercase mb-2 text-emerald-600">Objectif 2</h4>
+                        <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400">Maîtriser la transversalité
+                            des briques de compétences.</p>
+                    </div>
+                </div>
+                <button onclick="switchView('simulator')"
+                    class="flex items-center gap-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-8 py-4 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-all shadow-2xl">
+                    Commencer la simulation
+                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Video Section -->
+            <div class="relative">
+                <div class="aspect-ratio-16/9 shadow-2xl rounded-[2rem] overflow-hidden bg-slate-900">
+                    <video 
+                        controls 
+                        controlsList="nodownload" 
+                        oncontextmenu="return false;" 
+                        class="w-full h-full object-cover"
+                        poster="https://ddeamil.github.io/e-format.github.io/FPA/Bloc-VS-Modules/D%C3%A9mystifier_les_blocs.png">
+                        <source src="https://ddeamil.github.io/e-format.github.io/FPA/Bloc-VS-Modules/D%C3%A9mystifier_les_blocs.mp4" type="video/mp4">
+                        Votre navigateur ne supporte pas la lecture de vidéos HTML5.
+                    </video>
+                </div>
+                <!-- floating elements -->
+                <div class="absolute -bottom-6 -left-6 glass p-6 rounded-3xl border border-blue-200 hidden xl:block">
+                    <p class="text-[10px] font-black text-blue-600 uppercase mb-1">Durée du module</p>
+                    <p class="text-xl font-black text-slate-900 dark:text-white">3 Heures</p>
+                </div>
+            </div>
+        </section>
+
+        <div class="space-y-32 mt-24">
+            <!-- Schema interactif from Contenu.html -->
+            <section id="schema-section" class="pt-24 pb-16 bg-white dark:bg-slate-900">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+
+                    <!-- Explication du mythe -->
+                    <div class="text-center mb-12 max-w-3xl mx-auto">
+                        <span
+                            class="text-emerald-600 dark:text-emerald-400 font-bold tracking-wider uppercase text-sm mb-2 block">La
+                            cause racine</span>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-6">Le mythe du "1 pour 1"</h2>
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
+                            Pour un public débutant, il est tentant, par simple facilité administrative, de calquer la
+                            pédagogie sur la certification en cherchant à faire correspondre <strong>exactement un
+                                module de formation à un bloc de compétences</strong> (ex: "Le module de janvier
+                            couvrira le Bloc 1").
+                        </p>
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-medium">
+                            Or, la relation n'est presque jamais linéaire.
+                        </p>
+                        <p
+                            class="text-slate-600 dark:text-slate-300 mt-4 bg-slate-50 dark:bg-slate-950 p-4 rounded-lg border border-slate-200 dark:border-slate-700 text-sm">
+                            La compétence métier est transversale par nature. Un même module pédagogique (ex: les
+                            fondamentaux de la relation client) peut nourrir les prérequis de plusieurs blocs de
+                            compétences. Inversement, la validation d'un seul bloc (ex: négociation complexe) nécessite
+                            très souvent l'apprentissage croisé de multiples modules préalables.
+                        </p>
+                    </div>
+
+                    <!-- Schéma Interactif -->
+                    <div
+                        class="bg-slate-50 dark:bg-slate-950 rounded-2xl shadow-xl p-6 md:p-10 border border-slate-300 dark:border-slate-700">
+                        <div
+                            class="flex flex-col sm:flex-row justify-between items-center mb-8 border-b border-slate-300 dark:border-slate-700 pb-6 gap-4">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Visualisation dynamique des
+                                    flux</h3>
+                                <p class="text-sm text-slate-500 dark:text-slate-400">Comprendre l'architecture croisée
+                                </p>
+                            </div>
+                            <button id="replay-btn"
+                                class="px-4 py-2 bg-slate-900 dark:bg-slate-950 hover:bg-slate-800 text-white text-sm font-medium rounded-lg transition-all flex items-center gap-2 shadow-sm active:scale-95">
+                                <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Rejouer l'animation
+                            </button>
+                        </div>
+
+                        <div class="relative overflow-hidden flex justify-center bg-white dark:bg-slate-900 rounded-xl p-4 border border-slate-200 dark:border-slate-700"
+                            id="svg-wrapper">
+                            <!-- Contenu SVG inséré ici et rafraîchi par JS -->
+                        </div>
+
+                        <div
+                            class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6 p-4 border-t border-slate-300 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 rounded-b-xl">
+                            <div class="text-sm text-slate-600 dark:text-slate-300 flex items-start gap-2">
+                                <i data-lucide="info"
+                                    class="w-5 h-5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5"></i>
+                                <span><strong>Astuce :</strong> Survolez un <strong>module</strong> (à gauche) pour voir
+                                    quels blocs il nourrit, ou survolez un <strong>bloc de compétences</strong> (à
+                                    droite) pour découvrir la combinaison de modules nécessaires à sa validation.</span>
+                            </div>
+                            <div class="flex flex-wrap gap-4 items-center sm:justify-end">
+                                <div
+                                    class="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                    <span class="w-3 h-3 rounded-full bg-blue-600 dark:bg-blue-500 shadow-sm"></span>
+                                    Ingénierie Pédagogique
+                                </div>
+                                <div
+                                    class="flex items-center gap-2 text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+                                    <span
+                                        class="w-3 h-3 rounded-full bg-emerald-600 dark:bg-emerald-500 shadow-sm"></span>
+                                    Certification
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- Decryptage from Contenu.html -->
+            <section id="decryptage" class="py-24 bg-slate-50 dark:bg-slate-950">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Décryptage & Garde-fous</h2>
+                        <p class="text-lg text-slate-600 dark:text-slate-300">Séparer la Certification de la Formation :
+                            deux logiques complémentaires mais distinctes.</p>
+                    </div>
+
+                    <!-- Tableau Comparatif (Split Screen) -->
+                    <div
+                        class="grid md:grid-cols-2 gap-px bg-slate-200 dark:bg-slate-700 rounded-2xl overflow-hidden shadow-sm mb-16 border border-slate-300 dark:border-slate-700">
+
+                        <!-- Colonne Certification -->
+                        <div class="bg-white dark:bg-slate-900 p-8 sm:p-10">
+                            <div
+                                class="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
+                                <i data-lucide="target" class="text-emerald-600 dark:text-emerald-400 w-6 h-6"></i>
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Logique de Résultat</h3>
+                            </div>
+                            <ul class="space-y-6">
+                                <li class="flex items-start gap-4">
+                                    <div
+                                        class="mt-1 bg-emerald-50 dark:bg-emerald-900/40 p-1.5 rounded text-emerald-600 dark:text-emerald-400">
+                                        <i data-lucide="help-circle" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-800 dark:text-slate-100 mb-1">Question
+                                            centrale</strong>
+                                        <span class="text-slate-600 dark:text-slate-300 text-sm">"Que sait faire la
+                                            personne ?"</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <div
+                                        class="mt-1 bg-emerald-50 dark:bg-emerald-900/40 p-1.5 rounded text-emerald-600 dark:text-emerald-400">
+                                        <i data-lucide="map-pin" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-800 dark:text-slate-100 mb-1">Point de
+                                            départ</strong>
+                                        <span class="text-slate-600 dark:text-slate-300 text-sm">Le métier et ses
+                                            activités professionnelles réelles.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <div
+                                        class="mt-1 bg-emerald-50 dark:bg-emerald-900/40 p-1.5 rounded text-emerald-600 dark:text-emerald-400">
+                                        <i data-lucide="clipboard-check" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <strong
+                                            class="block text-slate-800 dark:text-slate-100 mb-1">Évaluation</strong>
+                                        <span class="text-slate-600 dark:text-slate-300 text-sm">Modalités propres
+                                            (mises en situation, études de cas...). N'est pas réductible à un semestre
+                                            universitaire ou une UE.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Colonne Formation -->
+                        <div class="bg-white dark:bg-slate-900 p-8 sm:p-10">
+                            <div
+                                class="flex items-center gap-3 mb-8 pb-4 border-b border-slate-200 dark:border-slate-700">
+                                <i data-lucide="git-merge" class="text-blue-600 dark:text-blue-400 w-6 h-6"></i>
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Logique de Processus</h3>
+                            </div>
+                            <ul class="space-y-6">
+                                <li class="flex items-start gap-4">
+                                    <div
+                                        class="mt-1 bg-blue-50 dark:bg-blue-900/40 p-1.5 rounded text-blue-600 dark:text-blue-400">
+                                        <i data-lucide="help-circle" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-800 dark:text-slate-100 mb-1">Question
+                                            centrale</strong>
+                                        <span class="text-slate-600 dark:text-slate-300 text-sm">"Comment acquérir la
+                                            compétence ?"</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <div
+                                        class="mt-1 bg-blue-50 dark:bg-blue-900/40 p-1.5 rounded text-blue-600 dark:text-blue-400">
+                                        <i data-lucide="graduation-cap" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-800 dark:text-slate-100 mb-1">Point de
+                                            départ</strong>
+                                        <span class="text-slate-600 dark:text-slate-300 text-sm">Les objectifs
+                                            pédagogiques et la progression d'apprentissage de l'apprenant.</span>
+                                    </div>
+                                </li>
+                                <li class="flex items-start gap-4">
+                                    <div
+                                        class="mt-1 bg-blue-50 dark:bg-blue-900/40 p-1.5 rounded text-blue-600 dark:text-blue-400">
+                                        <i data-lucide="file-x-2" class="w-4 h-4"></i></div>
+                                    <div>
+                                        <strong class="block text-slate-800 dark:text-slate-100 mb-1">Statut
+                                            juridique</strong>
+                                        <span class="text-slate-600 dark:text-slate-300 text-sm">N'a pas de validité
+                                            juridique propre. Financé uniquement s'il est rattaché à une certification
+                                            visée.</span>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+
+                    </div>
+
+                    <!-- Zone d'Alerte : Garde-fous -->
+                    <div class="bg-red-50/50 border border-red-100 rounded-2xl p-8 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-2 h-full bg-emerald-600 dark:bg-emerald-500"></div>
+                        <div class="flex items-center gap-3 mb-6">
+                            <i data-lucide="shield-alert" class="text-emerald-600 dark:text-emerald-400 w-7 h-7"></i>
+                            <h3 class="text-2xl font-bold text-slate-900 dark:text-white">Les garde-fous à retenir</h3>
+                        </div>
+                        <p class="text-slate-700 dark:text-slate-200 mb-6 font-medium">Réduire un bloc à un simple
+                            chapitre de formation est une erreur fatale. Voici ce qu'un bloc <strong>ne peut pas
+                                être</strong> :</p>
+
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div class="flex items-start gap-3 bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm">
+                                <i data-lucide="x-circle" class="text-red-400 w-5 h-5 mt-0.5 shrink-0"></i>
+                                <span class="text-sm text-slate-700 dark:text-slate-200"><strong>Une thématique
+                                        pédagogique :</strong> Un bloc intitulé « Communication » ou « Gestion » sera
+                                    systématiquement rejeté.</span>
+                            </div>
+                            <div class="flex items-start gap-3 bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm">
+                                <i data-lucide="x-circle" class="text-red-400 w-5 h-5 mt-0.5 shrink-0"></i>
+                                <span class="text-sm text-slate-700 dark:text-slate-200"><strong>Un découpage temporel
+                                        :</strong> Un bloc n'est pas un semestre, une Unité d'Enseignement (UE) ou une
+                                    année de cours.</span>
+                            </div>
+                            <div class="flex items-start gap-3 bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm">
+                                <i data-lucide="x-circle" class="text-red-400 w-5 h-5 mt-0.5 shrink-0"></i>
+                                <span class="text-sm text-slate-700 dark:text-slate-200"><strong>Une compétence isolée
+                                        :</strong> Il doit être un assemblage cohérent de plusieurs compétences
+                                    métiers.</span>
+                            </div>
+                            <div class="flex items-start gap-3 bg-white dark:bg-slate-900 p-4 rounded-lg shadow-sm">
+                                <i data-lucide="x-circle" class="text-red-400 w-5 h-5 mt-0.5 shrink-0"></i>
+                                <span class="text-sm text-slate-700 dark:text-slate-200"><strong>Redondant :</strong> Il
+                                    ne peut reprendre les mêmes compétences qu'un autre bloc (sauf compétences
+                                    transversales strictement indispensables).</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Methodologie from Contenu.html -->
+            <section id="methodologie" class="py-24 bg-white dark:bg-slate-900">
+                <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <span
+                            class="text-blue-600 dark:text-blue-400 font-bold tracking-wider uppercase text-sm mb-2 block">Le
+                            Plan d'Action</span>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Méthodologie d'Ingénierie
+                        </h2>
+                        <p class="text-lg text-slate-600 dark:text-slate-300">Articuler modules et séquences dans le
+                            temps en 7 étapes chronologiques.</p>
+                    </div>
+
+                    <!-- Stepper interactif -->
+                    <div class="relative pl-4 sm:pl-0">
+                        <!-- Ligne verticale de progression -->
+                        <div
+                            class="absolute left-[27px] sm:left-12 top-4 bottom-4 w-1 bg-slate-100 dark:bg-slate-800 rounded-full">
+                        </div>
+
+                        <div class="space-y-6 relative">
+
+                            <!-- Étape 1 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        1
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Définir les objectifs globaux</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p><strong>Point de départ :</strong> Analysez le référentiel de certification pour
+                                        identifier les blocs et les compétences visées. Ne partez <em>jamais</em> de
+                                        l'ancien plan de cours, mais du travail et des activités professionnelles
+                                        réelles à maîtriser à l'issue de la formation.</p>
+                                </div>
+                            </details>
+
+                            <!-- Étape 2 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        2
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Décliner en objectifs partiels</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p>Fragmentez chaque objectif global en sous-objectifs mesurables et observables.
+                                        Formulez ces objectifs pédagogiques à l'aide de <strong>verbes d'action</strong>
+                                        précis (en vous appuyant sur des taxonomies reconnues comme celle de Bloom ou le
+                                        référentiel ESCO) pour garantir leur lisibilité.</p>
+                                </div>
+                            </details>
+
+                            <!-- Étape 3 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        3
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Lister les modalités et contenus</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p>Associez à chaque objectif partiel les ressources et dispositifs nécessaires pour
+                                        l'atteindre : apports théoriques, travaux pratiques, mises en situation
+                                        professionnelle reconstituées, ou encore études de cas. La modalité doit servir
+                                        la compétence.</p>
+                                </div>
+                            </details>
+
+                            <!-- Étape 4 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        4
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Séquencer les apprentissages</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p>Ordonnez les séquences dans une logique de complexité croissante. Accompagnez
+                                        l'apprenant en allant <strong>du simple au complexe</strong>, du concept connu
+                                        vers l'inconnu, et de l'observation dirigée vers la pratique totalement
+                                        autonome.</p>
+                                </div>
+                            </details>
+
+                            <!-- Étape 5 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        5
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Positionner les modules (Prérequis)</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p>Organisez les modules dans le temps en tenant compte des prérequis indispensables
+                                        entre eux. Une compétence transversale acquise dans un premier module peut être
+                                        une condition <em>sine qua non</em> pour aborder efficacement un autre bloc de
+                                        compétences ultérieur.</p>
+                                </div>
+                            </details>
+
+                            <!-- Étape 6 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        6
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Intégrer les périodes d'évaluation</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p>Faites la distinction rigoureuse entre : <br>
+                                        1. Les <strong>évaluations formatives</strong>, qui jalonnent le parcours au
+                                        sein des modules pour valider la progression pédagogique.<br>
+                                        2. Les <strong>évaluations certificatives</strong> (spécifiques à chaque bloc),
+                                        qui doivent impérativement être positionnées une fois l'ensemble des modules
+                                        contributifs finalisés.</p>
+                                </div>
+                            </details>
+
+                            <!-- Étape 7 -->
+                            <details
+                                class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-sm hover:shadow-md transition-all duration-300">
+                                <summary class="flex items-center cursor-pointer p-5 sm:p-6 outline-none">
+                                    <div
+                                        class="flex-shrink-0 w-10 h-10 rounded-full bg-blue-600 dark:bg-blue-500 text-white flex items-center justify-center font-bold shadow-md z-10 relative -ml-[19px] sm:ml-0 sm:mr-6">
+                                        7
+                                    </div>
+                                    <h3
+                                        class="flex-grow text-lg font-bold text-slate-900 dark:text-white pr-4 pl-4 sm:pl-0">
+                                        Prévoir les temps d'intersession</h3>
+                                    <div
+                                        class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300">
+                                        <i data-lucide="chevron-down"></i>
+                                    </div>
+                                </summary>
+                                <div
+                                    class="px-5 sm:px-6 pb-6 pt-0 ml-4 sm:ml-20 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                    <p>Aménagez des périodes de recul dédiées à la mise en pratique et à l'ancrage
+                                        mémoriel. Ces temps sont particulièrement cruciaux en alternance ou en formation
+                                        continue pour assurer le transfert des acquis théoriques vers la réalité du
+                                        terrain professionnel.</p>
+                                </div>
+                            </details>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- FAQ from Contenu.html -->
+            <section id="faq"
+                class="py-24 bg-slate-50 dark:bg-slate-950 border-t border-slate-300 dark:border-slate-700">
+                <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center mb-16">
+                        <span
+                            class="text-slate-900 dark:text-white font-bold tracking-wider uppercase text-sm mb-2 block">Questions
+                            Fréquentes</span>
+                        <h2 class="text-3xl font-bold text-slate-900 dark:text-white mb-4">Foire Aux Questions (FAQ)
+                        </h2>
+                        <p class="text-lg text-slate-600 dark:text-slate-300">Les réponses claires aux confusions les
+                            plus courantes sur le terrain.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <!-- Question 1 -->
+                        <details
+                            class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 border-l-4 border-l-slate-800 dark:border-l-slate-200 rounded-r-xl shadow-sm hover:shadow-md transition-all duration-300">
+                            <summary
+                                class="flex justify-between items-center cursor-pointer p-5 sm:p-6 outline-none font-semibold text-slate-900 dark:text-white text-lg">
+                                Est-ce qu'un module de formation isolé est éligible au CPF ?
+                                <span
+                                    class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300 ml-4">
+                                    <i data-lucide="chevron-down"></i>
+                                </span>
+                            </summary>
+                            <div
+                                class="px-5 sm:px-6 pb-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                <p><strong>Non.</strong> C'est d'ailleurs l'une des raisons principales pour lesquelles
+                                    on confond les deux ! Seul un <strong>bloc de compétences</strong> (qui a une valeur
+                                    juridique et certificative) ou la certification complète peuvent être financés par
+                                    le CPF. Le module n'est que le chemin pédagogique pour y arriver.</p>
+                            </div>
+                        </details>
+
+                        <!-- Question 2 -->
+                        <details
+                            class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 border-l-4 border-l-slate-800 dark:border-l-slate-200 rounded-r-xl shadow-sm hover:shadow-md transition-all duration-300">
+                            <summary
+                                class="flex justify-between items-center cursor-pointer p-5 sm:p-6 outline-none font-semibold text-slate-900 dark:text-white text-lg">
+                                Si j'échoue à l'évaluation d'un module, est-ce que je rate mon bloc ?
+                                <span
+                                    class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300 ml-4">
+                                    <i data-lucide="chevron-down"></i>
+                                </span>
+                            </summary>
+                            <div
+                                class="px-5 sm:px-6 pb-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                <p><strong>Pas nécessairement.</strong> L'évaluation du module est <em>formative</em>
+                                    (elle vérifie que vous avez compris le cours en cours de route). L'évaluation du
+                                    bloc est <em>certificative</em> (elle vérifie que vous savez réaliser les activités
+                                    du métier). Vous pouvez avoir des difficultés durant le processus d'apprentissage
+                                    mais réussir l'épreuve finale intégrative du bloc.</p>
+                            </div>
+                        </details>
+
+                        <!-- Question 3 -->
+                        <details
+                            class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 border-l-4 border-l-slate-800 dark:border-l-slate-200 rounded-r-xl shadow-sm hover:shadow-md transition-all duration-300">
+                            <summary
+                                class="flex justify-between items-center cursor-pointer p-5 sm:p-6 outline-none font-semibold text-slate-900 dark:text-white text-lg">
+                                Combien de modules faut-il pour valider un bloc ?
+                                <span
+                                    class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300 ml-4">
+                                    <i data-lucide="chevron-down"></i>
+                                </span>
+                            </summary>
+                            <div
+                                class="px-5 sm:px-6 pb-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                <p><strong>Il n'y a aucune règle mathématique.</strong> Un gros bloc complexe peut
+                                    nécessiter 5 ou 6 modules différents. À l'inverse, un bloc très spécifique et
+                                    délimité pourrait ne s'appuyer que sur 1 ou 2 modules. Tout dépend de votre
+                                    ingénierie pédagogique et de la complexité des compétences visées (comme illustré
+                                    dans notre schéma interactif).</p>
+                            </div>
+                        </details>
+
+                        <!-- Question 4 -->
+                        <details
+                            class="group bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 border-l-4 border-l-slate-800 dark:border-l-slate-200 rounded-r-xl shadow-sm hover:shadow-md transition-all duration-300">
+                            <summary
+                                class="flex justify-between items-center cursor-pointer p-5 sm:p-6 outline-none font-semibold text-slate-900 dark:text-white text-lg">
+                                Mon université parle de semestres et d'UE (Unités d'Enseignement). Est-ce la même chose
+                                que des blocs ?
+                                <span
+                                    class="flex-shrink-0 text-slate-400 dark:text-slate-500 group-open:rotate-180 transition-transform duration-300 ml-4">
+                                    <i data-lucide="chevron-down"></i>
+                                </span>
+                            </summary>
+                            <div
+                                class="px-5 sm:px-6 pb-6 pt-0 text-slate-600 dark:text-slate-300 leading-relaxed border-t border-transparent group-open:border-slate-200 dark:border-slate-700 group-open:pt-4 transition-all">
+                                <p><strong>Non.</strong> Les semestres et les UE sont des découpages de <em>temps</em>
+                                    et de <em>matières disciplinaires</em> (logique de formation). Les blocs sont des
+                                    découpages d'activités professionnelles autonomes (logique de résultat). France
+                                    compétences interdit d'ailleurs de transformer directement et sans retraitement une
+                                    UE ou un semestre en bloc RNCP.</p>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- VIEW: SIMULATOR -->
+    <main id="view-simulator" class="hidden pt-32 pb-32 px-6 max-w-[1750px] mx-auto">
+
+        <!-- SOP : Protocole Interactif -->
+        <section id="sop-section"
+            class="mb-10 glass p-8 rounded-[2.5rem] border border-slate-300 dark:border-slate-800 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 right-0 p-4 opacity-5">
+                <i data-lucide="book-open" class="w-24 h-24"></i>
+            </div>
+            <div class="flex items-center gap-2 mb-8">
+                <div class="w-1 h-6 bg-blue-600 rounded-full"></div>
+                <h2 class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-500">Marche à
+                    suivre (SOP)</h2>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8">
+                <div class="sop-step group flex gap-5 p-4 rounded-2xl transition-all"
+                    onmouseenter="highlightZone('blocs')">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 rounded-2xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 flex items-center justify-center text-lg font-black group-hover:scale-110 transition-transform shadow-lg">
+                        1</div>
+                    <div>
+                        <h4 class="text-sm font-black uppercase mb-2 text-slate-900 dark:text-white">Identifier</h4>
+                        <p class="text-xs text-slate-700 dark:text-slate-400 leading-relaxed font-medium">Observez les 4
+                            blocs à gauche (REAC).</p>
+                    </div>
+                </div>
+                <div class="sop-step group flex gap-5 p-4 rounded-2xl transition-all"
+                    onmouseenter="highlightZone('modules')">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-lg font-black group-hover:scale-110 transition-transform shadow-lg">
+                        2</div>
+                    <div>
+                        <h4 class="text-sm font-black uppercase mb-2 text-slate-900 dark:text-white">Architecturer</h4>
+                        <p class="text-xs text-slate-700 dark:text-slate-400 leading-relaxed font-medium">Créez vos
+                            modules de formation à droite.</p>
+                    </div>
+                </div>
+                <div class="sop-step group flex gap-5 p-4 rounded-2xl transition-all"
+                    onmouseenter="highlightZone('mapping')">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-lg font-black group-hover:scale-110 transition-transform shadow-lg">
+                        3</div>
+                    <div>
+                        <h4 class="text-sm font-black uppercase mb-2 text-slate-900 dark:text-white">Mapper</h4>
+                        <p class="text-xs text-slate-700 dark:text-slate-400 leading-relaxed font-medium">Cliquez sur
+                            les badges CP (L1 à L4).</p>
+                    </div>
+                </div>
+                <div class="sop-step group flex gap-5 p-4 rounded-2xl transition-all"
+                    onmouseenter="highlightZone('audit')">
+                    <div
+                        class="flex-shrink-0 w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center text-lg font-black group-hover:scale-110 transition-transform shadow-lg">
+                        4</div>
+                    <div>
+                        <h4 class="text-sm font-black uppercase mb-2 text-slate-900 dark:text-white">Auditer</h4>
+                        <p class="text-xs text-slate-700 dark:text-slate-400 leading-relaxed font-medium">Visez
+                            l'Expertise L4 pour chaque CP.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="mb-10 text-center py-10 px-8 rounded-[2.5rem] bg-gradient-to-r from-blue-600 to-indigo-600 relative overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 80%, white 1px, transparent 1px); background-size: 40px 40px;"></div>
+            <div class="relative z-10">
+                <p class="text-blue-200 text-[10px] font-black uppercase tracking-[0.4em] mb-3">Atelier Pratique</p>
+                <h2 class="text-2xl sm:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-4">
+                    Passez à l'action :
+                    <span class="italic opacity-90">Concevez un ou des modules pour votre formation FPA de rêve</span>
+                </h2>
+                <p class="text-blue-200 text-sm font-medium max-w-2xl mx-auto mb-6">
+                    Utilisez les outils ci-dessous pour architechter votre ingénierie pédagogique. Mappez vos modules
+                    sur les blocs de compétences RNCP et exportez votre plan au format CSV.
+                </p>
+                <button onclick="addModule()"
+                    class="inline-flex items-center gap-2 bg-white text-blue-700 px-8 py-3 rounded-2xl text-sm font-black uppercase tracking-widest hover:scale-105 transition-transform shadow-xl">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    Créer mon premier module
+                </button>
+            </div>
+        </section>
+
+        <!-- DASHBOARD TOOLBAR (STICKY) -->
+        <div id="stickyToolbar"
+            class="px-8 py-6 glass rounded-[2.5rem] border border-slate-300 dark:border-slate-800 flex flex-wrap items-center justify-between gap-6 shadow-xl mb-10">
+            <div class="flex items-center gap-6">
+                <div class="flex items-center gap-3">
+                    <button id="addModuleBtn" onclick="addModule()"
+                        class="flex items-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all shadow-xl shadow-blue-600/20 active:scale-95">
+                        <i data-lucide="plus-circle" class="w-5 h-5"></i> Nouveau Module
+                    </button>
+                    <div id="modeIndicator"
+                        class="hidden flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[9px] font-black border border-emerald-300 dark:border-emerald-800 uppercase tracking-widest">
+                        <i data-lucide="check-circle" class="w-3 h-3 text-emerald-600"></i> Ingénierie de Référence FPA
+                    </div>
+                </div>
+                <div class="h-10 w-px bg-slate-300 dark:bg-slate-800"></div>
+                <div class="flex items-center gap-6">
+                    <button onclick="loadSampleCase()"
+                        class="flex items-center gap-2 text-slate-700 hover:text-emerald-600 dark:text-slate-400 dark:hover:text-emerald-400 transition-colors text-[10px] font-black uppercase tracking-widest">
+                        <i data-lucide="book-open" class="w-5 h-5 text-emerald-600"></i> Cas d'École Macro
+                    </button>
+                    <button onclick="resetSimulation()"
+                        class="flex items-center gap-2 text-slate-700 hover:text-red-500 dark:text-slate-400 dark:hover:text-red-400 transition-colors text-[10px] font-black uppercase tracking-widest">
+                        <i data-lucide="refresh-ccw" class="w-5 h-5 text-red-500"></i> Vider tout
+                    </button>
+                    <button onclick="exportCSV()"
+                        class="flex items-center gap-2 text-slate-700 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400 transition-colors text-[10px] font-black uppercase tracking-widest">
+                        <i data-lucide="download" class="w-5 h-5 text-indigo-500"></i> Exporter CSV
+                    </button>
+                </div>
+            </div>
+            <div id="auditStatus"
+                class="hidden flex items-center gap-3 px-6 py-2.5 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 text-[11px] font-black border border-emerald-200 dark:border-emerald-800 uppercase tracking-widest shadow-lg shadow-emerald-500/10">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 pulse"></span> Dossier 100% Certifiable (L4)
+            </div>
+        </div>
+
+        <!-- Main Simulation Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start relative mb-20">
+            <svg id="canvasLines" class="absolute inset-0 w-full h-full pointer-events-none z-0 hidden lg:block"></svg>
+            <div id="zone-blocs" class="lg:col-span-5 space-y-6 z-10 transition-all duration-300">
+                <h2
+                    class="text-[11px] font-black uppercase tracking-[0.4em] text-blue-700 flex items-center gap-2 mb-4">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i> Certification (PROUVER)
+                </h2>
+                <div id="blocsContainer" class="space-y-4"></div>
+            </div>
+            <div id="zone-modules" class="lg:col-span-7 space-y-6 z-10 transition-all duration-300">
+                <h2
+                    class="text-[11px] font-black uppercase tracking-[0.4em] text-emerald-700 flex items-center gap-2 mb-4">
+                    <i data-lucide="milestone" class="w-4 h-4"></i> Ingénierie (APPRENDRE)
+                </h2>
+                <div id="modulesContainer" class="grid grid-cols-1 xl:grid-cols-2 gap-6"></div>
+            </div>
+        </div>
+
+        <!-- Pedagogical Context Block (Hidden by default) -->
+        <section id="pedagogical-context"
+            class="hidden mb-16 glass p-10 rounded-[3rem] border border-blue-200 dark:border-blue-900/30 shadow-2xl">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="p-3 bg-blue-600 rounded-2xl shadow-lg shadow-blue-600/30"><i data-lucide="info"
+                        class="text-white w-6 h-6"></i></div>
+                <div>
+                    <h2
+                        class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tighter leading-none mb-1">
+                        Principes de mise en œuvre Macro</h2>
+                    <p class="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Conformité France
+                        Compétences & Qualiopi</p>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div
+                    class="bg-white/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800">
+                    <h4 class="font-black text-xs uppercase mb-2 text-blue-600">Couverture progressive</h4>
+                    <p class="text-[11px] text-slate-700 dark:text-slate-400 font-semibold leading-relaxed">Chaque CP
+                        est traitée de manière graduelle (simple au complexe) sur l'ensemble des 5 modules.</p>
+                </div>
+                <div
+                    class="bg-white/50 dark:bg-slate-900/50 p-6 rounded-[2rem] border border-slate-200 dark:border-slate-800">
+                    <h4 class="font-black text-xs uppercase mb-2 text-emerald-600">Séparation des Évals</h4>
+                    <p class="text-[11px] text-slate-700 dark:text-slate-400 font-semibold leading-relaxed">Évaluations
+                        formatives intra-modules vs certificatives par bloc après les modules contributifs.</p>
+                </div>
+            </div>
+            <div
+                class="p-6 bg-blue-50 dark:bg-blue-950/40 rounded-2xl border border-dashed border-blue-300 dark:border-blue-800">
+                <p class="text-xs text-blue-700 dark:text-blue-300 font-bold italic"><i data-lucide="alert-triangle"
+                        class="w-4 h-4 inline mr-1"></i> Note : L'ingénierie variera selon le temps et les modalités
+                    (Projet, AFEST, etc.).</p>
+            </div>
+        </section>
+
+        <!-- Legend & Final Synthesis -->
+        <section class="mb-16">
+            <h2
+                class="text-[11px] font-black uppercase tracking-[0.3em] text-slate-600 dark:text-slate-500 mb-8 flex items-center gap-2">
+                <i data-lucide="book-open-check" class="w-4 h-4"></i> Légende des paliers d'autonomie
+            </h2>
+            <div id="zone-mapping" class="grid grid-cols-1 md:grid-cols-4 gap-5">
+                <div class="p-6 border-l-4 border-l-emerald-300 dark:border-l-emerald-500/50 relative">
+                    <span
+                        class="w-10 h-10 rounded-xl lvl-1 flex items-center justify-center font-black text-sm mb-4">L1</span>
+                    <p class="text-[10px] font-black uppercase text-emerald-700 mb-1">Novice</p>
+                    <p class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+                        Compréhension</p>
+                    <p class="text-[11px] text-slate-700 dark:text-slate-400 font-semibold">Théorie et fondamentaux.</p>
+                </div>
+                <div class="p-6 border-l-4 border-l-emerald-500 relative">
+                    <span
+                        class="w-10 h-10 rounded-xl lvl-2 flex items-center justify-center font-black text-sm text-white mb-4">L2</span>
+                    <p class="text-[10px] font-black uppercase text-emerald-700 mb-1">Apprenti</p>
+                    <p class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+                        Application</p>
+                    <p class="text-[11px] text-slate-700 dark:text-slate-400 font-semibold">Mise en œuvre guidée.</p>
+                </div>
+                <div class="p-6 border-l-4 border-l-emerald-800 relative">
+                    <span
+                        class="w-10 h-10 rounded-xl lvl-3 flex items-center justify-center font-black text-sm text-white mb-4">L3</span>
+                    <p class="text-[10px] font-black uppercase text-emerald-800 mb-1">Compétent</p>
+                    <p class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+                        Maîtrise</p>
+                    <p class="text-[11px] text-slate-700 dark:text-slate-400 font-semibold">Réalisation autonome
+                        standard.</p>
+                </div>
+                <div class="p-6 border-l-4 border-l-indigo-600 relative">
+                    <span
+                        class="w-10 h-10 rounded-xl lvl-4 flex items-center justify-center font-black text-sm text-white mb-4">L4</span>
+                    <p class="text-[10px] font-black uppercase text-indigo-700 mb-1">Expert</p>
+                    <p class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tighter mb-2">
+                        Expertise / Transfert</p>
+                    <p class="text-[11px] text-slate-700 dark:text-slate-400 font-semibold">Adaptation et analyse
+                        réflexive.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="zone-audit"
+            class="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12 border-t border-slate-300 dark:border-slate-800">
+            <div class="p-4 flex flex-col">
+                <i data-lucide="trending-up" class="text-blue-600 w-10 h-10 mb-6"></i>
+                <h4 class="font-black text-xl mb-3 uppercase tracking-tighter text-slate-900 dark:text-white">L'Échelle
+                    d'Autonomie</h4>
+                <p class="text-sm text-slate-700 dark:text-slate-400 font-bold leading-relaxed">Capacité à transférer
+                    ses compétences dans des contextes inconnus.</p>
+            </div>
+            <div class="p-4 flex flex-col">
+                <i data-lucide="layers-3" class="text-emerald-600 w-10 h-10 mb-6"></i>
+                <h4 class="font-black text-xl mb-3 uppercase tracking-tighter text-slate-900 dark:text-white">
+                    Progression Cumulative</h4>
+                <p class="text-sm text-slate-700 dark:text-slate-400 font-bold leading-relaxed">Le bloc est vert
+                    uniquement si toutes les CP sont au niveau 4.</p>
+            </div>
+            <div class="p-4 flex flex-col">
+                <i data-lucide="zap" class="text-amber-600 w-10 h-10 mb-6"></i>
+                <h4 class="font-black text-xl mb-3 uppercase tracking-tighter text-slate-900 dark:text-white">Impact IA
+                    & Digital</h4>
+                <p class="text-sm text-slate-700 dark:text-slate-400 font-bold leading-relaxed">Accélération du passage
+                    au niveau 3 via des simulations assistées.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const state = {
+            blocs: [
+                { id: 'BC1', title: 'Concevoir et préparer des formations', color: '#3b82f6', cps: [{ id: 'cp1', label: 'CP01: Elaborer la progression' }, { id: 'cp2', label: 'CP02: Concevoir le scénario' }, { id: 'cp3', label: 'CP03: Concevoir les ressources' }] },
+                { id: 'BC2', title: 'Animer des formations et accompagner', color: '#6366f1', cps: [{ id: 'cp4', label: 'CP04: Animer en présentiel/distance' }, { id: 'cp5', label: 'CP05: Evaluer les acquis' }, { id: 'cp6', label: 'CP06: Remédier aux difficultés' }] },
+                { id: 'BC3', title: 'Accompagner le parcours apprenant', color: '#8b5cf6', cps: [{ id: 'cp7', label: 'CP07: Accompagner dans le parcours' }, { id: 'cp8', label: 'CP08: Accueillir et co-élaborer' }, { id: 'cp9', label: 'CP09: Tutorer à distance' }, { id: 'cp10', label: 'CP10: Accompagner l\'insertion' }] },
+                { id: 'BC4', title: 'Qualité, Veille et RSE', color: '#ec4899', cps: [{ id: 'cp11', label: 'CP11: Veille pédagogique/IA' }, { id: 'cp12', label: 'CP12: Analyser ses pratiques' }, { id: 'cp13', label: 'CP13: Agir pour l\'égalité/RSE' }] }
+            ],
+            modules: []
+        };
+
+        const sampleCase = [
+            { id: 'sc1', title: 'A: Posture, Accueil & Cadrage', desc: 'Analyser la demande, cadre réglementaire.', mapping: { 'cp1': 1, 'cp8': 2, 'cp11': 2 } },
+            { id: 'sc2', title: 'B: Ingénierie & Conception', desc: 'Scénarisation et ressources.', mapping: { 'cp1': 4, 'cp2': 4, 'cp3': 3 } },
+            { id: 'sc3', title: 'C: Animation & Évaluation', desc: 'Méthodes et dynamique.', mapping: { 'cp3': 4, 'cp4': 4, 'cp5': 3 } },
+            { id: 'sc4', title: 'D: Accompagnement & Tutorat', desc: 'Remédiation et parcours.', mapping: { 'cp6': 4, 'cp7': 4, 'cp9': 4 } },
+            { id: 'sc5', title: 'E: Développement & Amélioration', desc: 'Analyse et veille.', mapping: { 'cp10': 4, 'cp12': 4, 'cp13': 4, 'cp5': 4 } }
+        ];
+
+        const modulesContainer = document.getElementById('modulesContainer');
+        const blocsContainer = document.getElementById('blocsContainer');
+        const svgCanvas = document.getElementById('canvasLines');
+        const stickyToolbar = document.getElementById('stickyToolbar');
+
+
+        // Definition du contenu SVG brut
+        const svgContent = `
+            <svg viewBox="0 0 800 650" class="w-full h-auto max-w-[800px] mx-auto" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <marker id="arrow-default" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#cbd5e1" />
+                    </marker>
+                    <marker id="arrow-active-module" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#2563eb" />
+                    </marker>
+                    <marker id="arrow-active-bloc" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#10b981" />
+                    </marker>
+                    <marker id="arrow-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                    </marker>
+                </defs>
+
+                <!-- Labels Colonnes -->
+                <text x="165" y="30" text-anchor="middle" class="font-bold text-sm fill-slate-500 dark:fill-slate-400 uppercase tracking-widest">Formation (Modules)</text>
+                <text x="635" y="30" text-anchor="middle" class="font-bold text-sm fill-slate-500 dark:fill-slate-400 uppercase tracking-widest">Certification (Blocs)</text>
+
+                <!-- Lignes de liaison interactives (Ajout data-target) -->
+                <!-- MA -> B1 -->
+                <path class="anim-path" data-source="MA" data-target="B1" d="M 280 80 C 350 80, 450 80, 520 80" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-default)" style="animation-delay: 0.8s;" />
+                <!-- MB -> B1 & B2 -->
+                <path class="anim-path" data-source="MB" data-target="B1" d="M 280 180 C 350 180, 450 80, 520 80" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-default)" style="animation-delay: 1.0s;" />
+                <path class="anim-path" data-source="MB" data-target="B2" d="M 280 180 C 350 180, 450 180, 520 180" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-default)" style="animation-delay: 1.0s;" />
+                <!-- MC -> B2 & B3 -->
+                <path class="anim-path" data-source="MC" data-target="B2" d="M 280 280 C 350 280, 450 180, 520 180" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-default)" style="animation-delay: 1.1s;" />
+                <path class="anim-path" data-source="MC" data-target="B3" d="M 280 280 C 350 280, 450 280, 520 280" fill="none" stroke="#cbd5e1" stroke-width="2" marker-end="url(#arrow-default)" style="animation-delay: 1.2s;" />
+
+                <!-- Colonne Gauche : MODULES -->
+                <g class="node anim-module cursor-pointer" data-id="MA" style="animation-delay: 0.0s;">
+                    <rect x="50" y="45" width="230" height="70" rx="12" fill="#f0fdfa" stroke="#2563eb" stroke-width="2" />
+                    <text x="65" y="70" class="font-bold text-lg fill-teal-900">Module A</text>
+                    <text x="65" y="95" class="text-xs italic fill-teal-700">Séq. A1, A2</text>
+                </g>
+                <g class="node anim-module cursor-pointer" data-id="MB" style="animation-delay: 0.2s;">
+                    <rect x="50" y="145" width="230" height="70" rx="12" fill="#f0fdfa" stroke="#2563eb" stroke-width="2" />
+                    <text x="65" y="170" class="font-bold text-lg fill-teal-900">Module B</text>
+                    <text x="65" y="195" class="text-xs italic fill-teal-700">Séq. B1, B2, B3</text>
+                </g>
+                <g class="node anim-module cursor-pointer" data-id="MC" style="animation-delay: 0.4s;">
+                    <rect x="50" y="245" width="230" height="70" rx="12" fill="#f0fdfa" stroke="#2563eb" stroke-width="2" />
+                    <text x="65" y="270" class="font-bold text-lg fill-teal-900">Module C</text>
+                    <text x="65" y="295" class="text-xs italic fill-teal-700">Séq. C1, C2</text>
+                </g>
+
+                <!-- Colonne Droite : BLOCS -->
+                <g class="node anim-bloc cursor-pointer" data-id="B1" style="animation-delay: 1.2s;">
+                    <rect x="520" y="35" width="230" height="90" rx="12" fill="#fff7ed" stroke="#10b981" stroke-width="2" />
+                    <text x="535" y="62" class="font-bold text-lg fill-orange-900">BLOC 1</text>
+                    <text x="535" y="85" class="text-[10px] fill-orange-700 font-medium">• Comp 1.1</text>
+                    <text x="535" y="100" class="text-[10px] fill-orange-700 font-medium">• Comp 1.2, Comp 1.3</text>
+                </g>
+                <g class="node anim-bloc cursor-pointer" data-id="B2" style="animation-delay: 1.4s;">
+                    <rect x="520" y="135" width="230" height="90" rx="12" fill="#fff7ed" stroke="#10b981" stroke-width="2" />
+                    <text x="535" y="162" class="font-bold text-lg fill-orange-900">BLOC 2</text>
+                    <text x="535" y="185" class="text-[10px] fill-orange-700 font-medium">• Comp 2.1</text>
+                    <text x="535" y="200" class="text-[10px] fill-orange-700 font-medium">• Comp 2.2, Comp 2.3</text>
+                </g>
+                <g class="node anim-bloc cursor-pointer" data-id="B3" style="animation-delay: 1.6s;">
+                    <rect x="520" y="235" width="230" height="90" rx="12" fill="#fff7ed" stroke="#10b981" stroke-width="2" />
+                    <text x="535" y="262" class="font-bold text-lg fill-orange-900">BLOC 3</text>
+                    <text x="535" y="285" class="text-[10px] fill-orange-700 font-medium">• Comp 3.1</text>
+                    <text x="535" y="300" class="text-[10px] fill-orange-700 font-medium">• Comp 3.2</text>
+                </g>
+
+                <!-- Lignes vers évaluation -->
+                <path d="M 635 325 L 635 360 L 400 360 L 400 380" fill="none" stroke="#94a3b8" stroke-width="2" class="anim-path" style="animation-delay: 2.2s;" marker-end="url(#arrow-gray)" />
+                <path d="M 520 180 L 400 180 L 400 380" fill="none" stroke="#94a3b8" stroke-width="2" class="anim-path" style="animation-delay: 2.2s;" marker-end="url(#arrow-gray)" />
+                <path d="M 520 80 L 400 80 L 400 380" fill="none" stroke="#94a3b8" stroke-width="2" class="anim-path" style="animation-delay: 2.2s;" marker-end="url(#arrow-gray)" />
+
+                <!-- Étape finale : Évaluation / Certification -->
+                <g class="node" style="animation-delay: 2.8s;">
+                    <rect x="280" y="375" width="240" height="50" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1" />
+                    <text x="400" y="405" text-anchor="middle" class="font-bold fill-slate-700 dark:fill-slate-200">Évaluation par bloc</text>
+                </g>
+                
+                <path d="M 400 425 L 400 450" fill="none" stroke="#94a3b8" stroke-width="2" class="anim-path" style="animation-delay: 3.3s;" marker-end="url(#arrow-gray)" />
+                
+                <g class="node" style="animation-delay: 3.3s;">
+                    <rect x="280" y="455" width="240" height="50" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="1" />
+                    <text x="400" y="480" text-anchor="middle" class="font-bold fill-slate-700 dark:fill-slate-200">Épreuve intégrative</text>
+                    <text x="400" y="495" text-anchor="middle" class="text-[10px] fill-slate-400 italic">(transversale)</text>
+                </g>
+
+                <path d="M 400 505 L 400 530" fill="none" stroke="#94a3b8" stroke-width="2" class="anim-path" style="animation-delay: 3.8s;" marker-end="url(#arrow-gray)" />
+
+                <g class="node pulse" style="animation-delay: 3.8s;">
+                    <rect x="260" y="535" width="280" height="50" rx="25" fill="#f0fdf4" stroke="#22c55e" stroke-width="3" />
+                    <text x="400" y="566" text-anchor="middle" class="font-bold text-xl fill-green-700">CERTIFICATION COMPLÈTE</text>
+                </g>
+            </svg>
+        `;
+
+        // Fonction pour initialiser / relancer le schéma
+        function initSVG() {
+            const wrapper = document.getElementById('svg-wrapper');
+            wrapper.innerHTML = svgContent;
+
+            setTimeout(() => {
+                const modules = wrapper.querySelectorAll('.anim-module');
+                const blocs = wrapper.querySelectorAll('.anim-bloc');
+                const paths = wrapper.querySelectorAll('.anim-path[data-source]');
+
+                const resetHighlight = () => {
+                    modules.forEach(m => m.style.opacity = '1');
+                    blocs.forEach(b => b.style.opacity = '1');
+                    paths.forEach(p => {
+                        p.setAttribute('stroke', document.documentElement.classList.contains('dark') ? '#475569' : '#cbd5e1');
+                        p.setAttribute('stroke-width', '2');
+                        p.setAttribute('marker-end', 'url(#arrow-default)');
+                    });
+                };
+
+                // Survol depuis les Modules (Gauche vers Droite)
+                modules.forEach(mod => {
+                    mod.addEventListener('mouseenter', () => {
+                        const sourceId = mod.getAttribute('data-id');
+                        const targetIds = new Set();
+
+                        modules.forEach(m => { if (m !== mod) m.style.opacity = '0.4'; });
+
+                        paths.forEach(p => {
+                            if (p.getAttribute('data-source') === sourceId) {
+                                p.setAttribute('stroke', '#2563eb'); // Menthe
+                                p.setAttribute('stroke-width', '3');
+                                p.setAttribute('marker-end', 'url(#arrow-active-module)');
+                                targetIds.add(p.getAttribute('data-target'));
+                            } else {
+                                p.setAttribute('stroke', '#e2e8f0');
+                                p.setAttribute('stroke-width', '1');
+                                p.setAttribute('marker-end', 'none');
+                            }
+                        });
+
+                        blocs.forEach(b => {
+                            if (!targetIds.has(b.getAttribute('data-id'))) b.style.opacity = '0.4';
+                        });
+                    });
+                    mod.addEventListener('mouseleave', resetHighlight);
+                });
+
+                // Survol depuis les Blocs (Droite vers Gauche)
+                blocs.forEach(bloc => {
+                    bloc.addEventListener('mouseenter', () => {
+                        const targetId = bloc.getAttribute('data-id');
+                        const sourceIds = new Set();
+
+                        blocs.forEach(b => { if (b !== bloc) b.style.opacity = '0.4'; });
+
+                        paths.forEach(p => {
+                            if (p.getAttribute('data-target') === targetId) {
+                                p.setAttribute('stroke', '#10b981'); // Terre cuite
+                                p.setAttribute('stroke-width', '3');
+                                p.setAttribute('marker-end', 'url(#arrow-active-bloc)');
+                                sourceIds.add(p.getAttribute('data-source'));
+                            } else {
+                                p.setAttribute('stroke', '#e2e8f0');
+                                p.setAttribute('stroke-width', '1');
+                                p.setAttribute('marker-end', 'none');
+                            }
+                        });
+
+                        modules.forEach(m => {
+                            if (!sourceIds.has(m.getAttribute('data-id'))) m.style.opacity = '0.4';
+                        });
+                    });
+                    bloc.addEventListener('mouseleave', resetHighlight);
+                });
+            }, 100);
+        }
+
+        // Lancement au chargement
+
+
+        function init() {
+            if (document.getElementById("svg-wrapper")) { initSVG(); }
+            renderBlocs();
+            renderModules();
+            updateCalculations();
+
+            window.addEventListener('resize', () => requestAnimationFrame(drawConnections));
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 200) stickyToolbar.classList.add('scrolled');
+                else stickyToolbar.classList.remove('scrolled');
+            });
+
+            lucide.createIcons();
+        }
+
+        function switchView(view) {
+            const concept = document.getElementById('view-concept');
+            const simulator = document.getElementById('view-simulator');
+            const btnConcept = document.getElementById('btn-concept');
+            const btnSimulator = document.getElementById('btn-simulator');
+
+            if (view === 'simulator') {
+                gsap.to(concept, {
+                    opacity: 0, y: -20, duration: 0.3, onComplete: () => {
+                        concept.classList.add('hidden');
+                        simulator.classList.remove('hidden');
+                        gsap.fromTo(simulator, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 });
+                        btnConcept.classList.remove('active');
+                        btnSimulator.classList.add('active');
+                        requestAnimationFrame(drawConnections);
+                    }
+                });
+            } else {
+                gsap.to(simulator, {
+                    opacity: 0, y: -20, duration: 0.3, onComplete: () => {
+                        simulator.classList.add('hidden');
+                        concept.classList.remove('hidden');
+                        gsap.fromTo(concept, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.4 });
+                        btnSimulator.classList.remove('active');
+                        btnConcept.classList.add('active');
+                    }
+                });
+            }
+        }
+
+        function toggleTheme() {
+            // AJOUT DE LA CLASSE DARK SUR L'ELEMENT HTML
+            const isDark = document.documentElement.classList.toggle('dark');
+
+            // Les icônes Lucide étant remplacées par des SVG, nous forçons l'affichage
+            // du bon bloc en fonction de la classe dark présente.
+            setTimeout(drawConnections, 50);
+        }
+
+        function highlightZone(zoneId) {
+            const zones = ['blocs', 'modules', 'mapping', 'audit'];
+            zones.forEach(z => {
+                const el = document.getElementById(`zone-${z}`);
+                if (z === zoneId) el.classList.add('node-active', 'ring-4', 'ring-blue-500/20');
+                else el.classList.remove('node-active', 'ring-4', 'ring-blue-500/20');
+            });
+        }
+
+        function resetSimulation() {
+            state.modules = [];
+            document.getElementById('modeIndicator').classList.add('hidden');
+            document.getElementById('pedagogical-context').classList.add('hidden');
+            renderModules();
+            updateCalculations();
+        }
+
+        function loadSampleCase() {
+            state.modules = JSON.parse(JSON.stringify(sampleCase));
+            document.getElementById('modeIndicator').classList.remove('hidden');
+            document.getElementById('pedagogical-context').classList.remove('hidden');
+            renderModules();
+            updateCalculations();
+        }
+
+        function renderBlocs() {
+            blocsContainer.innerHTML = '';
+            state.blocs.forEach(bloc => {
+                const div = document.createElement('div');
+                div.className = 'glass p-6 rounded-3xl border-2 border-transparent';
+                div.id = bloc.id;
+                div.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="max-w-[85%]">
+                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-400 mb-2 inline-block">${bloc.id}</span>
+                            <h3 class="font-black text-sm leading-tight text-slate-900 dark:text-white uppercase tracking-tight">${bloc.title}</h3>
+                        </div>
+                        <span class="coverage-text text-xs font-mono font-black text-slate-700 dark:text-slate-500">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full mb-5 overflow-hidden">
+                        <div class="progress-fill h-full w-0 shadow-sm" style="background-color: ${bloc.color}"></div>
+                    </div>
+                    <div class="space-y-2">
+                        ${bloc.cps.map(cp => `
+                            <div id="${cp.id}" class="cp-item text-[10px] p-3 rounded-2xl border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-400 bg-white/50 dark:bg-slate-900/30 flex items-center justify-between transition-all duration-300 shadow-sm">
+                                <span class="truncate pr-2 font-black uppercase">${cp.label}</span>
+                                <div class="flex gap-1 ml-2 min-w-[44px] justify-end cp-dots">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700"></span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                blocsContainer.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function renderModules() {
+            modulesContainer.innerHTML = '';
+            state.modules.forEach(mod => {
+                const card = document.createElement('div');
+                card.className = 'module-card glass p-6 rounded-3xl border border-slate-300 dark:border-slate-800 hover:border-emerald-500/40 transition-all shadow-md';
+                card.id = mod.id;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-grow">
+                             <input type="text" value="${mod.title}" onchange="updateModuleTitle('${mod.id}', this.value)" class="bg-transparent font-black text-sm text-slate-900 dark:text-white focus:outline-none w-full p-1 border-b-2 border-transparent focus:border-blue-500 uppercase tracking-tight">
+                             <input type="text" value="${mod.desc || ''}" onchange="updateModuleDesc('${mod.id}', this.value)" placeholder="Décrire l'objet pédagogique…" class="bg-transparent text-[9px] text-slate-500 dark:text-slate-400 italic font-semibold focus:outline-none w-full p-1 border-b border-transparent focus:border-slate-400 mt-0.5">
+                        </div>
+                        <button onclick="removeModule('${mod.id}')" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="space-y-3">
+                        <p class="text-[9px] font-black uppercase text-slate-700 dark:text-slate-400 tracking-widest flex justify-between">Apport Autonomie : <span class="text-[8px] italic opacity-60">Cycler L1-L4</span></p>
+                        <div class="flex flex-wrap gap-1.5 custom-scrollbar overflow-y-auto max-h-40">
+                            ${state.blocs.flatMap(b => b.cps).map(cp => {
+                    const level = mod.mapping[cp.id] || 0;
+                    return `<button onclick="cycleLevel('${mod.id}', '${cp.id}')" class="cp-badge text-[8px] px-2 py-1.5 rounded-lg border border-slate-400 dark:border-slate-700 font-black tracking-tighter ${level > 0 ? 'lvl-' + level : 'bg-slate-200 dark:bg-slate-800 opacity-80 text-slate-700 dark:text-slate-300'}">${cp.id.toUpperCase()}${level > 0 ? ' •' + level : ''}</button>`;
+                }).join('')}
+                        </div>
+                    </div>
+                `;
+                modulesContainer.appendChild(card);
+            });
+            lucide.createIcons();
+            requestAnimationFrame(drawConnections);
+        }
+
+        function cycleLevel(modId, cpId) {
+            const mod = state.modules.find(m => m.id === modId);
+            const current = mod.mapping[cpId] || 0;
+            const next = (current + 1) % 5;
+            if (next === 0) delete mod.mapping[cpId]; else mod.mapping[cpId] = next;
+            updateCalculations();
+            renderModules();
+        }
+
+        function updateModuleTitle(id, val) {
+            const mod = state.modules.find(m => m.id === id);
+            if (mod) mod.title = val;
+        }
+
+        function updateModuleDesc(id, val) {
+            const mod = state.modules.find(m => m.id === id);
+            if (mod) mod.desc = val;
+        }
+
+        function addModule() {
+            const newId = `m-${Date.now()}`;
+            state.modules.push({ id: newId, title: 'Nouveau Module', desc: '', mapping: {} });
+            renderModules();
+        }
+
+        function removeModule(id) {
+            state.modules = state.modules.filter(m => m.id !== id);
+            updateCalculations();
+            renderModules();
+        }
+
+        function updateCalculations() {
+            let allCpsAtL4 = true;
+            state.blocs.forEach(bloc => {
+                let blocPointsPossibles = bloc.cps.length * 4;
+                let blocPointsAcquis = 0;
+                bloc.cps.forEach(cp => {
+                    const maxLevel = state.modules.reduce((max, mod) => Math.max(max, mod.mapping[cp.id] || 0), 0);
+                    blocPointsAcquis += maxLevel;
+                    const cpEl = document.getElementById(cp.id);
+                    if (cpEl) {
+                        const dots = cpEl.querySelectorAll('.cp-dots span');
+                        dots.forEach((dot, idx) => {
+                            if (idx < maxLevel) dot.className = `w-2.5 h-2.5 rounded-full ${maxLevel === 4 ? 'bg-indigo-600' : 'bg-emerald-500'}`;
+                            else dot.className = `w-2.5 h-2.5 rounded-full bg-slate-300 dark:bg-slate-700`;
+                        });
+                        if (maxLevel > 0) cpEl.classList.add('bg-emerald-50/70', 'border-emerald-300');
+                        else cpEl.classList.remove('bg-emerald-50/70', 'border-emerald-300');
+                    }
+                    if (maxLevel < 4) allCpsAtL4 = false;
+                });
+                const percentage = Math.round((blocPointsAcquis / blocPointsPossibles) * 100);
+                const blocEl = document.getElementById(bloc.id);
+                if (blocEl) {
+                    blocEl.querySelector('.progress-fill').style.width = `${percentage}%`;
+                    blocEl.querySelector('.coverage-text').innerText = `${percentage}%`;
+                    if (percentage === 100) blocEl.classList.add('node-active'); else blocEl.classList.remove('node-active');
+                }
+            });
+            const audit = document.getElementById('auditStatus');
+            if (allCpsAtL4 && state.modules.length > 0) audit.classList.remove('hidden'); else audit.classList.add('hidden');
+        }
+
+        function drawConnections() {
+            svgCanvas.innerHTML = '';
+            const isDark = document.documentElement.classList.contains('dark');
+            const svgRect = svgCanvas.getBoundingClientRect();
+            state.modules.forEach(mod => {
+                const modEl = document.getElementById(mod.id);
+                if (!modEl) return;
+                const modRect = modEl.getBoundingClientRect();
+                Object.keys(mod.mapping).forEach(cpId => {
+                    const cpEl = document.getElementById(cpId);
+                    if (!cpEl) return;
+                    const cpRect = cpEl.getBoundingClientRect();
+                    const level = mod.mapping[cpId];
+                    const xStart = cpRect.right - svgRect.left;
+                    const yStart = (cpRect.top + cpRect.height / 2) - svgRect.top;
+                    const xEnd = modRect.left - svgRect.left;
+                    const yEnd = (modRect.top + modRect.height / 2) - svgRect.top;
+                    const line = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    const cp1x = xStart + (xEnd - xStart) / 2;
+                    line.setAttribute('d', `M ${xStart} ${yStart} C ${cp1x} ${yStart}, ${cp1x} ${yEnd}, ${xEnd} ${yEnd}`);
+                    const strokeColor = level === 4 ? (isDark ? '#818cf8' : '#4338ca') : (isDark ? '#34d399' : '#047857');
+                    line.setAttribute('stroke', strokeColor);
+                    line.setAttribute('stroke-opacity', isDark ? [0, 0.2, 0.4, 0.6, 0.9][level] : [0, 0.35, 0.55, 0.8, 1.0][level]);
+                    line.setAttribute('stroke-width', [0, 1.5, 2.5, 4, 6][level]);
+                    line.setAttribute('fill', 'none');
+                    line.setAttribute('class', 'connector-line');
+                    svgCanvas.appendChild(line);
+                });
+            });
+        }
+
+        function exportCSV() {
+            if (!state.modules || state.modules.length === 0) {
+                alert('Aucun module à exporter. Créez au moins un module d\'abord !');
+                return;
+            }
+
+            const levelLabels = ['Non abordé', 'Initiation (L1)', 'Guidé (L2)', 'Autonome (L3)', 'Expert (L4)'];
+
+            // Build a lookup: cpId -> { cpLabel, blocTitle }
+            const cpLookup = {};
+            state.blocs.forEach(bloc => {
+                bloc.cps.forEach(cp => {
+                    cpLookup[cp.id] = { label: cp.label, blocTitle: bloc.title, blocId: bloc.id };
+                });
+            });
+
+            const rows = [];
+            rows.push(['Nom du Module', 'Description', 'CP (Compétence Professionnelle)', 'Libellé CP', 'Bloc RNCP', 'Niveau Autonomie (0-4)', 'Libellé Niveau']);
+
+            state.modules.forEach(mod => {
+                const moduleName = mod.title || 'Module sans nom';
+                const moduleDesc = mod.desc || '';
+                const cpKeys = Object.keys(mod.mapping || {}).filter(k => mod.mapping[k] > 0);
+                if (cpKeys.length === 0) {
+                    rows.push([moduleName, moduleDesc, '—', '—', '—', '0', levelLabels[0]]);
+                } else {
+                    cpKeys.forEach(cpId => {
+                        const level = mod.mapping[cpId];
+                        const cpInfo = cpLookup[cpId] || { label: cpId, blocTitle: '—', blocId: '—' };
+                        rows.push([
+                            moduleName,
+                            moduleDesc,
+                            cpId.toUpperCase(),
+                            cpInfo.label,
+                            cpInfo.blocTitle,
+                            level,
+                            levelLabels[level] || 'Inconnu'
+                        ]);
+                    });
+                }
+            });
+
+            // BOM for Excel UTF-8 + semicolon separator (French locale)
+            const csvContent = '\uFEFF' + rows.map(r =>
+                r.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(';')
+            ).join('\r\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const datestamp = new Date().toISOString().slice(0, 10);
+            link.href = url;
+            link.setAttribute('download', `Plan_Ingenierie_FPA_${datestamp}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        window.onload = init;
+    </script>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-[1750px] mx-auto px-6 py-8 mt-12 mb-6 border-t border-slate-200 dark:border-slate-800 text-center">
+        <p class="text-xs text-slate-500 font-medium uppercase tracking-widest leading-relaxed">
+            © D. DE AMIL | INSTRUCTIONAL DESIGNER<br>
+            2026 - CC BY-NC-ND
+        </p>
+    </footer>
+
+</body>
+
+</html>
