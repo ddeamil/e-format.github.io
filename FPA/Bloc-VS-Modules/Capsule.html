@@ -281,8 +281,8 @@
                     Ingénierie vs Certification : <span class="text-blue-600">L'Autonomie</span>
                 </h1>
                 <p class="text-lg text-slate-700 dark:text-slate-400 leading-relaxed font-medium">
-                    Bienvenue dans ce module interactif dédié à la distinction entre les <strong>blocs de compétences
-                        (RNCP)</strong> et les <strong>modules de formation</strong>.
+                    Bienvenue dans cette <strong>capsule interactive</strong> dédiée à la distinction entre les <strong>blocs de compétences
+                        (RNCP)</strong> et les <strong>capsules de formation</strong>.
                     Comprendre que la certification est un objet de résultat alors que l'ingénierie est un objet de
                     processus est la clé d'un parcours réussi.
                 </p>
@@ -309,8 +309,9 @@
 
             <!-- Video Section -->
             <div class="relative">
-                <div class="aspect-ratio-16/9 shadow-2xl rounded-[2rem] overflow-hidden bg-slate-900">
+                <div class="aspect-ratio-16/9 shadow-2xl rounded-[2rem] overflow-hidden bg-slate-900 group cursor-pointer relative">
                     <video 
+                        id="introVideo"
                         controls 
                         controlsList="nodownload" 
                         oncontextmenu="return false;" 
@@ -319,10 +320,16 @@
                         <source src="https://ddeamil.github.io/e-format.github.io/FPA/Bloc-VS-Modules/D%C3%A9mystifier_les_blocs.mp4" type="video/mp4">
                         Votre navigateur ne supporte pas la lecture de vidéos HTML5.
                     </video>
+                    <!-- Play Overlay -->
+                    <div id="playOverlay" onclick="playVideo()" class="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-all z-10">
+                        <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="play" class="text-white w-10 h-10 fill-current"></i>
+                        </div>
+                    </div>
                 </div>
                 <!-- floating elements -->
-                <div class="absolute -bottom-6 -left-6 glass p-6 rounded-3xl border border-blue-200 hidden xl:block">
-                    <p class="text-[10px] font-black text-blue-600 uppercase mb-1">Durée du module</p>
+                <div class="absolute -top-6 -right-6 glass p-6 rounded-3xl border border-blue-200 hidden xl:block shadow-xl z-10">
+                    <p class="text-[10px] font-black text-blue-600 uppercase mb-1">Durée de la séquence</p>
                     <p class="text-xl font-black text-slate-900 dark:text-white">3 Heures</p>
                 </div>
             </div>
@@ -1107,6 +1114,19 @@
     </main>
 
     <script>
+        // Video helper
+        function playVideo() {
+            const video = document.getElementById('introVideo');
+            const overlay = document.getElementById('playOverlay');
+            video.play();
+            overlay.classList.add('hidden');
+        }
+
+        // Auto-hide overlay if native controls are used
+        document.getElementById('introVideo').addEventListener('play', () => {
+            document.getElementById('playOverlay').classList.add('hidden');
+        });
+
         const state = {
             blocs: [
                 { id: 'BC1', title: 'Concevoir et préparer des formations', color: '#3b82f6', cps: [{ id: 'cp1', label: 'CP01: Elaborer la progression' }, { id: 'cp2', label: 'CP02: Concevoir le scénario' }, { id: 'cp3', label: 'CP03: Concevoir les ressources' }] },
