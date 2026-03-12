@@ -1,0 +1,741 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Les Niveaux d'Objectifs & Syllabus - Simulateur Interactif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .glass {
+            background: rgba(248, 250, 252, 0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .main-container::-webkit-scrollbar-thumb {
+            background-color: #3b82f6;
+            border-radius: 10px;
+        }
+
+        .highlight {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px #F97316;
+            z-index: 10;
+        }
+
+        .interactive-card {
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .faded {
+            opacity: 0.3;
+            transform: scale(0.98);
+        }
+
+        .connector {
+            position: absolute;
+            top: 50%;
+            right: -2rem;
+            transform: translateY(-50%);
+            width: 2rem;
+            height: 2px;
+            background-color: #F97316;
+            z-index: -1;
+        }
+
+        .connector::after {
+            content: '';
+            position: absolute;
+            right: -2px;
+            top: 50%;
+            transform: translateY(-50%) rotate(45deg);
+            width: 10px;
+            height: 10px;
+            border-top: 2px solid #F97316;
+            border-right: 2px solid #F97316;
+        }
+
+        /* Tooltip Styles */
+        .tooltip-container {
+            position: relative;
+        }
+
+        .tooltip-content {
+            visibility: hidden;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            width: 240px;
+            font-size: 11px;
+            line-height: 1.4;
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            text-transform: none;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .info-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 14px;
+            height: 14px;
+            background: #F97316;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 900;
+            cursor: help;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Editable Styles */
+        [contenteditable="true"] {
+            cursor: text;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            outline: none;
+        }
+
+        [contenteditable="true"]:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .dark [contenteditable="true"]:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        [contenteditable="true"]:focus {
+            background: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col min-h-screen">
+
+    <!-- Navigation Supérieure Fixe -->
+    <nav class="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
+        <div class="max-w-[1750px] mx-auto px-6">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                        <i data-lucide="layers" class="text-white w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">Les
+                            niveaux d'OBJECTIFS & Syllabus</h1>
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
+                            Simulateur Interactif</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="exportToCSV()"
+                        class="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-black py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span>Exporter CSV</span>
+                    </button>
+                    <div class="h-6 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
+                    <button onclick="toggleTheme()"
+                        class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 active:scale-95 transition-all">
+                        <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
+                        <i data-lucide="moon" class="block dark:hidden w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main-container"
+        class="main-container flex-grow flex p-4 lg:px-8 gap-8 overflow-x-auto lg:overflow-x-visible lg:justify-center">
+
+        <!-- Colonne 1: Enjeux (Statique) -->
+        <section class="flex-shrink-0 w-72 flex flex-col gap-6">
+            <h2
+                class="text-center text-xs font-black bg-blue-600 text-white p-4 rounded-2xl shadow-lg uppercase tracking-widest">
+                En situation professionnelle</h2>
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-blue-500">
+                <p class="font-black text-blue-600 dark:text-blue-400 text-sm uppercase mb-1">ENJEUX = finalité</p>
+                <p class="text-xs font-bold text-slate-600 dark:text-slate-400 italic mb-3">Objectif STRATÉGIQUES /
+                    Objectifs Généraux</p>
+                <p class="font-black text-slate-900 dark:text-white text-base leading-tight mt-2">= Objectif d'Impact
+                </p>
+                <p class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-wider">stratégie de l'entreprise
+                </p>
+            </div>
+            <!-- Footer Colonne 1 -->
+            <div class="mt-auto flex flex-col items-center gap-4">
+                <div
+                    class="bg-orange-500 px-6 py-3 rounded-2xl shadow-lg shadow-orange-500/10 w-full max-w-[260px] min-h-[110px] flex items-center justify-center text-center">
+                    <p class="text-white font-black uppercase text-xs tracking-widest">INTITULÉ DE FORMATION</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 border-2 border-white/10 relative tooltip-container">
+                    <span class="text-white font-black text-xl leading-none">1</span>
+                    <div class="info-indicator">i</div>
+                    <div class="tooltip-content text-center">
+                        <p class="font-black text-orange-400 mb-1 uppercase tracking-wider">Metric Impact</p>
+                        ROE - ROI<br>
+                        <span class="text-[10px] opacity-80">- Institutions - La Direction</span>
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-blue-500/70 dark:text-blue-400/70 uppercase tracking-widest">
+                    Finalité / Enjeux</p>
+            </div>
+        </section>
+
+        <!-- Colonne 2: Objectifs Opérationnels (Dynamique) -->
+        <section class="flex-shrink-0 w-72 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-blue-500 h-full flex flex-col">
+                <h3 class="font-black text-blue-600 dark:text-blue-400 text-sm text-center uppercase tracking-wider">«
+                    OBJECTIFS DE FORMATION »</h3>
+                <p
+                    class="text-[11px] text-center font-black mt-4 text-slate-900 dark:text-white uppercase tracking-widest">
+                    Objectifs Opérationnels</p>
+
+
+                <div id="modules-container" class="flex-grow flex flex-col gap-4"></div>
+
+                <button data-action="add-module"
+                    class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-xs uppercase tracking-widest">+
+                    Ajouter un Module</button>
+            </div>
+            <!-- Footer Colonne 2 -->
+            <div class="mt-auto flex flex-col items-center gap-4">
+                <div
+                    class="bg-orange-500 px-6 py-3 rounded-2xl shadow-lg shadow-orange-500/10 w-full max-w-[260px] min-h-[110px] flex flex-col items-center justify-center text-center">
+                    <p class="text-white font-black uppercase text-[9px] leading-tight mb-1 tracking-wide">à l'issue de
+                        la formation l'apprenant sera capable de</p>
+                    <p class="text-white font-black uppercase text-xs tracking-widest leading-none mb-2">compétence à
+                        atteindre</p>
+                    <p class="text-white text-[10px] italic leading-tight">observable en situation de travail</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 border-2 border-white/10 relative">
+                    <span class="text-white font-black text-xl leading-none">2</span>
+                    <div class="absolute -right-8 top-1/2 -translate-y-1/2 text-blue-400 hidden lg:block">
+                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-blue-500/70 dark:text-blue-400/70 uppercase tracking-widest">
+                    Objectif final</p>
+            </div>
+        </section>
+
+        <!-- Colonne 3: SPG (Dynamique) -->
+        <section class="flex-shrink-0 w-72 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-orange-500 h-full flex flex-col">
+                <h3 class="font-black text-orange-500 text-center text-sm uppercase tracking-wider leading-relaxed">
+                    Objectifs Pédagogiques<br>Globaux (SPG)</h3>
+                <p
+                    class="text-[11px] text-center mt-4 font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                    Scénario Pédagogique Global</p>
+                <p class="text-[10px] text-center text-slate-500 dark:text-slate-400 mb-6 italic">(compétence globale)
+                </p>
+
+                <div id="sequences-container" class="flex-grow flex flex-col gap-4"></div>
+            </div>
+            <!-- Footer Colonne 3 -->
+            <div class="mt-auto flex flex-col items-center gap-4">
+                <div
+                    class="bg-orange-500 px-6 py-3 rounded-2xl shadow-lg shadow-orange-500/10 w-full max-w-[260px] min-h-[110px] flex flex-col items-center justify-center text-center">
+                    <p class="text-white font-black uppercase text-[9px] leading-tight mb-1 tracking-wide">Objectif
+                        pédagogique</p>
+                    <p class="text-white text-[10px] italic leading-tight">Ce qui peut être atteint en situation de
+                        formation</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 border-2 border-white/10 relative">
+                    <span class="text-white font-black text-xl leading-none">3</span>
+                    <div class="absolute -right-8 top-1/2 -translate-y-1/2 text-blue-400 hidden lg:block">
+                        <i data-lucide="arrow-left" class="w-6 h-6"></i>
+                    </div>
+                </div>
+                <p class="text-[10px] font-bold text-blue-500/70 dark:text-blue-400/70 uppercase tracking-widest">
+                    Objectif intermédiaire</p>
+            </div>
+        </section>
+
+        <!-- Colonne 4: SPD (Dynamique) -->
+        <section class="flex-shrink-0 w-72 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-orange-500 h-full flex flex-col">
+                <h3 class="font-black text-orange-500 text-center text-sm uppercase tracking-wider leading-relaxed">
+                    Objectifs Pédagogiques<br>Opérationnels (SPD)</h3>
+                <p
+                    class="text-[11px] text-center mt-4 font-black text-slate-900 dark:text-white uppercase tracking-widest">
+                    Scénario Pédagogique Détaillé</p>
+                <p class="text-[10px] text-center text-slate-500 dark:text-slate-400 mb-6 italic">(objectifs
+                    intermédiaires)</p>
+
+                <div id="seances-container" class="flex-grow flex flex-col gap-4"></div>
+            </div>
+            <!-- Footer Colonne 4 -->
+            <div class="mt-auto flex flex-col items-center gap-4">
+                <div
+                    class="bg-orange-500 px-6 py-3 rounded-2xl shadow-lg shadow-orange-500/10 w-full max-w-[260px] min-h-[110px] flex items-center justify-center text-center relative tooltip-container">
+                    <p class="text-white text-[10px] italic leading-tight">La capacité est énoncée<br>selon la règle des
+                        <span class="font-black">3C</span></p>
+                    <div class="info-indicator">i</div>
+                    <div class="tooltip-content">
+                        <p
+                            class="font-black text-orange-400 mb-2 uppercase tracking-wider border-b border-white/10 pb-1">
+                            La règle des 3C</p>
+                        <ul class="space-y-2">
+                            <li class="flex gap-2 leading-tight">
+                                <span class="text-orange-400 font-bold">•</span>
+                                <div><span class="font-bold text-white">Comportement :</span> Un comportement
+                                    observable, formulé par un verbe d’action</div>
+                            </li>
+                            <li class="flex gap-2 leading-tight">
+                                <span class="text-orange-400 font-bold">•</span>
+                                <div><span class="font-bold text-white">Conditions :</span> Les conditions et les
+                                    ressources à disposition pour réaliser cet objectif</div>
+                            </li>
+                            <li class="flex gap-2 leading-tight">
+                                <span class="text-orange-400 font-bold">•</span>
+                                <div><span class="font-bold text-white">Critères :</span> L’énonciation des critères de
+                                    réussite de l’évaluation</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div
+                    class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center shadow-lg shadow-blue-500/20 border-2 border-white/10 relative">
+                    <span class="text-white font-black text-xl leading-none">4</span>
+                </div>
+                <p class="text-[10px] font-bold text-blue-500/70 dark:text-blue-400/70 uppercase tracking-widest">
+                    Objectif préliminaire</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- TEMPLATES HTML -->
+    <!-- TEMPLATES HTML -->
+    <template id="module-template">
+        <div class="module-wrapper flex flex-col gap-3">
+            <div
+                class="interactive-card glass p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative group overflow-hidden">
+                <div
+                    class="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                </div>
+                <button data-action="remove-module"
+                    class="absolute top-2 right-2 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 w-6 h-6 rounded-lg text-[10px] leading-6 text-center font-bold hover:bg-red-500 hover:text-white transition-all z-10 flex items-center justify-center">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                </button>
+                <p class="text-[10px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-1"
+                    contenteditable="true">
+                    activité type</p>
+                <p class="font-black text-slate-900 dark:text-white text-sm uppercase" contenteditable="true">MODULE
+                    <span class="module-number text-blue-600 dark:text-blue-400"></span></p>
+                <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 mt-1 leading-tight italic"
+                    contenteditable="true">Objectif
+                    Opérationnel <span class="module-number"></span></p>
+            </div>
+            <button data-action="add-sequence"
+                class="w-full bg-slate-900 dark:bg-slate-200 text-white dark:text-slate-900 text-[10px] font-black py-2 px-3 rounded-xl hover:scale-[1.02] active:scale-95 transition-all shadow-md uppercase tracking-widest">+
+                Ajouter Séquence</button>
+        </div>
+    </template>
+
+    <template id="sequence-template">
+        <div
+            class="interactive-card glass bg-blue-50/50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 p-4 rounded-2xl text-center relative border-blue-200 dark:border-blue-800/50 transition-all group">
+            <button data-action="remove-sequence"
+                class="absolute top-2 right-2 bg-slate-200/50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 w-5 h-5 rounded-lg text-[10px] leading-5 text-center font-bold hover:bg-red-500 hover:text-white transition-all z-10 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+            <div class="connector hidden lg:block opacity-40"></div>
+            <p class="font-black text-slate-900 dark:text-white text-xs uppercase tracking-wider"
+                contenteditable="true">Séquence <span class="sequence-number text-blue-600 dark:text-blue-400"></span>
+            </p>
+        </div>
+    </template>
+
+    <template id="seance-block-template">
+        <div
+            class="interactive-card bg-slate-900 dark:bg-slate-900 p-4 rounded-2xl flex flex-col gap-3 shadow-xl border border-slate-800">
+            <div class="seance-items-container flex flex-col gap-2"></div>
+            <button data-action="add-seance"
+                class="mt-2 w-full bg-blue-600 text-white text-[10px] font-black py-2 px-3 rounded-xl hover:bg-blue-700 transition-all uppercase tracking-widest shadow-lg shadow-blue-500/20">+
+                Ajouter séance</button>
+        </div>
+    </template>
+
+    <template id="seance-template">
+        <div class="seance-item flex justify-between items-center bg-slate-800 p-2 rounded-xl group transition-all">
+            <p class="text-[11px] font-bold text-slate-300 group-hover:text-white flex-grow mr-2"
+                contenteditable="true">Séance <span class="seance-number text-blue-400"></span> <span
+                    class="text-[9px] opacity-60 uppercase">-
+                    (capacité)</span></p>
+            <button data-action="remove-seance"
+                class="bg-slate-700 text-slate-400 w-4 h-4 rounded-lg text-[8px] leading-4 font-black hover:bg-red-500 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed flex items-center justify-center">
+                <i data-lucide="x" class="w-2 h-2"></i>
+            </button>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContainer = document.getElementById('main-container');
+            const [modulesContainer, sequencesContainer, seancesContainer] = [
+                document.getElementById('modules-container'),
+                document.getElementById('sequences-container'),
+                document.getElementById('seances-container')
+            ];
+
+            const templates = {
+                module: document.getElementById('module-template'),
+                sequence: document.getElementById('sequence-template'),
+                seanceBlock: document.getElementById('seance-block-template'),
+                seance: document.getElementById('seance-template')
+            };
+
+            let nextModuleId = 1;
+            let activeIds = { module: null, sequence: null };
+
+            const getInteractiveCards = () => document.querySelectorAll('.interactive-card');
+
+            function updateHighlight() {
+                getInteractiveCards().forEach(card => {
+                    const cardModuleId = card.dataset.moduleId;
+                    const cardSequenceId = card.dataset.sequenceId;
+
+                    card.classList.remove('highlight', 'faded');
+
+                    if (activeIds.module) {
+                        if (activeIds.sequence) { // Highlight a specific sequence chain
+                            if (cardModuleId === activeIds.module && cardSequenceId === activeIds.sequence) {
+                                card.classList.add('highlight');
+                            } else {
+                                card.classList.add('faded');
+                            }
+                        } else { // Highlight a whole module chain
+                            if (cardModuleId === activeIds.module) {
+                                card.classList.add('highlight');
+                            } else {
+                                card.classList.add('faded');
+                            }
+                        }
+                    }
+                });
+            }
+
+            function clearHighlights() {
+                activeIds = { module: null, sequence: null };
+                getInteractiveCards().forEach(card => card.classList.remove('highlight', 'faded'));
+            }
+
+            function updateSeanceButtons(seanceBlock) {
+                const removeButtons = seanceBlock.querySelectorAll('[data-action="remove-seance"]');
+                const isDisabled = removeButtons.length === 0; // Allow deleting all
+                removeButtons.forEach(btn => btn.disabled = isDisabled);
+            }
+
+            function updateModuleDeleteButtons() {
+                const wrappers = modulesContainer.querySelectorAll('.module-wrapper');
+                wrappers.forEach(wrapper => {
+                    const btn = wrapper.querySelector('[data-action="remove-module"]');
+                    if (btn) btn.style.display = (wrappers.length <= 1) ? 'none' : 'flex';
+                });
+            }
+
+            function addSequence(moduleId) {
+                const moduleCard = document.querySelector(`[data-module-id="${moduleId}"]`);
+                const sequenceCount = parseInt(moduleCard.dataset.sequenceCount || 0) + 1;
+                moduleCard.dataset.sequenceCount = sequenceCount;
+                const sequenceId = `${moduleId}-${sequenceCount}`;
+
+                const sequenceCard = templates.sequence.content.cloneNode(true).firstElementChild;
+                sequenceCard.dataset.moduleId = moduleId;
+                sequenceCard.dataset.sequenceId = sequenceId;
+                sequenceCard.querySelector('.sequence-number').textContent = `${moduleId}.${sequenceCount}`;
+
+                // TARGETED INSERTION: Find last existing sequence of this module
+                const existingSeqs = Array.from(sequencesContainer.querySelectorAll(`[data-module-id="${moduleId}"]`));
+                if (existingSeqs.length > 0) {
+                    existingSeqs[existingSeqs.length - 1].insertAdjacentElement('afterend', sequenceCard);
+                } else {
+                    sequencesContainer.appendChild(sequenceCard);
+                }
+
+                const seanceBlockCard = templates.seanceBlock.content.cloneNode(true).firstElementChild;
+                seanceBlockCard.dataset.moduleId = moduleId;
+                seanceBlockCard.dataset.sequenceId = sequenceId;
+                const seanceItemsContainer = seanceBlockCard.querySelector('.seance-items-container');
+                for (let i = 1; i <= 2; i++) {
+                    addSeanceToBlock(seanceItemsContainer);
+                }
+
+                // TARGETED INSERTION: Find last existing seance block of this module
+                const existingBlocks = Array.from(seancesContainer.querySelectorAll(`[data-module-id="${moduleId}"]`));
+                if (existingBlocks.length > 0) {
+                    existingBlocks[existingBlocks.length - 1].insertAdjacentElement('afterend', seanceBlockCard);
+                } else {
+                    seancesContainer.appendChild(seanceBlockCard);
+                }
+
+                updateSeanceButtons(seanceBlockCard);
+
+                activeIds = { module: moduleId, sequence: sequenceId };
+                updateHighlight();
+                lucide.createIcons();
+            }
+
+            function addModule() {
+                const moduleId = `${nextModuleId}`;
+
+                const moduleWrapper = templates.module.content.cloneNode(true).firstElementChild;
+                moduleWrapper.dataset.moduleId = moduleId; // TAG THE WRAPPER FOR FULL CLEANUP
+                const moduleCard = moduleWrapper.querySelector('.interactive-card');
+                moduleCard.dataset.moduleId = moduleId;
+                moduleWrapper.querySelectorAll('.module-number').forEach(el => el.textContent = moduleId);
+                modulesContainer.appendChild(moduleWrapper);
+
+                addSequence(moduleId);
+                nextModuleId++;
+                updateModuleDeleteButtons();
+                lucide.createIcons();
+            }
+
+            function addSeanceToBlock(container) {
+                const newSeanceNumber = container.children.length + 1;
+                const seanceFragment = templates.seance.content.cloneNode(true);
+                seanceFragment.querySelector('.seance-number').textContent = newSeanceNumber;
+                container.appendChild(seanceFragment);
+                updateSeanceButtons(container.closest('.interactive-card'));
+                lucide.createIcons();
+            }
+
+            function removeModule(moduleId) {
+                const wrappers = modulesContainer.querySelectorAll('.module-wrapper');
+                if (wrappers.length <= 1) return; // Safeguard root module
+
+                document.querySelectorAll(`[data-module-id="${moduleId}"]`).forEach(el => el.remove());
+                if (activeIds.module === moduleId) clearHighlights();
+                updateModuleDeleteButtons();
+            }
+
+            function removeSequence(sequenceId) {
+                const sequenceCard = document.querySelector(`[data-sequence-id="${sequenceId}"]`);
+                if (!sequenceCard) return;
+
+                const moduleId = sequenceCard.dataset.moduleId;
+                const moduleCard = document.querySelector(`[data-module-id="${moduleId}"]`);
+
+                // Restriction removed to allow flexible testing
+
+                document.querySelectorAll(`[data-sequence-id="${sequenceId}"]`).forEach(el => el.remove());
+                if (moduleCard) moduleCard.dataset.sequenceCount--;
+
+                if (activeIds.sequence === sequenceId) clearHighlights();
+            }
+
+            function removeSeance(removeButton) {
+                const seanceItem = removeButton.closest('.seance-item');
+                const seanceBlock = seanceItem.closest('.interactive-card');
+
+                if (seanceBlock.querySelectorAll('.seance-item').length > 0) {
+                    seanceItem.remove();
+                    seanceBlock.querySelectorAll('.seance-item').forEach((item, index) => {
+                        item.querySelector('.seance-number').textContent = index + 1;
+                    });
+                    updateSeanceButtons(seanceBlock);
+                }
+            }
+
+            document.body.addEventListener('keydown', (e) => {
+                if (e.target.isContentEditable && e.key === 'Enter') {
+                    e.preventDefault();
+                    e.target.blur();
+                }
+            });
+
+            document.body.addEventListener('blur', (e) => {
+                if (e.target.isContentEditable && e.target.textContent.trim() === "") {
+                    // Force a reload or UI update could be complex, 
+                    // simple way is to prevent total emptiness
+                    e.target.textContent = "...";
+                }
+            }, true);
+
+            document.body.addEventListener('click', (e) => {
+                const target = e.target;
+                const actionButton = target.closest('[data-action]');
+                const interactiveCard = target.closest('.interactive-card');
+
+                if (actionButton) {
+                    const action = actionButton.dataset.action;
+                    const parentWrapper = actionButton.closest('.module-wrapper, .interactive-card');
+
+                    switch (action) {
+                        case 'add-module': addModule(); break;
+                        case 'add-sequence': addSequence(parentWrapper.querySelector('.interactive-card').dataset.moduleId); break;
+                        case 'add-seance': addSeanceToBlock(parentWrapper.querySelector('.seance-items-container')); break;
+                        case 'remove-module':
+                            const modId = parentWrapper.dataset.moduleId || parentWrapper.querySelector('.interactive-card').dataset.moduleId;
+                            removeModule(modId);
+                            break;
+                        case 'remove-sequence': removeSequence(parentWrapper.dataset.sequenceId); break;
+                        case 'remove-seance': removeSeance(actionButton); break;
+                    }
+                } else if (interactiveCard) {
+                    if (target.isContentEditable) return; // Don't trigger highlight/clear if editing text
+
+                    const clickedModuleId = interactiveCard.dataset.moduleId;
+                    const clickedSequenceId = interactiveCard.dataset.sequenceId;
+
+                    if (activeIds.module === clickedModuleId && activeIds.sequence === clickedSequenceId) {
+                        clearHighlights();
+                    } else {
+                        activeIds = { module: clickedModuleId || null, sequence: clickedSequenceId || null };
+                        updateHighlight();
+                    }
+                } else {
+                    clearHighlights();
+                }
+            });
+
+            addModule(); // Start with one module by default
+        });
+
+        function cleanText(text) {
+            if (!text) return "";
+            return text.replace(/\r?\n|\r/g, " ").replace(/\s+/g, " ").trim();
+        }
+
+        function escapeCSV(text) {
+            const clean = cleanText(text);
+            return `"${clean.replace(/"/g, '""')}"`;
+        }
+
+        function exportToCSV() {
+            const modules = document.querySelectorAll('#modules-container .module-wrapper');
+            let rows = [["Séance (SPD)", "Séquence (SPG)", "Module (Objectif Opé)"]];
+
+            modules.forEach(moduleWrapper => {
+                const moduleId = moduleWrapper.dataset.moduleId;
+                const moduleTitlePara = moduleWrapper.querySelector('.interactive-card p.font-black.text-sm');
+                const moduleTitle = moduleTitlePara?.innerText || `Module ${moduleId}`;
+
+                const sequences = document.querySelectorAll(`#sequences-container [data-module-id="${moduleId}"]`);
+
+                if (sequences.length === 0) {
+                    rows.push(["", "", moduleTitle]);
+                } else {
+                    sequences.forEach(sequence => {
+                        const sequenceId = sequence.dataset.sequenceId;
+                        const sequenceTitle = sequence.querySelector('p')?.innerText || `Séquence ${sequenceId.replace('-', '.')}`;
+
+                        const seanceBlock = document.querySelector(`#seances-container [data-sequence-id="${sequenceId}"]`);
+                        const seances = seanceBlock ? seanceBlock.querySelectorAll('.seance-item') : [];
+
+                        if (seances.length === 0) {
+                            rows.push(["", sequenceTitle, moduleTitle]);
+                        } else {
+                            seances.forEach(seance => {
+                                const seanceTitle = seance.querySelector('p')?.innerText;
+                                rows.push([seanceTitle, sequenceTitle, moduleTitle]);
+                            });
+                        }
+                    });
+                }
+            });
+
+            const csvContent = rows.map(row => row.map(escapeCSV).join(";")).join("\n");
+
+            // Create Blob and trigger download
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "conception_pedagogique.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        // Init theme early to avoid flicker
+        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer
+        class="w-full max-w-[1750px] mx-auto px-6 py-8 mt-12 mb-6 border-t border-slate-200 dark:border-slate-800 text-center">
+        <p class="text-xs text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.2em] leading-relaxed">
+            © D. DE AMIL | INSTRUCTIONAL DESIGNER<br>
+            2026 - CC BY-NC-ND
+        </p>
+    </footer>
+</body>
+
+</html>
