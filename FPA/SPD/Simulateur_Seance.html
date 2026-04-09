@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conception de Séance Pédagogique - Simulateur Interactif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            950: '#020617',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        .glass {
+            background: rgba(248, 250, 252, 0.97);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.04);
+        }
+
+        .dark .glass {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .main-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .main-container::-webkit-scrollbar-thumb {
+            background-color: #3b82f6;
+            border-radius: 10px;
+        }
+
+        .highlight {
+            transform: scale(1.02);
+            box-shadow: 0 0 0 3px #F97316;
+            z-index: 10;
+        }
+
+        .interactive-card {
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.3s ease-in-out;
+            cursor: pointer;
+        }
+
+        .faded {
+            opacity: 0.3;
+            transform: scale(0.98);
+        }
+
+        /* Tooltip Styles */
+        .tooltip-container {
+            position: relative;
+        }
+
+        .tooltip-content {
+            visibility: hidden;
+            position: absolute;
+            bottom: 125%;
+            left: 50%;
+            transform: translateX(-50%) translateY(10px);
+            background: rgba(15, 23, 42, 0.95);
+            color: white;
+            padding: 12px;
+            border-radius: 12px;
+            width: 240px;
+            font-size: 11px;
+            line-height: 1.4;
+            z-index: 100;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            text-transform: none;
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .tooltip-container:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .info-indicator {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 14px;
+            height: 14px;
+            background: #F97316;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 900;
+            cursor: help;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Editable Styles */
+        [contenteditable="true"] {
+            cursor: text;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            outline: none;
+        }
+
+        [contenteditable="true"]:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .dark [contenteditable="true"]:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        [contenteditable="true"]:focus {
+            background: rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+        }
+
+        .phase-indicator {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 2px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .phase-progress {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+
+        .phase-over {
+            background: #ef4444 !important;
+        }
+
+        /* Styles pour le menu de suggestions */
+        .suggestions-menu {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            z-index: 50;
+            display: none;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            margin-bottom: 8px;
+        }
+
+        .dark .suggestions-menu {
+            background: #1e293b;
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .suggestions-menu.active {
+            display: block;
+            animation: slideUp 0.2s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .suggestion-item {
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+
+        .suggestion-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        /* Back to top button */
+        #back-to-top {
+            position: fixed;
+            bottom: 80px;
+            right: 32px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #4f46e5;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #back-to-top.visible {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        #back-to-top:hover {
+            transform: translateY(-5px) scale(1.1);
+            background: #4338ca;
+        }
+
+        footer {
+            margin-top: auto;
+            border-top: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .dark footer {
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            width: 95%;
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+            transform: scale(0.9) translateY(20px);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .modal-container::-webkit-scrollbar-thumb {
+            background-color: rgba(79, 70, 229, 0.5);
+            border-radius: 10px;
+        }
+
+        .opo-help-card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .dark .opo-help-card {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col min-h-screen">
+
+    <!-- Navigation Supérieure Fixe -->
+    <nav class="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
+        <div class="max-w-[1750px] mx-auto px-6">
+            <div class="flex justify-between items-center h-20">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <i data-lucide="calendar-range" class="text-white w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">
+                            Conception
+                            de Séance Pédagogique</h1>
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
+                            Simulateur Chronologique Interactif</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-6">
+                    <div class="hidden md:flex flex-col items-end">
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Durée Totale</p>
+                        <p id="total-duration-display" class="text-xl font-black text-indigo-600 dark:text-indigo-400">0
+                            mn</p>
+                    </div>
+                    <div class="h-10 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="exportToCSV(true)"
+                            class="flex items-center gap-2 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-black py-2.5 px-4 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 text-[10px] uppercase tracking-widest">
+                            <i data-lucide="file-text" class="w-4 h-4"></i>
+                            <span>Trame Vierge</span>
+                        </button>
+                        <button onclick="exportToCSV()"
+                            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
+                            <i data-lucide="download" class="w-4 h-4"></i>
+                            <span>Exporter CSV</span>
+                        </button>
+                        <button onclick="toggleTheme()"
+                            class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 active:scale-95 transition-all">
+                            <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
+                            <i data-lucide="moon" class="block dark:hidden w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main id="main-container"
+        class="main-container flex-grow flex p-4 lg:px-8 gap-6 overflow-x-auto lg:overflow-x-visible lg:justify-center">
+
+        <!-- Colonne 0: Configuration/Objectif (Sidebar) -->
+        <section class="flex-shrink-0 w-72 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-indigo-600">
+                <h2 class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4">Paramètres Séance</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Titre de la
+                            séance</label>
+                        <p class="text-sm font-bold bg-slate-100 dark:bg-slate-900/50 p-2 rounded-xl"
+                            contenteditable="true">Nouvelle Séance de cours</p>
+                    </div>
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase block">Objectif Pédagogique
+                                Opérationnel</label>
+                            <button onclick="openOPOModal()"
+                                class="text-indigo-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                                <span class="text-[9px] font-bold uppercase">Méthode 3C</span>
+                                <i data-lucide="help-circle" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+
+                        <!-- Méthode 3C Inputs -->
+                        <div class="mb-4 space-y-2">
+                            <div class="space-y-2 pl-2 border-l-2 border-indigo-200 dark:border-indigo-900/60 mt-2">
+                                <div class="group">
+                                    <label
+                                        class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">1.
+                                        Comportement Observable</label>
+                                    <p class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]"
+                                        contenteditable="true"
+                                        data-placeholder="Verbe d'action de la taxonomie de Bloom..."></p>
+                                </div>
+                                <div class="group">
+                                    <label
+                                        class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">2.
+                                        Condition de réalisation</label>
+                                    <p class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]"
+                                        contenteditable="true"
+                                        data-placeholder="Contexte, ressources disponibles, durée..."></p>
+                                </div>
+                                <div class="group">
+                                    <label
+                                        class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">3.
+                                        Critère(s) d'Évaluation</label>
+                                    <p class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]"
+                                        contenteditable="true"
+                                        data-placeholder="Seuil minimal de réussite (ex: 3/5)..."></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Formulation finale
+                            :</label>
+                        <p class="text-xs italic bg-slate-100 dark:bg-slate-900/50 p-3 rounded-xl min-h-[60px] border border-transparent focus:border-indigo-500/30 outline-none transition-all"
+                            contenteditable="true">À l'issue de cette séance, l'apprenant sera capable de...</p>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Durée Cible
+                            (mn)</label>
+                        <input type="number" id="target-duration-input" value="60" min="5" step="5"
+                            class="w-full bg-slate-100 dark:bg-slate-900/50 p-2 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass p-5 rounded-3xl shadow-sm mt-auto">
+                <div class="flex items-center gap-3 mb-3">
+                    <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white">
+                        <i data-lucide="info" class="w-5 h-5"></i>
+                    </div>
+                    <p class="text-[10px] font-black uppercase tracking-wider">Rappel des Phases</p>
+                </div>
+                <ul class="text-[10px] space-y-2 font-medium text-slate-500">
+                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">10%</span> <b>Amorce</b>
+                        : Motivation & Contextualisation</li>
+                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">80%</span>
+                        <b>Réalisation</b> : Travail & Apprentissage
+                    </li>
+                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">10%</span> <b>Clôture</b>
+                        : Synthèse & Transfert</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Phase 1: L'Amorce (Préparation) -->
+        <section class="flex-shrink-0 w-80 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-blue-500 h-full flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-black text-blue-600 text-sm uppercase tracking-wider">L'AMORCE</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Phase de préparation)
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p id="amorce-duration-display" class="text-sm font-black text-blue-600">0 mn</p>
+                        <p id="amorce-percent-display" class="text-[9px] font-bold text-slate-400">0%</p>
+                    </div>
+                </div>
+                <div class="phase-indicator mb-6">
+                    <div id="amorce-progress" class="phase-progress w-0"></div>
+                </div>
+
+                <div id="amorce-container" class="flex-grow flex flex-col gap-3"></div>
+
+                <div class="mt-6 relative">
+                    <div id="amorce-menu" class="suggestions-menu"></div>
+                    <div class="flex gap-2">
+                        <button onclick="addActivity('amorce')"
+                            class="flex-grow bg-blue-500 hover:bg-blue-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
+                            + Étape vierge
+                        </button>
+                        <button onclick="toggleSuggestions('amorce')"
+                            class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                            <i data-lucide="library" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 2: Le Développement (Réalisation) -->
+        <section class="flex-shrink-0 w-80 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-emerald-500 h-full flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-black text-emerald-600 text-sm uppercase tracking-wider">LE DÉVELOPPEMENT</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Phase de réalisation)
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p id="realisation-duration-display" class="text-sm font-black text-emerald-600">0 mn</p>
+                        <p id="realisation-percent-display" class="text-[9px] font-bold text-slate-400">0%</p>
+                    </div>
+                </div>
+                <div class="phase-indicator mb-6">
+                    <div id="realisation-progress" class="phase-progress bg-emerald-500 w-0"></div>
+                </div>
+
+                <div id="realisation-container" class="flex-grow flex flex-col gap-3"></div>
+
+                <div class="mt-6 relative">
+                    <div id="realisation-menu" class="suggestions-menu"></div>
+                    <div class="flex gap-2">
+                        <button onclick="addActivity('realisation')"
+                            class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
+                            + Étape vierge
+                        </button>
+                        <button onclick="toggleSuggestions('realisation')"
+                            class="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                            <i data-lucide="library" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Phase 3: La Clôture (Intégration) -->
+        <section class="flex-shrink-0 w-80 flex flex-col gap-4">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-orange-500 h-full flex flex-col">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-black text-orange-500 text-sm uppercase tracking-wider">LA CLÔTURE</h3>
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Phase d'intégration)
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p id="cloture-duration-display" class="text-sm font-black text-orange-500">0 mn</p>
+                        <p id="cloture-percent-display" class="text-[9px] font-bold text-slate-400">0%</p>
+                    </div>
+                </div>
+                <div class="phase-indicator mb-6">
+                    <div id="cloture-progress" class="phase-progress bg-orange-500 w-0"></div>
+                </div>
+
+                <div id="cloture-container" class="flex-grow flex flex-col gap-3"></div>
+
+                <div class="mt-6 relative">
+                    <div id="cloture-menu" class="suggestions-menu"></div>
+                    <div class="flex gap-2">
+                        <button onclick="addActivity('cloture')"
+                            class="flex-grow bg-orange-500 hover:bg-orange-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-orange-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
+                            + Étape vierge
+                        </button>
+                        <button onclick="toggleSuggestions('cloture')"
+                            class="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                            <i data-lucide="library" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Pied de Page -->
+    <footer class="glass py-6 mt-8">
+        <div class="max-w-[1750px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
+                © D. DE AMIL | INSTRUCTIONAL DESIGNER | 2026 - CC BY-NC-N
+            </p>
+            <div class="flex items-center gap-4">
+                <div class="h-1 w-1 bg-indigo-500 rounded-full"></div>
+                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase">Simulateur de Conception
+                    Pédagogique v2.0</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bouton Retour en Haut -->
+    <button id="back-to-top" onclick="scrollToTop()" title="Retour en haut">
+        <i data-lucide="arrow-up" class="w-6 h-6"></i>
+    </button>
+
+    <!-- TEMPLATES HTML -->
+    <template id="activity-template">
+        <div
+            class="activity-wrapper interactive-card glass p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative group overflow-hidden transition-all hover:border-indigo-500/30">
+            <button data-action="remove-activity"
+                class="absolute top-2 right-2 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 w-6 h-6 rounded-lg text-[10px] font-bold hover:bg-red-500 hover:text-white transition-all z-10 opacity-0 group-hover:opacity-100 flex items-center justify-center">
+                <i data-lucide="x" class="w-3 h-3"></i>
+            </button>
+
+            <div class="flex justify-between items-start mb-2 pr-6">
+                <div class="flex-grow">
+                    <p class="text-[9px] font-black uppercase tracking-widest text-indigo-500 mb-1">Activité</p>
+                    <h4 class="font-black text-slate-900 dark:text-white text-xs uppercase outline-none"
+                        contenteditable="true">Désignation de l'étape</h4>
+                </div>
+                <div class="flex flex-col items-end">
+                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                        <input type="number"
+                            class="activity-duration text-xs font-bold bg-transparent w-8 text-center outline-none"
+                            value="5" min="1">
+                        <span class="text-[10px] font-bold text-slate-400">mn</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 mt-3">
+                <select
+                    class="activity-method bg-slate-50 dark:bg-slate-950 border-none text-[10px] font-bold text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1 outline-none ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-indigo-500 transition-all">
+                    <option value="Transmissive">Transmissive</option>
+                    <option value="Démonstrative">Démonstrative</option>
+                    <option value="Interrogative">Interrogative</option>
+                    <option value="Active">Active (Découverte)</option>
+                    <option value="Heuristique">Heuristique</option>
+                </select>
+                <div class="tooltip-container ml-auto">
+                    <i data-lucide="message-square"
+                        class="w-4 h-4 text-slate-300 hover:text-indigo-500 transition-colors"></i>
+                    <div class="tooltip-content">
+                        Consignes / Notes : <span class="italic font-normal" contenteditable="true"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        const SUGGESTIONS = {
+            amorce: [
+                { title: "Accueil & Installation", duration: 5, method: "Transmissive", notes: "Mise en place, émargement." },
+                { title: "Rappel séance précédente", duration: 5, method: "Interrogative", notes: "Vérifier les acquis." },
+                { title: "Annonce objectifs & plan", duration: 5, method: "Transmissive", notes: "Clarifier les attentes." },
+                { title: "Élément déclencheur", duration: 10, method: "Heuristique", notes: "Capter l'intérêt." }
+            ],
+            realisation: [
+                { title: "Structuration des contenus", duration: 20, method: "Démonstrative", notes: "Apport théorique." },
+                { title: "Exercices pratiques", duration: 30, method: "Active", notes: "Mise en situation." },
+                { title: "Rétroactions & Échanges", duration: 10, method: "Interrogative", notes: "Remédiation." },
+                { title: "Pause", duration: 15, method: "Transmissive", notes: "Repos cognitif." }
+            ],
+            cloture: [
+                { title: "Synthèse collective", duration: 10, method: "Interrogative", notes: "Ancrage des savoirs." },
+                { title: "Évaluation des acquis", duration: 10, method: "Active", notes: "Quiz ou test rapide." },
+                { title: "Ouverture & Suite", duration: 5, method: "Transmissive", notes: "Lien avec le prochain cours." }
+            ]
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const containers = {
+                amorce: document.getElementById('amorce-container'),
+                realisation: document.getElementById('realisation-container'),
+                cloture: document.getElementById('cloture-container')
+            };
+
+            const displays = {
+                total: document.getElementById('total-duration-display'),
+                target: document.getElementById('target-duration-input'),
+                amorce: {
+                    dur: document.getElementById('amorce-duration-display'),
+                    perc: document.getElementById('amorce-percent-display'),
+                    prog: document.getElementById('amorce-progress')
+                },
+                realisation: {
+                    dur: document.getElementById('realisation-duration-display'),
+                    perc: document.getElementById('realisation-percent-display'),
+                    prog: document.getElementById('realisation-progress')
+                },
+                cloture: {
+                    dur: document.getElementById('cloture-duration-display'),
+                    perc: document.getElementById('cloture-percent-display'),
+                    prog: document.getElementById('cloture-progress')
+                }
+            };
+
+            const template = document.getElementById('activity-template');
+
+            window.toggleSuggestions = function (phase) {
+                const menu = document.getElementById(`${phase}-menu`);
+                // Close others
+                document.querySelectorAll('.suggestions-menu').forEach(m => {
+                    if (m !== menu) m.classList.remove('active');
+                });
+                menu.classList.toggle('active');
+
+                if (menu.classList.contains('active')) {
+                    menu.innerHTML = '';
+                    SUGGESTIONS[phase].forEach(s => {
+                        const btn = document.createElement('button');
+                        btn.className = 'suggestion-item';
+                        btn.textContent = s.title;
+                        btn.onclick = () => {
+                            addActivity(phase, s.title, s.duration, s.method, s.notes);
+                            menu.classList.remove('active');
+                        };
+                        menu.appendChild(btn);
+                    });
+                }
+            };
+
+            // Close menus on click outside
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.suggestions-menu') && !e.target.closest('button')) {
+                    document.querySelectorAll('.suggestions-menu').forEach(m => m.classList.remove('active'));
+                }
+            });
+
+            window.addActivity = function (phase, title = "Nouvelle étape", duration = 5, method = "Transmissive", notes = "") {
+                const activityFrag = template.content.cloneNode(true);
+                const activity = activityFrag.firstElementChild;
+                activity.dataset.phase = phase;
+
+                activity.querySelector('h4').textContent = title;
+                const durationInput = activity.querySelector('.activity-duration');
+                durationInput.value = duration;
+
+                const methodSelect = activity.querySelector('.activity-method');
+                methodSelect.value = method;
+
+                const notesSpan = activity.querySelector('.tooltip-content span');
+                notesSpan.textContent = notes || "Cliquer pour modifier les notes...";
+
+                durationInput.addEventListener('input', calculateDurations);
+
+                activity.querySelector('[data-action="remove-activity"]').onclick = () => {
+                    activity.remove();
+                    calculateDurations();
+                };
+
+                containers[phase].appendChild(activity);
+                calculateDurations();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            };
+
+            function calculateDurations() {
+                const targetDuration = parseInt(displays.target.value) || 60;
+                let phaseTotals = { amorce: 0, realisation: 0, cloture: 0 };
+                let total = 0;
+
+                Object.keys(containers).forEach(phase => {
+                    const activities = containers[phase].querySelectorAll('.activity-duration');
+                    activities.forEach(input => {
+                        const val = parseInt(input.value) || 0;
+                        phaseTotals[phase] += val;
+                        total += val;
+                    });
+
+                    const percentage = total > 0 ? (phaseTotals[phase] / total * 100).toFixed(0) : 0;
+                    const phaseTargets = { amorce: 10, realisation: 80, cloture: 10 };
+
+                    // Update displays
+                    displays[phase].dur.textContent = `${phaseTotals[phase]} mn`;
+                    displays[phase].perc.textContent = `${percentage}%`;
+
+                    // Progress bar
+                    const targetPercent = phaseTargets[phase];
+                    const progressWidth = Math.min(percentage / (targetPercent * 1.5) * 100, 100);
+                    displays[phase].prog.style.width = `${percentage}%`;
+
+                    if (percentage > targetPercent + 5) {
+                        displays[phase].prog.classList.add('phase-over');
+                    } else {
+                        displays[phase].prog.classList.remove('phase-over');
+                    }
+                });
+
+                displays.total.textContent = `${total} mn`;
+                if (total > targetDuration) {
+                    displays.total.classList.add('text-red-500');
+                } else {
+                    displays.total.classList.remove('text-red-500');
+                }
+            }
+
+            displays.target.oninput = calculateDurations;
+
+            // Initial activities based on planification.json suggestions
+            addActivity('amorce', 'Accueil & Présentation', 5);
+            addActivity('amorce', 'Rappel & Accroche', 5);
+            addActivity('realisation', 'Découverte du contenu', 20);
+            addActivity('realisation', 'Mise en pratique', 30);
+            addActivity('cloture', 'Synthèse', 5);
+            addActivity('cloture', 'Évaluation & Ouverture', 5);
+
+            calculateDurations();
+        });
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            try {
+                localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+            } catch (e) {}
+        }
+
+        try {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+            }
+        } catch (e) {
+            // Fallback for security restrictions on file:// protocols
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        function exportToCSV(isTemplate = false) {
+            const rows = [["Activité", "Phase", "Durée (mn)", "Méthode", "Notes"]];
+            
+            if (!isTemplate) {
+                const phases = ["amorce", "realisation", "cloture"];
+                phases.forEach(phase => {
+                    const container = document.getElementById(`${phase}-container`);
+                    const activities = container.querySelectorAll('.activity-wrapper');
+                    activities.forEach(act => {
+                        const title = act.querySelector('h4').textContent.trim();
+                        const duration = act.querySelector('.activity-duration').value;
+                        const method = act.querySelector('.activity-method').value;
+                        const notes = act.querySelector('.tooltip-content span').textContent.trim();
+                        rows.push([title, phase.toUpperCase(), duration, method, notes]);
+                    });
+                });
+            }
+
+            const csvContent = rows.map(r => r.map(c => `"${c.toString().replace(/"/g, '""')}"`).join(";")).join("\n");
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const filename = isTemplate ? "trame_vierge_seance.csv" : "conception_seance.csv";
+            
+            // MÉTHODE ROBUSTE PAR ANCRAGE DOM
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Libération retardée pour laisser le temps au navigateur d'initier le téléchargement
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
+
+        // Gestion du Scroll pour le bouton Retour en haut (seuil réduit pour réactivité)
+        window.onscroll = function () {
+            const btn = document.getElementById('back-to-top');
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                btn.classList.add('visible');
+            } else {
+                btn.classList.remove('visible');
+            }
+        };
+
+        function scrollToTop() {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+
+    <!-- MODAL D'AIDE OPO -->
+    <div id="opo-modal" class="modal-overlay" onclick="closeOPOModal(event)">
+        <div class="modal-container scroll-smooth" onclick="event.stopPropagation()">
+            <div class="opo-help-card glass border-none">
+                <div class="flex justify-between items-start mb-8 border-b border-slate-100 dark:border-slate-800 pb-6">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Méthode
+                            des 3C</h2>
+                        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">Concevoir un
+                            Objectif Pédagogique Opérationnel (OPO)</p>
+                    </div>
+                    <button onclick="closeOPOModal()"
+                        class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <div class="space-y-8 text-sm leading-relaxed">
+                    <!-- Intro -->
+                    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border-l-4 border-indigo-500">
+                        <p class="font-medium text-slate-700 dark:text-slate-300 italic">
+                            Un objectif opérationnel décrit précisément ce que l'apprenant sera capable de <b>faire</b> à
+                            l'issue de la séance. Il doit être <b>spécifique, observable et évaluable</b>.
+                        </p>
+                    </div>
+
+                    <!-- Les 3 composantes -->
+                    <div>
+                        <h3
+                            class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4 flex items-center gap-2">
+                            <span
+                                class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm">3</span>
+                            Les Composantes Clés
+                        </h3>
+                        <div class="grid md:grid-cols-3 gap-4">
+                            <div
+                                class="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                <div class="text-indigo-500 font-black text-xs uppercase mb-2">C1 — Comportement</div>
+                                <p class="text-xs font-bold mb-2">Que doit faire l'apprenant ?</p>
+                                <p class="text-[11px] text-slate-500">Utiliser un <b>verbe d'action</b> précis (Taxonomie
+                                    de Bloom). Éviter "comprendre" ou "savoir".</p>
+                            </div>
+                            <div
+                                class="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                <div class="text-indigo-500 font-black text-xs uppercase mb-2">C2 — Conditions</div>
+                                <p class="text-xs font-bold mb-2">Dans quel contexte ?</p>
+                                <p class="text-[11px] text-slate-500">Ressources, outils autorisés, durée, environnement
+                                    de réalisation.</p>
+                            </div>
+                            <div
+                                class="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+                                <div class="text-indigo-500 font-black text-xs uppercase mb-2">C3 — Critères</div>
+                                <p class="text-xs font-bold mb-2">Comment mesurer ?</p>
+                                <p class="text-[11px] text-slate-500">Seuil minimal de réussite, <b>quantitatif ou
+                                    qualitatif</b>, niveau de précision attendu pour valider l'acquis.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Verbes Action -->
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4">Exemples de Verbes
+                            (Bloom)</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Identifier</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Résoudre</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Expliquer</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Concevoir</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Comparer</span>
+                            <span
+                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Appliquer</span>
+                        </div>
+                    </div>
+
+                    <!-- Formulation -->
+                    <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 blur-[80px] opacity-20"></div>
+                        <h3 class="text-indigo-400 font-black text-xs uppercase mb-4 tracking-widest">Structure de
+                            Rédaction</h3>
+                        <p class="text-xl font-light leading-relaxed">
+                            "À l'issue de cette séance, l'apprenant sera capable de <span
+                                class="text-indigo-400 font-bold">[Comportement]</span> + <span
+                                class="text-indigo-400 font-bold">[Conditions]</span> + <span
+                                class="text-indigo-400 font-bold">[Critères]</span>"
+                        </p>
+                    </div>
+
+                    <!-- Erreurs Fréquentes -->
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4 flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-500"></i>
+                            Erreurs Fréquentes à Éviter
+                        </h3>
+                        <div class="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
+                            <table class="w-full text-left text-[11px] border-collapse">
+                                <thead>
+                                    <tr class="bg-slate-50 dark:bg-slate-900/50">
+                                        <th class="p-3 font-black uppercase text-slate-400 border-b border-slate-100 dark:border-slate-800">Erreur</th>
+                                        <th class="p-3 font-black uppercase text-slate-400 border-b border-slate-100 dark:border-slate-800">Solution</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                    <tr>
+                                        <td class="p-3 font-bold text-red-500">Verbes vagues ("comprendre", "savoir")</td>
+                                        <td class="p-3 text-slate-600 dark:text-slate-400">Remplacer par un verbe d'action de Bloom précis.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-bold text-red-500">Omettre les conditions</td>
+                                        <td class="p-3 text-slate-600 dark:text-slate-400">Préciser systématiquement la durée et les supports.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-bold text-red-500">Négliger les critères de réussite</td>
+                                        <td class="p-3 text-slate-600 dark:text-slate-400">Définir un seuil chiffré ou une grille de réussite.</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-bold text-red-500">Confondre objectif et activité</td>
+                                        <td class="p-3 text-slate-600 dark:text-slate-400">Se centrer sur le résultat attendu chez l'apprenant.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Exemples -->
+                    <div>
+                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4">Exemples Complets</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="border border-slate-100 dark:border-slate-800 p-5 rounded-2xl bg-white dark:bg-slate-900/50">
+                                <h4 class="text-[10px] font-black uppercase text-indigo-500 mb-3 tracking-widest">Exemple 1 — Excel</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 italic">"Identifier 5 fonctionnalités d'Excel, sans notes, en 10 min, en citant au moins 3 sur 5."</p>
+                            </div>
+                            <div class="border border-slate-100 dark:border-slate-800 p-5 rounded-2xl bg-white dark:bg-slate-900/50">
+                                <h4 class="text-[10px] font-black uppercase text-indigo-500 mb-3 tracking-widest">Exemple 2 — Oral</h4>
+                                <p class="text-xs text-slate-600 dark:text-slate-400 italic">"Présenter un exposé de 10 min avec support, en respectant 4 critères sur 5 de la grille d'évaluation."</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Qualiopi -->
+                    <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-800/50">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
+                                <i data-lucide="shield-check" class="w-6 h-6"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-tight">Certification Qualiopi</h4>
+                                <p class="text-[10px] font-bold text-emerald-600/80 uppercase tracking-widest">Indicateur 11</p>
+                            </div>
+                        </div>
+                        <p class="text-xs text-emerald-800/80 dark:text-emerald-400/80 leading-relaxed">
+                            L'Indicateur 11 exige que le prestataire évalue l'atteinte des objectifs. La méthode 3C permet de concevoir des évaluations cohérentes (quiz, grilles d'observation, mises en situation) qui constituent des preuves tangibles de l'efficacité de la formation lors d'un audit.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                    <button onclick="closeOPOModal()"
+                        class="bg-indigo-600 text-white font-black py-4 px-10 rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-xs uppercase tracking-widest">
+                        J'ai compris
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonctions Modal OPO
+        function openOPOModal() {
+            document.getElementById('opo-modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function closeOPOModal(e) {
+            document.getElementById('opo-modal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Initialisation initiale des icônes
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+    </script>
+</body>
+
+</html>
