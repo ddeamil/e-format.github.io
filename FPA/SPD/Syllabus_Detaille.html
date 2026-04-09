@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -46,7 +47,9 @@
             scroll-behavior: smooth;
         }
 
-        h1, h2, h3 {
+        h1,
+        h2,
+        h3 {
             font-family: 'Outfit', sans-serif;
         }
 
@@ -101,10 +104,13 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-x-hidden">
+
+<body
+    class="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-500 overflow-x-hidden">
 
     <!-- Theme Toggle -->
-    <button onclick="toggleTheme()" class="fixed top-6 right-6 z-50 p-3 rounded-2xl glass shadow-xl hover:scale-110 transition-all active:scale-95">
+    <button onclick="toggleTheme()"
+        class="fixed top-6 right-6 z-50 p-3 rounded-2xl glass shadow-xl hover:scale-110 transition-all active:scale-95">
         <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
         <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
     </button>
@@ -113,28 +119,35 @@
     <header class="relative min-h-screen flex items-center justify-center overflow-hidden">
         <!-- Background Image with Parallax -->
         <div class="absolute inset-0 z-0">
-            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center brightness-[0.4] dark:brightness-[0.3]" style="background-image: url('https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/FPA/SPD/1.webp'); transform: scale(1.1);"></div>
+            <div id="hero-bg" class="absolute inset-0 bg-cover bg-center brightness-[0.4] dark:brightness-[0.3]"
+                style="background-image: url('https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/FPA/SPD/1.webp'); transform: scale(1.1);">
+            </div>
             <div class="absolute inset-0 bg-gradient-to-b from-transparent via-slate-950/20 to-slate-950"></div>
             <div class="hero-gradient absolute inset-0"></div>
         </div>
 
         <div class="container mx-auto px-6 relative z-10 text-center">
             <div id="hero-content">
-                <span class="inline-block px-4 py-1.5 mb-6 text-[10px] font-black uppercase tracking-[0.3em] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full glass">
+                <span
+                    class="inline-block px-4 py-1.5 mb-6 text-[10px] font-black uppercase tracking-[0.3em] bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-full glass">
                     Ingénierie de Formation
                 </span>
                 <h1 class="text-6xl md:text-8xl font-black uppercase tracking-tighter mb-4 text-white">
-                    Syllabus <span class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">Détaillé</span>
+                    Syllabus <span
+                        class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-emerald-400">Détaillé</span>
                 </h1>
-                <p class="text-xl md:text-2xl font-light text-slate-300 max-w-2xl mx-auto leading-relaxed mb-10 opacity-80">
+                <p
+                    class="text-xl md:text-2xl font-light text-slate-300 max-w-2xl mx-auto leading-relaxed mb-10 opacity-80">
                     Concevoir l'ingénierie micro de la formation pour un apprentissage durable et engageant.
                 </p>
                 <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                    <a href="#objectifs" class="bg-white text-slate-950 font-black px-8 py-4 rounded-2xl hover:bg-indigo-50 transition-all shadow-2xl flex items-center gap-2 group text-sm uppercase tracking-widest">
+                    <a href="#objectifs"
+                        class="bg-white text-slate-950 font-black px-8 py-4 rounded-2xl hover:bg-indigo-50 transition-all shadow-2xl flex items-center gap-2 group text-sm uppercase tracking-widest">
                         Explorer les objectifs
                         <i data-lucide="arrow-down" class="w-4 h-4 group-hover:translate-y-1 transition-transform"></i>
                     </a>
-                    <a href="#podcast" class="glass text-white font-black px-8 py-4 rounded-2xl hover:bg-white/10 transition-all flex items-center gap-2 text-sm uppercase tracking-widest border-white/20">
+                    <a href="#podcast"
+                        class="glass text-white font-black px-8 py-4 rounded-2xl hover:bg-white/10 transition-all flex items-center gap-2 text-sm uppercase tracking-widest border-white/20">
                         Écouter le Podcast
                         <i data-lucide="play-circle" class="w-4 h-4"></i>
                     </a>
@@ -153,28 +166,35 @@
         <div class="container mx-auto px-6">
             <div class="max-w-4xl mx-auto mb-16 text-center" id="objectifs-header">
                 <h2 class="text-4xl font-black uppercase tracking-tight mb-4">Objectifs Pédagogiques</h2>
-                <p class="text-slate-500 dark:text-slate-400">Les piliers de votre ingénierie micro pour garantir le transfert des acquis.</p>
+                <p class="text-slate-500 dark:text-slate-400">Les piliers de votre ingénierie micro pour garantir le
+                    transfert des acquis.</p>
             </div>
 
             <div class="flex flex-col md:flex-row justify-center gap-8 max-w-5xl mx-auto">
                 <!-- Objective 1 -->
-                <div class="objective-card glass p-8 rounded-[2rem] hover:border-indigo-500/50 transition-all group w-full md:w-1/2 max-w-md">
-                    <div class="w-14 h-14 bg-indigo-500/20 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-lg shadow-indigo-500/10">
+                <div
+                    class="objective-card glass p-8 rounded-[2rem] hover:border-indigo-500/50 transition-all group w-full md:w-1/2 max-w-md">
+                    <div
+                        class="w-14 h-14 bg-indigo-500/20 text-indigo-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-lg shadow-indigo-500/10">
                         <i data-lucide="target" class="w-7 h-7"></i>
                     </div>
                     <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">Précision des OPO</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Formuler des objectifs opérationnels avec la méthode 3C pour une mesure fiable des compétences acquises.
+                        Formuler des objectifs opérationnels avec la méthode 3C pour une mesure fiable des compétences
+                        acquises.
                     </p>
                 </div>
                 <!-- Objective 2 -->
-                <div class="objective-card glass p-8 rounded-[2rem] hover:border-emerald-500/50 transition-all group w-full md:w-1/2 max-w-md">
-                    <div class="w-14 h-14 bg-emerald-500/20 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-lg shadow-emerald-500/10">
+                <div
+                    class="objective-card glass p-8 rounded-[2rem] hover:border-emerald-500/50 transition-all group w-full md:w-1/2 max-w-md">
+                    <div
+                        class="w-14 h-14 bg-emerald-500/20 text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-lg shadow-emerald-500/10">
                         <i data-lucide="layers" class="w-7 h-7"></i>
                     </div>
                     <h3 class="text-xl font-bold mb-4 text-slate-800 dark:text-white">Séquençage Logique</h3>
                     <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                        Structurer les contenus en séquences cohérentes respectant la courbe d'attention et d'apprentissage des adultes.
+                        Structurer les contenus en séquences cohérentes respectant la courbe d'attention et
+                        d'apprentissage des adultes.
                     </p>
                 </div>
             </div>
@@ -184,15 +204,21 @@
     <!-- Podcast Section -->
     <section id="podcast" class="py-24 bg-slate-100 dark:bg-slate-900/50 relative overflow-hidden">
         <!-- Decorative Elements -->
-        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full"></div>
+        <div class="absolute top-1/2 left-0 -translate-y-1/2 w-64 h-64 bg-indigo-500/10 blur-[100px] rounded-full">
+        </div>
         <div class="absolute bottom-0 right-0 w-96 h-96 bg-emerald-500/5 blur-[120px] rounded-full"></div>
 
         <div class="container mx-auto px-6 relative z-10">
-            <div class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12 glass p-8 md:p-12 rounded-[3rem] shadow-2xl border-white/20 dark:border-white/5">
+            <div
+                class="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12 glass p-8 md:p-12 rounded-[3rem] shadow-2xl border-white/20 dark:border-white/5">
                 <!-- Cover Image -->
-                <div class="w-full md:w-1/3 aspect-square rounded-[2rem] overflow-hidden shadow-2xl relative group" id="podcast-cover">
-                    <img src="https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/FPA/SPD/1.webp" alt="Podcast Cover" class="w-full h-full object-cover group-hover:scale-110 transition-all duration-700">
-                    <div class="absolute inset-0 bg-indigo-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer" onclick="togglePlay()">
+                <div class="w-full md:w-1/3 aspect-square rounded-[2rem] overflow-hidden shadow-2xl relative group"
+                    id="podcast-cover">
+                    <img src="https://raw.githubusercontent.com/ddeamil/e-format.github.io/main/FPA/SPD/1.webp"
+                        alt="Podcast Cover"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-all duration-700">
+                    <div class="absolute inset-0 bg-indigo-900/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                        onclick="togglePlay()">
                         <i data-lucide="play" class="w-16 h-16 text-white text-pulse-slow"></i>
                     </div>
                 </div>
@@ -200,8 +226,10 @@
                 <!-- Player Interface -->
                 <div class="w-full md:w-2/3" id="player-container">
                     <div class="mb-8">
-                        <span class="text-indigo-500 font-black text-xs uppercase tracking-widest mb-2 block">Podcast Épisode #01</span>
-                        <h2 class="text-3xl md:text-4xl font-black uppercase mb-4 tracking-tight">Trois étapes pour bien former les adultes</h2>
+                        <span class="text-indigo-500 font-black text-xs uppercase tracking-widest mb-2 block">Podcast
+                            Épisode #01</span>
+                        <h2 class="text-3xl md:text-4xl font-black uppercase mb-4 tracking-tight">Trois étapes pour bien
+                            former les adultes</h2>
                         <div class="flex items-center gap-2 text-slate-500 dark:text-slate-400 text-sm">
                             <i data-lucide="mic" class="w-4 h-4"></i>
                             <span>D. De Amil — Instructional Design Podcast</span>
@@ -213,7 +241,8 @@
                         <div id="waveform" class="flex items-end gap-[2px] h-20 w-full mb-2">
                             <!-- Bars generated by JS -->
                         </div>
-                        <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <div
+                            class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                             <span id="current-time">0:00</span>
                             <span id="duration">0:00</span>
                         </div>
@@ -221,7 +250,8 @@
 
                     <!-- Controls -->
                     <div class="flex items-center gap-6">
-                        <button onclick="togglePlay()" id="play-btn" class="w-16 h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/30 transition-all active:scale-90">
+                        <button onclick="togglePlay()" id="play-btn"
+                            class="w-16 h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl flex items-center justify-center shadow-xl shadow-indigo-500/30 transition-all active:scale-90">
                             <i data-lucide="play" id="play-icon" class="w-8 h-8 fill-current"></i>
                             <i data-lucide="pause" id="pause-icon" class="w-8 h-8 fill-current hidden"></i>
                         </button>
@@ -229,13 +259,15 @@
                             <input type="range" id="seek-slider" class="w-full" min="0" value="0">
                         </div>
                         <div class="flex items-center gap-3">
-                            <button onclick="toggleMute()" class="text-slate-500 hover:text-indigo-500 transition-colors">
+                            <button onclick="toggleMute()"
+                                class="text-slate-500 hover:text-indigo-500 transition-colors">
                                 <i data-lucide="volume-2" id="vol-icon" class="w-5 h-5"></i>
                                 <i data-lucide="volume-x" id="mute-icon" class="w-5 h-5 hidden"></i>
                             </button>
                         </div>
                     </div>
-                    <audio id="audio-player" src="https://ddeamil.github.io/e-format.github.io/FPA/SPD/Trois_%C3%A9tapes_pour_bien_former_les_adultes.m4a"></audio>
+                    <audio id="audio-player"
+                        src="https://ddeamil.github.io/e-format.github.io/FPA/SPD/Trois_%C3%A9tapes_pour_bien_former_les_adultes.m4a"></audio>
                 </div>
             </div>
         </div>
@@ -245,7 +277,8 @@
     <section class="py-24 text-center">
         <div class="container mx-auto px-6">
             <h2 class="text-3xl font-black uppercase mb-8 tracking-tight">Prêt à concevoir ?</h2>
-            <a href="Simulateur_Seance.html" class="inline-flex items-center gap-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 px-12 rounded-[2rem] transition-all shadow-2xl shadow-indigo-500/30 active:scale-95 text-lg uppercase tracking-widest group">
+            <a href="https://github.com/ddeamil/e-format.github.io/blob/main/FPA/SPD/Syllabus_Detaille.html"
+                class="inline-flex items-center gap-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-5 px-12 rounded-[2rem] transition-all shadow-2xl shadow-indigo-500/30 active:scale-95 text-lg uppercase tracking-widest group">
                 Lancer le Simulateur
                 <i data-lucide="arrow-right" class="w-6 h-6 group-hover:translate-x-2 transition-transform"></i>
             </a>
@@ -373,7 +406,7 @@
 
         function animateWave() {
             if (audio.paused) return;
-            
+
             bars.forEach((bar, index) => {
                 const randomHeight = 8 + Math.random() * 60;
                 gsap.to(bar, {
@@ -398,7 +431,7 @@
             const duration = audio.duration;
             seekSlider.value = (current / duration) * 100;
             currentTimeEl.textContent = formatTime(current);
-            
+
             // Highlight bars based on progress
             const progress = (current / duration) * barCount;
             bars.forEach((bar, i) => {
@@ -438,4 +471,5 @@
         }
     </script>
 </body>
+
 </html>
