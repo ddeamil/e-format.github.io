@@ -59,13 +59,32 @@
         }
 
         .interactive-card {
-            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, opacity 0.3s ease-in-out;
-            cursor: pointer;
+            transition: transform 0.2s ease-out, box-shadow 0.2s ease-out, border-color 0.3s ease, opacity 0.3s ease-in-out;
         }
+        
+        .alert-red { border-color: #ef4444 !important; box-shadow: 0 0 15px rgba(239, 68, 68, 0.15) !important; }
+        .alert-orange { border-color: #f97316 !important; box-shadow: 0 0 15px rgba(249, 115, 22, 0.15) !important; }
 
-        .faded {
-            opacity: 0.3;
+        /* Drag and Drop Styles */
+        .drag-handle {
+            touch-action: none;
+            cursor: grab;
+        }
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+        .activity-wrapper.dragging {
+            opacity: 0.4;
+            border: 2px dashed #6366f1 !important;
             transform: scale(0.98);
+            background: rgba(248, 250, 252, 0.5);
+            box-shadow: none !important;
+        }
+        .dark .activity-wrapper.dragging {
+            background: rgba(15, 23, 42, 0.5);
+        }
+        [id$="-container"] {
+            min-height: 80px;
         }
 
         /* Tooltip Styles */
@@ -79,22 +98,28 @@
             bottom: 125%;
             left: 50%;
             transform: translateX(-50%) translateY(10px);
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.98);
             color: white;
             padding: 12px;
             border-radius: 12px;
-            width: 240px;
+            width: 260px;
             font-size: 11px;
-            line-height: 1.4;
-            z-index: 100;
+            line-height: 1.5;
+            z-index: 1000;
             opacity: 0;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             pointer-events: none;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
             text-transform: none;
             font-weight: 500;
             text-align: left;
+        }
+
+        .tooltip-content-right {
+            left: auto;
+            right: 0;
+            transform: translateY(10px);
         }
 
         .tooltip-container:hover .tooltip-content {
@@ -103,26 +128,11 @@
             transform: translateX(-50%) translateY(0);
         }
 
-        .info-indicator {
-            position: absolute;
-            top: -4px;
-            right: -4px;
-            width: 14px;
-            height: 14px;
-            background: #F97316;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 9px;
-            font-weight: 900;
-            cursor: help;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        .tooltip-container:hover .tooltip-content-right {
+            transform: translateY(0);
         }
 
-        /* Editable Styles */
+        /* Editable Styles & Placeholders */
         [contenteditable="true"] {
             cursor: text;
             padding: 2px 4px;
@@ -144,6 +154,17 @@
             box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
         }
 
+        [contenteditable="true"]:empty:before {
+            content: attr(data-placeholder);
+            color: #94a3b8;
+            pointer-events: none;
+            display: block;
+        }
+
+        .dark [contenteditable="true"]:empty:before {
+            color: #475569;
+        }
+
         .phase-indicator {
             height: 4px;
             background: #e2e8f0;
@@ -162,7 +183,7 @@
             background: #ef4444 !important;
         }
 
-        /* Styles pour le menu de suggestions */
+        /* Suggestions Menu */
         .suggestions-menu {
             position: absolute;
             bottom: 100%;
@@ -189,15 +210,8 @@
         }
 
         @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .suggestion-item {
@@ -216,55 +230,107 @@
             color: #3b82f6;
         }
 
-        /* Back to top button */
-        #back-to-top {
+        /* Side Panel Drawer Styles */
+        .side-panel-overlay {
             position: fixed;
-            bottom: 80px;
-            right: 32px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            background: #4f46e5;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.4);
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(4px);
+            z-index: 999;
             opacity: 0;
             visibility: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 100;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
 
-        #back-to-top.visible {
+        .side-panel-overlay.active {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
         }
 
-        #back-to-top:hover {
-            transform: translateY(-5px) scale(1.1);
-            background: #4338ca;
+        .side-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            width: 100%;
+            max-width: 520px;
+            height: 100vh;
+            background: white;
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
         }
 
-        footer {
-            margin-top: auto;
-            border-top: 1px solid rgba(226, 232, 240, 0.8);
+        .dark .side-panel {
+            background: #0f172a;
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .dark footer {
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        .side-panel.active {
+            transform: translateX(0);
+        }
+
+        .side-panel-body::-webkit-scrollbar { width: 6px; }
+        .side-panel-body::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        .dark .side-panel-body::-webkit-scrollbar-thumb { background-color: #475569; }
+
+        /* General form elements in side panel */
+        .panel-input {
+            width: 100%;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #334155;
+            transition: all 0.2s;
+            outline: none;
+        }
+        .panel-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        .dark .panel-input {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+        .dark .panel-input:focus {
+            border-color: #818cf8;
+            box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+        }
+        .panel-label {
+            display: block;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        /* Harmonized Modern Dark Dropdowns */
+        .modern-dark-dropdown {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+            border: 1px solid #334155 !important;
+            color-scheme: dark !important;
+        }
+        .modern-dark-dropdown:focus {
+            border-color: #6366f1 !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+        }
+        .modern-dark-dropdown option {
+            background-color: #0f172a;
+            color: #f8fafc;
         }
 
         /* Modal Styles */
         .modal-overlay {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(15, 23, 42, 0.4);
             backdrop-filter: blur(8px);
             z-index: 1000;
@@ -276,87 +342,136 @@
             transition: all 0.3s ease;
         }
 
-        .modal-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
+        .modal-overlay.active { opacity: 1; visibility: visible; }
         .modal-container {
-            width: 95%;
-            max-width: 800px;
-            max-height: 85vh;
-            overflow-y: auto;
+            width: 95%; max-width: 800px; max-height: 85vh; overflow-y: auto;
             transform: scale(0.9) translateY(20px);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+        .modal-overlay.active .modal-container { transform: scale(1) translateY(0); }
+        .modal-container::-webkit-scrollbar { width: 6px; }
+        .modal-container::-webkit-scrollbar-thumb { background-color: rgba(79, 70, 229, 0.5); border-radius: 10px; }
 
-        .modal-overlay.active .modal-container {
-            transform: scale(1) translateY(0);
-        }
-
-        .modal-container::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .modal-container::-webkit-scrollbar-thumb {
-            background-color: rgba(79, 70, 229, 0.5);
-            border-radius: 10px;
-        }
-
-        .opo-help-card {
-            background: white;
-            border-radius: 24px;
-            padding: 32px;
+        .help-card {
+            background: white; border-radius: 24px; padding: 32px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
         }
-
-        .dark .opo-help-card {
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+        .dark .help-card { background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); }
+        
+        /* Verb Badge in Modal */
+        .verb-badge {
+            cursor: pointer;
+            padding: 4px 8px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: #475569;
+            transition: all 0.2s;
+            text-transform: lowercase;
+            display: inline-block;
         }
+        .dark .verb-badge {
+            background: #1e293b;
+            border-color: #334155;
+            color: #cbd5e1;
+        }
+        .verb-badge:hover {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px -2px rgba(59, 130, 246, 0.4);
+        }
+        .dark .verb-badge:hover {
+            background: #3b82f6;
+            border-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 10px -2px rgba(59, 130, 246, 0.5);
+        }
+
+        /* --- STYLES DU TUTORIEL (ONBOARDING SPOTLIGHT) --- */
+        body.tour-active {
+            overflow-x: hidden;
+        }
+        body.tour-active .overflow-hidden {
+            overflow: visible !important;
+        }
+        .tour-blocker {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 9998;
+            background: transparent;
+            display: none;
+            cursor: default;
+        }
+        body.tour-active .tour-blocker { display: block; }
+        .tour-highlight {
+            z-index: 9999 !important;
+            box-shadow: 0 0 0 4px #3b82f6, 0 0 0 9999px rgba(15, 23, 42, 0.85) !important;
+            border-radius: inherit;
+            transition: box-shadow 0.3s ease;
+            background: white; /* Sécurité pour éléments transparents */
+        }
+        .dark .tour-highlight {
+            background: #0f172a;
+        }
+        .tour-highlight:not(.fixed):not(.absolute):not(.sticky) {
+            position: relative !important;
+        }
+        .tour-box {
+            position: absolute; z-index: 10000;
+            background: white; border-radius: 16px; padding: 24px;
+            width: 340px; max-width: 90vw;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            opacity: 0; visibility: hidden; transform: translateY(15px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .dark .tour-box {
+            background: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .tour-box.active { opacity: 1; visibility: visible; transform: translateY(0); }
     </style>
 </head>
 
 <body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 flex flex-col min-h-screen">
 
     <!-- Navigation Supérieure Fixe -->
-    <nav class="sticky top-0 z-50 glass border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
+    <nav class="sticky top-0 z-40 glass border-b border-slate-200 dark:border-slate-800 transition-all duration-300">
         <div class="max-w-[1750px] mx-auto px-6">
             <div class="flex justify-between items-center h-20">
-                <div class="flex items-center gap-4">
-                    <div
-                        class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                <div id="tour-step-1" class="flex items-center gap-4 bg-transparent rounded-2xl p-1">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-500/20">
                         <i data-lucide="calendar-range" class="text-white w-6 h-6"></i>
                     </div>
                     <div>
-                        <h1 class="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">
-                            Conception
-                            de Séance Pédagogique</h1>
-                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">
-                            Simulateur Chronologique Interactif</p>
+                        <h1 class="text-lg font-black tracking-tight text-slate-900 dark:text-white uppercase">Conception de Séance</h1>
+                        <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-[0.2em]">Simulateur Scénarimage Interactif</p>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-6">
                     <div class="hidden md:flex flex-col items-end">
                         <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Durée Totale</p>
-                        <p id="total-duration-display" class="text-xl font-black text-indigo-600 dark:text-indigo-400">0
-                            mn</p>
+                        <p id="total-duration-display" class="text-xl font-black text-indigo-600 dark:text-indigo-400">0 mn</p>
                     </div>
                     <div class="h-10 w-px bg-slate-200 dark:bg-slate-800 mx-2"></div>
                     <div class="flex items-center gap-3">
-                        <button onclick="exportToCSV(true)"
-                            class="flex items-center gap-2 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-black py-2.5 px-4 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 text-[10px] uppercase tracking-widest">
+                        <button onclick="startTour()" class="flex items-center gap-2 border-2 border-blue-200 dark:border-blue-900/50 text-blue-600 dark:text-blue-400 font-black py-2.5 px-4 rounded-xl transition-all hover:bg-blue-50 dark:hover:bg-blue-900/30 active:scale-95 text-[10px] uppercase tracking-widest">
+                            <i data-lucide="compass" class="w-4 h-4"></i>
+                            <span class="hidden sm:inline">Tutoriel</span>
+                        </button>
+
+                        <button onclick="exportToCSV(true)" class="flex items-center gap-2 border-2 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 font-black py-2.5 px-4 rounded-xl transition-all hover:bg-slate-100 dark:hover:bg-slate-800 active:scale-95 text-[10px] uppercase tracking-widest">
                             <i data-lucide="file-text" class="w-4 h-4"></i>
-                            <span>Trame Vierge</span>
+                            <span class="hidden sm:inline">Trame Vierge</span>
                         </button>
-                        <button onclick="exportToCSV()"
-                            class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
+                        <button onclick="exportToCSV()" class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 px-4 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
                             <i data-lucide="download" class="w-4 h-4"></i>
-                            <span>Exporter CSV</span>
+                            <span class="hidden sm:inline">Exporter CSV</span>
                         </button>
-                        <button onclick="toggleTheme()"
-                            class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 active:scale-95 transition-all">
+                        <button onclick="toggleTheme()" class="p-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:scale-110 active:scale-95 transition-all">
                             <i data-lucide="sun" class="hidden dark:block w-5 h-5"></i>
                             <i data-lucide="moon" class="block dark:hidden w-5 h-5"></i>
                         </button>
@@ -366,8 +481,7 @@
         </div>
     </nav>
 
-    <main id="main-container"
-        class="main-container flex-grow flex p-4 lg:px-8 gap-6 overflow-x-auto lg:overflow-x-visible lg:justify-center">
+    <main id="main-container" class="main-container flex-grow flex p-4 lg:px-8 gap-6 overflow-x-auto lg:overflow-x-visible lg:justify-center">
 
         <!-- Colonne 0: Configuration/Objectif (Sidebar) -->
         <section class="flex-shrink-0 w-72 flex flex-col gap-4">
@@ -375,67 +489,70 @@
                 <h2 class="text-xs font-black text-indigo-600 uppercase tracking-widest mb-4">Paramètres Séance</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Titre de la
-                            séance</label>
-                        <p class="text-sm font-bold bg-slate-100 dark:bg-slate-900/50 p-2 rounded-xl"
-                            contenteditable="true">Nouvelle Séance de cours</p>
+                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Titre de la séance</label>
+                        <p class="text-sm font-bold bg-slate-100 dark:bg-slate-900/50 p-2 rounded-xl" contenteditable="true">Nouvelle Séance de cours</p>
                     </div>
-                    <div>
+                    
+                    <!-- DÉCOMPOSITION OPO 3C -->
+                    <div id="tour-step-2" class="p-2 -mx-2 rounded-2xl">
                         <div class="flex justify-between items-center mb-1">
-                            <label class="text-[10px] font-black text-slate-400 uppercase block">Objectif Pédagogique
-                                Opérationnel</label>
-                            <button onclick="openOPOModal()"
-                                class="text-indigo-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
+                            <label class="text-[10px] font-black text-slate-400 uppercase block">Objectif Opérationnel</label>
+                            <button onclick="openModal('opo-modal')" class="text-indigo-500 hover:text-indigo-600 transition-colors flex items-center gap-1">
                                 <span class="text-[9px] font-bold uppercase">Méthode 3C</span>
                                 <i data-lucide="help-circle" class="w-4 h-4"></i>
                             </button>
                         </div>
 
-                        <!-- Méthode 3C Inputs -->
                         <div class="mb-4 space-y-2">
                             <div class="space-y-2 pl-2 border-l-2 border-indigo-200 dark:border-indigo-900/60 mt-2">
-                                <div class="group">
-                                    <label
-                                        class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">1.
-                                        Comportement Observable</label>
-                                    <p class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]"
-                                        contenteditable="true"
-                                        data-placeholder="Verbe d'action de la taxonomie de Bloom..."></p>
+                                <div class="group relative">
+                                    <div class="flex justify-between items-center mb-0.5">
+                                        <label class="text-[8px] font-black text-slate-400 uppercase group-hover:text-blue-500 transition-colors">1. Comportement Observable</label>
+                                        <button onclick="openModal('verbes-modal')" class="text-blue-500 hover:text-blue-600 transition-colors opacity-0 group-hover:opacity-100 flex items-center gap-1 bg-blue-50 dark:bg-blue-900/30 px-1.5 py-0.5 rounded" title="Ouvrir la banque de verbes">
+                                            <i data-lucide="target" class="w-3 h-3"></i> <span class="text-[7px] uppercase font-bold tracking-widest">Banque Verbes</span>
+                                        </button>
+                                    </div>
+                                    <p id="opo-comportement" class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 outline-none min-h-[32px] transition-all" contenteditable="true" data-placeholder="Verbe d'action..."></p>
                                 </div>
                                 <div class="group">
-                                    <label
-                                        class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">2.
-                                        Condition de réalisation</label>
-                                    <p class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]"
-                                        contenteditable="true"
-                                        data-placeholder="Contexte, ressources disponibles, durée..."></p>
+                                    <label class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">2. Condition de réalisation</label>
+                                    <p id="opo-condition" class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]" contenteditable="true" data-placeholder="Ressources, contexte..."></p>
                                 </div>
                                 <div class="group">
-                                    <label
-                                        class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">3.
-                                        Critère(s) d'Évaluation</label>
-                                    <p class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]"
-                                        contenteditable="true"
-                                        data-placeholder="Seuil minimal de réussite (ex: 3/5)..."></p>
+                                    <label class="text-[8px] font-black text-slate-400 uppercase group-hover:text-indigo-500 transition-colors">3. Critère(s) d'Évaluation</label>
+                                    <p id="opo-critere" class="text-[10px] bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-800 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 outline-none min-h-[32px]" contenteditable="true" data-placeholder="Seuil de réussite..."></p>
                                 </div>
                             </div>
                         </div>
 
-                        <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Formulation finale
-                            :</label>
-                        <p class="text-xs italic bg-slate-100 dark:bg-slate-900/50 p-3 rounded-xl min-h-[60px] border border-transparent focus:border-indigo-500/30 outline-none transition-all"
-                            contenteditable="true">À l'issue de cette séance, l'apprenant sera capable de...</p>
+                        <label class="text-[9px] font-black text-slate-400 uppercase mb-1 block">Formulation finale :</label>
+                        <p class="text-xs italic bg-slate-100 dark:bg-slate-900/50 p-3 rounded-xl min-h-[60px] outline-none" contenteditable="true" data-placeholder="À l'issue de cette séance, l'apprenant sera capable de..."></p>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-black text-slate-400 uppercase mb-1 block">Durée Cible
-                            (mn)</label>
-                        <input type="number" id="target-duration-input" value="60" min="5" step="5"
-                            class="w-full bg-slate-100 dark:bg-slate-900/50 p-2 rounded-xl text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+
+                    <!-- PARAMÉTRAGE TEMPOREL (CHRONOBIOLOGIE) -->
+                    <div id="tour-step-3" class="pt-2 border-t border-slate-200 dark:border-slate-800 p-2 -mx-2 rounded-2xl">
+                        <div class="flex justify-between items-center mb-2">
+                            <label class="text-[10px] font-black text-slate-400 uppercase block">Horaires de la séance</label>
+                            <button onclick="openModal('chrono-modal')" class="text-fuchsia-500 hover:text-fuchsia-600 transition-colors flex items-center gap-1">
+                                <span class="text-[9px] font-bold uppercase">Chronobiologie</span>
+                                <i data-lucide="brain" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="flex-1">
+                                <label class="text-[8px] font-bold text-slate-400 uppercase">Heure de début</label>
+                                <input type="time" id="start-time-input" value="09:00" class="w-full bg-white dark:bg-slate-900 p-2 rounded-xl text-sm font-bold outline-none border border-slate-200 dark:border-slate-800 focus:ring-2 focus:ring-indigo-500 transition-all">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[8px] font-bold text-slate-400 uppercase">Fin estimée</label>
+                                <div id="end-time-display" class="w-full bg-slate-100 dark:bg-slate-800/50 p-2 rounded-xl text-sm font-bold text-slate-500 border border-transparent">09:00</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <div class="glass p-5 rounded-3xl shadow-sm mt-auto">
+            
+            <div id="tour-step-4" class="glass p-5 rounded-3xl shadow-sm mt-auto">
                 <div class="flex items-center gap-3 mb-3">
                     <div class="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center text-white">
                         <i data-lucide="info" class="w-5 h-5"></i>
@@ -443,25 +560,19 @@
                     <p class="text-[10px] font-black uppercase tracking-wider">Rappel des Phases</p>
                 </div>
                 <ul class="text-[10px] space-y-2 font-medium text-slate-500">
-                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">10%</span> <b>Amorce</b>
-                        : Motivation & Contextualisation</li>
-                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">80%</span>
-                        <b>Réalisation</b> : Travail & Apprentissage
-                    </li>
-                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">10%</span> <b>Clôture</b>
-                        : Synthèse & Transfert</li>
+                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">10%</span> <b>Amorce</b></li>
+                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">80%</span> <b>Réalisation</b></li>
+                    <li class="flex items-start gap-2"><span class="text-indigo-500 font-bold">10%</span> <b>Clôture</b></li>
                 </ul>
             </div>
         </section>
 
-        <!-- Phase 1: L'Amorce (Préparation) -->
+        <!-- Phase 1: L'Amorce -->
         <section class="flex-shrink-0 w-80 flex flex-col gap-4">
-            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-blue-500 h-full flex flex-col">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-blue-500 h-full flex flex-col relative z-0">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h3 class="font-black text-blue-600 text-sm uppercase tracking-wider">L'AMORCE</h3>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Phase de préparation)
-                        </p>
                     </div>
                     <div class="text-right">
                         <p id="amorce-duration-display" class="text-sm font-black text-blue-600">0 mn</p>
@@ -471,18 +582,12 @@
                 <div class="phase-indicator mb-6">
                     <div id="amorce-progress" class="phase-progress w-0"></div>
                 </div>
-
                 <div id="amorce-container" class="flex-grow flex flex-col gap-3"></div>
-
                 <div class="mt-6 relative">
                     <div id="amorce-menu" class="suggestions-menu"></div>
                     <div class="flex gap-2">
-                        <button onclick="addActivity('amorce')"
-                            class="flex-grow bg-blue-500 hover:bg-blue-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
-                            + Étape vierge
-                        </button>
-                        <button onclick="toggleSuggestions('amorce')"
-                            class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                        <button id="tour-step-5" onclick="addActivity('amorce')" class="flex-grow bg-blue-500 hover:bg-blue-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-blue-500/20 active:scale-95 text-[10px] uppercase tracking-widest">+ Étape</button>
+                        <button onclick="toggleSuggestions('amorce')" class="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 p-3 rounded-2xl hover:scale-105 active:scale-95">
                             <i data-lucide="library" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -490,14 +595,12 @@
             </div>
         </section>
 
-        <!-- Phase 2: Le Développement (Réalisation) -->
+        <!-- Phase 2: Le Développement -->
         <section class="flex-shrink-0 w-80 flex flex-col gap-4">
-            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-emerald-500 h-full flex flex-col">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-emerald-500 h-full flex flex-col relative z-0">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h3 class="font-black text-emerald-600 text-sm uppercase tracking-wider">LE DÉVELOPPEMENT</h3>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Phase de réalisation)
-                        </p>
                     </div>
                     <div class="text-right">
                         <p id="realisation-duration-display" class="text-sm font-black text-emerald-600">0 mn</p>
@@ -507,18 +610,12 @@
                 <div class="phase-indicator mb-6">
                     <div id="realisation-progress" class="phase-progress bg-emerald-500 w-0"></div>
                 </div>
-
                 <div id="realisation-container" class="flex-grow flex flex-col gap-3"></div>
-
                 <div class="mt-6 relative">
                     <div id="realisation-menu" class="suggestions-menu"></div>
                     <div class="flex gap-2">
-                        <button onclick="addActivity('realisation')"
-                            class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
-                            + Étape vierge
-                        </button>
-                        <button onclick="toggleSuggestions('realisation')"
-                            class="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                        <button onclick="addActivity('realisation')" class="flex-grow bg-emerald-500 hover:bg-emerald-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 text-[10px] uppercase tracking-widest">+ Étape</button>
+                        <button onclick="toggleSuggestions('realisation')" class="bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400 p-3 rounded-2xl hover:scale-105 active:scale-95">
                             <i data-lucide="library" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -526,14 +623,12 @@
             </div>
         </section>
 
-        <!-- Phase 3: La Clôture (Intégration) -->
+        <!-- Phase 3: La Clôture -->
         <section class="flex-shrink-0 w-80 flex flex-col gap-4">
-            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-orange-500 h-full flex flex-col">
+            <div class="glass p-5 rounded-3xl shadow-sm border-t-4 border-t-orange-500 h-full flex flex-col relative z-0">
                 <div class="flex justify-between items-start mb-4">
                     <div>
                         <h3 class="font-black text-orange-500 text-sm uppercase tracking-wider">LA CLÔTURE</h3>
-                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">(Phase d'intégration)
-                        </p>
                     </div>
                     <div class="text-right">
                         <p id="cloture-duration-display" class="text-sm font-black text-orange-500">0 mn</p>
@@ -543,510 +638,1186 @@
                 <div class="phase-indicator mb-6">
                     <div id="cloture-progress" class="phase-progress bg-orange-500 w-0"></div>
                 </div>
-
                 <div id="cloture-container" class="flex-grow flex flex-col gap-3"></div>
-
                 <div class="mt-6 relative">
                     <div id="cloture-menu" class="suggestions-menu"></div>
                     <div class="flex gap-2">
-                        <button onclick="addActivity('cloture')"
-                            class="flex-grow bg-orange-500 hover:bg-orange-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-orange-500/20 active:scale-95 text-[10px] uppercase tracking-widest">
-                            + Étape vierge
-                        </button>
-                        <button onclick="toggleSuggestions('cloture')"
-                            class="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 p-3 rounded-2xl transition-all hover:scale-105 active:scale-95">
+                        <button onclick="addActivity('cloture')" class="flex-grow bg-orange-500 hover:bg-orange-600 text-white font-black py-3 px-4 rounded-2xl transition-all shadow-lg shadow-orange-500/20 active:scale-95 text-[10px] uppercase tracking-widest">+ Étape</button>
+                        <button onclick="toggleSuggestions('cloture')" class="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400 p-3 rounded-2xl hover:scale-105 active:scale-95">
                             <i data-lucide="library" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
             </div>
         </section>
-
     </main>
 
     <!-- Pied de Page -->
     <footer class="glass py-6 mt-8">
         <div class="max-w-[1750px] mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">
-                © D. DE AMIL | INSTRUCTIONAL DESIGNER | 2026 - CC BY-NC-N
-            </p>
-            <div class="flex items-center gap-4">
-                <div class="h-1 w-1 bg-indigo-500 rounded-full"></div>
-                <p class="text-[9px] font-bold text-slate-400 dark:text-slate-600 uppercase">Simulateur de Conception
-                    Pédagogique v2.0</p>
-            </div>
+            <p class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em]">© D. DE AMIL | INSTRUCTIONAL DESIGNER | 2026</p>
         </div>
     </footer>
 
-    <!-- Bouton Retour en Haut -->
-    <button id="back-to-top" onclick="scrollToTop()" title="Retour en haut">
-        <i data-lucide="arrow-up" class="w-6 h-6"></i>
-    </button>
-
     <!-- TEMPLATES HTML -->
     <template id="activity-template">
-        <div
-            class="activity-wrapper interactive-card glass p-4 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative group overflow-hidden transition-all hover:border-indigo-500/30">
-            <button data-action="remove-activity"
-                class="absolute top-2 right-2 bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 w-6 h-6 rounded-lg text-[10px] font-bold hover:bg-red-500 hover:text-white transition-all z-10 opacity-0 group-hover:opacity-100 flex items-center justify-center">
-                <i data-lucide="x" class="w-3 h-3"></i>
-            </button>
-
-            <div class="flex justify-between items-start mb-2 pr-6">
-                <div class="flex-grow">
-                    <p class="text-[9px] font-black uppercase tracking-widest text-indigo-500 mb-1">Activité</p>
-                    <h4 class="font-black text-slate-900 dark:text-white text-xs uppercase outline-none"
-                        contenteditable="true">Désignation de l'étape</h4>
-                </div>
-                <div class="flex flex-col items-end">
-                    <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
-                        <input type="number"
-                            class="activity-duration text-xs font-bold bg-transparent w-8 text-center outline-none"
-                            value="5" min="1">
-                        <span class="text-[10px] font-bold text-slate-400">mn</span>
-                    </div>
-                </div>
+        <!-- Rendu Draggable + Ajout de padding-left pour la poignée -->
+        <div class="activity-wrapper interactive-card glass p-4 pl-10 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 relative group overflow-hidden transition-all hover:border-indigo-500/50"
+             draggable="true" data-demarche="" data-technique="" data-formateur="" data-apprenant="" data-outil="" data-support="" data-ressource="" data-materiel="" data-difficultes="" data-remediation="" data-notes="" data-horaire="">
+            
+            <!-- Drag Handle (Grip) -->
+            <div class="drag-handle absolute left-0 top-0 bottom-0 w-8 flex items-center justify-center opacity-30 group-hover:opacity-100 transition-opacity">
+                <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-500 dark:text-slate-400"></i>
             </div>
 
-            <div class="flex items-center gap-2 mt-3">
-                <select
-                    class="activity-method bg-slate-50 dark:bg-slate-950 border-none text-[10px] font-bold text-slate-600 dark:text-slate-400 rounded-lg px-2 py-1 outline-none ring-1 ring-slate-200 dark:ring-slate-800 focus:ring-indigo-500 transition-all">
-                    <option value="Transmissive">Transmissive</option>
+            <!-- Actions (Edit/Remove) -->
+            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                <button title="Éditer les détails" data-action="edit-activity" class="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 w-7 h-7 rounded-lg flex items-center justify-center hover:bg-indigo-500 hover:text-white transition-all">
+                    <i data-lucide="settings-2" class="w-4 h-4"></i>
+                </button>
+                <button title="Supprimer" data-action="remove-activity" class="bg-slate-200 dark:bg-slate-800 text-slate-500 dark:text-slate-400 w-7 h-7 rounded-lg flex items-center justify-center hover:bg-red-500 hover:text-white transition-all">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="flex flex-col mb-2 pr-14">
+                <!-- Zone Horaire Dynamique -->
+                <div class="activity-time-display self-start inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/50 text-slate-600 dark:text-slate-300 px-2 py-0.5 rounded text-[10px] font-black tracking-widest mb-2 border border-slate-200 dark:border-slate-700">
+                    <i data-lucide="clock" class="w-3 h-3 text-indigo-500"></i>
+                    <span>00:00 - 00:00</span>
+                </div>
+                <h4 class="font-black text-slate-900 dark:text-white text-xs uppercase outline-none" contenteditable="true">Désignation</h4>
+            </div>
+
+            <div class="flex items-center justify-between gap-2 mt-3">
+                <select title="Choisir votre méthode pédagogique" class="activity-method modern-dark-dropdown text-[10px] font-bold rounded-lg px-2 py-1.5 outline-none transition-all cursor-pointer shadow-sm w-32">
+                    <option value="Expositive">Expositive</option>
                     <option value="Démonstrative">Démonstrative</option>
                     <option value="Interrogative">Interrogative</option>
-                    <option value="Active">Active (Découverte)</option>
+                    <option value="Active">Active</option>
+                    <option value="Expérientielle">Expérientielle</option>
                     <option value="Heuristique">Heuristique</option>
                 </select>
-                <div class="tooltip-container ml-auto">
-                    <i data-lucide="message-square"
-                        class="w-4 h-4 text-slate-300 hover:text-indigo-500 transition-colors"></i>
-                    <div class="tooltip-content">
-                        Consignes / Notes : <span class="italic font-normal" contenteditable="true"></span>
-                    </div>
+                
+                <div class="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">
+                    <input type="number" class="activity-duration text-xs font-bold bg-transparent w-8 text-center outline-none" value="5" min="1">
+                    <span class="text-[10px] font-bold text-slate-400">mn</span>
                 </div>
             </div>
+            
+            <!-- Badges indicateurs -->
+            <div class="mt-3 flex flex-wrap gap-1 empty:hidden indicator-badges"></div>
+            <!-- Alertes Chronobiologiques -->
+            <div class="mt-3 flex flex-col gap-1.5 empty:hidden activity-alerts"></div>
         </div>
     </template>
 
-    <script>
-        const SUGGESTIONS = {
-            amorce: [
-                { title: "Accueil & Installation", duration: 5, method: "Transmissive", notes: "Mise en place, émargement." },
-                { title: "Rappel séance précédente", duration: 5, method: "Interrogative", notes: "Vérifier les acquis." },
-                { title: "Annonce objectifs & plan", duration: 5, method: "Transmissive", notes: "Clarifier les attentes." },
-                { title: "Élément déclencheur", duration: 10, method: "Heuristique", notes: "Capter l'intérêt." }
-            ],
-            realisation: [
-                { title: "Structuration des contenus", duration: 20, method: "Démonstrative", notes: "Apport théorique." },
-                { title: "Exercices pratiques", duration: 30, method: "Active", notes: "Mise en situation." },
-                { title: "Rétroactions & Échanges", duration: 10, method: "Interrogative", notes: "Remédiation." },
-                { title: "Pause", duration: 15, method: "Transmissive", notes: "Repos cognitif." }
-            ],
-            cloture: [
-                { title: "Synthèse collective", duration: 10, method: "Interrogative", notes: "Ancrage des savoirs." },
-                { title: "Évaluation des acquis", duration: 10, method: "Active", notes: "Quiz ou test rapide." },
-                { title: "Ouverture & Suite", duration: 5, method: "Transmissive", notes: "Lien avec le prochain cours." }
-            ]
-        };
+    <!-- Datalist pour les techniques -->
+    <datalist id="techniques-list">
+        <option value="Exposé">
+        <option value="Étude de cas">
+        <option value="Expérimentation">
+        <option value="Jeu de rôle / Simulation">
+        <option value="Projet">
+        <option value="Brainstorming">
+        <option value="Travail en sous-groupes">
+        <option value="Démonstration guidée">
+    </datalist>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const containers = {
-                amorce: document.getElementById('amorce-container'),
-                realisation: document.getElementById('realisation-container'),
-                cloture: document.getElementById('cloture-container')
-            };
-
-            const displays = {
-                total: document.getElementById('total-duration-display'),
-                target: document.getElementById('target-duration-input'),
-                amorce: {
-                    dur: document.getElementById('amorce-duration-display'),
-                    perc: document.getElementById('amorce-percent-display'),
-                    prog: document.getElementById('amorce-progress')
-                },
-                realisation: {
-                    dur: document.getElementById('realisation-duration-display'),
-                    perc: document.getElementById('realisation-percent-display'),
-                    prog: document.getElementById('realisation-progress')
-                },
-                cloture: {
-                    dur: document.getElementById('cloture-duration-display'),
-                    perc: document.getElementById('cloture-percent-display'),
-                    prog: document.getElementById('cloture-progress')
-                }
-            };
-
-            const template = document.getElementById('activity-template');
-
-            window.toggleSuggestions = function (phase) {
-                const menu = document.getElementById(`${phase}-menu`);
-                // Close others
-                document.querySelectorAll('.suggestions-menu').forEach(m => {
-                    if (m !== menu) m.classList.remove('active');
-                });
-                menu.classList.toggle('active');
-
-                if (menu.classList.contains('active')) {
-                    menu.innerHTML = '';
-                    SUGGESTIONS[phase].forEach(s => {
-                        const btn = document.createElement('button');
-                        btn.className = 'suggestion-item';
-                        btn.textContent = s.title;
-                        btn.onclick = () => {
-                            addActivity(phase, s.title, s.duration, s.method, s.notes);
-                            menu.classList.remove('active');
-                        };
-                        menu.appendChild(btn);
-                    });
-                }
-            };
-
-            // Close menus on click outside
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.suggestions-menu') && !e.target.closest('button')) {
-                    document.querySelectorAll('.suggestions-menu').forEach(m => m.classList.remove('active'));
-                }
-            });
-
-            window.addActivity = function (phase, title = "Nouvelle étape", duration = 5, method = "Transmissive", notes = "") {
-                const activityFrag = template.content.cloneNode(true);
-                const activity = activityFrag.firstElementChild;
-                activity.dataset.phase = phase;
-
-                activity.querySelector('h4').textContent = title;
-                const durationInput = activity.querySelector('.activity-duration');
-                durationInput.value = duration;
-
-                const methodSelect = activity.querySelector('.activity-method');
-                methodSelect.value = method;
-
-                const notesSpan = activity.querySelector('.tooltip-content span');
-                notesSpan.textContent = notes || "Cliquer pour modifier les notes...";
-
-                durationInput.addEventListener('input', calculateDurations);
-
-                activity.querySelector('[data-action="remove-activity"]').onclick = () => {
-                    activity.remove();
-                    calculateDurations();
-                };
-
-                containers[phase].appendChild(activity);
-                calculateDurations();
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-            };
-
-            function calculateDurations() {
-                const targetDuration = parseInt(displays.target.value) || 60;
-                let phaseTotals = { amorce: 0, realisation: 0, cloture: 0 };
-                let total = 0;
-
-                Object.keys(containers).forEach(phase => {
-                    const activities = containers[phase].querySelectorAll('.activity-duration');
-                    activities.forEach(input => {
-                        const val = parseInt(input.value) || 0;
-                        phaseTotals[phase] += val;
-                        total += val;
-                    });
-
-                    const percentage = total > 0 ? (phaseTotals[phase] / total * 100).toFixed(0) : 0;
-                    const phaseTargets = { amorce: 10, realisation: 80, cloture: 10 };
-
-                    // Update displays
-                    displays[phase].dur.textContent = `${phaseTotals[phase]} mn`;
-                    displays[phase].perc.textContent = `${percentage}%`;
-
-                    // Progress bar
-                    const targetPercent = phaseTargets[phase];
-                    const progressWidth = Math.min(percentage / (targetPercent * 1.5) * 100, 100);
-                    displays[phase].prog.style.width = `${percentage}%`;
-
-                    if (percentage > targetPercent + 5) {
-                        displays[phase].prog.classList.add('phase-over');
-                    } else {
-                        displays[phase].prog.classList.remove('phase-over');
-                    }
-                });
-
-                displays.total.textContent = `${total} mn`;
-                if (total > targetDuration) {
-                    displays.total.classList.add('text-red-500');
-                } else {
-                    displays.total.classList.remove('text-red-500');
-                }
-            }
-
-            displays.target.oninput = calculateDurations;
-
-            // Initial activities based on planification.json suggestions
-            addActivity('amorce', 'Accueil & Présentation', 5);
-            addActivity('amorce', 'Rappel & Accroche', 5);
-            addActivity('realisation', 'Découverte du contenu', 20);
-            addActivity('realisation', 'Mise en pratique', 30);
-            addActivity('cloture', 'Synthèse', 5);
-            addActivity('cloture', 'Évaluation & Ouverture', 5);
-
-            calculateDurations();
-        });
-
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            try {
-                localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-            } catch (e) {}
-        }
-
-        try {
-            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                document.documentElement.classList.add('dark');
-            }
-        } catch (e) {
-            // Fallback for security restrictions on file:// protocols
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-                document.documentElement.classList.add('dark');
-            }
-        }
-
-        function exportToCSV(isTemplate = false) {
-            const rows = [["Activité", "Phase", "Durée (mn)", "Méthode", "Notes"]];
+    <!-- PANNEAU LATÉRAL (DRAWER) POUR DÉTAILS DE L'ACTIVITÉ -->
+    <div id="side-panel-overlay" class="side-panel-overlay" onclick="closeSidePanel()"></div>
+    <aside id="side-panel" class="side-panel">
+        <!-- Header -->
+        <div class="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50 dark:bg-slate-900/50">
+            <div>
+                <h2 class="text-sm font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                    <i data-lucide="layout-template" class="w-5 h-5 text-indigo-500"></i>
+                    Ingénierie de l'étape
+                </h2>
+                <p id="panel-activity-title" class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1">Titre de l'étape</p>
+            </div>
+            <button onclick="closeSidePanel()" class="p-2 bg-slate-200 dark:bg-slate-800 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors">
+                <i data-lucide="x" class="w-5 h-5 text-slate-600 dark:text-slate-300"></i>
+            </button>
+        </div>
+        
+        <!-- Body (Scrollable) -->
+        <div class="flex-grow overflow-y-auto p-6 space-y-6 side-panel-body">
             
-            if (!isTemplate) {
-                const phases = ["amorce", "realisation", "cloture"];
-                phases.forEach(phase => {
-                    const container = document.getElementById(`${phase}-container`);
-                    const activities = container.querySelectorAll('.activity-wrapper');
-                    activities.forEach(act => {
-                        const title = act.querySelector('h4').textContent.trim();
-                        const duration = act.querySelector('.activity-duration').value;
-                        const method = act.querySelector('.activity-method').value;
-                        const notes = act.querySelector('.tooltip-content span').textContent.trim();
-                        rows.push([title, phase.toUpperCase(), duration, method, notes]);
-                    });
-                });
-            }
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="panel-label">Méthode Pédagogique</label>
+                    <select id="panel-method" class="panel-input modern-dark-dropdown font-bold cursor-pointer">
+                        <option value="Expositive">Expositive</option>
+                        <option value="Démonstrative">Démonstrative</option>
+                        <option value="Interrogative">Interrogative</option>
+                        <option value="Active">Active</option>
+                        <option value="Expérientielle">Expérientielle</option>
+                        <option value="Heuristique">Heuristique</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="panel-label">Démarche <i data-lucide="zap" class="inline w-3 h-3 text-amber-500" title="Automatisé si Expositive/Démonstrative"></i></label>
+                    <select id="panel-demarche" class="panel-input modern-dark-dropdown cursor-pointer">
+                        <option value="">Sélectionner...</option>
+                        <option value="Déductive">Déductive</option>
+                        <option value="Inductive">Inductive</option>
+                    </select>
+                </div>
+            </div>
 
-            const csvContent = rows.map(r => r.map(c => `"${c.toString().replace(/"/g, '""')}"`).join(";")).join("\n");
-            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const filename = isTemplate ? "trame_vierge_seance.csv" : "conception_seance.csv";
-            
-            // MÉTHODE ROBUSTE PAR ANCRAGE DOM
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = 'hidden';
-            
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            
-            // Libération retardée pour laisser le temps au navigateur d'initier le téléchargement
-            setTimeout(() => URL.revokeObjectURL(url), 100);
-        }
+            <div>
+                <label class="panel-label">Technique Pédagogique</label>
+                <input type="text" id="panel-technique" list="techniques-list" class="panel-input modern-dark-dropdown" placeholder="Ex: Étude de cas, Exposé...">
+            </div>
 
-        // Gestion du Scroll pour le bouton Retour en haut (seuil réduit pour réactivité)
-        window.onscroll = function () {
-            const btn = document.getElementById('back-to-top');
-            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
-                btn.classList.add('visible');
-            } else {
-                btn.classList.remove('visible');
-            }
-        };
+            <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div class="relative">
+                    <label class="panel-label flex items-center gap-2">
+                        <i data-lucide="user" class="w-4 h-4 text-blue-500"></i> Mise en œuvre Formateur
+                    </label>
+                    <textarea id="panel-formateur" class="panel-input min-h-[80px] resize-y" placeholder="Que fait le formateur ? (Ex: Explique les consignes, observe, guide...)"></textarea>
+                </div>
+                
+                <div class="relative">
+                    <label class="panel-label flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-emerald-500"></i> Mise en œuvre Apprenant
+                    </label>
+                    <textarea id="panel-apprenant" class="panel-input min-h-[80px] resize-y" placeholder="Que fait l'apprenant ? (Ex: Prend des notes, manipule le logiciel...)"></textarea>
+                </div>
+            </div>
 
-        function scrollToTop() {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        }
-    </script>
-
-    <!-- MODAL D'AIDE OPO -->
-    <div id="opo-modal" class="modal-overlay" onclick="closeOPOModal(event)">
-        <div class="modal-container scroll-smooth" onclick="event.stopPropagation()">
-            <div class="opo-help-card glass border-none">
-                <div class="flex justify-between items-start mb-8 border-b border-slate-100 dark:border-slate-800 pb-6">
+            <!-- SECTION : ÉCOSYSTÈME MATÉRIEL ET DOCUMENTAIRE -->
+            <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <h4 class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-2">
+                    <i data-lucide="package" class="w-4 h-4 text-orange-500"></i> Moyens & Ressources
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Outil Pédagogique -->
                     <div>
-                        <h2 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Méthode
-                            des 3C</h2>
-                        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest mt-1">Concevoir un
-                            Objectif Pédagogique Opérationnel (OPO)</p>
+                        <label class="panel-label flex items-center justify-between">
+                            <span>Outil Pédagogique</span>
+                            <div class="tooltip-container inline-flex">
+                                <i data-lucide="info" class="w-3 h-3 text-slate-400 hover:text-indigo-500 cursor-help transition-colors"></i>
+                                <div class="tooltip-content tooltip-content-right">Tout SUPPORT utilisé par le formateur pour faciliter la transmission, la communication du contenu de la formation.</div>
+                            </div>
+                        </label>
+                        <textarea id="panel-outil" class="panel-input min-h-[60px] resize-y" placeholder="Ex: Diaporama formateur..."></textarea>
                     </div>
-                    <button onclick="closeOPOModal()"
-                        class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all">
-                        <i data-lucide="x" class="w-6 h-6"></i>
+                    <!-- Support Pédagogique -->
+                    <div>
+                        <label class="panel-label flex items-center justify-between">
+                            <span>Support Pédagogique</span>
+                            <div class="tooltip-container inline-flex">
+                                <i data-lucide="info" class="w-3 h-3 text-slate-400 hover:text-indigo-500 cursor-help transition-colors"></i>
+                                <div class="tooltip-content tooltip-content-right">Tout document remis à l'apprenant durant la phase d'acquisition, destiné à faciliter l'apprentissage et en atténuer les difficultés en fin de séance afin de ne pas laisser l'apprenant avec ses seules notes. - OUVRAGE, TABLEAU, MULTIMEDIA, etc....</div>
+                            </div>
+                        </label>
+                        <textarea id="panel-support" class="panel-input min-h-[60px] resize-y" placeholder="Ex: Livret stagiaire, mémo..."></textarea>
+                    </div>
+                    <!-- Ressources Pédagogiques -->
+                    <div>
+                        <label class="panel-label flex items-center justify-between">
+                            <span>Ressources Pédago.</span>
+                            <div class="tooltip-container inline-flex">
+                                <i data-lucide="info" class="w-3 h-3 text-slate-400 hover:text-indigo-500 cursor-help transition-colors"></i>
+                                <div class="tooltip-content tooltip-content-right">Tout autre document ou source d'information - REVUE, OUVRAGE, INTERNET ..... DOCUMENTS...</div>
+                            </div>
+                        </label>
+                        <textarea id="panel-ressource" class="panel-input min-h-[60px] resize-y" placeholder="Ex: Lien web, glossaire..."></textarea>
+                    </div>
+                    <!-- Matériel Pédagogique -->
+                    <div>
+                        <label class="panel-label flex items-center justify-between">
+                            <span>Matériel Pédagogique</span>
+                            <div class="tooltip-container inline-flex">
+                                <i data-lucide="info" class="w-3 h-3 text-slate-400 hover:text-indigo-500 cursor-help transition-colors"></i>
+                                <div class="tooltip-content tooltip-content-right">* TABLEAU * PORTABLE * PAPERBOARD * TV * ORDINATEUR, etc....</div>
+                            </div>
+                        </label>
+                        <textarea id="panel-materiel" class="panel-input min-h-[60px] resize-y" placeholder="Ex: PC, Vidéoprojecteur..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="panel-label flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-red-500"></i> Difficultés envisagées
+                        </label>
+                        <textarea id="panel-difficultes" class="panel-input min-h-[80px] resize-y" placeholder="Ex: Baisse d'attention, incompréhension..."></textarea>
+                    </div>
+                    <div>
+                        <label class="panel-label flex items-center gap-2">
+                            <i data-lucide="life-buoy" class="w-4 h-4 text-teal-500"></i> Remédiation
+                        </label>
+                        <textarea id="panel-remediation" class="panel-input min-h-[80px] resize-y" placeholder="Ex: Reformuler avec une métaphore..."></textarea>
+                    </div>
+                </div>
+                
+                <div>
+                    <label class="panel-label flex items-center gap-2">
+                        <i data-lucide="message-square" class="w-4 h-4 text-slate-500"></i> Notes / Consignes internes
+                    </label>
+                    <textarea id="panel-notes" class="panel-input min-h-[60px] resize-y" placeholder="Notes pour le déroulé..."></textarea>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex justify-end">
+            <button onclick="closeSidePanel()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-black py-2.5 px-6 rounded-xl transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-[11px] uppercase tracking-widest">
+                Terminer l'édition
+            </button>
+        </div>
+    </aside>
+
+    <!-- MODALES -->
+    
+    <!-- Modal Banque de Verbes (Theme Bleu) -->
+    <div id="verbes-modal" class="modal-overlay" onclick="closeModal('verbes-modal')">
+        <div class="modal-container scroll-smooth max-w-4xl" onclick="event.stopPropagation()">
+            <div class="help-card border-none">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                            <i data-lucide="target" class="w-6 h-6 text-blue-500"></i> Banque de Verbes d'Action
+                        </h2>
+                        <p class="text-xs font-bold text-blue-500 uppercase tracking-widest mt-1">Sélectionnez un verbe pour l'insérer automatiquement</p>
+                    </div>
+                    <button onclick="closeModal('verbes-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <div class="flex gap-2 mb-6 overflow-x-auto pb-2 border-b border-slate-100 dark:border-slate-800">
+                    <button id="btn-tab-savoirs" onclick="switchVerbTab('tab-savoirs')" class="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest bg-blue-500 text-white transition-colors">
+                        <i data-lucide="brain" class="w-3.5 h-3.5"></i> Savoirs (Cognitif)
+                    </button>
+                    <button id="btn-tab-savoirfaire" onclick="switchVerbTab('tab-savoirfaire')" class="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <i data-lucide="wrench" class="w-3.5 h-3.5"></i> Savoir-faire (Psychomot.)
+                    </button>
+                    <button id="btn-tab-savoiretre" onclick="switchVerbTab('tab-savoiretre')" class="flex items-center gap-1.5 whitespace-nowrap px-4 py-2 rounded-lg font-black text-[10px] uppercase tracking-widest bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
+                        <i data-lucide="heart-handshake" class="w-3.5 h-3.5"></i> Savoir-être (Socio-affect.)
                     </button>
                 </div>
 
-                <div class="space-y-8 text-sm leading-relaxed">
-                    <!-- Intro -->
-                    <div class="bg-indigo-50 dark:bg-indigo-900/20 p-6 rounded-2xl border-l-4 border-indigo-500">
-                        <p class="font-medium text-slate-700 dark:text-slate-300 italic">
-                            Un objectif opérationnel décrit précisément ce que l'apprenant sera capable de <b>faire</b> à
-                            l'issue de la séance. Il doit être <b>spécifique, observable et évaluable</b>.
-                        </p>
-                    </div>
-
-                    <!-- Les 3 composantes -->
-                    <div>
-                        <h3
-                            class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4 flex items-center gap-2">
-                            <span
-                                class="w-8 h-8 bg-indigo-600 text-white rounded-lg flex items-center justify-center text-sm">3</span>
-                            Les Composantes Clés
-                        </h3>
-                        <div class="grid md:grid-cols-3 gap-4">
-                            <div
-                                class="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                                <div class="text-indigo-500 font-black text-xs uppercase mb-2">C1 — Comportement</div>
-                                <p class="text-xs font-bold mb-2">Que doit faire l'apprenant ?</p>
-                                <p class="text-[11px] text-slate-500">Utiliser un <b>verbe d'action</b> précis (Taxonomie
-                                    de Bloom). Éviter "comprendre" ou "savoir".</p>
-                            </div>
-                            <div
-                                class="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                                <div class="text-indigo-500 font-black text-xs uppercase mb-2">C2 — Conditions</div>
-                                <p class="text-xs font-bold mb-2">Dans quel contexte ?</p>
-                                <p class="text-[11px] text-slate-500">Ressources, outils autorisés, durée, environnement
-                                    de réalisation.</p>
-                            </div>
-                            <div
-                                class="bg-slate-50 dark:bg-slate-900 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
-                                <div class="text-indigo-500 font-black text-xs uppercase mb-2">C3 — Critères</div>
-                                <p class="text-xs font-bold mb-2">Comment mesurer ?</p>
-                                <p class="text-[11px] text-slate-500">Seuil minimal de réussite, <b>quantitatif ou
-                                    qualitatif</b>, niveau de précision attendu pour valider l'acquis.</p>
+                <!-- Tab: Savoirs (Bloom) -->
+                <div id="tab-savoirs" class="verb-tab-content">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-blue-300 pl-2">1. CONNAÎTRE</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Identifier')" class="verb-badge">identifier</span>
+                                <span onclick="insertVerb('Définir')" class="verb-badge">définir</span>
+                                <span onclick="insertVerb('Reconnaître')" class="verb-badge">reconnaître</span>
+                                <span onclick="insertVerb('Rappeler')" class="verb-badge">rappeler</span>
+                                <span onclick="insertVerb('Citer')" class="verb-badge">citer</span>
+                                <span onclick="insertVerb('Décrire')" class="verb-badge">décrire</span>
+                                <span onclick="insertVerb('Nommer')" class="verb-badge">nommer</span>
+                                <span onclick="insertVerb('Lister')" class="verb-badge">lister</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Verbes Action -->
-                    <div>
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4">Exemples de Verbes
-                            (Bloom)</h3>
-                        <div class="flex flex-wrap gap-2">
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Identifier</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Résoudre</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Expliquer</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Concevoir</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Comparer</span>
-                            <span
-                                class="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-[10px] font-bold uppercase">Appliquer</span>
-                        </div>
-                    </div>
-
-                    <!-- Formulation -->
-                    <div class="bg-slate-900 text-white p-8 rounded-3xl shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-indigo-500 blur-[80px] opacity-20"></div>
-                        <h3 class="text-indigo-400 font-black text-xs uppercase mb-4 tracking-widest">Structure de
-                            Rédaction</h3>
-                        <p class="text-xl font-light leading-relaxed">
-                            "À l'issue de cette séance, l'apprenant sera capable de <span
-                                class="text-indigo-400 font-bold">[Comportement]</span> + <span
-                                class="text-indigo-400 font-bold">[Conditions]</span> + <span
-                                class="text-indigo-400 font-bold">[Critères]</span>"
-                        </p>
-                    </div>
-
-                    <!-- Erreurs Fréquentes -->
-                    <div>
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4 flex items-center gap-2">
-                            <i data-lucide="alert-triangle" class="w-5 h-5 text-orange-500"></i>
-                            Erreurs Fréquentes à Éviter
-                        </h3>
-                        <div class="overflow-hidden rounded-2xl border border-slate-100 dark:border-slate-800">
-                            <table class="w-full text-left text-[11px] border-collapse">
-                                <thead>
-                                    <tr class="bg-slate-50 dark:bg-slate-900/50">
-                                        <th class="p-3 font-black uppercase text-slate-400 border-b border-slate-100 dark:border-slate-800">Erreur</th>
-                                        <th class="p-3 font-black uppercase text-slate-400 border-b border-slate-100 dark:border-slate-800">Solution</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                                    <tr>
-                                        <td class="p-3 font-bold text-red-500">Verbes vagues ("comprendre", "savoir")</td>
-                                        <td class="p-3 text-slate-600 dark:text-slate-400">Remplacer par un verbe d'action de Bloom précis.</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-3 font-bold text-red-500">Omettre les conditions</td>
-                                        <td class="p-3 text-slate-600 dark:text-slate-400">Préciser systématiquement la durée et les supports.</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-3 font-bold text-red-500">Négliger les critères de réussite</td>
-                                        <td class="p-3 text-slate-600 dark:text-slate-400">Définir un seuil chiffré ou une grille de réussite.</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="p-3 font-bold text-red-500">Confondre objectif et activité</td>
-                                        <td class="p-3 text-slate-600 dark:text-slate-400">Se centrer sur le résultat attendu chez l'apprenant.</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- Exemples -->
-                    <div>
-                        <h3 class="text-lg font-black text-slate-900 dark:text-white uppercase mb-4">Exemples Complets</h3>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div class="border border-slate-100 dark:border-slate-800 p-5 rounded-2xl bg-white dark:bg-slate-900/50">
-                                <h4 class="text-[10px] font-black uppercase text-indigo-500 mb-3 tracking-widest">Exemple 1 — Excel</h4>
-                                <p class="text-xs text-slate-600 dark:text-slate-400 italic">"Identifier 5 fonctionnalités d'Excel, sans notes, en 10 min, en citant au moins 3 sur 5."</p>
-                            </div>
-                            <div class="border border-slate-100 dark:border-slate-800 p-5 rounded-2xl bg-white dark:bg-slate-900/50">
-                                <h4 class="text-[10px] font-black uppercase text-indigo-500 mb-3 tracking-widest">Exemple 2 — Oral</h4>
-                                <p class="text-xs text-slate-600 dark:text-slate-400 italic">"Présenter un exposé de 10 min avec support, en respectant 4 critères sur 5 de la grille d'évaluation."</p>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-blue-400 pl-2">2. COMPRENDRE</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Expliquer')" class="verb-badge">expliquer</span>
+                                <span onclick="insertVerb('Illustrer')" class="verb-badge">illustrer</span>
+                                <span onclick="insertVerb('Reformuler')" class="verb-badge">reformuler</span>
+                                <span onclick="insertVerb('Distinguer')" class="verb-badge">distinguer</span>
+                                <span onclick="insertVerb('Représenter')" class="verb-badge">représenter</span>
+                                <span onclick="insertVerb('Estimer')" class="verb-badge">estimer</span>
+                                <span onclick="insertVerb('Interpréter')" class="verb-badge">interpréter</span>
+                                <span onclick="insertVerb('Traduire')" class="verb-badge">traduire</span>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Qualiopi -->
-                    <div class="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-800/50">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="w-10 h-10 bg-emerald-500 rounded-xl flex items-center justify-center text-white shadow-lg shadow-emerald-500/20">
-                                <i data-lucide="shield-check" class="w-6 h-6"></i>
-                            </div>
-                            <div>
-                                <h4 class="text-sm font-black text-emerald-900 dark:text-emerald-400 uppercase tracking-tight">Certification Qualiopi</h4>
-                                <p class="text-[10px] font-bold text-emerald-600/80 uppercase tracking-widest">Indicateur 11</p>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-blue-500 pl-2">3. APPLIQUER</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Appliquer')" class="verb-badge">appliquer</span>
+                                <span onclick="insertVerb('Utiliser')" class="verb-badge">utiliser</span>
+                                <span onclick="insertVerb('Démontrer')" class="verb-badge">démontrer</span>
+                                <span onclick="insertVerb('Calculer')" class="verb-badge">calculer</span>
+                                <span onclick="insertVerb('Résoudre')" class="verb-badge">résoudre</span>
+                                <span onclick="insertVerb('Employer')" class="verb-badge">employer</span>
+                                <span onclick="insertVerb('Transférer')" class="verb-badge">transférer</span>
+                                <span onclick="insertVerb('Pratiquer')" class="verb-badge">pratiquer</span>
                             </div>
                         </div>
-                        <p class="text-xs text-emerald-800/80 dark:text-emerald-400/80 leading-relaxed">
-                            L'Indicateur 11 exige que le prestataire évalue l'atteinte des objectifs. La méthode 3C permet de concevoir des évaluations cohérentes (quiz, grilles d'observation, mises en situation) qui constituent des preuves tangibles de l'efficacité de la formation lors d'un audit.
-                        </p>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-blue-600 pl-2">4. ANALYSER</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Analyser')" class="verb-badge">analyser</span>
+                                <span onclick="insertVerb('Comparer')" class="verb-badge">comparer</span>
+                                <span onclick="insertVerb('Catégoriser')" class="verb-badge">catégoriser</span>
+                                <span onclick="insertVerb('Déduire')" class="verb-badge">déduire</span>
+                                <span onclick="insertVerb('Examiner')" class="verb-badge">examiner</span>
+                                <span onclick="insertVerb('Classer')" class="verb-badge">classer</span>
+                                <span onclick="insertVerb('Rechercher')" class="verb-badge">rechercher</span>
+                                <span onclick="insertVerb('Simplifier')" class="verb-badge">simplifier</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-blue-700 pl-2">5. SYNTHÉTISER</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Créer')" class="verb-badge">créer</span>
+                                <span onclick="insertVerb('Concevoir')" class="verb-badge">concevoir</span>
+                                <span onclick="insertVerb('Construire')" class="verb-badge">construire</span>
+                                <span onclick="insertVerb('Planifier')" class="verb-badge">planifier</span>
+                                <span onclick="insertVerb('Assembler')" class="verb-badge">assembler</span>
+                                <span onclick="insertVerb('Combiner')" class="verb-badge">combiner</span>
+                                <span onclick="insertVerb('Produire')" class="verb-badge">produire</span>
+                                <span onclick="insertVerb('Écrire')" class="verb-badge">écrire</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-blue-800 pl-2">6. ÉVALUER</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Évaluer')" class="verb-badge">évaluer</span>
+                                <span onclick="insertVerb('Juger')" class="verb-badge">juger</span>
+                                <span onclick="insertVerb('Argumenter')" class="verb-badge">argumenter</span>
+                                <span onclick="insertVerb('Valider')" class="verb-badge">valider</span>
+                                <span onclick="insertVerb('Décider')" class="verb-badge">décider</span>
+                                <span onclick="insertVerb('Estimer')" class="verb-badge">estimer</span>
+                                <span onclick="insertVerb('Standardiser')" class="verb-badge">standardiser</span>
+                                <span onclick="insertVerb('Justifier')" class="verb-badge">justifier</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-10 pt-6 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-                    <button onclick="closeOPOModal()"
-                        class="bg-indigo-600 text-white font-black py-4 px-10 rounded-2xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-500/20 active:scale-95 text-xs uppercase tracking-widest">
-                        J'ai compris
-                    </button>
+                <!-- Tab: Savoir-faire -->
+                <div id="tab-savoirfaire" class="verb-tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-teal-300 pl-2">1. IMITATION</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Reproduire')" class="verb-badge">reproduire</span>
+                                <span onclick="insertVerb('Tracer')" class="verb-badge">tracer</span>
+                                <span onclick="insertVerb('Reporter')" class="verb-badge">reporter</span>
+                                <span onclick="insertVerb('Mesurer')" class="verb-badge">mesurer</span>
+                                <span onclick="insertVerb('Faire fonctionner')" class="verb-badge">faire fonctionner</span>
+                                <span onclick="insertVerb('Dessiner')" class="verb-badge">dessiner</span>
+                                <span onclick="insertVerb('Découper')" class="verb-badge">découper</span>
+                                <span onclick="insertVerb('Calibrer')" class="verb-badge">calibrer</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-teal-500 pl-2">2. COORDINATION</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Usiner')" class="verb-badge">usiner</span>
+                                <span onclick="insertVerb('Souder')" class="verb-badge">souder</span>
+                                <span onclick="insertVerb('Remonter')" class="verb-badge">remonter</span>
+                                <span onclick="insertVerb('Régler')" class="verb-badge">régler</span>
+                                <span onclick="insertVerb('Rapprocher')" class="verb-badge">rapprocher</span>
+                                <span onclick="insertVerb('Polir')" class="verb-badge">polir</span>
+                                <span onclick="insertVerb('Placer')" class="verb-badge">placer</span>
+                                <span onclick="insertVerb('Ajuster')" class="verb-badge">ajuster</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-teal-700 pl-2">3. AUTOMATISME</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Réparer')" class="verb-badge">réparer</span>
+                                <span onclick="insertVerb('Restaurer')" class="verb-badge">restaurer</span>
+                                <span onclick="insertVerb('Reconstruire')" class="verb-badge">reconstruire</span>
+                                <span onclick="insertVerb('Inverser')" class="verb-badge">inverser</span>
+                                <span onclick="insertVerb('Guider')" class="verb-badge">guider</span>
+                                <span onclick="insertVerb('Diriger')" class="verb-badge">diriger</span>
+                                <span onclick="insertVerb('Diagnostiquer')" class="verb-badge">diagnostiquer</span>
+                                <span onclick="insertVerb('Coordonner')" class="verb-badge">coordonner</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab: Savoir-être -->
+                <div id="tab-savoiretre" class="verb-tab-content hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-rose-300 pl-2">1. RÉCEPTIVITÉ</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('Suivre')" class="verb-badge">suivre</span>
+                                <span onclick="insertVerb('Se conformer')" class="verb-badge">se conformer</span>
+                                <span onclick="insertVerb('Respecter')" class="verb-badge">respecter</span>
+                                <span onclick="insertVerb('Reconnaître')" class="verb-badge">reconnaître</span>
+                                <span onclick="insertVerb('Obéir')" class="verb-badge">obéir</span>
+                                <span onclick="insertVerb('Admettre')" class="verb-badge">admettre</span>
+                                <span onclick="insertVerb('Accepter')" class="verb-badge">accepter</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-rose-500 pl-2">2. RÉPONSE</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('S\'adapter')" class="verb-badge">s'adapter</span>
+                                <span onclick="insertVerb('Prendre l\'initiative')" class="verb-badge">prendre l'initiative</span>
+                                <span onclick="insertVerb('Prendre en compte')" class="verb-badge">prendre en compte</span>
+                                <span onclick="insertVerb('Être autonome')" class="verb-badge">être autonome</span>
+                                <span onclick="insertVerb('Écouter')" class="verb-badge">écouter</span>
+                                <span onclick="insertVerb('Contrôler son agressivité')" class="verb-badge">contrôler son agressivité</span>
+                                <span onclick="insertVerb('Accueillir')" class="verb-badge">accueillir</span>
+                            </div>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-slate-700 dark:text-slate-300 text-xs mb-3 border-l-2 border-rose-700 pl-2">3. INTÉRIORISATION</h4>
+                            <div class="flex flex-wrap gap-1.5">
+                                <span onclick="insertVerb('S\'intéresser')" class="verb-badge">s'intéresser</span>
+                                <span onclick="insertVerb('Innover')" class="verb-badge">innover</span>
+                                <span onclick="insertVerb('Convaincre')" class="verb-badge">convaincre</span>
+                                <span onclick="insertVerb('Conseiller')" class="verb-badge">conseiller</span>
+                                <span onclick="insertVerb('Animer')" class="verb-badge">animer</span>
+                                <span onclick="insertVerb('Analyser')" class="verb-badge">analyser</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Modal 3C OPO -->
+    <div id="opo-modal" class="modal-overlay" onclick="closeModal('opo-modal')">
+        <div class="modal-container scroll-smooth" onclick="event.stopPropagation()">
+            <div class="help-card border-none">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Méthode 3C</h2>
+                        <p class="text-xs font-bold text-indigo-500 uppercase tracking-widest">Objectif Pédagogique Opérationnel</p>
+                    </div>
+                    <button onclick="closeModal('opo-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div class="text-sm space-y-4">
+                    <p>Un objectif opérationnel décrit précisément ce que l'apprenant sera capable de faire. Il comporte 3 éléments :</p>
+                    <ul class="list-disc pl-5 space-y-2">
+                        <li><b>Comportement (Verbe d'action) :</b> Ex: Identifier, Résoudre, Concevoir (Éviter "Comprendre").</li>
+                        <li><b>Conditions :</b> Ex: Avec ou sans notes, en 10 minutes, sur logiciel.</li>
+                        <li><b>Critères d'évaluation :</b> Ex: Citer au moins 3 éléments sur 5.</li>
+                    </ul>
+                    <p class="italic text-indigo-600 dark:text-indigo-400 mt-4">Ex: "À l'issue de la séance, l'apprenant sera capable d'identifier 5 fonctions d'Excel, sans notes, en 10 min, en citant au moins 3 sur 5."</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Chronobiologie -->
+    <div id="chrono-modal" class="modal-overlay" onclick="closeModal('chrono-modal')">
+        <div class="modal-container scroll-smooth" onclick="event.stopPropagation()">
+            <div class="help-card border-none">
+                <div class="flex justify-between items-start mb-6 border-b border-slate-100 dark:border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight flex items-center gap-2">
+                            <i data-lucide="brain" class="w-6 h-6 text-fuchsia-500"></i> Rythmes Biologiques
+                        </h2>
+                        <p class="text-xs font-bold text-fuchsia-500 uppercase tracking-widest mt-1">La Chronobiologie en Andragogie</p>
+                    </div>
+                    <button onclick="closeModal('chrono-modal')" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"><i data-lucide="x" class="w-6 h-6"></i></button>
+                </div>
+                <div class="text-sm space-y-6">
+                    <p class="text-slate-600 dark:text-slate-400">Le cerveau adulte obéit à une courbe en « double bosse ». Ce simulateur vous alerte automatiquement si vous enfreignez les règles neuro-pédagogiques suivantes :</p>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div class="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-100 dark:border-emerald-800/50">
+                            <h4 class="font-black text-emerald-700 dark:text-emerald-400 flex items-center gap-2 mb-2"><i data-lucide="flame" class="w-4 h-4"></i> Le Pic Matinal (09h30 - 11h30)</h4>
+                            <p class="text-xs">C'est l'acrophase des capacités intellectuelles. Placez ici vos apports complexes et vos études de cas. <i>Toute heure mal utilisée ici est une perte pédagogique majeure.</i></p>
+                        </div>
+                        
+                        <div class="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-100 dark:border-red-800/50">
+                            <h4 class="font-black text-red-700 dark:text-red-400 flex items-center gap-2 mb-2"><i data-lucide="x-octagon" class="w-4 h-4"></i> Creux Post-Prandial (13h30 - 15h00)</h4>
+                            <p class="text-xs">Hypovigilance biologique (indépendante du repas). <b>Ne jamais placer d'exposé magistral dense ici</b>. Utilisez des énergiseurs et des méthodes hautement actives (jeux, manipulations).</p>
+                        </div>
+
+                        <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800/50">
+                            <h4 class="font-black text-orange-700 dark:text-orange-400 flex items-center gap-2 mb-2"><i data-lucide="clock" class="w-4 h-4"></i> Limite d'attention (15 min)</h4>
+                            <p class="text-xs">Un exposé magistral (méthode Expositive) ne devrait jamais dépasser 10 à 15 minutes sans rupture (questionnement, exercice).</p>
+                        </div>
+
+                        <div class="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl border border-orange-100 dark:border-orange-800/50">
+                            <h4 class="font-black text-orange-700 dark:text-orange-400 flex items-center gap-2 mb-2"><i data-lucide="battery-charging" class="w-4 h-4"></i> Règle des 90 minutes</h4>
+                            <p class="text-xs">Au-delà de 90 minutes de travail consécutives, une pause (même de 5 min) est obligatoire pour restaurer la performance cognitive. <i>Insérez une activité nommée "Pause" pour réinitialiser l'alerte.</i></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TUTORIEL SPOTLIGHT (ONBOARDING) -->
+    <div class="tour-blocker"></div>
+    <div id="tour-box" class="tour-box">
+        <div class="flex justify-between items-start mb-3">
+            <h3 id="tour-title" class="font-black text-blue-600 dark:text-blue-400 uppercase tracking-tight text-sm flex items-center gap-1.5">Titre</h3>
+            <button onclick="endTour()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <p id="tour-desc" class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-6">Description.</p>
+        <div class="flex justify-between items-center border-t border-slate-100 dark:border-slate-800 pt-3 mt-auto">
+            <span id="tour-step-counter" class="text-[10px] font-black text-slate-400 tracking-widest">1/5</span>
+            <div class="flex gap-2">
+                <button id="tour-prev" onclick="prevTourStep()" class="px-3 py-1.5 rounded-lg text-[10px] font-black text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors uppercase">Précédent</button>
+                <button id="tour-next" onclick="nextTourStep()" class="px-4 py-1.5 rounded-lg text-[10px] font-black bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-500/20 transition-all uppercase">Suivant</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Fonctions Modal OPO
-        function openOPOModal() {
-            document.getElementById('opo-modal').classList.add('active');
-            document.body.style.overflow = 'hidden';
-            if (typeof lucide !== 'undefined') lucide.createIcons();
+        const SUGGESTIONS = {
+            amorce: [
+                { title: "Accueil & Installation", duration: 5, method: "Expositive" },
+                { title: "Rappel séance précédente", duration: 5, method: "Interrogative" },
+                { title: "Annonce objectifs & plan", duration: 5, method: "Expositive" },
+                { title: "Élément déclencheur", duration: 10, method: "Heuristique" }
+            ],
+            realisation: [
+                { title: "Structuration des contenus", duration: 20, method: "Expositive" },
+                { title: "Exercices pratiques", duration: 30, method: "Active" },
+                { title: "Rétroactions & échanges", duration: 10, method: "Interrogative" },
+                { title: "Pause", duration: 15, method: "Active" },
+                { title: "Évaluation formative", duration: 15, method: "Active" }
+            ],
+            cloture: [
+                { title: "Synthèse collective", duration: 10, method: "Interrogative" },
+                { title: "Évaluation des acquis", duration: 10, method: "Active" },
+                { title: "Ouverture & suite", duration: 5, method: "Expositive" }
+            ]
+        };
+
+        let currentEditingActivity = null;
+
+        // Utilitaires de Temps
+        function parseTime(timeStr) {
+            if (!timeStr) return 0;
+            const parts = timeStr.split(':');
+            return parseInt(parts[0]) * 60 + parseInt(parts[1]);
         }
 
-        function closeOPOModal(e) {
-            document.getElementById('opo-modal').classList.remove('active');
+        function formatTime(minutes) {
+            const h = Math.floor(minutes / 60) % 24;
+            const m = minutes % 60;
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('start-time-input').addEventListener('input', calculateDurations);
+            
+            // Setup Drop Zones for Drag & Drop
+            setupDragAndDrop();
+
+            // Initial activities
+            addActivity('amorce', 'Accueil & Installation', 15, 'Expositive');
+            addActivity('realisation', 'Structuration des contenus', 20, 'Expositive');
+            addActivity('cloture', 'Synthèse collective', 10, 'Interrogative');
+
+            setupPanelListeners();
+
+            // INITIALISATION GLOBALE DES ICÔNES AU CHARGEMENT DE LA PAGE
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            
+            // Écouteur de redimensionnement pour le tutoriel
+            window.addEventListener('resize', () => {
+                if(document.body.classList.contains('tour-active')) {
+                    const step = tourSteps[currentTourStep];
+                    const target = document.querySelector(step.targetSelector);
+                    if(target) positionTourBox(target);
+                }
+            });
+        });
+
+        // --- GESTION BANQUE DE VERBES ---
+        function switchVerbTab(tabId) {
+            // Cacher tout le contenu
+            document.querySelectorAll('.verb-tab-content').forEach(el => el.classList.add('hidden'));
+            
+            // Réinitialiser les boutons
+            document.querySelectorAll('#verbes-modal .whitespace-nowrap').forEach(el => {
+                el.classList.remove('bg-blue-500', 'text-white');
+                el.classList.add('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-400');
+            });
+            
+            // Activer le contenu
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            // Activer le bouton (le hack string remplace tab par btn-tab)
+            const btnId = tabId.replace('tab-', 'btn-tab-');
+            const btn = document.getElementById(btnId);
+            btn.classList.remove('bg-slate-100', 'dark:bg-slate-800', 'text-slate-600', 'dark:text-slate-400');
+            btn.classList.add('bg-blue-500', 'text-white');
+        }
+
+        function insertVerb(verb) {
+            const champ = document.getElementById('opo-comportement');
+            champ.textContent = verb;
+            closeModal('verbes-modal');
+            
+            // Animation visuelle de confirmation (Highlight temporaire)
+            champ.classList.add('ring-2', 'ring-blue-500');
+            setTimeout(() => {
+                champ.classList.remove('ring-2', 'ring-blue-500');
+            }, 800);
+        }
+
+        function toggleSuggestions(phase) {
+            const menu = document.getElementById(`${phase}-menu`);
+            document.querySelectorAll('.suggestions-menu').forEach(m => { if (m !== menu) m.classList.remove('active'); });
+            menu.classList.toggle('active');
+
+            if (menu.classList.contains('active')) {
+                menu.innerHTML = '';
+                SUGGESTIONS[phase].forEach(s => {
+                    const btn = document.createElement('button');
+                    btn.className = 'suggestion-item';
+                    btn.textContent = s.title;
+                    btn.onclick = () => {
+                        addActivity(phase, s.title, s.duration, s.method);
+                        menu.classList.remove('active');
+                    };
+                    menu.appendChild(btn);
+                });
+            }
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.suggestions-menu') && !e.target.closest('button')) {
+                document.querySelectorAll('.suggestions-menu').forEach(m => m.classList.remove('active'));
+            }
+        });
+
+        window.addActivity = function (phase, title = "Nouvelle étape", duration = 5, method = "Active") {
+            const template = document.getElementById('activity-template');
+            const activityFrag = template.content.cloneNode(true);
+            const activity = activityFrag.firstElementChild;
+            activity.dataset.phase = phase;
+
+            activity.querySelector('h4').textContent = title;
+            const durationInput = activity.querySelector('.activity-duration');
+            durationInput.value = duration;
+
+            const methodSelect = activity.querySelector('.activity-method');
+            methodSelect.value = method;
+            
+            if(method === "Expositive" || method === "Démonstrative") {
+                activity.dataset.demarche = "Déductive";
+            }
+
+            // Listeners Modification
+            durationInput.addEventListener('input', calculateDurations);
+            methodSelect.addEventListener('change', (e) => {
+                handleMethodChangeOnCard(e.target.value, activity);
+                calculateDurations(); 
+            });
+            
+            activity.querySelector('h4').addEventListener('blur', (e) => {
+                if(currentEditingActivity === activity) {
+                    document.getElementById('panel-activity-title').textContent = e.target.textContent;
+                }
+                calculateDurations(); 
+            });
+
+            // Boutons d'Action
+            activity.querySelector('[data-action="remove-activity"]').onclick = (e) => {
+                e.stopPropagation();
+                if(currentEditingActivity === activity) closeSidePanel();
+                activity.remove();
+                calculateDurations();
+            };
+
+            activity.querySelector('[data-action="edit-activity"]').onclick = (e) => {
+                e.stopPropagation();
+                openSidePanel(activity);
+            };
+
+            // DRAG & DROP EVENT LISTENERS
+            activity.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', 'activity'); // Fix for Firefox
+                activity.classList.add('dragging');
+            });
+
+            activity.addEventListener('dragend', () => {
+                activity.classList.remove('dragging');
+                calculateDurations(); // RECALCUL CASCADE MAGIQUE ICI
+            });
+
+            document.getElementById(`${phase}-container`).appendChild(activity);
+            calculateDurations();
+            
+            if (typeof lucide !== 'undefined') lucide.createIcons({root: activity});
+            updateCardBadges(activity);
+        };
+
+        // --- GESTION DU DRAG AND DROP (ZONES DE DÉPÔT) ---
+        function setupDragAndDrop() {
+            const containers = document.querySelectorAll('#amorce-container, #realisation-container, #cloture-container');
+            
+            containers.forEach(container => {
+                container.addEventListener('dragover', e => {
+                    e.preventDefault(); // Autorise le drop
+                    const draggable = document.querySelector('.dragging');
+                    if (!draggable) return;
+
+                    const afterElement = getDragAfterElement(container, e.clientY);
+                    
+                    try {
+                        if (afterElement == null) {
+                            if (container.lastElementChild !== draggable) {
+                                container.appendChild(draggable);
+                            }
+                        } else {
+                            if (afterElement.parentNode === container) {
+                                container.insertBefore(draggable, afterElement);
+                            }
+                        }
+                        
+                        const newPhase = container.id.split('-')[0];
+                        if (draggable.dataset.phase !== newPhase) {
+                            draggable.dataset.phase = newPhase;
+                        }
+                    } catch(err) {
+                        // Capture silencieuse
+                    }
+                });
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.activity-wrapper:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        // --- CRÉATION DES ALERTES ---
+        function createAlert(type, message) {
+            const div = document.createElement('div');
+            const colors = {
+                warning: 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50',
+                danger: 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800/50',
+                success: 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50',
+            };
+            const icons = {
+                warning: 'alert-triangle',
+                danger: 'x-octagon',
+                success: 'flame',
+            };
+            div.className = `flex items-start gap-1.5 p-2 rounded-lg border text-[9px] font-bold ${colors[type]}`;
+            div.innerHTML = `<i data-lucide="${icons[type]}" class="w-3 h-3 mt-0.5 flex-shrink-0"></i> <span>${message}</span>`;
+            return div;
+        }
+
+        // --- CALCUL DES DURÉES ET CHRONOBIOLOGIE ---
+        function calculateDurations() {
+            const startInput = document.getElementById('start-time-input').value;
+            let currentTime = parseTime(startInput);
+            let timeSinceLastPause = 0;
+            
+            const phases = ['amorce', 'realisation', 'cloture'];
+            let total = 0;
+            let totals = { amorce: 0, realisation: 0, cloture: 0 };
+            const targets = { amorce: 10, realisation: 80, cloture: 10 };
+
+            phases.forEach(phase => {
+                const activities = document.getElementById(`${phase}-container`).querySelectorAll('.activity-wrapper');
+                activities.forEach(act => {
+                    const duration = parseInt(act.querySelector('.activity-duration').value) || 0;
+                    const method = act.querySelector('.activity-method').value;
+                    const title = act.querySelector('h4').textContent.toLowerCase();
+                    
+                    // Horaires pour cette activité
+                    const actStart = currentTime;
+                    const actEnd = currentTime + duration;
+                    const timeString = `${formatTime(actStart)} - ${formatTime(actEnd)}`;
+                    
+                    // Mise à jour de la carte
+                    act.querySelector('.activity-time-display span').textContent = timeString;
+                    act.dataset.horaire = timeString;
+                    
+                    // Gestion des alertes
+                    const alertsContainer = act.querySelector('.activity-alerts');
+                    alertsContainer.innerHTML = '';
+                    act.classList.remove('alert-red', 'alert-orange');
+
+                    // 1. Règle des Pauses (> 90min)
+                    if (title.includes('pause') || title.includes('repas') || title.includes('déjeuner') || title.includes('break')) {
+                        timeSinceLastPause = 0;
+                    } else {
+                        timeSinceLastPause += duration;
+                    }
+                    if (timeSinceLastPause > 90) {
+                        alertsContainer.appendChild(createAlert('warning', 'Plus de 90 min sans pause. Fatigue cognitive probable.'));
+                        act.classList.add('alert-orange');
+                    }
+
+                    // 2. Règle de l'attention (Expositive > 15m)
+                    if (method === 'Expositive' && duration > 15) {
+                        alertsContainer.appendChild(createAlert('warning', 'Chute d\'attention : Une phase expositive ne devrait pas dépasser 15 min.'));
+                        act.classList.add('alert-orange');
+                    }
+
+                    // 3. Règle Post-Prandiale (13h30-15h = 810m-900m)
+                    const overlapsPostPrandial = (actStart < 900 && actEnd > 810);
+                    if (overlapsPostPrandial && method === 'Expositive') {
+                        alertsContainer.appendChild(createAlert('danger', 'Creux post-prandial (13h30-15h) : Évitez le magistral, passez en mode actif !'));
+                        act.classList.add('alert-red');
+                    }
+
+                    // 4. Règle Pic Matinal (09h30-11h30 = 570m-690m)
+                    const overlapsMorningPeak = (actStart < 690 && actEnd > 570);
+                    if (overlapsMorningPeak && !overlapsPostPrandial) {
+                        alertsContainer.appendChild(createAlert('success', 'Pic de vigilance matinal : Période idéale pour vos notions complexes.'));
+                    }
+
+                    // Render icons for newly added alerts
+                    if (alertsContainer.innerHTML !== '' && typeof lucide !== 'undefined') {
+                        lucide.createIcons({ root: alertsContainer });
+                    }
+
+                    // Mise à jour compteurs
+                    currentTime = actEnd;
+                    totals[phase] += duration;
+                    total += duration;
+                });
+            });
+
+            // Update Progress bars & Displays
+            phases.forEach(phase => {
+                const percentage = total > 0 ? (totals[phase] / total * 100).toFixed(0) : 0;
+                document.getElementById(`${phase}-duration-display`).textContent = `${totals[phase]} mn`;
+                document.getElementById(`${phase}-percent-display`).textContent = `${percentage}%`;
+                
+                const prog = document.getElementById(`${phase}-progress`);
+                prog.style.width = `${Math.min(percentage, 100)}%`;
+                if (percentage > targets[phase] + 5) prog.classList.add('phase-over');
+                else prog.classList.remove('phase-over');
+            });
+
+            document.getElementById('total-duration-display').textContent = `${total} mn`;
+            document.getElementById('end-time-display').textContent = formatTime(currentTime);
+        }
+
+        // --- GESTION DU PANNEAU LATÉRAL ---
+        function handleMethodChangeOnCard(newMethod, activityCard) {
+            if(newMethod === "Expositive" || newMethod === "Démonstrative") {
+                activityCard.dataset.demarche = "Déductive";
+            }
+            if(currentEditingActivity === activityCard) {
+                document.getElementById('panel-method').value = newMethod;
+                document.getElementById('panel-demarche').value = activityCard.dataset.demarche;
+            }
+            updateCardBadges(activityCard);
+        }
+
+        function openSidePanel(activityCard) {
+            currentEditingActivity = activityCard;
+            
+            document.getElementById('panel-activity-title').textContent = activityCard.querySelector('h4').textContent;
+            document.getElementById('panel-method').value = activityCard.querySelector('.activity-method').value;
+            
+            const fields = ['demarche', 'technique', 'formateur', 'apprenant', 'outil', 'support', 'ressource', 'materiel', 'difficultes', 'remediation', 'notes'];
+            fields.forEach(field => {
+                const input = document.getElementById(`panel-${field}`);
+                if(input) input.value = activityCard.dataset[field] || "";
+            });
+
+            document.getElementById('side-panel').classList.add('active');
+            document.getElementById('side-panel-overlay').classList.add('active');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeSidePanel() {
+            document.getElementById('side-panel').classList.remove('active');
+            document.getElementById('side-panel-overlay').classList.remove('active');
             document.body.style.overflow = '';
+            currentEditingActivity = null;
         }
 
-        // Initialisation initiale des icônes
-        if (typeof lucide !== 'undefined') lucide.createIcons();
+        function setupPanelListeners() {
+            const fields = ['demarche', 'technique', 'formateur', 'apprenant', 'outil', 'support', 'ressource', 'materiel', 'difficultes', 'remediation', 'notes'];
+            
+            fields.forEach(field => {
+                const input = document.getElementById(`panel-${field}`);
+                if(input) {
+                    input.addEventListener('input', (e) => {
+                        if(currentEditingActivity) {
+                            currentEditingActivity.dataset[field] = e.target.value;
+                            updateCardBadges(currentEditingActivity);
+                        }
+                    });
+                }
+            });
+
+            document.getElementById('panel-method').addEventListener('change', (e) => {
+                if(currentEditingActivity) {
+                    const newMethod = e.target.value;
+                    currentEditingActivity.querySelector('.activity-method').value = newMethod;
+                    
+                    if(newMethod === "Expositive" || newMethod === "Démonstrative") {
+                        currentEditingActivity.dataset.demarche = "Déductive";
+                        document.getElementById('panel-demarche').value = "Déductive";
+                    }
+                    updateCardBadges(currentEditingActivity);
+                    calculateDurations(); // re-eval alerts
+                }
+            });
+        }
+
+        function updateCardBadges(activityCard) {
+            const badgeContainer = activityCard.querySelector('.indicator-badges');
+            badgeContainer.innerHTML = '';
+            
+            if(activityCard.dataset.technique) addBadge(badgeContainer, 'Technique', 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300');
+            if(activityCard.dataset.formateur || activityCard.dataset.apprenant) addBadge(badgeContainer, 'Rôles', 'bg-teal-100 text-teal-600 dark:bg-teal-900/40 dark:text-teal-300');
+            
+            if(activityCard.dataset.outil || activityCard.dataset.support || activityCard.dataset.ressource || activityCard.dataset.materiel) {
+                addBadge(badgeContainer, 'Moyens', 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-300');
+            }
+        }
+
+        function addBadge(container, text, classes) {
+            const span = document.createElement('span');
+            span.className = `text-[8px] font-black uppercase px-2 py-0.5 rounded ${classes}`;
+            span.textContent = text;
+            container.appendChild(span);
+        }
+
+        // --- EXPORT CSV COMPLET ---
+        function exportToCSV(isTemplate = false) {
+            const headers = [
+                "Horaires", "Phase", "Titre Étape", "Durée (mn)", "Méthode", "Démarche", 
+                "Technique", "Rôle Formateur", "Rôle Apprenant", 
+                "Outil Pédagogique", "Support Pédagogique", "Ressources Pédagogiques", "Matériel Pédagogique",
+                "Difficultés", "Remédiation", "Notes Internes"
+            ];
+            const rows = [headers];
+            
+            if (!isTemplate) {
+                const phases = ["amorce", "realisation", "cloture"];
+                phases.forEach(phase => {
+                    const activities = document.getElementById(`${phase}-container`).querySelectorAll('.activity-wrapper');
+                    activities.forEach(act => {
+                        const row = [
+                            act.dataset.horaire || "",
+                            phase.toUpperCase(),
+                            act.querySelector('h4').textContent.trim(),
+                            act.querySelector('.activity-duration').value,
+                            act.querySelector('.activity-method').value,
+                            act.dataset.demarche || "",
+                            act.dataset.technique || "",
+                            act.dataset.formateur || "",
+                            act.dataset.apprenant || "",
+                            act.dataset.outil || "",
+                            act.dataset.support || "",
+                            act.dataset.ressource || "",
+                            act.dataset.materiel || "",
+                            act.dataset.difficultes || "",
+                            act.dataset.remediation || "",
+                            act.dataset.notes || ""
+                        ];
+                        rows.push(row);
+                    });
+                });
+            } else {
+                // Lignes vides trame
+                rows.push(["09:00 - 09:30", "AMORCE", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]);
+                rows.push(["09:30 - 11:30", "RÉALISATION", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]);
+                rows.push(["11:30 - 12:00", "CLÔTURE", "", "", "", "", "", "", "", "", "", "", "", "", "", ""]);
+            }
+
+            const csvContent = rows.map(r => r.map(c => `"${c.toString().replace(/"/g, '""')}"`).join(";")).join("\n");
+            const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            
+            link.setAttribute("href", url);
+            link.setAttribute("download", isTemplate ? "trame_ingenierie_vierge.csv" : "scenarimage_pedagogique.csv");
+            link.style.visibility = 'hidden';
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+        }
+
+        // Modals logic
+        function openModal(modalId) { document.getElementById(modalId).classList.add('active'); }
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+        
+        // Setup overlay clicks to close modals
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', function(e) {
+                if (e.target === this) this.classList.remove('active');
+            });
+        });
+        
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            try { localStorage.setItem('theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light'); } catch (e) {}
+        }
+        try { if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) document.documentElement.classList.add('dark'); } catch (e) {}
+
+        // --- MOTEUR DU TUTORIEL SPOTLIGHT (ONBOARDING) ---
+        let currentTourStep = 0;
+        let activeHighlightEl = null;
+
+        const tourSteps = [
+            {
+                targetSelector: '#tour-step-1',
+                title: "<i data-lucide='hand' class='w-4 h-4'></i> Bienvenue !",
+                desc: "Ce simulateur est votre assistant intelligent pour concevoir des scénarios pédagogiques (scénarimages) professionnels et parfaitement équilibrés.",
+                setup: () => {}
+            },
+            {
+                targetSelector: '#tour-step-2',
+                title: "<i data-lucide='target' class='w-4 h-4'></i> La Méthode 3C",
+                desc: "Formulez vos Objectifs Opérationnels (OPO) sans erreur. Cliquez sur 'Banque Verbes' pour trouver l'action parfaite selon la taxonomie de Bloom.",
+                setup: () => {}
+            },
+            {
+                targetSelector: '#tour-step-3',
+                title: "<i data-lucide='brain' class='w-4 h-4'></i> Moteur Chronobiologique",
+                desc: "Définissez l'heure de début. Le simulateur calculera la fin estimée et vous alertera en cas de chute d'attention ou de creux post-prandial !",
+                setup: () => {}
+            },
+            {
+                targetSelector: '#tour-step-4',
+                title: "<i data-lucide='clock' class='w-4 h-4'></i> Les 3 Phases",
+                desc: "Votre séance doit être divisée en 3 étapes : L'Amorce (10%), La Réalisation (80%) et La Clôture (10%). Le simulateur vérifie cet équilibre en temps réel.",
+                setup: () => {}
+            },
+            {
+                targetSelector: '#tour-step-5',
+                title: "<i data-lucide='plus-circle' class='w-4 h-4'></i> Ajouter des Étapes",
+                desc: "Utilisez ce bouton pour créer une étape vierge, ou cliquez sur l'icône 'Bibliothèque' juste à côté pour piocher dans des suggestions préétablies.",
+                setup: () => {}
+            },
+            {
+                targetSelector: '.activity-wrapper .drag-handle',
+                title: "<i data-lucide='arrow-up-down' class='w-4 h-4'></i> Glisser-Déposer",
+                desc: "Attrapez n'importe quelle carte par cette poignée gauche (⠿) pour la réorganiser. Les horaires et les alertes se mettront à jour instantanément !",
+                setup: () => {}
+            },
+            {
+                targetSelector: '.activity-wrapper [data-action="edit-activity"]',
+                title: "<i data-lucide='sliders-horizontal' class='w-4 h-4'></i> Ingénierie Pédagogique",
+                desc: "Cliquez sur cette icône de réglages pour ouvrir le panneau d'ingénierie et détailler votre étape (rôles, matériel, difficultés...). Bon travail !",
+                setup: () => {}
+            }
+        ];
+
+        function startTour() {
+            document.body.classList.add('tour-active');
+            currentTourStep = 0;
+            renderTourStep();
+        }
+
+        function endTour() {
+            document.body.classList.remove('tour-active');
+            document.getElementById('tour-box').classList.remove('active');
+            if (activeHighlightEl) {
+                activeHighlightEl.classList.remove('tour-highlight');
+                activeHighlightEl = null;
+            }
+        }
+
+        function nextTourStep() {
+            if (currentTourStep < tourSteps.length - 1) {
+                currentTourStep++;
+                renderTourStep();
+            } else {
+                endTour();
+            }
+        }
+
+        function prevTourStep() {
+            if (currentTourStep > 0) {
+                currentTourStep--;
+                renderTourStep();
+            }
+        }
+
+        function renderTourStep() {
+            // Nettoyage étape précédente
+            if (activeHighlightEl) {
+                activeHighlightEl.classList.remove('tour-highlight');
+            }
+
+            const step = tourSteps[currentTourStep];
+            const targetEl = document.querySelector(step.targetSelector);
+
+            if (!targetEl) {
+                console.warn("Élément introuvable pour le tutoriel :", step.targetSelector);
+                nextTourStep(); // Skip silently if target missing
+                return;
+            }
+
+            // Exécuter le setup (préparation UI)
+            if (typeof step.setup === 'function') step.setup();
+
+            // Surligner la cible
+            targetEl.classList.add('tour-highlight');
+            activeHighlightEl = targetEl;
+
+            // Mise à jour du contenu de la modale
+            document.getElementById('tour-title').innerHTML = step.title;
+            document.getElementById('tour-desc').textContent = step.desc;
+            document.getElementById('tour-step-counter').textContent = `${currentTourStep + 1}/${tourSteps.length}`;
+            
+            const btnNext = document.getElementById('tour-next');
+            btnNext.textContent = currentTourStep === tourSteps.length - 1 ? "Terminer" : "Suivant";
+
+            // Scroll fluide vers l'élément (en compensant la navbar sticky)
+            if (!targetEl.classList.contains('fixed') && !targetEl.classList.contains('sticky')) {
+                const y = targetEl.getBoundingClientRect().top + window.scrollY - 120; // 120px margin top
+                window.scrollTo({top: y, behavior: 'smooth'});
+            }
+
+            // Positionner la boîte de dialogue après le scroll
+            setTimeout(() => {
+                positionTourBox(targetEl);
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons({ root: document.getElementById('tour-title') });
+                }
+            }, 300);
+        }
+
+        function positionTourBox(targetEl) {
+            const box = document.getElementById('tour-box');
+            box.classList.add('active');
+
+            const rect = targetEl.getBoundingClientRect();
+            const boxRect = box.getBoundingClientRect();
+
+            let top = rect.bottom + 15;
+            let left = rect.left;
+
+            // Logique intelligente d'alignement
+            if (rect.left > window.innerWidth / 2) {
+                // Si élément à droite, aligner par la droite
+                left = rect.right - boxRect.width;
+            }
+
+            // Garde-fous latéraux
+            if (left < 20) left = 20;
+            if (left + boxRect.width > window.innerWidth - 20) {
+                left = window.innerWidth - boxRect.width - 20;
+            }
+
+            // Si la boite dépasse en bas, on la met au-dessus de l'élément
+            if (top + boxRect.height > window.innerHeight - 20) {
+                top = rect.top - boxRect.height - 15;
+            }
+
+            box.style.top = `${top + window.scrollY}px`;
+            box.style.left = `${left + window.scrollX}px`;
+        }
+
     </script>
 </body>
-
 </html>
